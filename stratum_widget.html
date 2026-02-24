@@ -140,16 +140,23 @@
     hiddenTruth:     'pill_180'
   };
 
-  // Field ID to key mapping
-  var FIELD_MAP = {
-    'input_188': 'anchorBehavior',
-    'input_189': 'instance1',
-    'input_190': 'instance2',
-    'input_191': 'instance3',
-    'input_174': 'reflection',
-    'input_179': 'justification',
-    'input_180': 'hiddenTruth'
-  };
+  // Read values from URL query parameters (passed by Jotform iFrame widget)
+  function getUrlParams() {
+    var params = {};
+    try {
+      var search = window.location.search;
+      if (search) {
+        var pairs = search.substring(1).split('&');
+        pairs.forEach(function(pair) {
+          var parts = pair.split('=');
+          if (parts.length === 2) {
+            params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1].replace(/\+/g, ' '));
+          }
+        });
+      }
+    } catch(e) {}
+    return params;
+  }
 
   var fieldValues = {
     anchorBehavior: '',
@@ -162,32 +169,20 @@
   };
 
   function loadFormInputs() {
-    try {
-      var inputs = JFCustomWidget.getFormInputs();
-      if (inputs && inputs.length) {
-        // Debug: show what we received
-        var debugEl = document.getElementById('debug-output');
-        if (debugEl) {
-          var debugText = 'Fields received (' + inputs.length + '):\n';
-          inputs.forEach(function(input) {
-            debugText += 'name=' + input.name + ' | text=' + (input.text||'') + ' | value=' + (input.value||'(empty)') + '\n';
-          });
-          debugEl.textContent = debugText;
-        }
+    var params = getUrlParams();
+    var debugEl = document.getElementById('debug-output');
 
-        inputs.forEach(function(input) {
-          var key = FIELD_MAP[input.name];
-          if (key && input.value) {
-            fieldValues[key] = input.value;
-          }
-        });
+    // Load from URL params
+    Object.keys(fieldValues).forEach(function(key) {
+      if (params[key]) fieldValues[key] = params[key];
+    });
+
+    if (debugEl) {
+      if (Object.keys(params).length > 0) {
+        debugEl.textContent = 'URL params: ' + JSON.stringify(params, null, 2);
       } else {
-        var debugEl = document.getElementById('debug-output');
-        if (debugEl) debugEl.textContent = 'getFormInputs() returned empty or null';
+        debugEl.textContent = 'No URL params found. Check widget parameter settings in Jotform.';
       }
-    } catch(e) {
-      var debugEl = document.getElementById('debug-output');
-      if (debugEl) debugEl.textContent = 'Error: ' + e.message;
     }
   }
 
