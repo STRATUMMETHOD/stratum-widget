@@ -139,7 +139,17 @@
     hiddenTruth:     'pill_180'
   };
 
-  // Store values received from Jotform Widget API parameters
+  // Field ID to key mapping
+  var FIELD_MAP = {
+    'input_188': 'anchorBehavior',
+    'input_189': 'instance1',
+    'input_190': 'instance2',
+    'input_191': 'instance3',
+    'input_174': 'reflection',
+    'input_179': 'justification',
+    'input_180': 'hiddenTruth'
+  };
+
   var fieldValues = {
     anchorBehavior: '',
     instance1: '',
@@ -149,6 +159,30 @@
     justification: '',
     hiddenTruth: ''
   };
+
+  function loadFormInputs() {
+    try {
+      var inputs = JFCustomWidget.getFormInputs();
+      if (inputs && inputs.length) {
+        inputs.forEach(function(input) {
+          var key = FIELD_MAP[input.name] || FIELD_MAP['input_' + input.order];
+          if (!key) {
+            // Try matching by field order/id variations
+            Object.keys(FIELD_MAP).forEach(function(fieldId) {
+              if (input.name && input.name.indexOf(fieldId.replace('input_','')) !== -1) {
+                key = FIELD_MAP[fieldId];
+              }
+            });
+          }
+          if (key && input.value) {
+            fieldValues[key] = input.value;
+          }
+        });
+      }
+    } catch(e) {
+      console.log('getFormInputs error:', e);
+    }
+  }
 
   function getVal(key) {
     return fieldValues[key] || '';
@@ -385,45 +419,22 @@
   // Refresh button
   document.getElementById('refresh-btn').addEventListener('click', refreshAll);
 
-  // JFCustomWidget API - receives parameters from Jotform form fields
+  // JFCustomWidget API
   JFCustomWidget.subscribe('ready', function() {
-    var data = JFCustomWidget.getWidgetSetting('anchorBehavior');
-    if (data) fieldValues.anchorBehavior = data;
-    data = JFCustomWidget.getWidgetSetting('instance1');
-    if (data) fieldValues.instance1 = data;
-    data = JFCustomWidget.getWidgetSetting('instance2');
-    if (data) fieldValues.instance2 = data;
-    data = JFCustomWidget.getWidgetSetting('instance3');
-    if (data) fieldValues.instance3 = data;
-    data = JFCustomWidget.getWidgetSetting('reflection');
-    if (data) fieldValues.reflection = data;
-    data = JFCustomWidget.getWidgetSetting('justification');
-    if (data) fieldValues.justification = data;
-    data = JFCustomWidget.getWidgetSetting('hiddenTruth');
-    if (data) fieldValues.hiddenTruth = data;
+    loadFormInputs();
     refreshAll();
   });
 
   JFCustomWidget.subscribe('change', function() {
-    var data = JFCustomWidget.getWidgetSetting('anchorBehavior');
-    if (data) fieldValues.anchorBehavior = data;
-    data = JFCustomWidget.getWidgetSetting('instance1');
-    if (data) fieldValues.instance1 = data;
-    data = JFCustomWidget.getWidgetSetting('instance2');
-    if (data) fieldValues.instance2 = data;
-    data = JFCustomWidget.getWidgetSetting('instance3');
-    if (data) fieldValues.instance3 = data;
-    data = JFCustomWidget.getWidgetSetting('reflection');
-    if (data) fieldValues.reflection = data;
-    data = JFCustomWidget.getWidgetSetting('justification');
-    if (data) fieldValues.justification = data;
-    data = JFCustomWidget.getWidgetSetting('hiddenTruth');
-    if (data) fieldValues.hiddenTruth = data;
+    loadFormInputs();
     refreshAll();
   });
 
   window.addEventListener('load', function() {
-    setTimeout(refreshAll, 500);
+    setTimeout(function() {
+      loadFormInputs();
+      refreshAll();
+    }, 800);
   });
 </script>
 </body>
