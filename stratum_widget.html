@@ -115,6 +115,7 @@
 <button id="copy-btn">Copy Prompt to Clipboard</button>
 <div id="warning">Complete the fields above before copying for best results.</div>
 <button id="refresh-btn">↻ Refresh Prompt</button>
+<pre id="debug-output" style="margin-top:10px;font-size:10px;color:#888;white-space:pre-wrap;background:#f0e8dc;padding:8px;border-radius:4px;max-height:120px;overflow-y:auto;"></pre>
 
 <script>
   // Field ID map
@@ -164,23 +165,29 @@
     try {
       var inputs = JFCustomWidget.getFormInputs();
       if (inputs && inputs.length) {
+        // Debug: show what we received
+        var debugEl = document.getElementById('debug-output');
+        if (debugEl) {
+          var debugText = 'Fields received (' + inputs.length + '):\n';
+          inputs.forEach(function(input) {
+            debugText += 'name=' + input.name + ' | text=' + (input.text||'') + ' | value=' + (input.value||'(empty)') + '\n';
+          });
+          debugEl.textContent = debugText;
+        }
+
         inputs.forEach(function(input) {
-          var key = FIELD_MAP[input.name] || FIELD_MAP['input_' + input.order];
-          if (!key) {
-            // Try matching by field order/id variations
-            Object.keys(FIELD_MAP).forEach(function(fieldId) {
-              if (input.name && input.name.indexOf(fieldId.replace('input_','')) !== -1) {
-                key = FIELD_MAP[fieldId];
-              }
-            });
-          }
+          var key = FIELD_MAP[input.name];
           if (key && input.value) {
             fieldValues[key] = input.value;
           }
         });
+      } else {
+        var debugEl = document.getElementById('debug-output');
+        if (debugEl) debugEl.textContent = 'getFormInputs() returned empty or null';
       }
     } catch(e) {
-      console.log('getFormInputs error:', e);
+      var debugEl = document.getElementById('debug-output');
+      if (debugEl) debugEl.textContent = 'Error: ' + e.message;
     }
   }
 
