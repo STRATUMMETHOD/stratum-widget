@@ -1,0 +1,2 @@
+# stratum-widget
+Stratum
