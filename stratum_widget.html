@@ -139,26 +139,19 @@
     hiddenTruth:     'pill_180'
   };
 
-  function getVal(fieldId) {
-    try {
-      // Primary: direct DOM access (works when widget hosted on same origin)
-      var selectors = [
-        '#' + fieldId,
-        '[name="' + fieldId + '"]',
-        '[id$="_' + fieldId.replace('input_','') + '"]',
-        'textarea[id*="' + fieldId.replace('input_','') + '"]',
-        'input[id*="' + fieldId.replace('input_','') + '"]'
-      ];
-      for (var i = 0; i < selectors.length; i++) {
-        var el = window.parent.document.querySelector(selectors[i]);
-        if (el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) {
-          return el.value.trim();
-        }
-      }
-      return '';
-    } catch(e) {
-      return '';
-    }
+  // Store values received from Jotform Widget API parameters
+  var fieldValues = {
+    anchorBehavior: '',
+    instance1: '',
+    instance2: '',
+    instance3: '',
+    reflection: '',
+    justification: '',
+    hiddenTruth: ''
+  };
+
+  function getVal(key) {
+    return fieldValues[key] || '';
   }
 
   function buildPrompt() {
@@ -392,17 +385,45 @@
   // Refresh button
   document.getElementById('refresh-btn').addEventListener('click', refreshAll);
 
-  // JFCustomWidget init
+  // JFCustomWidget API - receives parameters from Jotform form fields
   JFCustomWidget.subscribe('ready', function() {
+    var data = JFCustomWidget.getWidgetSetting('anchorBehavior');
+    if (data) fieldValues.anchorBehavior = data;
+    data = JFCustomWidget.getWidgetSetting('instance1');
+    if (data) fieldValues.instance1 = data;
+    data = JFCustomWidget.getWidgetSetting('instance2');
+    if (data) fieldValues.instance2 = data;
+    data = JFCustomWidget.getWidgetSetting('instance3');
+    if (data) fieldValues.instance3 = data;
+    data = JFCustomWidget.getWidgetSetting('reflection');
+    if (data) fieldValues.reflection = data;
+    data = JFCustomWidget.getWidgetSetting('justification');
+    if (data) fieldValues.justification = data;
+    data = JFCustomWidget.getWidgetSetting('hiddenTruth');
+    if (data) fieldValues.hiddenTruth = data;
     refreshAll();
-    // Poll for changes every 2 seconds
-    setInterval(refreshAll, 2000);
   });
 
-  // Also run on load as fallback
+  JFCustomWidget.subscribe('change', function() {
+    var data = JFCustomWidget.getWidgetSetting('anchorBehavior');
+    if (data) fieldValues.anchorBehavior = data;
+    data = JFCustomWidget.getWidgetSetting('instance1');
+    if (data) fieldValues.instance1 = data;
+    data = JFCustomWidget.getWidgetSetting('instance2');
+    if (data) fieldValues.instance2 = data;
+    data = JFCustomWidget.getWidgetSetting('instance3');
+    if (data) fieldValues.instance3 = data;
+    data = JFCustomWidget.getWidgetSetting('reflection');
+    if (data) fieldValues.reflection = data;
+    data = JFCustomWidget.getWidgetSetting('justification');
+    if (data) fieldValues.justification = data;
+    data = JFCustomWidget.getWidgetSetting('hiddenTruth');
+    if (data) fieldValues.hiddenTruth = data;
+    refreshAll();
+  });
+
   window.addEventListener('load', function() {
     setTimeout(refreshAll, 500);
-    setInterval(refreshAll, 2000);
   });
 </script>
 </body>
