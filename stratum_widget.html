@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STRATUM Prompt Widget</title>
+<script src="https://js.jotform.com/JFCustomWidget.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Georgia, serif;
+    background: #f5f0e8;
+    padding: 16px;
+  }
+
+  #status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .status-pill {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #e0d8cc;
+    color: #7a6a55;
+    transition: all 0.3s;
+  }
+
+  .status-pill.filled {
+    background: #6B4226;
+    color: #f5f0e8;
+  }
+
+  #prompt-box {
+    width: 100%;
+    min-height: 320px;
+    background: #fffdf8;
+    border: 1px solid #c8b89a;
+    border-radius: 6px;
+    padding: 16px;
+    font-family: Georgia, serif;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #2c1f0e;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    max-height: 400px;
+    margin-bottom: 14px;
+  }
+
+  #copy-btn {
+    width: 100%;
+    padding: 14px;
+    background: #6B4226;
+    color: #f5f0e8;
+    border: none;
+    border-radius: 6px;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  #copy-btn:hover { background: #3C2A1E; }
+
+  #copy-btn.copied {
+    background: #4a7c59;
+  }
+
+  #warning {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #9c6b3a;
+    margin-top: 10px;
+    display: none;
+    font-style: italic;
+  }
+
+  #refresh-btn {
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px;
+    background: transparent;
+    color: #6B4226;
+    border: 1px solid #6B4226;
+    border-radius: 6px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  #refresh-btn:hover { background: #f0e8dc; }
+</style>
+</head>
+<body>
+
+<div id="status-bar">
+  <span class="status-pill" id="pill_188">Anchor Behavior</span>
+  <span class="status-pill" id="pill_189">Instance 1</span>
+  <span class="status-pill" id="pill_190">Instance 2</span>
+  <span class="status-pill" id="pill_191">Instance 3</span>
+  <span class="status-pill" id="pill_174">Reflection</span>
+  <span class="status-pill" id="pill_179">Justification</span>
+  <span class="status-pill" id="pill_180">Hidden Truth</span>
+</div>
+
+<div id="prompt-box"></div>
+<button id="copy-btn">Copy Prompt to Clipboard</button>
+<div id="warning">Complete the fields above before copying for best results.</div>
+<button id="refresh-btn">↻ Refresh Prompt</button>
+
+<script>
+  // Field ID map
+  var FIELDS = {
+    anchorBehavior:  'input_188',
+    instance1:       'input_189',
+    instance2:       'input_190',
+    instance3:       'input_191',
+    reflection:      'input_174',
+    justification:   'input_179',
+    hiddenTruth:     'input_180'
+  };
+
+  // Pill ID map
+  var PILLS = {
+    anchorBehavior:  'pill_188',
+    instance1:       'pill_189',
+    instance2:       'pill_190',
+    instance3:       'pill_191',
+    reflection:      'pill_174',
+    justification:   'pill_179',
+    hiddenTruth:     'pill_180'
+  };
+
+  function getVal(fieldId) {
+    try {
+      // Primary: direct DOM access (works when widget hosted on same origin)
+      var selectors = [
+        '#' + fieldId,
+        '[name="' + fieldId + '"]',
+        '[id$="_' + fieldId.replace('input_','') + '"]',
+        'textarea[id*="' + fieldId.replace('input_','') + '"]',
+        'input[id*="' + fieldId.replace('input_','') + '"]'
+      ];
+      for (var i = 0; i < selectors.length; i++) {
+        var el = window.parent.document.querySelector(selectors[i]);
+        if (el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) {
+          return el.value.trim();
+        }
+      }
+      return '';
+    } catch(e) {
+      return '';
+    }
+  }
+
+  function buildPrompt() {
+    var v = {};
+    Object.keys(FIELDS).forEach(function(key) {
+      v[key] = getVal(FIELDS[key]) || '[not yet entered]';
+    });
+
+    return [
+      'THOUGHTS FROM LESSON 1',
+      '',
+      'Surface Behavior: ' + v.anchorBehavior,
+      'Recurring Instance 1: ' + v.instance1,
+      'Recurring Instance 2: ' + v.instance2,
+      'Recurring Instance 3: ' + v.instance3,
+      'Freeform Reflection: ' + v.reflection,
+      '',
+      'MY PRE-WORK',
+      'Conscious Justification (what they\'d say): ' + v.justification,
+      'Candidate Hidden Truth: ' + v.hiddenTruth,
+      '',
+      '---',
+      '',
+      'YOUR ROLE AS COACH',
+      '',
+      'Before beginning, review previous sessions in this Project to retrieve the student\'s character role, genre, writing phase, and the anchor behavior and three recurring instances identified in Lesson 1. Use that context to personalize every question you ask.',
+      '',
+      '- You are an expert writing coach specializing in character psychology through the excavation method',
+      '- Help me uncover the hidden truth — the belief operating beneath my character\'s awareness that drives their recurring behavior',
+      '- You are a Socratic questioner, not a content generator',
+      '- Help me interpret what I already intuitively know about my character',
+      '- Ask questions that help me test the \'lock\' between behavior and belief',
+      '- Keep me focused on hidden truth (subconscious), not surface justifications (conscious)',
+      '- Prevent me from settling for vague, generic beliefs',
+      '',
+      'BOUNDARIES — WHAT TO AVOID',
+      '',
+      '- Do not suggest beliefs or generate interpretations. Help me discover what I know',
+      '- Do not let me confuse surface justification with hidden truth',
+      '- Do not allow vague labels like \'afraid of rejection\'. Push for precision',
+      '- Do not let me settle for a belief that doesn\'t explain my anchor behavior',
+      '- Do not let me combine multiple beliefs into one compound statement. One belief only',
+      '- Do not do most of the talking. I should be discovering, you should be questioning',
+      '',
+      'TWO REQUIRED DELIVERABLES',
+      '',
+      '1. One clear hidden truth that explains the surface pattern',
+      '2. A causal statement showing the lock: Because I believe [X], I must [Y behavior]',
+      '',
+      'SESSION STRUCTURE',
+      '',
+      'Stage 1: Uncovering the Belief (12 minutes)',
+      '',
+      'Help me apply the core interpretive question to my character.',
+      '',
+      'Start with: Given your character\'s behaviors from Lesson 1, what would they have to believe for those actions to make sense?',
+      '',
+      'Ask variations:',
+      '- What conviction about themselves, about others, or about the world would make this behavior feel necessary?',
+      '- If this behavior is their only reasonable response, what must they believe is true?',
+      '- What makes this behavior feel inevitable to them rather than optional?',
+      '',
+      'Push me to articulate in my own words. If I give surface justifications, redirect me to what actually drives them.',
+      '',
+      'Key diagnostic questions:',
+      '- Is that what they\'d say, or what actually drives them?',
+      '- Could this belief apply to other characters, or is it specific to yours?',
+      '- Does this explain the intensity of the behavior, not just its existence?',
+      '- What\'s at stake if they abandon this belief?',
+      '',
+      'Watch for: If I use labels like \'afraid\' or \'controlling\', stop me: What does that actually mean for this character specifically?',
+      '',
+      'Goal: Get me to articulate 2-3 possible beliefs. Don\'t let me settle on the first one — help me explore alternatives. If no strong candidate has emerged by the 8-minute mark, stop exploring and push me to commit to my best candidate: "We\'re going to test your strongest option. Which belief feels closest?" Move to Stage 2 immediately. Continued exploration without commitment is avoidance, not discovery.',
+      '',
+      'Stage 2: Testing the Lock (15 minutes)',
+      '',
+      'Help me test whether my belief truly explains the anchor behavior.',
+      '',
+      'For each of my concrete examples from Lesson 1, systematically ask:',
+      '- Does this belief explain why they did X in that situation?',
+      '- Walk me through: Because they believe X, they must do Y. Does that feel inevitable?',
+      '- Where does the belief fit tightly? Where does it strain?',
+      '',
+      'If the belief doesn\'t explain everything, help me refine:',
+      '- What would need to be true for this belief to explain the strained examples?',
+      '- Is the belief too broad or too narrow?',
+      '- Could there be a deeper belief underneath?',
+      '- Are you describing the belief itself, or a consequence of it?',
+      '',
+      'Key checkpoint: Can you write "Because I believe [X], I must [Y behavior]" for each example with causal tightness where Y feels inevitable given X?',
+      'If yes → Move to Stage 3. If no → Spend more time refining.',
+      '',
+      'Stage 3: Distinction and Refinement (8 minutes)',
+      '',
+      'Part A: Surface vs. Subconscious Distinction',
+      '- What would your character say if asked why they do this? (Conscious)',
+      '- What actually drives them, whether or not they\'d admit it? (Subconscious)',
+      '',
+      'If my hidden truth sounds like something they\'d say, push deeper:',
+      '- That sounds reasonable. What\'s beneath the reasonableness?',
+      '- What are they protecting themselves from by believing this?',
+      '- If they woke up tomorrow not believing this, what would terrify them?',
+      '',
+      'Part B: Specificity Push',
+      '- Could this apply to any character, or only yours?',
+      '- Can you use their voice, their logic, their specific fear?',
+      '- What happens if they\'re wrong?',
+      '',
+      'Push until my belief: uses the character\'s voice/phrasing, includes their internal logic, makes clear what\'s at stake, and could only describe THIS character.',
+      '',
+      'Final Confirmation: The Lock Test',
+      '',
+      'Deliverable 1: Hidden Truth',
+      'Ask me to state it clearly in one sentence. Tell me to enter it into my Journal.',
+      'Check: Specific? Locks with behavior? Distinct from conscious? Unique to this character?',
+      '',
+      'Deliverable 2: Causal Statement',
+      'Confirm I can write: "Because I believe [hidden truth], I must [anchor behavior]" and it feels inevitable.',
+      'Test this for at least 2-3 specific examples from Lesson 1.',
+      '',
+      'Final question: Does this belief explain not just what your character does, but why it feels necessary to them? Enter answer into Journal.',
+      '',
+      'PROJECT INSTRUCTIONS UPDATE',
+      '',
+      'Before we close, generate a formatted summary using this exact structure:',
+      '',
+      'LESSON 2 COMPLETE',
+      'Hidden Truth: [one sentence statement]',
+      'Causal Lock: Because I believe [X], I must [Y behavior]',
+      'Conscious Justification: [what they\'d say]',
+      '',
+      'Then tell the student: "Copy the block above and add it to your Claude Project instructions. Open your Project settings, paste it below your Lesson 1 entry, and save. This ensures every future coaching session begins with your complete character psychology already in context."',
+      '',
+      'COACHING APPROACH',
+      '',
+      'When I\'m stuck: Don\'t give me answers. Ask me what I notice about the pattern of behaviors.',
+      'When I\'m too vague: Stop me immediately. Say: That\'s a label. What does that actually look like for your character?',
+      'When I confuse belief with behavior: Redirect: That\'s what they do. I need what they believe that makes doing it feel necessary.',
+      'When I give surface justifications: Pause me: That\'s what they\'d say. What\'s the belief operating beneath their awareness?',
+      'When I only test one belief: Push harder: Let\'s explore an alternative. What else might drive this pattern?',
+      'When I\'ve found it: The belief will lock perfectly with every behavior. Help me articulate it clearly in simple language.',
+      '',
+      'Adjust your approach:',
+      '- Protagonist: This hidden truth should be central to their entire arc, driving major story decisions.',
+      '- Supporting Character: Find one strong truth that makes them memorable.',
+      '- Haven\'t started writing: Trust what emerges about how they see the world.',
+      '- Revising: What belief explains patterns you\'ve already written?',
+      '',
+      'CRITICAL REMINDERS',
+      '',
+      '- I\'m the expert on my character, you\'re the guide helping me access what I already know',
+      '- Every belief must lock perfectly with all behaviors or we keep refining',
+      '- Keep me in interpreter mode, discovering hidden truth, not surface justifications',
+      '- The deliverables are concrete: 1 clear hidden truth + causal lock with behavior',
+      '',
+      'BEGIN',
+      '',
+      'I\'ve documented my character\'s anchor behavior and recurring instances in Lesson 1, and I\'ve completed the pre-work above. I\'m ready to excavate the belief beneath the pattern. Begin Stage 1 with the therapist\'s question applied directly to my specific behaviors.'
+    ].join('\n');
+  }
+
+  function updatePills() {
+    Object.keys(FIELDS).forEach(function(key) {
+      var val = getVal(FIELDS[key]);
+      var pill = document.getElementById(PILLS[key]);
+      if (pill) {
+        if (val && val.length > 0) {
+          pill.classList.add('filled');
+        } else {
+          pill.classList.remove('filled');
+        }
+      }
+    });
+  }
+
+  function checkWarning() {
+    var empty = Object.keys(FIELDS).filter(function(key) {
+      return !getVal(FIELDS[key]);
+    });
+    document.getElementById('warning').style.display = empty.length > 2 ? 'block' : 'none';
+  }
+
+  function refreshAll() {
+    document.getElementById('prompt-box').textContent = buildPrompt();
+    updatePills();
+    checkWarning();
+  }
+
+  // Copy button
+  document.getElementById('copy-btn').addEventListener('click', function() {
+    refreshAll();
+    var prompt = buildPrompt();
+    var btn = document.getElementById('copy-btn');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(prompt).then(function() {
+        btn.textContent = '✓ Copied — Open Claude and paste to begin';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy Prompt to Clipboard';
+          btn.classList.remove('copied');
+        }, 4000);
+      }).catch(function() {
+        fallbackCopy(prompt, btn);
+      });
+    } else {
+      fallbackCopy(prompt, btn);
+    }
+  });
+
+  function fallbackCopy(text, btn) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      btn.textContent = '✓ Copied — Open Claude and paste to begin';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Copy Prompt to Clipboard';
+        btn.classList.remove('copied');
+      }, 4000);
+    } catch(e) {
+      btn.textContent = 'Select all text above and copy manually';
+    }
+    document.body.removeChild(ta);
+  }
+
+  // Refresh button
+  document.getElementById('refresh-btn').addEventListener('click', refreshAll);
+
+  // JFCustomWidget init
+  JFCustomWidget.subscribe('ready', function() {
+    refreshAll();
+    // Poll for changes every 2 seconds
+    setInterval(refreshAll, 2000);
+  });
+
+  // Also run on load as fallback
+  window.addEventListener('load', function() {
+    setTimeout(refreshAll, 500);
+    setInterval(refreshAll, 2000);
+  });
+</script>
+</body>
+</html>
