@@ -42,13 +42,17 @@
     document.body.removeChild(ta);
   }
 
+// Widget is ready
 JFCustomWidget.subscribe('ready', function() {
   JFCustomWidget.sendData({value: 'ready'});
 });
 
+// When the form is submitted
 JFCustomWidget.subscribe('submit', function() {
-  JFCustomWidget.sendSubmit({value: 'ready'});
+  // Replace 'finalData' with the actual data your widget should return
+  JFCustomWidget.sendSubmit({value: 'finalData'});
 });
+
 </script>
 </body>
 </html>
