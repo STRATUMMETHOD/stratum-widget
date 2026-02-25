@@ -47,8 +47,12 @@
     document.body.removeChild(ta);
   }
 
-  JFCustomWidget.subscribe('ready', function() {
+ JFCustomWidget.subscribe('ready', function() {
   JFCustomWidget.sendData({value: 'ready'});
+});
+
+JFCustomWidget.subscribe('submit', function() {
+  JFCustomWidget.sendSubmit({value: 'ready'});
 });
 </script>
 </body>
