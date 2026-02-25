@@ -47,7 +47,9 @@
     document.body.removeChild(ta);
   }
 
-  JFCustomWidget.subscribe('ready', function() {});
+  JFCustomWidget.subscribe('ready', function() {
+  JFCustomWidget.sendData({value: 'ready'});
+});
 </script>
 </body>
 </html>
