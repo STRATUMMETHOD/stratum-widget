@@ -21,14 +21,13 @@
 <button id="copy-btn">Copy Prompt to Clipboard</button>
 
 <script>
-  JFCustomWidget.subscribe('ready', function() {
-    JFCustomWidget.sendData({value: 'ready'});
-  });
+ JFCustomWidget.subscribe('ready', function() {
+  JFCustomWidget.sendData({value: 'ready'});
+});
 
-  JFCustomWidget.subscribe('submit', function() {
-    var val = document.getElementById('widgetValue').value || 'ready';
-    JFCustomWidget.sendSubmit({value: val});
-  });
+JFCustomWidget.subscribe('submit', function() {
+  JFCustomWidget.sendSubmit({value: 'prompt_copied'});
+});
 
 </body>
 </html>
