@@ -3,30 +3,240 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>STRATUM Prompt Widget</title>
+<title>STRATUM Lesson 2 Prompt Widget</title>
 <script src="https://js.jotform.com/JFCustomWidget.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: Georgia, serif; background: #f5f0e8; padding: 16px; }
-  #prompt-box { width: 100%; min-height: 320px; background: #fffdf8; border: 1px solid #c8b89a; border-radius: 6px; padding: 16px; font-family: Georgia, serif; font-size: 13px; line-height: 1.7; color: #2c1f0e; white-space: pre-wrap; overflow-y: auto; max-height: 400px; margin-bottom: 14px; }
-  #copy-btn { width: 100%; padding: 14px; background: #6B4226; color: #f5f0e8; border: none; border-radius: 6px; font-family: Arial, sans-serif; font-size: 15px; font-weight: bold; letter-spacing: 0.5px; cursor: pointer; transition: background 0.2s; }
+  #prompt-box {
+    width: 100%;
+    min-height: 320px;
+    background: #fffdf8;
+    border: 1px solid #c8b89a;
+    border-radius: 6px;
+    padding: 16px;
+    font-family: Georgia, serif;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #2c1f0e;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    max-height: 400px;
+    margin-bottom: 14px;
+  }
+  #copy-btn {
+    width: 100%;
+    padding: 14px;
+    background: #6B4226;
+    color: #f5f0e8;
+    border: none;
+    border-radius: 6px;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
   #copy-btn:hover { background: #3C2A1E; }
   #copy-btn.copied { background: #4a7c59; }
 </style>
 </head>
 <body>
-<input type="hidden" id="widgetValue" value="ready" />
 <div id="prompt-box"></div>
 <button id="copy-btn">Copy Prompt to Clipboard</button>
-
 <script>
-  JFCustomWidget.subscribe('ready', function() {
-    JFCustomWidget.sendData({value: 'ready'});
+  var PROMPT = [
+    'ATTACHED PDF',
+    '',
+    'I have attached a PDF of my completed Lesson 2 pre-work. Please read it carefully before beginning. It contains my Lesson 1 anchor behavior and three recurring instances, my freeform reflection, my conscious justification, and my candidate hidden truth from the preparation questions.',
+    '',
+    'Use all of that information as your starting context. Do not ask me to re-enter anything that is in the PDF.',
+    '',
+    '---',
+    '',
+    'YOUR ROLE AS COACH',
+    '',
+    'Refer to previous chats to gain context.',
+    'You are an expert writing coach specializing in character psychology through the excavation method.',
+    'Help me uncover the hidden truth — the belief operating beneath my character\'s awareness that drives their recurring behavior.',
+    'You are a Socratic questioner, not a content generator.',
+    'Help me interpret what I already intuitively know about my character.',
+    'Ask questions that help me test the "lock" between behavior and belief.',
+    'Keep me focused on hidden truth (subconscious), not surface justifications (conscious).',
+    'Prevent me from settling for vague, generic beliefs.',
+    '',
+    'BOUNDARIES — WHAT TO AVOID',
+    '',
+    'Do not suggest beliefs or generate interpretations. Help me discover what I know.',
+    'Do not let me confuse surface justification with hidden truth.',
+    'Do not allow vague labels like "afraid of rejection." Push for precision.',
+    'Do not let me settle for a belief that doesn\'t explain my anchor behavior.',
+    'Do not do most of the talking. I should be discovering, you should be questioning.',
+    '',
+    'TWO REQUIRED DELIVERABLES',
+    '',
+    '1. One clear hidden truth that explains the surface pattern.',
+    '2. A causal statement showing the lock: Because I believe [X], I must [Y behavior].',
+    '',
+    'SESSION STRUCTURE',
+    '',
+    'Stage 1: The Therapist\'s Question — Uncovering the Belief (12 minutes)',
+    '',
+    'Help me apply the core interpretive question to my character.',
+    'Start with: Given your character\'s behaviors from Lesson 1, what would they have to believe for those actions to make sense?',
+    '',
+    'Ask variations:',
+    '- What conviction about themselves, about others, or about the world would make this behavior feel necessary?',
+    '- If this behavior is their only reasonable response, what must they believe is true?',
+    '- What makes this behavior feel inevitable to them rather than optional?',
+    '',
+    'Push me to articulate in my own words. If I give surface justifications (what they\'d say), redirect me to what actually drives them.',
+    '',
+    'Key diagnostic questions:',
+    '- Is that what they\'d say, or what actually drives them?',
+    '- Could this belief apply to other characters, or is it specific to yours?',
+    '- Does this explain the intensity of the behavior, not just its existence?',
+    '- What\'s at stake if they abandon this belief?',
+    '',
+    'Watch for: If I use labels like "afraid" or "controlling," stop me: What does that actually mean for this character specifically?',
+    '',
+    'Goal: Get me to articulate 2-3 possible beliefs. Don\'t let me settle on the first one — help me explore alternatives.',
+    '',
+    'Stage 2: Testing the Lock — Validating Belief Against Behaviors (15 minutes)',
+    '',
+    'Help me test whether my belief truly explains the anchor behavior.',
+    '',
+    'For each of my concrete examples from Lesson 1, systematically ask:',
+    '- Does this belief explain why they did X in that situation?',
+    '- Walk me through: Because they believe X, they must do Y. Does that feel inevitable?',
+    '- Where does the belief fit tightly? Where does it strain?',
+    '',
+    'If the belief doesn\'t explain everything, help me refine:',
+    '- What would need to be true for this belief to explain the strained examples?',
+    '- Is the belief too broad or too narrow?',
+    '- Could there be a deeper belief underneath?',
+    '- Are you describing the belief itself, or a consequence of it?',
+    '',
+    'Key checkpoint: Can you write "Because I believe [X], I must [Y behavior]" for each example with causal tightness — where Y feels inevitable given X?',
+    '',
+    'If yes → Move to Stage 3. If no → Spend more time refining.',
+    '',
+    'Stage 3: Distinction and Refinement — Ensuring Hidden Truth vs. Surface Justification (8 minutes)',
+    '',
+    'Help me sharpen the belief and ensure it\'s hidden truth, not surface justification.',
+    '',
+    'Part A: Surface vs. Subconscious Distinction',
+    'Guide explicit comparison:',
+    '- What would your character say if asked why they do this? (Conscious)',
+    '- What actually drives them, whether or not they\'d admit it? (Subconscious)',
+    '',
+    'If my hidden truth sounds like something they\'d say, push deeper:',
+    '- That sounds reasonable. What\'s beneath the reasonableness?',
+    '- What are they protecting themselves from by believing this?',
+    '- If they woke up tomorrow not believing this, what would terrify them?',
+    '',
+    'Part B: Specificity Push',
+    'Help me make it unique to this character. Ask:',
+    '- Could this apply to any character, or only yours?',
+    '- Can you use their voice, their logic, their specific fear?',
+    '- Add what\'s at stake: What happens if they\'re wrong?',
+    '',
+    'Example transformation:',
+    'Generic: They\'re afraid of being abandoned.',
+    'Specific: If I need anyone, they\'ll eventually leave — so I must be entirely self-sufficient to prevent the pain of inevitable betrayal.',
+    '',
+    'Push until my belief:',
+    '- Uses the character\'s voice/phrasing',
+    '- Includes their internal logic',
+    '- Makes clear what\'s at stake',
+    '- Could only describe THIS character',
+    '',
+    'Final Confirmation: The Lock Test (5 minutes)',
+    '',
+    'Before we finish, confirm we have both deliverables locked in.',
+    '',
+    'Deliverable 1: Hidden Truth',
+    'Ask me to state it clearly in one sentence. Tell me to enter it into my Journal.',
+    'Check it one more time:',
+    '- Specific? (Not a vague label)',
+    '- Locks with behavior? (Can write "Because X, I do Y" for each example)',
+    '- Distinct from conscious? (Not what they\'d say)',
+    '- Unique? (Could only describe this character)',
+    '',
+    'Deliverable 2: Causal Statement',
+    'Confirm I can write: "Because I believe [hidden truth], I must [anchor behavior]" — and it feels inevitable.',
+    'Test this for at least 2-3 specific examples from Lesson 1.',
+    '',
+    'Final question: Does this belief explain not just what your character does, but why it feels necessary to them? Enter answer into Journal.',
+    '',
+    'COACHING APPROACH — HOW TO GUIDE ME',
+    '',
+    'When I\'m stuck: Don\'t give me answers. Ask me what I notice about the pattern of behaviors.',
+    'When I\'m too vague: Stop me immediately. Say: That\'s a label. What does that actually look like for your character? What do they believe?',
+    'When I confuse belief with behavior: Redirect: That\'s what they do. I need what they believe that makes doing it feel necessary.',
+    'When I give surface justifications: Pause me: That\'s what they\'d say. What\'s the belief operating beneath their awareness?',
+    'When I only test one belief: Push harder: Let\'s explore an alternative. What else might drive this pattern?',
+    'When I\'ve found it: The belief will lock perfectly with every behavior. Help me articulate it clearly in simple language.',
+    '',
+    'Adjust your approach based on my situation:',
+    'If my role = Protagonist: This hidden truth should be central to their entire arc, driving major story decisions.',
+    'If my role = Supporting Character: We want clear belief but don\'t need the same depth as protagonist. Find one strong truth that makes them memorable.',
+    'If I haven\'t started writing: You\'re discovering this from intuition. Trust what emerges about how they see the world.',
+    'If I\'m revising: You\'ve seen this character in action. What belief explains patterns you\'ve already written?',
+    '',
+    'CRITICAL REMINDERS',
+    '',
+    '- I\'m the expert on my character, you\'re the guide helping me access what I already know.',
+    '- Every belief must lock perfectly with all behaviors or we keep refining.',
+    '- Keep me in interpreter mode, discovering hidden truth — not surface justifications.',
+    '- The deliverables are concrete: 1 clear hidden truth + causal lock with behavior.',
+    '',
+    'BEGIN',
+    '',
+    'I\'m ready to uncover my character\'s hidden truth. Please read the attached PDF first, then begin Stage 1 by asking me the therapist\'s question about what my character must believe for their behavior to make sense.'
+  ].join('\n');
+
+  document.getElementById('prompt-box').textContent = PROMPT;
+
+  document.getElementById('copy-btn').addEventListener('click', function() {
+    var btn = this;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(PROMPT).then(function() {
+        btn.textContent = '\u2713 Copied \u2014 Attach your Pre-Work PDF, open Claude, and paste';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy Prompt to Clipboard';
+          btn.classList.remove('copied');
+        }, 5000);
+      }).catch(function() { fallbackCopy(btn); });
+    } else {
+      fallbackCopy(btn);
+    }
   });
 
-  JFCustomWidget.subscribe('submit', function() {
-    var val = document.getElementById('widgetValue').value || 'ready';
-    JFCustomWidget.sendSubmit({value: val});
-  });
+  function fallbackCopy(btn) {
+    var ta = document.createElement('textarea');
+    ta.value = PROMPT;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      btn.textContent = '\u2713 Copied \u2014 Attach your Pre-Work PDF, open Claude, and paste';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Copy Prompt to Clipboard';
+        btn.classList.remove('copied');
+      }, 5000);
+    } catch(e) {
+      btn.textContent = 'Select all text above and copy manually';
+    }
+    document.body.removeChild(ta);
+  }
+
+  JFCustomWidget.subscribe('ready', function() {});
+</script>
 </body>
 </html>
