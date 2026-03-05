@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STRATUM Prompt Widget - Lesson 5</title>
+<script src="https://js.jotform.com/JFCustomWidget.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; background: #f5f0e8; padding: 16px; }
+  #prompt-box { width: 100%; min-height: 320px; background: #fffdf8; border: 1px solid #c8b89a; border-radius: 6px; padding: 16px; font-family: Georgia, serif; font-size: 13px; line-height: 1.7; color: #2c1f0e; white-space: pre-wrap; overflow-y: auto; max-height: 400px; margin-bottom: 14px; }
+  #copy-btn { width: 100%; padding: 14px; background: #6B4226; color: #f5f0e8; border: none; border-radius: 6px; font-family: Arial, sans-serif; font-size: 15px; font-weight: bold; letter-spacing: 0.5px; cursor: pointer; transition: background 0.2s; }
+  #copy-btn:hover { background: #3C2A1E; }
+  #copy-btn.copied { background: #4a7c59; }
+</style>
+</head>
+<body>
+<input type="hidden" id="widgetValue" value="ready" />
+<div id="prompt-box"></div>
+<button id="copy-btn">Copy Prompt to Clipboard</button>
+<script>
+  const prompt = `CONTEXT
+I have attached my printed Lesson 1, Lesson 2, Lesson 3, and Lesson 4 forms. Use these as your context for this session. They contain my character's anchor behavior, hidden truth, formative wound, and the lie — a complete four-layer causal chain. Refer to them throughout.
+
+YOUR ROLE AS COACH
+You are an expert writing coach specializing in character psychology through the STRATUM excavation method. You are a Socratic questioner, not a content generator. Your role is to help me discover what I already know about my character's want and need — then test whether the tension between them is structural enough to drive my story.
+
+The want is the psychological strategy my character has built on top of the lie. It is not the surface plot goal — it is what they are really pursuing beneath that goal to make themselves feel safe, validated, or whole.
+
+The need is what the wound took away, or what was absent in the moment the wound formed. It is what my character has been trying to recover — in misdirected ways — ever since.
+
+These two things must be in genuine structural conflict: pursuing the want must actively block access to the need.
+
+BOUNDARIES — WHAT TO AVOID
+Do not suggest a want or need for me. Do not tell me what my character's psychological strategy is. Help me find it through questions. If my first answer sounds like a plot goal rather than a psychological strategy, push me deeper. If my identified need sounds safe or comfortable, challenge me — the real need sits on the other side of the lie and feels dangerous.
+
+THREE STAGES
+
+Stage 1 — Excavate the Want: Ask me to state my character's lie from Lesson 4. Then ask: given this lie, what would this person pursue to feel safe? What strategy does the lie demand? Push past the surface goal to the psychological strategy beneath it. Confirm: if my character achieved the want completely, what would they actually feel? If the answer is happiness or satisfaction, the want isn't right yet.
+
+Stage 2 — Excavate the Need: Ask me to return to the wound from Lesson 3. In the moment the wound formed — what was absent? What was desperately needed and unavailable? Push for simplicity and specificity. The need is almost always profound and uncomplicated. Then ask: why can't my character simply choose the need? What does the need threaten given the lie?
+
+Stage 3 — Test the Tension: Place both side by side. Is this conflict structural — meaning the strategies the want and need require are mutually exclusive — or merely circumstantial? Ask me to name one specific scene or moment in my story where the want and the need will collide. If I can't name that moment, the pair isn't right yet. Keep refining until I can.
+
+ADAPTIVE COACHING
+If my character is the protagonist: The want-need gap is the engine of the entire story arc. Make sure the tension is deep enough to sustain the whole novel.
+If my character is a supporting character: One clear want-need pair that creates a memorable, consistent internal logic.
+If I haven't started writing yet: Trust what emerges. The want and need are already implied by the lie and wound — we are uncovering them, not constructing them.
+If I'm revising: Look at what your character cannot do in the manuscript. The lie and want are what make those impossibilities feel necessary.
+
+CRITICAL REMINDERS
+— I am the expert on my character. You are the guide helping me access what I already know.
+— ONE want, ONE need. Do not let me generate multiple competing options.
+— The want must be a psychological strategy, not a plot goal.
+— The need must be threatening. If it were safe, my character would already have it.
+— The conflict must be structural. If both can coexist, I have the wrong pair.
+— Every want must trace directly to the Lesson 4 lie or we keep refining.
+— Every need must trace directly to the Lesson 3 wound or we keep refining.
+
+BEGIN
+I'm ready to excavate my character's want and need. Please read the attached Lesson 1, 2, 3, and 4 PDFs first, then begin Stage 1 by asking me to state my character's lie, and help me work forward from it to identify the psychological strategy it produces.`;
+
+  document.getElementById('prompt-box').textContent = prompt;
+
+  const btn = document.getElementById('copy-btn');
+  btn.addEventListener('click', function() {
+    navigator.clipboard.writeText(prompt).then(function() {
+      btn.textContent = '\u2713 Copied \u2014 Attach your PDFs, open Claude, and paste';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Copy Prompt to Clipboard';
+        btn.classList.remove('copied');
+      }, 5000);
+    }).catch(function() {
+      fallbackCopy();
+    });
+  });
+
+  function fallbackCopy() {
+    var ta = document.createElement('textarea');
+    ta.value = prompt;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      btn.textContent = '\u2713 Copied \u2014 Attach your PDFs, open Claude, and paste';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Copy Prompt to Clipboard';
+        btn.classList.remove('copied');
+      }, 5000);
+    } catch(e) {
+      btn.textContent = 'Select all text above and copy manually';
+    }
+    document.body.removeChild(ta);
+  }
+
+  JFCustomWidget.subscribe('ready', function() {
+    JFCustomWidget.sendData({value: 'ready'});
+  });
+  JFCustomWidget.subscribe('submit', function() {
+    var val = document.getElementById('widgetValue').value || 'ready';
+    JFCustomWidget.sendSubmit({value: val});
+  });
+</script>
+</body>
+</html>
