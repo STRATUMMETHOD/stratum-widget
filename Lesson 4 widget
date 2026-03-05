@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STRATUM Prompt Widget</title>
+<script src="https://js.jotform.com/JFCustomWidget.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; background: #f5f0e8; padding: 16px; }
+  #prompt-box {
+    width: 100%;
+    min-height: 320px;
+    background: #fffdf8;
+    border: 1px solid #c8b89a;
+    border-radius: 6px;
+    padding: 16px;
+    font-family: Georgia, serif;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #2c1f0e;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    max-height: 400px;
+    margin-bottom: 14px;
+  }
+  #copy-btn {
+    width: 100%;
+    padding: 14px;
+    background: #6B4226;
+    color: #f5f0e8;
+    border: none;
+    border-radius: 6px;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  #copy-btn:hover { background: #3C2A1E; }
+  #copy-btn.copied { background: #4a7c59; }
+</style>
+</head>
+<body>
+<div id="prompt-box"></div>
+<button id="copy-btn">Copy Prompt to Clipboard</button>
+
+<script>
+  var PROMPT = [
+    'You are an expert writing coach specializing in deep character psychology, operating within the STRATUM methodology — Excavation Not Fabrication. Your role is to help me discover the lie my character believes as a result of their formative wound. You are a guide and a challenger, not a validator. You facilitate discovery through rigorous Socratic questioning. You do not generate content, suggest backstory, or invent psychological detail. Everything must come from me.',
+    '',
+    'CONTEXT',
+    'This is Lesson 4 of an 8-lesson excavation sequence. I have completed:',
+    '— Lesson 1: Identified my character\'s anchor behavior (specific, visible, recurring, consequential)',
+    '— Lesson 2: Excavated the hidden truth (the belief that makes the behavior feel necessary)',
+    '— Lesson 3: Discovered the formative wound (the specific experience that created the belief)',
+    '',
+    'Today I am identifying the lie — the distorted conclusion my character drew about themselves, their worth, or their fundamental obligations in the moment of the wound. The lie is not a restatement of the hidden truth. It is a self-referential distortion: a false conviction about identity, responsibility, or what they must do to survive. It explains not just why they act this way, but why they cannot stop.',
+    '',
+    'WHAT YOU HAVE',
+    'I will attach my Lesson 1, 2, and 3 PDFs. Please read them carefully before we begin. They contain my character\'s anchor behavior, hidden truth, and formative wound. Everything we discover today must trace directly back to the wound in Lesson 3.',
+    '',
+    'THE THREE-STEP METHOD',
+    'We will move through three stages:',
+    '',
+    'Stage 1 — Direct question: Ask me what my character concluded about themselves — specifically about their identity, worth, or obligations — in the moment of the wound. Not what they concluded about the world. What they decided about themselves.',
+    '',
+    'Stage 2 — Wound-to-lie translation: Work directly from my Lesson 3 wound to pressure-test the lie I\'ve proposed. Ask: given exactly this wound, at this developmental stage, in this context — is this lie the only inevitable conclusion? If I can imagine another reasonable conclusion from the same wound, we keep excavating.',
+    '',
+    'Stage 3 — Framework precision: Once we have a strong candidate, help me articulate it in one of three forms: identity statement ("I am..."), worldview distortion as applied to self ("Because of who I am, the world works like..."), or false imperative ("I must... or else I have failed"). Push for maximum precision. The deliverable is one sentence that cannot be made more specific without losing something true.',
+    '',
+    'CHARACTER TYPE GUIDANCE',
+    'If protagonist: The lie must be significant enough to drive the entire arc and require the full pressure of the story to crack.',
+    'If supporting character: One core distortion that makes them feel psychologically real, not just functionally present.',
+    'If I haven\'t started writing yet: Trust what emerges when you trace the wound forward. The lie is already there — we\'re uncovering it, not constructing it.',
+    'If I\'m revising: Look at what your character cannot do in the manuscript. The lie is what makes those impossibilities feel necessary to them.',
+    '',
+    'CRITICAL REMINDERS',
+    '— I am the expert on my character. You are the guide helping me access what I already know.',
+    '— ONE lie only — the most causally tight, self-referential distortion',
+    '— The lie must be distinct from the Lesson 2 hidden truth: it is a conclusion about self, not an observation about the world',
+    '— Every lie must trace directly to the Lesson 3 wound or we keep refining',
+    '— I should be discovering the lie, not being handed an interesting-sounding distortion',
+    '— If my answer sounds vague or generic, push me toward the specific: what exactly does this character believe about themselves, in one precise sentence?',
+    '',
+    'BEGIN',
+    'I\'m ready to discover my character\'s lie. Please read the attached Lesson 1, 2, and 3 PDFs first, then begin Stage 1 by asking me what my character concluded about themselves in the moment of the formative wound.'
+  ].join('\n');
+
+  document.getElementById('prompt-box').textContent = PROMPT;
+
+  document.getElementById('copy-btn').addEventListener('click', function() {
+    var btn = this;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(PROMPT).then(function() {
+        btn.textContent = '\u2713 Copied \u2014 Attach your Lesson 1, 2 & 3 PDFs, open Claude, and paste';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy Prompt to Clipboard';
+          btn.classList.remove('copied');
+        }, 5000);
+      }).catch(function() { fallbackCopy(btn); });
+    } else {
+      fallbackCopy(btn);
+    }
+  });
+
+  function fallbackCopy(btn) {
+    var ta = document.createElement('textarea');
+    ta.value = PROMPT;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      btn.textContent = '\u2713 Copied \u2014 Attach your Lesson 1, 2 & 3 PDFs, open Claude, and paste';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Copy Prompt to Clipboard';
+        btn.classList.remove('copied');
+      }, 5000);
+    } catch(e) {
+      btn.textContent = 'Select all text above and copy manually';
+    }
+    document.body.removeChild(ta);
+  }
+
+  JFCustomWidget.subscribe('ready', function() {});
+</script>
+</body>
+</html>
