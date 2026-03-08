@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Who Built This and Why — STRATUM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:        #faf4e8;
+      --cream-dark:   #f2ead8;
+      --cream-mid:    #ede5d4;
+      --tan:          #c4a882;
+      --tan-mid:      #a8895e;
+      --tan-light:    #ddd0b8;
+      --tan-faint:    #ede5d4;
+      --brown:        #2e1f0e;
+      --brown-mid:    #5c3d1e;
+      --brown-light:  #8b6340;
+      --green:        #2a5c2a;
+      --green-bg:     #f0f5f0;
+      --green-border: #a8c4a8;
+      --amber:        #7a4e10;
+      --amber-bg:     #fdf3e3;
+      --amber-border: #d4b88a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Spectral', Georgia, serif;
+      background: var(--cream);
+      color: var(--brown);
+      line-height: 1;
+    }
+
+    /* ══════════════════════════════════
+       COMPLETE BANNER
+    ══════════════════════════════════ */
+    .complete-banner {
+      background: var(--brown);
+      border-bottom: 2px solid var(--tan);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .complete-banner-icon {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--tan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .complete-banner-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--tan);
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .complete-banner-text {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      color: var(--cream);
+      line-height: 1.5;
+    }
+
+    .complete-banner-text strong {
+      color: var(--tan);
+      font-weight: 600;
+    }
+
+    /* ══════════════════════════════════
+       VIDEO SECTION
+    ══════════════════════════════════ */
+    .video-wrap {
+      background: #100a04;
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+    }
+
+    .video-container iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* ── Transcript accordion ── */
+    .transcript {
+      background: var(--brown);
+      border-top: 1px solid rgba(196,168,130,0.15);
+    }
+
+    .transcript-btn {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 13px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      gap: 12px;
+    }
+
+    .transcript-btn:hover { background: rgba(196,168,130,0.06); }
+
+    .transcript-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--tan);
+    }
+
+    .transcript-chevron {
+      width: 16px;
+      height: 16px;
+      stroke: var(--tan);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .transcript-btn[aria-expanded="true"] .transcript-chevron {
+      transform: rotate(180deg);
+    }
+
+    .transcript-body {
+      display: none;
+      padding: 0 28px 22px;
+    }
+
+    .transcript-body.open { display: block; }
+
+    .transcript-body p {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 13px;
+      font-weight: 300;
+      font-style: italic;
+      color: rgba(250,244,232,0.72);
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+
+    .transcript-body p:last-child { margin-bottom: 0; }
+
+    /* ══════════════════════════════════
+       MAIN CONTENT
+    ══════════════════════════════════ */
+    .main {
+      padding: 48px 32px 56px;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    /* ── Lesson label ── */
+    .lesson-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--tan-mid);
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    /* ── Page title ── */
+    .page-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--brown);
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .page-title em {
+      font-style: italic;
+      color: var(--brown-mid);
+    }
+
+    .title-rule {
+      width: 48px;
+      height: 1px;
+      background: var(--tan);
+      margin: 18px 0 28px;
+    }
+
+    /* ── Lead paragraph ── */
+    .lead {
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--brown-mid);
+      margin-bottom: 40px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--tan-light);
+    }
+
+    /* ── Section headers ── */
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .section-num {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: var(--tan-mid);
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--brown);
+      line-height: 1.2;
+    }
+
+    .section p {
+      font-size: 15px;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--brown);
+      margin-bottom: 16px;
+    }
+
+    .section p:last-child { margin-bottom: 0; }
+
+    /* ── Pull quote ── */
+    .pull-quote {
+      background: var(--brown);
+      padding: 28px 32px;
+      margin: 32px 0;
+      position: relative;
+    }
+
+    .pull-quote::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--tan);
+    }
+
+    .pull-quote p {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--cream);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ── Callout boxes ── */
+    .callout {
+      padding: 20px 24px;
+      margin: 24px 0;
+      border-left: 3px solid;
+    }
+
+    .callout.green {
+      background: var(--green-bg);
+      border-color: var(--green);
+    }
+
+    .callout.amber {
+      background: var(--amber-bg);
+      border-color: var(--amber);
+    }
+
+    .callout-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .callout.green .callout-label { color: var(--green); }
+    .callout.amber .callout-label { color: var(--amber); }
+
+    .callout p {
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--brown);
+      margin: 0;
+    }
+
+    .callout p strong {
+      font-weight: 500;
+    }
+
+    /* ── What you'll walk away with ── */
+    .deliverables {
+      background: var(--cream-dark);
+      border: 1px solid var(--tan-light);
+      padding: 28px 32px;
+      margin: 28px 0;
+    }
+
+    .deliverables-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--tan-mid);
+      display: block;
+      margin-bottom: 18px;
+    }
+
+    .deliverable-item {
+      display: flex;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--tan-faint);
+      align-items: flex-start;
+    }
+
+    .deliverable-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .deliverable-item:first-of-type { padding-top: 0; }
+
+    .deliverable-marker {
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--tan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .deliverable-marker svg {
+      width: 10px;
+      height: 10px;
+      stroke: var(--tan-mid);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .deliverable-text {
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--brown);
+    }
+
+    .deliverable-text strong {
+      font-weight: 500;
+      color: var(--brown-mid);
+    }
+
+    /* ── How it's different grid ── */
+    .contrast-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--tan-light);
+      border: 1px solid var(--tan-light);
+      margin: 24px 0;
+      overflow: hidden;
+    }
+
+    .contrast-col {
+      background: var(--cream);
+      padding: 20px 22px;
+    }
+
+    .contrast-col.right { background: var(--cream-dark); }
+
+    .contrast-col-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .contrast-col:first-child .contrast-col-label { color: var(--brown-light); }
+    .contrast-col.right .contrast-col-label { color: var(--tan-mid); }
+
+    .contrast-col p {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--brown);
+      margin-bottom: 8px;
+    }
+
+    .contrast-col p:last-child { margin-bottom: 0; }
+
+    /* ── Warning / action box ── */
+    .action-box {
+      background: var(--brown);
+      padding: 28px 32px;
+      margin: 32px 0;
+      text-align: center;
+    }
+
+    .action-box-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--tan);
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .action-box p {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 17px;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--cream);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .action-box p strong {
+      font-style: normal;
+      font-weight: 500;
+      color: var(--tan);
+    }
+
+    /* ── Closing ── */
+    .closing {
+      background: var(--brown);
+      padding: 36px 32px;
+      text-align: center;
+      margin-top: 48px;
+    }
+
+    .closing-quote {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 21px;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--cream);
+      line-height: 1.65;
+      margin-bottom: 20px;
+    }
+
+    .closing-attr {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--tan);
+    }
+
+    @media (max-width: 560px) {
+      .main { padding: 32px 20px 40px; }
+      .page-title { font-size: 28px; }
+      .contrast-grid { grid-template-columns: 1fr; }
+      .pull-quote { padding: 22px 20px; }
+      .deliverables { padding: 22px 20px; }
+      .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ COMPLETE BANNER ══ -->
+  <div class="complete-banner">
+    <div class="complete-banner-icon">
+      <svg viewBox="0 0 24 24">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <p class="complete-banner-text">
+      When you finish this lesson, scroll past the content below to find the
+      <strong>Mark as Complete</strong> button. Click it before moving to the next lesson.
+    </p>
+  </div>
+
+  <!-- ══ VIDEO ══ -->
+  <div class="video-wrap">
+    <div class="video-container">
+      <iframe
+        src="https://www.youtube.com/embed/dU2hBJ36_4I?rel=0&modestbranding=1"
+        title="Who Built This and Why — Ted Baker"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <!-- Transcript -->
+    <div class="transcript">
+      <button class="transcript-btn" aria-expanded="false" aria-controls="transcript-body" onclick="toggleTranscript(this)">
+        <span class="transcript-label">Video Transcript</span>
+        <svg class="transcript-chevron" viewBox="0 0 24 24">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+      <div class="transcript-body" id="transcript-body">
+        <p>Welcome. I'm Ted Baker.</p>
+        <p>I am so glad that you're here, because you've chosen to invest in your writing, and that's no small thing.</p>
+        <p>Writing can feel lonely, and even overwhelming at times, but this course is designed to remind you that you are not alone in the process. You have guidance, structure, and something no other writing course offers: personalized AI coaching sessions that help you extract what you already intuitively know about your characters.</p>
+        <p>I know what it feels like to wrestle with a story that matters to you. I'm in the middle of writing my own novel. And you know, I have faced the same questions you're probably asking yourself: How much backstory is too much? How do I reveal it without slowing the story down? Experience has taught me that the best answers come not from generic advice, but from systematic discovery tailored to specific needs.</p>
+        <p>By the end of the course, you'll have a complete psychological architecture for your character, and practical techniques to reveal breathing, living characters in ways that captivate readers.</p>
+        <p>Writing is discovery, and you're learning how to better access your instincts as a storyteller.</p>
+        <p>I'm excited to see what you'll create. Let's get started.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <div class="main">
+
+    <span class="lesson-label">Introduction · STRATUM: AI Character Coaching</span>
+    <h1 class="page-title">Who Built This —<br>and <em>Why</em></h1>
+    <div class="title-rule"></div>
+
+    <p class="lead">For over 35 years, I taught businesses to solve complex problems by going deeper than the obvious — past surface symptoms to the underlying layer driving them. STRATUM applies that same discipline to character development. What you're about to learn isn't a collection of writing tips. It's a systematic methodology for excavating the psychological truth that makes fictional characters feel undeniably real.</p>
+
+    <p class="lead" style="margin-top: -16px;">You made a serious investment to be here. This course will honor that.</p>
+
+    <!-- What You'll Walk Away With -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">I</span>
+        <h2 class="section-title">What You'll Walk Away With</h2>
+      </div>
+
+      <p>By the end, you won't just know your character. You'll have excavated their complete psychological architecture.</p>
+
+      <div class="deliverables">
+        <span class="deliverables-title">Your Complete Character Architecture</span>
+
+        <div class="deliverable-item">
+          <div class="deliverable-marker">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <p class="deliverable-text"><strong>The Surface Pattern</strong> — The behavior visible on the page. Observable, recurring, consequential.</p>
+        </div>
+
+        <div class="deliverable-item">
+          <div class="deliverable-marker">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <p class="deliverable-text"><strong>The Hidden Truth</strong> — The belief operating beneath your character's awareness that makes their behavior feel necessary.</p>
+        </div>
+
+        <div class="deliverable-item">
+          <div class="deliverable-marker">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <p class="deliverable-text"><strong>The Formative Wound</strong> — The specific experience that made that belief the only reasonable conclusion.</p>
+        </div>
+
+        <div class="deliverable-item">
+          <div class="deliverable-marker">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <p class="deliverable-text"><strong>The Lie</strong> — The distorted conclusion your character drew from what happened, now shaping every choice they make.</p>
+        </div>
+
+        <div class="deliverable-item">
+          <div class="deliverable-marker">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <p class="deliverable-text"><strong>Want vs. Need</strong> — What they're chasing, and what they actually require. Why those two things are in conflict, and why that conflict is your story.</p>
+        </div>
+      </div>
+
+      <p>You'll have a character who surprises you, resists easy resolution, and earns the reader's emotional investment — because they were <em>discovered</em>, not constructed.</p>
+    </div>
+
+    <!-- How This Course Works Differently -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">II</span>
+        <h2 class="section-title">How This Course Works Differently</h2>
+      </div>
+
+      <p>Most character development advice asks you to invent — to fill in templates, brainstorm backstory, and fabricate psychology from scratch.</p>
+      <p>STRATUM works in the opposite direction.</p>
+
+      <div class="contrast-grid">
+        <div class="contrast-col">
+          <span class="contrast-col-label">Most Courses Ask You To</span>
+          <p>Fill in character templates</p>
+          <p>Brainstorm backstory</p>
+          <p>Fabricate psychology from scratch</p>
+          <p>Use AI to generate answers</p>
+          <p>Build a plausible history</p>
+        </div>
+        <div class="contrast-col right">
+          <span class="contrast-col-label">STRATUM Teaches You To</span>
+          <p>Excavate what's already true</p>
+          <p>Trace belief back to origin</p>
+          <p>Discover through Socratic questioning</p>
+          <p>Use AI to find what you already know</p>
+          <p>Recognize what was inevitable</p>
+        </div>
+      </div>
+
+      <p>Every lesson is designed to help you excavate what's already true about your character, layer by layer, using structured Socratic questioning rather than creative guesswork.</p>
+
+      <div class="pull-quote">
+        <p>Your AI coach doesn't generate answers. It asks the questions that help you find what you already know. That distinction — excavation versus fabrication — is the entire methodology. Keep it in mind as you begin.</p>
+      </div>
+    </div>
+
+    <!-- Your Next Step -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">III</span>
+        <h2 class="section-title">Your Next Step: Setting Up Your AI Coach</h2>
+      </div>
+
+      <p>Before you touch a single lesson, you'll spend a few minutes in the next module configuring your AI coaching environment. This isn't a technical hurdle. It takes less than five minutes.</p>
+      <p>But it matters.</p>
+      <p>Every coaching session in STRATUM is built around a specific prompt architecture that transforms Claude from a general-purpose AI into a disciplined Socratic coach who knows your methodology, respects your boundaries, and refuses to do the work for you.</p>
+
+      <div class="callout amber">
+        <span class="callout-label">Do Not Skip This</span>
+        <p>Skip this setup and the sessions will still function. <strong>Do it properly and you'll have a coaching partner calibrated to push you in exactly the right direction for all lessons.</strong> The five minutes you spend here will shape every session that follows. Don't skip it.</p>
+      </div>
+    </div>
+
+    <!-- Closing action -->
+    <div class="action-box">
+      <span class="action-box-label">When You're Ready</span>
+      <p>Move to the next lesson: <strong>Setting Up Your AI Coach.</strong><br>Everything in this course begins there.</p>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- ══ CLOSING ══ -->
+  <div class="closing">
+    <p class="closing-quote">Writing is discovery. You're learning how to better access your instincts as a storyteller.</p>
+    <span class="closing-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
+  </div>
+
+  <script>
+    function toggleTranscript(btn) {
+      const body = document.getElementById('transcript-body');
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    }
+  </script>
+
+</body>
+</html>
