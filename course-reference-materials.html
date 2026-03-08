@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Reference Materials — STRATUM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:        #faf4e8;
+      --cream-dark:   #f2ead8;
+      --cream-mid:    #ede5d4;
+      --tan:          #c4a882;
+      --tan-mid:      #a8895e;
+      --tan-light:    #ddd0b8;
+      --tan-faint:    #ede5d4;
+      --brown:        #2e1f0e;
+      --brown-mid:    #5c3d1e;
+      --brown-light:  #8b6340;
+      --green:        #2a5c2a;
+      --green-bg:     #f0f5f0;
+      --amber:        #7a4e10;
+      --amber-bg:     #fdf3e3;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Spectral', Georgia, serif;
+      background: var(--cream);
+      color: var(--brown);
+      line-height: 1;
+    }
+
+    /* ══ COMPLETE BANNER ══ */
+    .complete-banner {
+      background: var(--brown);
+      border-bottom: 2px solid var(--tan);
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .complete-banner-icon {
+      width: 36px; height: 36px;
+      border: 2px solid var(--tan);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .complete-banner-icon svg {
+      width: 18px; height: 18px;
+      stroke: var(--tan); fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .complete-banner-text {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 15px; font-weight: 500;
+      letter-spacing: 0.02em;
+      color: #faf4e8; line-height: 1.5;
+    }
+    .complete-banner-text strong { color: var(--tan); font-weight: 700; }
+
+    /* ══ VIDEO ══ */
+    .video-wrap { background: #100a04; }
+    .video-container {
+      position: relative; width: 100%;
+      padding-bottom: 56.25%; height: 0; overflow: hidden;
+    }
+    .video-container iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border: none; display: block;
+    }
+
+    /* ── Transcript ── */
+    .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
+    .transcript-btn {
+      width: 100%; background: transparent; border: none;
+      padding: 13px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; gap: 12px;
+    }
+    .transcript-btn:hover { background: rgba(196,168,130,0.06); }
+    .transcript-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--tan);
+    }
+    .transcript-chevron {
+      width: 16px; height: 16px;
+      stroke: var(--tan); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      transition: transform 0.3s ease; flex-shrink: 0;
+    }
+    .transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
+    .transcript-body { display: none; padding: 0 28px 22px; }
+    .transcript-body.open { display: block; }
+    .transcript-body p {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 13px; font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.72);
+      line-height: 1.8; margin-bottom: 12px;
+    }
+    .transcript-body p:last-child { margin-bottom: 0; }
+    .transcript-body p.pause {
+      font-style: normal; font-size: 11px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(196,168,130,0.45);
+      margin-bottom: 8px;
+    }
+
+    /* ══ MAIN ══ */
+    .main {
+      padding: 48px 32px 24px;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .lesson-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan-mid); margin-bottom: 10px; display: block;
+    }
+    .page-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 36px; font-weight: 300;
+      color: var(--brown); line-height: 1.15; margin-bottom: 6px;
+    }
+    .page-title em { font-style: italic; color: var(--brown-mid); }
+    .title-rule { width: 48px; height: 1px; background: var(--tan); margin: 18px 0 28px; }
+
+    .lead {
+      font-size: 16px; font-weight: 300; line-height: 1.75;
+      color: var(--brown-mid); margin-bottom: 40px;
+      padding-bottom: 32px; border-bottom: 1px solid var(--tan-light);
+    }
+
+    /* ══ DOCUMENT BLOCKS ══ */
+    .doc-block {
+      margin-bottom: 48px;
+      border: 1px solid var(--tan-light);
+    }
+
+    .doc-header {
+      background: var(--brown);
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .doc-header-text {}
+    .doc-eyebrow {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 9px; font-weight: 500;
+      letter-spacing: 0.28em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 5px;
+    }
+    .doc-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px; font-weight: 300;
+      color: var(--cream); line-height: 1.2;
+    }
+    .doc-title em { font-style: italic; color: var(--tan); }
+    .print-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent;
+      border: 1px solid rgba(196,168,130,0.5);
+      padding: 10px 18px;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--tan); cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+    .print-btn:hover { border-color: var(--tan); color: var(--cream); }
+    .print-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    .doc-instruction {
+      background: var(--cream-dark);
+      padding: 14px 28px;
+      border-bottom: 1px solid var(--tan-light);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 12px; font-style: italic;
+      color: var(--brown-mid); line-height: 1.6;
+    }
+    .doc-instruction strong { font-style: normal; font-weight: 600; color: var(--brown); }
+
+    /* ── Reference Card Content ── */
+    .ref-card-body { padding: 24px 28px; background: var(--cream); }
+
+    .ladder-row {
+      display: grid;
+      grid-template-columns: 36px 1fr 1fr 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--tan-faint);
+    }
+    .ladder-row:last-child { border-bottom: none; }
+    .ladder-row.header-row {
+      background: var(--tan-faint);
+      border-bottom: 1.5px solid var(--tan-light);
+    }
+
+    .lc {
+      padding: 12px 14px;
+      border-right: 1px solid var(--tan-faint);
+      font-size: 12.5px; line-height: 1.65; color: var(--brown);
+    }
+    .lc:last-child { border-right: none; }
+
+    .ladder-row.header-row .lc {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 9px; font-weight: 500;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--tan-mid); padding: 8px 14px;
+    }
+
+    .layer-badge {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 11px; font-weight: 600;
+      color: var(--cream);
+      flex-shrink: 0;
+    }
+    .lc-badge { padding: 12px 5px; display: flex; align-items: flex-start; justify-content: center; border-right: 1px solid var(--tan-faint); }
+
+    .l1 { background: #5c3d1e; }
+    .l2 { background: #4e3318; }
+    .l3 { background: #402912; }
+    .l4 { background: #321f0e; }
+    .l5 { background: #2a1a0a; }
+    .l6 { background: #221508; }
+    .l7 { background: #1a1006; }
+    .l8 { background: #100a04; }
+
+    .layer-name {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 13px; font-weight: 600;
+      color: var(--brown); display: block; margin-bottom: 2px;
+    }
+    .layer-role {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-style: italic;
+      color: var(--brown-light); display: block;
+    }
+    .lc .question { font-style: italic; color: var(--brown-mid); }
+    .lc .katniss { font-style: italic; color: var(--brown-light); font-size: 12px; }
+    .lc .deliverable {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 11px; font-weight: 600;
+      color: var(--tan-mid);
+    }
+
+    /* ── Glossary Content ── */
+    .glossary-body { padding: 24px 28px; background: var(--cream); }
+
+    .gloss-section-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan-mid); display: block;
+      margin-bottom: 14px; margin-top: 24px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--tan-light);
+    }
+    .gloss-section-title:first-child { margin-top: 0; }
+
+    .term {
+      padding: 13px 0;
+      border-bottom: 1px solid var(--tan-faint);
+    }
+    .term:last-child { border-bottom: none; }
+
+    .term-word {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 15px; font-weight: 600;
+      color: var(--brown); display: block; margin-bottom: 2px;
+    }
+    .term-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 9px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--tan-mid); display: block; margin-bottom: 7px;
+    }
+    .term-def {
+      font-size: 13px; font-weight: 300;
+      line-height: 1.75; color: var(--brown);
+    }
+    .term-def em { font-style: italic; color: var(--brown-mid); }
+    .term-def strong { font-weight: 500; }
+    .term-contrast {
+      margin-top: 7px;
+      font-size: 12px; font-style: italic;
+      color: var(--brown-light); line-height: 1.65;
+    }
+
+    /* ══ CLOSING BLOCKS ══ */
+    .action-box {
+      background: var(--brown);
+      padding: 28px 32px;
+      margin: 16px 0 0;
+      text-align: center;
+      border-bottom: 1px solid rgba(196,168,130,0.3);
+    }
+    .action-box-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 10px;
+    }
+    .action-box p {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 17px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.6; margin: 0;
+    }
+    .action-box p strong { font-style: normal; font-weight: 500; color: var(--tan); }
+
+    .closing {
+      background: var(--brown);
+      padding: 36px 32px;
+      text-align: center; margin-top: 0;
+    }
+    .closing-quote {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 21px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.65; margin-bottom: 20px;
+    }
+    .closing-attr {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 400;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--tan);
+    }
+
+    @media (max-width: 560px) {
+      .main { padding: 32px 20px 24px; }
+      .page-title { font-size: 28px; }
+      .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .ladder-row { grid-template-columns: 28px 1fr; }
+      .ladder-row .lc:nth-child(3),
+      .ladder-row .lc:nth-child(4) { display: none; }
+      .doc-header { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media print {
+      .complete-banner, .video-wrap, .transcript { display: none; }
+      .main { padding: 0; max-width: 100%; }
+      .doc-block { break-inside: avoid; }
+      .print-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ COMPLETE BANNER ══ -->
+  <div class="complete-banner">
+    <div class="complete-banner-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <p class="complete-banner-text">
+      When you finish this lesson, scroll past the content below to find the
+      <strong>Mark as Complete</strong> button. Click it before moving to the next lesson.
+    </p>
+  </div>
+
+  <!-- ══ VIDEO ══ -->
+  <div class="video-wrap">
+    <div class="video-container">
+      <iframe
+        src="https://www.youtube.com/embed/PLACEHOLDER_VIDEO_ID?rel=0&modestbranding=1"
+        title="Course Reference Materials — STRATUM"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <div class="transcript">
+      <button class="transcript-btn" aria-expanded="false" aria-controls="transcript-body" onclick="toggleTranscript(this)">
+        <span class="transcript-label">Video Transcript</span>
+        <svg class="transcript-chevron" viewBox="0 0 24 24">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+      <div class="transcript-body" id="transcript-body">
+        <p>This lesson is short. But what you do here will affect every session that follows.</p>
+        <p class="pause">[ pause ]</p>
+        <p>Inside this lesson you'll find two documents. The Methodology Reference Card. And the Course Glossary.</p>
+        <p>Neither one is optional reading.</p>
+        <p class="pause">[ pause ]</p>
+        <p>The Reference Card gives you the complete Excavation Ladder on a single page — all eight layers, the key question for each, and the Katniss Everdeen example carried all the way through. By Lesson 3 or 4, you'll want to confirm that your chain is holding. By Lesson 5, you'll want to look ahead at what's coming. That card makes both of those things possible without breaking your workflow.</p>
+        <p class="pause">[ pause ]</p>
+        <p>The Glossary defines every term you'll encounter in the coaching sessions. Hidden truth. Formative wound. Causal lock. These are precise terms, not interchangeable ones. The difference between a hidden truth and a lie is the difference between Lesson 2 and Lesson 4. Knowing the distinction before your coach asks about it saves friction at the exact moment you can least afford it.</p>
+        <p class="pause">[ pause ]</p>
+        <p>Here's what I need you to do with both of them.</p>
+        <p>Print them.</p>
+        <p class="pause">[ pause ]</p>
+        <p>I know that sounds like something people say and no one does. I'm saying it because your target audience for this course — serious writers, working on a story that matters to them — will actually use a physical reference during a coaching session in a way they will not use a browser tab. When you're forty minutes into an excavation and your coach asks you to confirm your causal lock, you want to glance left at a piece of paper. Not switch windows.</p>
+        <p class="pause">[ pause ]</p>
+        <p>Print the Reference Card. Print the Glossary. Keep them at your desk for the duration of the course.</p>
+        <p class="pause">[ pause ]</p>
+        <p>Both documents are below this video with a print button for each. It will take you less than five minutes.</p>
+        <p>When you've done that — mark this lesson complete and move to Building Your AI Coach.</p>
+        <p>That's where the work begins.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main">
+
+    <span class="lesson-label">Before You Excavate · STRATUM: AI Character Coaching</span>
+    <h1 class="page-title">Course Reference <em>Materials</em></h1>
+    <div class="title-rule"></div>
+
+    <p class="lead">Two documents. Print both. Keep them at your desk for the duration of the course. They are not supplementary reading — they are the navigation tools for everything that follows.</p>
+
+    <!-- ══ REFERENCE CARD ══ -->
+    <div class="doc-block">
+      <div class="doc-header">
+        <div class="doc-header-text">
+          <span class="doc-eyebrow">Document One · Print &amp; Keep</span>
+          <div class="doc-title">The Excavation Ladder — <em>Methodology Reference Card</em></div>
+        </div>
+        <button class="print-btn" onclick="printDoc('ref-card-body')">
+          <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print This Card
+        </button>
+      </div>
+      <div class="doc-instruction">
+        <strong>Print and keep at your desk throughout the course.</strong> Use it to confirm your causal chain at each layer, check definitions mid-session, and track where you are in the excavation.
+      </div>
+      <div class="ref-card-body" id="ref-card-body">
+
+        <div class="ladder-row header-row">
+          <div class="lc" style="padding:8px 5px;"></div>
+          <div class="lc">Layer</div>
+          <div class="lc">Excavation Question</div>
+          <div class="lc">Katniss Everdeen · Running Example</div>
+        </div>
+
+        <div class="ladder-row">
+          <div class="lc-badge"><div class="layer-badge l1">1</div></div>
+          <div class="lc"><span class="layer-name">The Surface Pattern</span><span class="layer-role">Documentary Filmmaker</span>The specific, visible, recurring behavior. Observable by a camera. Consequential to the story. No interpretation — pure evidence.<br><br><span class="deliverable">Deliverable: 1 Anchor Behavior + 3 Instances</span></div>
+          <div class="lc"><span class="question">What does your character do repeatedly, specifically, and visibly — that a camera could film?</span></div>
+          <div class="lc"><span class="katniss">She volunteers. She steps between danger and the people she loves. She positions herself as protector, again and again.</span></div>
+        </div>
+
+        <div class="ladder-row">
+          <div class="lc-badge"><div class="layer-badge l2">2</div></div>
+          <div class="lc"><span class="layer-name">The Hidden Truth</span><span class="layer-role">Interpreter</span>The belief operating beneath the character's awareness that makes the behavior feel not just reasonable, but necessary. Not what they'd say — what actually drives them.<br><br><span class="deliverable">Deliverable: 1 Hidden Truth + Causal Lock</span></div>
+          <div class="lc"><span class="question">What would your character have to believe — about themselves, others, or the world — for this behavior to feel like the only reasonable response?</span></div>
+          <div class="lc"><span class="katniss">The people I love are vulnerable and cannot protect themselves without me.</span></div>
+        </div>
+
+        <div class="ladder-row">
+          <div class="lc-badge"><div class="layer-badge l3">3</div></div>
+          <div class="lc"><span class="layer-name">The Formative Wound</span><span class="layer-role">Archaeologist</span>The specific experience — or accumulation of experiences — that made the hidden truth the only reasonable conclusion. Not invented backstory. The origin that demands the belief.<br><br><span class="deliverable">Deliverable: 1 Wound + Origin Statement</span></div>
+          <div class="lc"><span class="question">What experience would make this belief not just possible, but inevitable — the only logical conclusion a person could draw?</span></div>
+          <div class="lc"><span class="katniss">Her father died in the mines. Her mother collapsed psychologically. Eleven-year-old Katniss looked for an adult and found no one.</span></div>
+        </div>
+
+        <div class="ladder-row">
+          <div class="lc-badge"><div class="layer-badge l4">4</div></div>
+          <div class="lc"><span class="layer-name">The Lie</span><span class="layer-role">Forensic Analyst</span>The distorted conclusion the character drew from the wound. A self-referential statement about identity, worth, or obligation — distinct from the hidden truth, which observes the world. The lie is about the self.<br><br><span class="deliverable">Deliverable: 1 Lie + Wound-to-Lie Connection</span></div>
+          <div class="lc"><span class="question">What did your character conclude about themselves — about their identity, worth, or obligations — in the moment the wound formed?</span></div>
+          <div class="lc"><span class="katniss">I am solely responsible for everyone's survival. If I love someone and don't protect them, their destruction is my failure.</span></div>
+        </div>
+
+        <div class="ladder-row">
+          <div class="lc-badge"><div class="layer-badge l5">5</div></div>
+          <div class="lc"><span class="layer-name">Want vs. Need</span><span class="layer-role">Writer</span>The want is the psychological strategy the lie produces — what the character pursues to feel safe. The need is what the wound took away. Pursuing the want blocks access to the need. That structural conflict is the story.<br><br><span class="deliverable">Deliverable: 1 Want + 1 Need + Structural Tension</span></div>
+          <div class="lc"><span class="question">Given the lie, what must your character pursue to feel safe? And what did the wound take away that they still need?</span></div>
+          <div class="lc"><span class="katniss">Want: To be the protector. To guarantee outcomes. Need: To trust. To allow herself to be protected. To set down the weight she picked up at eleven.</span></div>
+        </div>
+
+        <div class="ladder-row">
+          <div class="lc-badge"><div class="layer-badge l6">6</div></div>
+          <div class="lc"><span class="layer-name">Fears &amp; Desires</span><span class="layer-role">Excavating the Fuel</span>The specific emotional charges that make the want feel urgent and the need feel dangerous. Fear is what your character believes will happen if they stop pursuing the want. Desire is what they believe the want will finally deliver.<br><br><span class="deliverable">Deliverable: 1 Core Fear + 1 Core Desire</span></div>
+          <div class="lc"><span class="question">What does your character believe will happen if they stop? What do they believe the want will finally give them?</span></div>
+          <div class="lc"><span class="katniss">Fear: If she stops protecting, someone she loves will die and it will be her fault. Desire: A world where she is no longer the only thing standing between them and destruction.</span></div>
+        </div>
+
+        <div class="ladder-row">
+          <div class="lc-badge"><div class="layer-badge l7">7</div></div>
+          <div class="lc"><span class="layer-name">The Eight Essential Domains</span><span class="layer-role">Mapping the Architecture</span>How the lie, want, and fear manifest across all major areas of the character's life: relationships, work, self-image, body, money, authority, intimacy, and failure. Each domain reveals a different expression of the same wound.<br><br><span class="deliverable">Deliverable: Domain Map across 8 Areas</span></div>
+          <div class="lc"><span class="question">How does the lie show up in each domain of your character's life — not just in plot-relevant moments, but as a pervasive operating system?</span></div>
+          <div class="lc"><span class="katniss">In relationships: she cannot accept help. In authority: she trusts no one's judgment over her own. In intimacy: she keeps Peeta at arm's length even when she wants connection.</span></div>
+        </div>
+
+        <div class="ladder-row">
+          <div class="lc-badge"><div class="layer-badge l8">8</div></div>
+          <div class="lc"><span class="layer-name">Psychological Integration</span><span class="layer-role">Synthesis &amp; Compilation</span>The complete psychological architecture assembled into a single coherent profile. All eight layers locked together into one causally unified system — the foundation for every scene, relationship, and turning point in your story.<br><br><span class="deliverable">Deliverable: Complete Character Profile Document</span></div>
+          <div class="lc"><span class="question">Does every layer connect causally to every other? Is there a single wound at the root of every observable behavior?</span></div>
+          <div class="lc"><span class="katniss">Because her father died and her mother collapsed, Katniss concluded she is solely responsible for survival — which drives her to protect compulsively, at the cost of ever being protected herself.</span></div>
+        </div>
+
+      </div><!-- /ref-card-body -->
+    </div><!-- /doc-block -->
+
+    <!-- ══ GLOSSARY ══ -->
+    <div class="doc-block">
+      <div class="doc-header">
+        <div class="doc-header-text">
+          <span class="doc-eyebrow">Document Two · Print &amp; Keep</span>
+          <div class="doc-title">STRATUM — <em>Course Glossary</em></div>
+        </div>
+        <button class="print-btn" onclick="printDoc('glossary-body')">
+          <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print This Glossary
+        </button>
+      </div>
+      <div class="doc-instruction">
+        <strong>These are precise terms, not interchangeable ones.</strong> Review this glossary before Lesson 1 and return to it whenever a term appears in a coaching session that you cannot immediately define.
+      </div>
+      <div class="glossary-body" id="glossary-body">
+
+        <span class="gloss-section-title">Core Methodology</span>
+
+        <div class="term">
+          <span class="term-word">Excavation Not Fabrication</span>
+          <span class="term-label">The foundational principle</span>
+          <div class="term-def"><em>Excavation</em> is the act of finding psychological truth that already exists inside your character. <em>Fabrication</em> is the act of constructing backstory that fits a plot. Fabricated characters are plausible. Excavated characters are true. The difference is felt, not argued.</div>
+          <div class="term-contrast"><strong>Signal of fabrication:</strong> "This would work for the story." <strong>Signal of excavation:</strong> "Of course. I always knew this about them."</div>
+        </div>
+
+        <div class="term">
+          <span class="term-word">The Excavation Ladder</span>
+          <span class="term-label">Course architecture</span>
+          <div class="term-def">The eight-layer progressive model at the heart of STRATUM. Each rung moves deeper into your character's psychology: from observable behavior (L1) through hidden belief (L2), origin wound (L3), distortion (L4), want and need (L5), emotional fuel (L6), domain mapping (L7), and integrated architecture (L8). No layer can be completed accurately without the one beneath it.</div>
+        </div>
+
+        <div class="term">
+          <span class="term-word">The Felt Sense of Discovery</span>
+          <span class="term-label">Diagnostic signal</span>
+          <div class="term-def">The internal recognition that occurs when you have found something true about your character rather than invented it. It does not feel like inspiration or invention. It feels like recognition — a sudden, quiet certainty: <em>"Of course. That's where that came from. I've always known this about them."</em> If what you find feels constructed, keep excavating.</div>
+        </div>
+
+        <div class="term">
+          <span class="term-word">Psychological Architecture</span>
+          <span class="term-label">The complete structure</span>
+          <div class="term-def">The complete, causally locked system of your character's inner life — all eight layers functioning as a single coherent whole. When complete, every choice your character makes flows inevitably from one source: the wound.</div>
+        </div>
+
+        <span class="gloss-section-title">Lesson 1 — The Surface Pattern</span>
+
+        <div class="term">
+          <span class="term-word">Anchor Behavior</span>
+          <span class="term-label">L1 primary deliverable</span>
+          <div class="term-def">The single recurring behavior that anchors your character's psychology. Must meet all four criteria: <strong>Specific</strong> (precise enough to film), <strong>Visible</strong> (observable, not internal), <strong>Recurring</strong> (appears across multiple contexts), <strong>Consequential</strong> (shapes the story's direction).</div>
+        </div>
+
+        <div class="term">
+          <span class="term-word">Observer Mode</span>
+          <span class="term-label">L1 cognitive stance</span>
+          <div class="term-def">The discipline of recording only what is visible — what a camera could film — without interpreting motivation or assigning meaning. Observer mode is deliberately restricted in Lesson 1. Interpretation begins in Lesson 2.</div>
+        </div>
+
+        <span class="gloss-section-title">Lesson 2 — The Hidden Truth</span>
+
+        <div class="term">
+          <span class="term-word">The Therapist's Question</span>
+          <span class="term-label">L2 core tool</span>
+          <div class="term-def"><em>"What would someone have to believe — about themselves, about other people, or about how the world works — for this behavior to feel like the only reasonable response?"</em> The precision of this question matters. It does not ask what caused the behavior. It asks what belief makes the behavior feel necessary and inevitable.</div>
+        </div>
+
+        <div class="term">
+          <span class="term-word">Hidden Truth</span>
+          <span class="term-label">L2 primary deliverable</span>
+          <div class="term-def">The belief operating beneath the character's conscious awareness that makes their behavior feel not just reasonable, but inevitable. Distinct from the conscious justification: the hidden truth is what actually drives them, not what they would say if asked.</div>
+          <div class="term-contrast"><strong>Conscious justification:</strong> what the character would say. <strong>Hidden truth:</strong> what you would never hear them say — but that explains everything.</div>
+        </div>
+
+        <div class="term">
+          <span class="term-word">Causal Lock</span>
+          <span class="term-label">L2 test of precision</span>
+          <div class="term-def">The tight causal connection between hidden truth and anchor behavior, stated as: <em>"Because my character believes [X], they must [Y behavior]."</em> If the behavior feels inevitable given the belief, the lock is tight. If it requires explanation, the belief may not be precise enough yet.</div>
+        </div>
+
+        <span class="gloss-section-title">Lesson 3 — The Formative Wound</span>
+
+        <div class="term">
+          <span class="term-word">Formative Wound</span>
+          <span class="term-label">L3 primary deliverable</span>
+          <div class="term-def">The specific experience — or specific accumulation of moments — that made the hidden truth the only reasonable conclusion. A wound is not a category (abandonment, betrayal) — it is a scene. The moment a child looked for an adult and found no one. The night a parent failed to show up. Wounds don't need to be catastrophic. They need to be specific and causally connected to the belief.</div>
+        </div>
+
+        <div class="term">
+          <span class="term-word">Wound Proportionality</span>
+          <span class="term-label">L3 principle</span>
+          <div class="term-def">The wound should be proportional to the belief — not to what would make dramatic backstory. The smallest experience sufficient to create the belief is often the most authentic. Ask: <em>"What's the minimum that would have been enough to produce this conviction?"</em></div>
+        </div>
+
+        <span class="gloss-section-title">Lesson 4 — The Lie</span>
+
+        <div class="term">
+          <span class="term-word">The Lie</span>
+          <span class="term-label">L4 primary deliverable</span>
+          <div class="term-def">The distorted conclusion the character drew from the wound — a self-referential statement about identity, worth, or obligation. Distinct from the hidden truth: the hidden truth is an observation about the world or others; the lie is a conclusion about the self. The lie is what the story must crack open.</div>
+          <div class="term-contrast"><strong>Hidden truth (L2):</strong> "The people I love cannot protect themselves." <strong>Lie (L4):</strong> "I am solely responsible for everyone's survival."</div>
+        </div>
+
+        <span class="gloss-section-title">Lesson 5 — Want vs. Need</span>
+
+        <div class="term">
+          <span class="term-word">The Want</span>
+          <span class="term-label">L5 — the false pursuit</span>
+          <div class="term-def">The psychological strategy the lie produces — what the character pursues to feel safe, validated, or whole. Not the plot goal. The want is built on the lie and cannot deliver what the character actually needs. Pursuing it confirms the lie and blocks access to the need.</div>
+        </div>
+
+        <div class="term">
+          <span class="term-word">The Need</span>
+          <span class="term-label">L5 — what the wound took away</span>
+          <div class="term-def">What was absent in the moment the wound formed — what the character still requires to heal. The need is almost always simple: safety, belonging, permission to fail, love without conditions. The character cannot simply choose the need because it threatens the lie, which feels like survival.</div>
+        </div>
+
+        <div class="term">
+          <span class="term-word">Structural Conflict</span>
+          <span class="term-label">L5 test</span>
+          <div class="term-def">The want and need must be mutually exclusive — pursuing one at full intensity must actively block access to the other. If both can coexist, you don't have the right pair yet. The structural conflict between want and need is the engine of your story's arc.</div>
+        </div>
+
+      </div><!-- /glossary-body -->
+    </div><!-- /doc-block -->
+
+    <div class="action-box">
+      <span class="action-box-label">When You're Ready</span>
+      <p>Move to the next lesson: <strong>Building Your AI Coach.</strong><br>That's where the work begins.</p>
+    </div>
+
+  </div><!-- /main -->
+
+  <div class="closing">
+    <p class="closing-quote">Keep these at your desk. The excavation goes eight layers deep — you'll want a map.</p>
+    <span class="closing-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
+  </div>
+
+  <script>
+    function toggleTranscript(btn) {
+      const body = document.getElementById('transcript-body');
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    }
+
+    function printDoc(id) {
+      const el = document.getElementById(id);
+      const win = window.open('', '_blank', 'width=900,height=700');
+      if (!win) { alert('Please allow pop-ups for this site, then click Print again.'); return; }
+      win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8">'
+        + '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">'
+        + '<style>'
+        + '*{box-sizing:border-box;margin:0;padding:0}'
+        + ':root{--cream:#faf4e8;--cream-dark:#f2ead8;--tan:#c4a882;--tan-mid:#a8895e;--tan-light:#ddd0b8;--tan-faint:#ede5d4;--brown:#2e1f0e;--brown-mid:#5c3d1e;--brown-light:#8b6340}'
+        + 'body{font-family:Spectral,Georgia,serif;background:white;color:var(--brown);padding:0.5in;font-size:11pt;line-height:1}'
+        + '.layer-badge{width:22pt;height:22pt;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:"Cormorant Garamond",Georgia,serif;font-size:10pt;font-weight:600;color:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+        + '.l1{background:#5c3d1e}.l2{background:#4e3318}.l3{background:#402912}.l4{background:#321f0e}.l5{background:#2a1a0a}.l6{background:#221508}.l7{background:#1a1006}.l8{background:#100a04}'
+        + 'table{width:100%;border-collapse:collapse;font-size:9pt}'
+        + 'thead th{font-family:"Cormorant Garamond",Georgia,serif;font-size:8pt;letter-spacing:.15em;text-transform:uppercase;color:var(--tan-mid);padding:4pt 8pt;border-bottom:1.5pt solid var(--tan);text-align:left}'
+        + 'tbody td{padding:8pt;border-bottom:1pt solid var(--tan-faint);vertical-align:top;line-height:1.55}'
+        + '.lname{font-family:"Cormorant Garamond",Georgia,serif;font-size:11pt;font-weight:600;color:var(--brown);display:block}'
+        + '.lrole{font-family:"Cormorant Garamond",Georgia,serif;font-size:8pt;font-style:italic;color:var(--brown-light);display:block;margin-bottom:4pt}'
+        + '.dlv{font-family:"Cormorant Garamond",Georgia,serif;font-size:8pt;font-weight:600;color:var(--tan-mid);display:block;margin-top:4pt}'
+        + '.q{font-style:italic;color:var(--brown-mid)}'
+        + '.k{font-style:italic;color:var(--brown-light);font-size:9pt}'
+        + '.masthead{background:var(--brown);padding:14pt 18pt;margin-bottom:16pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+        + '.masthead h1{font-family:"Cormorant Garamond",Georgia,serif;font-size:18pt;font-weight:300;color:#faf4e8}'
+        + '.masthead p{font-family:"Cormorant Garamond",Georgia,serif;font-size:8pt;letter-spacing:.18em;text-transform:uppercase;color:var(--tan);margin-top:4pt}'
+        + '.term{padding:8pt 0;border-bottom:1pt solid var(--tan-faint)}'
+        + '.tw{font-family:"Cormorant Garamond",Georgia,serif;font-size:13pt;font-weight:600;color:var(--brown);display:block}'
+        + '.tl{font-family:"Cormorant Garamond",Georgia,serif;font-size:7pt;letter-spacing:.18em;text-transform:uppercase;color:var(--tan-mid);display:block;margin-bottom:4pt}'
+        + '.td{font-size:9pt;line-height:1.65;color:var(--brown)}'
+        + '.sec{font-family:"Cormorant Garamond",Georgia,serif;font-size:8pt;letter-spacing:.2em;text-transform:uppercase;color:var(--tan-mid);display:block;margin:14pt 0 6pt;padding-bottom:3pt;border-bottom:1pt solid var(--tan-light)}'
+        + '@media print{body{padding:0.4in}}'
+        + '</style></head><body>'
+        + '<div class="masthead"><h1>' + (id === 'ref-card-body' ? 'The Excavation Ladder — Methodology Reference Card' : 'STRATUM — Course Glossary') + '</h1><p>STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</p></div>'
+        + el.innerHTML
+        + '<script>window.onload=function(){setTimeout(function(){window.print();},600);};<\/script>'
+        + '</body></html>');
+      win.document.close();
+    }
+  </script>
+
+</body>
+</html>
