@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Choosing Your Character &mdash; STRATUM</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#faf4e8;--cream-dark:#f2ead8;--tan:#c4a882;--tan-mid:#a8895e;
+  --tan-light:#ddd0b8;--tan-faint:#ede5d4;--brown:#2e1f0e;--brown-mid:#5c3d1e;
+  --brown-light:#8b6340;--green:#2a5c2a;--green-bg:#f0f5f0;--green-bd:#a8c4a8;
+  --amber:#7a4e10;--amber-bg:#fdf3e3;--amber-bd:#d4b88a;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Spectral',Georgia,serif;background:var(--cream);color:var(--brown);line-height:1}
+
+.video-wrap{background:#100a04}
+.video-box{position:relative;width:100%;padding-bottom:56.25%;height:0;overflow:hidden}
+.video-box iframe{position:absolute;inset:0;width:100%;height:100%;border:none;display:block}
+
+.tx{background:var(--brown);border-top:1px solid rgba(196,168,130,0.2)}
+.tx-btn{width:100%;background:transparent;border:none;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;font-family:'Cormorant Garamond',Georgia,serif;color:var(--tan);font-size:12px;letter-spacing:.12em;text-transform:uppercase;transition:background .2s}
+.tx-btn:hover{background:rgba(255,255,255,.04)}
+.tx-arr{width:20px;height:20px;border:1px solid rgba(196,168,130,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .3s}
+.tx-arr svg{width:8px;height:8px;stroke:var(--tan);fill:none;stroke-width:2}
+.tx-btn[aria-expanded="true"] .tx-arr{transform:rotate(180deg)}
+.tx-body{max-height:0;overflow:hidden;transition:max-height .35s ease;background:#1e1408}
+.tx-body.open{max-height:1200px}
+.tx-inner{padding:20px 24px 24px;border-top:1px solid rgba(196,168,130,.15)}
+.tx-inner p{font-family:'Spectral',Georgia,serif;font-size:13px;color:rgba(250,244,232,.72);line-height:1.82;margin-bottom:12px}
+.tx-inner p:last-child{margin-bottom:0}
+
+.strata{height:4px;background:linear-gradient(to right,var(--tan) 0%,var(--tan-mid) 40%,rgba(196,168,130,.3) 80%,transparent 100%)}
+
+.lhd{background:var(--brown);padding:28px 32px 22px;position:relative;overflow:hidden}
+.lhd::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent 38%,rgba(196,168,130,.07) 38%,rgba(196,168,130,.07) 41%,transparent 41%,transparent 72%,rgba(196,168,130,.05) 72%,rgba(196,168,130,.05) 75%,transparent 75%)}
+.lhd-inner{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.eyebrow{font-family:'Cormorant Garamond',Georgia,serif;font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:var(--tan);display:block;margin-bottom:7px}
+.ltitle{font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;font-weight:300;letter-spacing:.05em;color:var(--cream);line-height:1.1}
+.ltitle em{font-style:italic;color:var(--tan)}
+.lmeta{font-family:'Cormorant Garamond',Georgia,serif;font-size:11px;font-style:italic;color:var(--tan);text-align:right;line-height:1.75}
+
+.intro{background:var(--cream-dark);padding:20px 32px;border-bottom:1px solid var(--tan-light)}
+.intro p{font-size:13.5px;font-weight:300;font-style:italic;color:var(--brown-mid);line-height:1.8;max-width:660px}
+.intro p+p{margin-top:10px}
+.intro strong{font-style:normal;font-weight:500;color:var(--brown)}
+.intro-note{margin-top:10px;font-family:'Cormorant Garamond',Georgia,serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--tan-mid)}
+
+.pband{background:var(--tan-faint);border-left:4px solid var(--tan);border-bottom:1px solid var(--tan-light);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.pband-text{font-family:'Cormorant Garamond',Georgia,serif;font-size:13px;font-style:italic;color:var(--brown-mid);line-height:1.55;flex:1;min-width:180px}
+.pband-text strong{font-style:normal;font-weight:600;color:var(--brown)}
+.btn{display:inline-flex;align-items:center;gap:7px;background:var(--brown);color:var(--cream);border:none;padding:10px 20px;font-family:'Cormorant Garamond',Georgia,serif;font-size:10px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;transition:background .2s;flex-shrink:0}
+.btn:hover{background:var(--brown-mid)}
+.btn svg{width:13px;height:13px;flex-shrink:0}
+
+.body{padding:28px 32px 40px}
+.section{margin-bottom:30px}
+.shdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.snum{font-family:'Cormorant Garamond',Georgia,serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--tan-mid);width:16px;flex-shrink:0}
+.stitle{font-family:'Cormorant Garamond',Georgia,serif;font-size:14px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--brown)}
+.ssub{font-family:'Cormorant Garamond',Georgia,serif;font-size:11px;font-style:italic;color:var(--brown-light);display:block;margin-top:1px}
+.srule{flex:1;height:1px;background:var(--tan-light)}
+
+.bp{font-size:13.5px;color:var(--brown);line-height:1.78;margin-bottom:13px}
+.bp strong{font-weight:500}
+.bp em{font-style:italic;color:var(--brown-mid)}
+
+.co{margin:12px 0;padding:13px 16px;border-left:3px solid var(--tan);background:var(--tan-faint)}
+.co.warn{border-color:#c4906a;background:var(--amber-bg)}
+.co.insight{border-color:var(--brown-mid);background:var(--cream-dark)}
+.colbl{font-family:'Cormorant Garamond',Georgia,serif;font-size:9px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--tan-mid);display:block;margin-bottom:5px}
+.co.warn .colbl{color:var(--amber)}
+.co.insight .colbl{color:var(--brown-mid)}
+.co p{font-size:12.5px;color:var(--brown);line-height:1.72}
+.co p strong{font-weight:500}
+.co p em{font-style:italic;color:var(--brown-mid)}
+
+.twrap{overflow-x:auto;margin-bottom:13px}
+table{width:100%;border-collapse:collapse;min-width:540px}
+thead tr{border-bottom:1.5px solid var(--tan)}
+thead th{font-family:'Cormorant Garamond',Georgia,serif;font-size:9px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--brown-light);padding:0 10px 7px;text-align:left;vertical-align:bottom}
+tbody tr{border-bottom:1px solid var(--tan-faint)}
+tbody tr:last-child{border-bottom:none}
+tbody td{padding:10px;font-size:12.5px;line-height:1.62;color:var(--brown);vertical-align:top}
+.tname{font-family:'Cormorant Garamond',Georgia,serif;font-size:13.5px;font-weight:600;color:var(--brown);display:block;line-height:1.2}
+.tnote{font-family:'Cormorant Garamond',Georgia,serif;font-size:10px;font-style:italic;color:var(--brown-light);display:block;margin-top:2px}
+.pill{display:inline-block;font-family:'Cormorant Garamond',Georgia,serif;font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;line-height:1.5;white-space:nowrap}
+.pg{background:#ddeedd;color:var(--green)}
+.pc{background:#fde8c8;color:var(--amber)}
+.pn{background:var(--tan-faint);color:var(--brown-mid)}
+
+ul.ql{list-style:none;margin:8px 0 13px}
+ul.ql li{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--tan-faint);font-size:13px;line-height:1.67;color:var(--brown)}
+ul.ql li:last-child{border-bottom:none}
+.qm{font-family:'Cormorant Garamond',Georgia,serif;font-size:12px;font-weight:600;color:var(--tan-mid);flex-shrink:0;width:16px;padding-top:1px}
+.qt{flex:1}
+.qt strong{font-weight:500}
+.qt em{font-style:italic;color:var(--brown-mid)}
+.qn{font-family:'Cormorant Garamond',Georgia,serif;font-size:11px;font-style:italic;color:var(--brown-light);display:block;margin-top:4px;line-height:1.55}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px}
+@media(max-width:560px){.g2{grid-template-columns:1fr}}
+.card{border:1px solid var(--tan-light);padding:15px 17px;background:var(--cream)}
+.card.cg{border-color:var(--green-bd);background:var(--green-bg)}
+.card.cc{border-color:var(--amber-bd);background:var(--amber-bg)}
+.clbl{font-family:'Cormorant Garamond',Georgia,serif;font-size:9px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--tan-mid);display:block;margin-bottom:5px}
+.card.cg .clbl{color:var(--green)}
+.card.cc .clbl{color:var(--amber)}
+.ctitle{font-family:'Cormorant Garamond',Georgia,serif;font-size:14px;font-weight:600;color:var(--brown);display:block;margin-bottom:5px;line-height:1.2}
+.card p{font-size:12px;color:var(--brown);line-height:1.67}
+
+ul.ck{list-style:none;border:1px solid var(--tan-light);background:var(--cream);margin:8px 0 13px}
+ul.ck li{display:flex;align-items:flex-start;gap:11px;padding:10px 16px;border-bottom:1px solid var(--tan-faint);font-size:13px;line-height:1.67;color:var(--brown)}
+ul.ck li:last-child{border-bottom:none}
+.cbox{width:15px;height:15px;border:1.5px solid var(--tan);flex-shrink:0;margin-top:3px;background:white}
+.ctxt{flex:1}
+.ctxt em{font-style:italic;color:var(--brown-mid)}
+
+.pbot{text-align:center;padding:18px 0 4px}
+
+.closing{background:var(--brown);padding:30px 32px;text-align:center;position:relative;overflow:hidden}
+.cq{font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:300;font-style:italic;color:var(--cream);line-height:1.65;max-width:520px;margin:0 auto;position:relative;z-index:1}
+.cq2{font-size:14px;margin-top:12px}
+.cattr{font-family:'Cormorant Garamond',Georgia,serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--tan);margin-top:14px;display:block;position:relative;z-index:1}
+
+.footer{background:var(--cream-dark);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--tan-light);flex-wrap:wrap;gap:8px}
+.fl{font-family:'Cormorant Garamond',Georgia,serif;font-size:11px;font-style:italic;color:var(--brown-light);line-height:1.65}
+.fr{font-family:'Cormorant Garamond',Georgia,serif;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--tan-mid);text-align:right}
+
+@media print{
+  .no-print{display:none !important}
+  body{background:white}
+  .lhd,.intro,.co,.card,.closing,.footer{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<!-- VIDEO -->
+<div class="video-wrap no-print">
+  <div class="video-box">
+    <!-- Replace src with your HeyGen embed URL before deploying -->
+    <iframe src="YOUR_VIDEO_EMBED_URL_HERE" title="Choosing Your Character &mdash; STRATUM" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+  </div>
+</div>
+
+<!-- TRANSCRIPT -->
+<div class="tx no-print">
+  <button class="tx-btn" aria-expanded="false" onclick="txToggle(this)">
+    <span>Video Transcript</span>
+    <span class="tx-arr"><svg viewBox="0 0 10 6"><polyline points="1,1 5,5 9,1"/></svg></span>
+  </button>
+  <div class="tx-body" id="tx-body">
+    <div class="tx-inner">
+      <p>Before Lesson 1 begins, you need to make one decision. Not about your plot. Not about your structure. About your character.</p>
+      <p>Which character you bring to this course determines almost everything that follows &mdash; the quality of the work, the depth you can reach, and whether the methodology reveals something true about your character or simply confirms what you already assumed.</p>
+      <p>Most writers think they already know the answer. Sometimes they are right. But the writers who get the most from this course are the ones who made that choice deliberately &mdash; not by default. This guide exists to make it deliberate.</p>
+      <p>There are three markers I want you to track as you work through it.</p>
+      <p>The first marker: a decision framework. Not every character is ready for excavation. Some are too thin &mdash; built for plot rather than psychology. Others are ready but require a particular kind of awareness. The framework will tell you which category your character is in, and what that means for the work ahead.</p>
+      <p>The second marker: five diagnostic questions. These are not warm-up exercises. Run your character through them honestly. If you cannot produce even a partial answer to most of them, that is information. It means the character is not ready &mdash; or you are not ready to excavate this particular one yet.</p>
+      <p>And the third marker: the written versus unwritten distinction. Whether you have manuscript pages or only notes changes what the methodology requires of you. The guide will tell you exactly how.</p>
+      <p>Here is what I need you to understand before you open Lesson 1. STRATUM excavates existing psychological truth. It cannot create it. The methodology works by finding what is already present in your character &mdash; even if half-formed, even if only intuited.</p>
+      <p>If there is nothing there to find, the sessions will feel like construction. Everything will seem plausible. The chain will hold together. But it will not feel true. It will feel built.</p>
+      <p>The right character has what I call a locked room. Something present, but not yet accessible. You sense it is there. You cannot quite get to it. That is the signal. That is who you bring.</p>
+      <p>Spend fifteen minutes with this guide before you open Lesson 1. Work through the checklist at the end. By the time you reach the final question, you will know exactly who you are bringing into the excavation, and why. Fifteen minutes here will save you hours of friction later.</p>
+      <p>The guide is below. Let us make sure you have got the right character.</p>
+    </div>
+  </div>
+</div>
+
+<div class="strata"></div>
+
+<!-- HEADER -->
+<div class="lhd">
+  <div class="lhd-inner">
+    <div>
+      <span class="eyebrow">Before You Excavate &middot; Character Selection Guide</span>
+      <div class="ltitle">Choosing Your <em>Character</em></div>
+    </div>
+    <div class="lmeta">Complete before Lesson 1<br>Estimated time: 15 minutes</div>
+  </div>
+</div>
+
+<!-- INTRO -->
+<div class="intro">
+  <p>The single most consequential decision you will make in this course happens before Lesson 1 begins. Which character you bring to the excavation determines almost everything that follows &mdash; the quality of your work, the depth you can reach, and whether the methodology will reveal something true or only confirm what you already assumed.</p>
+  <p>Writers who bring the wrong character do not feel the mismatch immediately &mdash; they feel it at Lesson 3, when the wound will not come, or at Lesson 2, when every answer feels like rationalization. <strong>Spend fifteen minutes with this guide. It is the best investment you will make in this course.</strong></p>
+  <div class="intro-note">Print this guide and keep it at your desk &mdash; it is a working document, not just orientation reading</div>
+</div>
+
+<!-- PRINT BAND -->
+<div class="pband no-print">
+  <div class="pband-text"><strong>Print &amp; Keep.</strong> This guide is designed to sit beside your writing workspace. Use the checkboxes at the end to confirm your character before Lesson 1.</div>
+  <button class="btn" onclick="window.print()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Print &amp; Keep
+  </button>
+</div>
+
+<!-- BODY -->
+<div class="body">
+
+  <div class="section">
+    <div class="shdr"><span class="snum">I</span><div><div class="stitle">The Core Requirement</div><span class="ssub">What every qualifying character must have</span></div><div class="srule"></div></div>
+    <p class="bp">STRATUM excavates existing psychological truth. The methodology cannot build psychology from scratch. It can only find what is already present, even if half-formed, even if only intuited.</p>
+    <p class="bp">Your character needs to meet one foundational requirement: <strong>they must do something you have noticed but cannot yet explain.</strong> A recurring behavior that feels weighted. A choice that surprised you when you wrote it. A pattern you sense is connected to something deeper.</p>
+    <div class="co insight"><span class="colbl">The Right Signal</span><p>You do not need to understand your character to bring them to this course. You need to feel that there is something to understand. If you sense a locked room &mdash; something present but not yet accessible &mdash; that is the signal. The methodology opens locked rooms. It cannot create them.</p></div>
+  </div>
+
+  <div class="section">
+    <div class="shdr"><span class="snum">II</span><div><div class="stitle">Who to Bring</div><span class="ssub">A decision framework by character type</span></div><div class="srule"></div></div>
+    <div class="twrap">
+      <table>
+        <thead><tr><th style="width:29%">Character Type</th><th style="width:14%">Verdict</th><th>What This Means for Your Work</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tname">Your protagonist</span><span class="tnote">The character carrying your central arc</span></td><td><span class="pill pg">Best Choice</span></td><td>The protagonist has the most to gain. Their psychology is the engine of your entire story. Every layer you uncover illuminates scenes already written and scenes not yet reached. If unsure, start here.</td></tr>
+          <tr><td><span class="tname">A primary antagonist</span><span class="tnote">In direct opposition to your protagonist</span></td><td><span class="pill pg">Strong Choice</span></td><td>Excavated antagonists become mirrors. They stop being obstacles and start reflecting the protagonist. The methodology works identically: wound, hidden truth, lie, want/need.</td></tr>
+          <tr><td><span class="tname">Major supporting character</span><span class="tnote">Present across multiple arcs, independent agency</span></td><td><span class="pill pc">Works Well</span></td><td>Valid if the character has genuine complexity &mdash; they make choices that cost them something, not just choices that serve the protagonist.</td></tr>
+          <tr><td><span class="tname">Character not yet written</span><span class="tnote">Exists in notes or outline only</span></td><td><span class="pill pc">With Awareness</span></td><td>Possible, but without manuscript evidence every answer feels plausible because nothing contradicts it. Extra vigilance on discovery vs. invention is required throughout.</td></tr>
+          <tr><td><span class="tname">Minor or functional character</span><span class="tnote">Serves plot primarily</span></td><td><span class="pill pc">Limited Return</span></td><td>Often lacks the behavioral repetition needed for a solid L1 anchor. If this character keeps calling, ask why &mdash; they may be more central than you have allowed.</td></tr>
+          <tr><td><span class="tname">Someone else&#39;s character</span><span class="tnote">A published or existing fictional figure</span></td><td><span class="pill pn">Learning Use Only</span></td><td>Useful for practicing the methodology &mdash; Katniss Everdeen runs through the course for this reason. Cannot be applied to your own manuscript.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="shdr"><span class="snum">III</span><div><div class="stitle">The Five Diagnostic Questions</div><span class="ssub">Run your candidate through each before committing</span></div><div class="srule"></div></div>
+    <p class="bp">For each character you are considering, work through these questions honestly. A strong candidate will produce at least partial answers to all five.</p>
+    <ul class="ql">
+      <li><span class="qm">1</span><div class="qt"><strong>Can you name one thing this character does repeatedly &mdash; specific enough that a camera could film it?</strong><span class="qn">Not a personality trait (&ldquo;she is guarded&rdquo;) &mdash; a specific observable action (&ldquo;she ends phone calls before the other person does&rdquo;). If you cannot find one now, begin in observation before the course does.</span></div></li>
+      <li><span class="qm">2</span><div class="qt"><strong>Has this character ever done something that surprised you when you wrote it &mdash; or that you cannot fully explain?</strong><span class="qn">Surprise is evidence of genuine psychology operating beneath conscious construction. The unexplained moment is the door the methodology opens.</span></div></li>
+      <li><span class="qm">3</span><div class="qt"><strong>When you imagine this character&#39;s worst internal moment, do you sense what it costs them &mdash; even if you cannot articulate it?</strong><span class="qn">You do not need to know what it costs. You need to sense that something is there. Pure blankness suggests a character built for plot rather than psychology.</span></div></li>
+      <li><span class="qm">4</span><div class="qt"><strong>Does this character want something they might not be able to have &mdash; and something else underneath that they will not admit?</strong><span class="qn">This is a preview of Lesson 5. No gap between surface want and deep need means no story engine for STRATUM to build from.</span></div></li>
+      <li><span class="qm">5</span><div class="qt"><strong>If their deepest pattern were exposed &mdash; if they could no longer hide what drives them &mdash; what would break open?</strong><span class="qn">The answer to this question is the story. If you cannot feel any answer forming, even vague or partial, this character may not yet be ready.</span></div></li>
+    </ul>
+    <div class="co"><span class="colbl">Scoring</span><p><strong>Strong answers on 4 or 5:</strong> Bring this character. &nbsp;<strong>Strong answers on 2 or 3:</strong> Proceed with awareness &mdash; the missing answers are where you will feel the most friction. &nbsp;<strong>Strong answers on 1 or fewer:</strong> Consider a different character, or spend more time in observation before Lesson 1.</p></div>
+  </div>
+
+  <div class="section">
+    <div class="shdr"><span class="snum">IV</span><div><div class="stitle">Written vs. Unwritten</div><span class="ssub">What each requires of you</span></div><div class="srule"></div></div>
+    <div class="g2">
+      <div class="card cg"><span class="clbl">&#10003; Written Character</span><span class="ctitle">You have manuscript pages or substantial scenes</span><p>You have evidence. The manuscript acts as a check against fabrication &mdash; when something feels invented, test it against what you have already written. That grounding is a significant advantage across all eight lessons.</p></div>
+      <div class="card cc"><span class="clbl">&#9888; Unwritten Character</span><span class="ctitle">Exists in notes or imagination only</span><p>Every answer feels plausible because nothing contradicts it. Internal consistency is not the same as psychological truth. Expect to work harder on the discovery/invention distinction throughout every session.</p></div>
+    </div>
+    <div class="co warn"><span class="colbl">The Unwritten Character Risk</span><p>The most common failure mode: everything holds together, the chain feels tight, the wound makes sense &mdash; but it was all constructed to be consistent, not discovered to be true. <em>If every answer arrives without resistance or surprise, apply extra skepticism.</em></p></div>
+  </div>
+
+  <div class="section">
+    <div class="shdr"><span class="snum">V</span><div><div class="stitle">When More Than One Character Is Calling</div><span class="ssub">Three tiebreakers, in order</span></div><div class="srule"></div></div>
+    <ul class="ql">
+      <li><span class="qm">&#8594;</span><div class="qt"><strong>Which character is most central to the story&#39;s emotional core?</strong> Not the most active &mdash; the one whose psychological transformation the story cannot happen without.</div></li>
+      <li><span class="qm">&#8594;</span><div class="qt"><strong>Which character do you understand least?</strong> The one whose choices occasionally surprise or unsettle you usually has more genuine psychology to find. A character you fully understand may have been built rather than discovered.</div></li>
+      <li><span class="qm">&#8594;</span><div class="qt"><strong>Which character, if you finally understood their deepest wound, would most change how you write the story?</strong> That character has the most leverage. Bring them.</div></li>
+    </ul>
+    <div class="co insight"><span class="colbl">On Changing Characters Mid-Course</span><p>It happens. You begin and realize at Lesson 2 or 3 that you have brought the wrong character &mdash; or that this excavation has revealed a <em>different</em> character as the real psychological center of your story. This is not failure. It is the methodology working. What you have already excavated is not wasted.</p></div>
+  </div>
+
+  <div class="section">
+    <div class="shdr"><span class="snum">VI</span><div><div class="stitle">A Note on Emotional Distance</div><span class="ssub">Your material, your terms</span></div><div class="srule"></div></div>
+    <p class="bp">STRATUM excavates wounds &mdash; formative experiences that created beliefs your character has carried ever since. For some writers, working with a character&#39;s wound means working at a safe distance from their own material. For others, the distance narrows unexpectedly.</p>
+    <p class="bp">You are a storyteller, not a therapist in session. The excavation goes as deep as your story needs, and you control how deep that is.</p>
+    <div class="co warn"><span class="colbl">If Your Character Carries Material Close to Your Own</span><p><strong>You may choose any character for any reason.</strong> If a character feels too close, choosing a different one is not avoidance &mdash; it is craft judgment. The methodology does not require you to go anywhere that does not serve the story.</p></div>
+  </div>
+
+  <div class="section">
+    <div class="shdr"><span class="snum">VII</span><div><div class="stitle">Before You Begin Lesson 1</div><span class="ssub">Your pre-course checklist &mdash; print and check off each item</span></div><div class="srule"></div></div>
+    <ul class="ck">
+      <li><div class="cbox"></div><div class="ctxt">I have identified a specific character &mdash; by name and role in my story &mdash; who I will work with throughout the course.</div></li>
+      <li><div class="cbox"></div><div class="ctxt">I can name at least one thing this character does that feels <em>weighted</em> &mdash; connected to something I do not yet fully understand about them.</div></li>
+      <li><div class="cbox"></div><div class="ctxt">I have considered whether this character is written or unwritten, and I understand what each requires of me in the sessions ahead.</div></li>
+      <li><div class="cbox"></div><div class="ctxt">I have run the five diagnostic questions and my character produced strong responses on at least two or three.</div></li>
+      <li><div class="cbox"></div><div class="ctxt">If multiple characters were calling, I have used the tiebreaker framework and committed to one.</div></li>
+      <li><div class="cbox"></div><div class="ctxt">I understand that I am not building this character&#39;s psychology. I am finding what is already there.</div></li>
+    </ul>
+  </div>
+
+  <div class="pbot no-print">
+    <button class="btn" onclick="window.print()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print &amp; Keep This Guide
+    </button>
+  </div>
+
+</div>
+
+<div class="closing">
+  <p class="cq">When you look at this character &mdash; do you sense a locked room? Something present, but not yet accessible?</p>
+  <p class="cq cq2">That is where the excavation begins.</p>
+  <span class="cattr">&mdash; Ted Baker &nbsp;&middot;&nbsp; STRATUM: AI Character Coaching</span>
+</div>
+
+<div class="footer">
+  <div class="fl">Complete this guide and mark your checklist before opening Lesson 1.<br>The right character makes everything that follows possible.</div>
+  <div class="fr">STRATUM: AI Character Coaching<br>myaiwritingcoach.com</div>
+</div>
+
+<script>
+function txToggle(btn) {
+  var body = document.getElementById('tx-body');
+  var open = body.classList.toggle('open');
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+</script>
+
+</body>
+</html>
