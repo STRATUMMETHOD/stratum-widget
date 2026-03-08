@@ -153,6 +153,114 @@
       border-bottom: 1px solid var(--tan-light);
     }
 
+    /* ══ FOUR FEARS RESOURCE BLOCK ══ */
+    .resource-block {
+      border: 1px solid var(--tan-light);
+      margin-bottom: 48px;
+    }
+    .resource-block-head {
+      background: var(--brown);
+      padding: 18px 24px 16px;
+      border-bottom: 1px solid rgba(196,168,130,0.2);
+    }
+    .resource-block-eyebrow {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.26em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 6px;
+    }
+    .resource-block-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px; font-weight: 300;
+      color: var(--cream); line-height: 1.3;
+    }
+    .resource-block-title em { font-style: italic; color: var(--tan); }
+    .resource-block-body {
+      padding: 22px 24px 24px;
+      background: var(--cream-dark);
+    }
+    .resource-block-intro {
+      font-size: 14px; font-weight: 300; line-height: 1.75;
+      color: var(--brown-mid); margin-bottom: 24px;
+    }
+
+    /* resource cards */
+    .resource-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 580px) {
+      .resource-cards { grid-template-columns: 1fr; }
+    }
+
+    .resource-card {
+      background: var(--cream);
+      border: 1px solid var(--tan-light);
+      display: flex; flex-direction: column;
+    }
+    .resource-card-top {
+      padding: 18px 18px 14px;
+      flex: 1;
+    }
+    .resource-card-type {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan-mid); display: block; margin-bottom: 8px;
+    }
+    .resource-card-name {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px; font-weight: 600;
+      color: var(--brown); line-height: 1.3; margin-bottom: 8px;
+      display: block;
+    }
+    .resource-card-desc {
+      font-size: 13px; font-weight: 300; line-height: 1.7;
+      color: var(--brown-light);
+    }
+    .resource-card-action {
+      padding: 0 18px 16px;
+    }
+    .resource-card-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--brown);
+      border: none;
+      padding: 10px 16px;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--tan); cursor: pointer; text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .resource-card-btn:hover { background: var(--brown-mid); color: var(--cream); }
+    .resource-card-btn svg {
+      width: 13px; height: 13px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    /* when-to-read note */
+    .resource-timing {
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: var(--cream);
+      border-left: 3px solid var(--tan);
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .resource-timing svg {
+      width: 14px; height: 14px;
+      stroke: var(--tan-mid); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .resource-timing p {
+      font-size: 13px; font-weight: 300; line-height: 1.65;
+      color: var(--brown-mid);
+    }
+    .resource-timing p strong { font-weight: 500; color: var(--brown); }
+
     /* ══ STEPS ══ */
     .steps { margin-bottom: 48px; }
 
@@ -310,17 +418,6 @@
       color: var(--brown-light);
     }
 
-    /* prompt inside checklist */
-    .check-prompt {
-      background: var(--brown);
-      margin-top: 10px; padding: 12px 16px;
-    }
-    .check-prompt p {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: 12.5px; font-style: italic; font-weight: 300;
-      color: rgba(250,244,232,0.82); line-height: 1.65; margin-bottom: 10px;
-    }
-
     /* ══ NEXT LESSON CALLOUT ══ */
     .next-block {
       background: var(--cream-dark);
@@ -382,6 +479,24 @@
       font-size: 10px; font-weight: 400;
       letter-spacing: 0.2em; text-transform: uppercase;
       color: var(--tan);
+    }
+
+
+    /* ══ PODCAST INLINE EMBED ══ */
+    .podcast-embed {
+      display: none;
+      border-top: 1px solid var(--tan-light);
+    }
+    .podcast-embed.open { display: block; }
+    .podcast-video-container {
+      position: relative; width: 100%;
+      padding-bottom: 56.25%; height: 0; overflow: hidden;
+      background: #100a04;
+    }
+    .podcast-video-container iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border: none; display: block;
     }
 
     @media (max-width: 560px) {
@@ -455,6 +570,71 @@
     <div class="title-rule"></div>
 
     <p class="lead">Your AI coaching sessions are the core of this course. Before Lesson 1 opens, you need a configured coaching environment that carries context from session to session. This lesson walks you through that setup in five steps.</p>
+
+    <!-- ══ FOUR FEARS RESOURCE BLOCK ══ -->
+    <div class="resource-block">
+      <div class="resource-block-head">
+        <span class="resource-block-eyebrow">Before You Set Up — Student Resource</span>
+        <div class="resource-block-title">The Four Fears of <em>AI</em></div>
+      </div>
+      <div class="resource-block-body">
+        <p class="resource-block-intro">Most writers bring hesitation to AI tools — some of it valid, most of it based on incomplete information. These two resources address that hesitation directly, so your first coaching session begins from curiosity rather than caution.</p>
+
+        <div class="resource-cards">
+
+          <!-- PDF card -->
+          <div class="resource-card">
+            <div class="resource-card-top">
+              <span class="resource-card-type">PDF Download · 8 min read</span>
+              <span class="resource-card-name">The Four Fears of AI</span>
+              <p class="resource-card-desc">The four fears most writers bring to AI tools — addressed honestly, without dismissing the legitimate concerns behind them.</p>
+            </div>
+            <div class="resource-card-action">
+              <a class="resource-card-btn"
+                 href="https://d1yei2z3i6k35z.cloudfront.net/13909041/699c670c99cc5_TheFourFearsofAI.pdf"
+                 target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download PDF
+              </a>
+            </div>
+          </div>
+
+          <!-- Podcast / video card -->
+          <div class="resource-card">
+            <div class="resource-card-top">
+              <span class="resource-card-type">Podcast · Video</span>
+              <span class="resource-card-name">AI Reality Check: Tools vs. Talent</span>
+              <p class="resource-card-desc">Why panic and hype keep writers from seeing AI clearly — and what six months of research into copyright, ownership, and creative collaboration actually revealed.</p>
+            </div>
+            <div class="resource-card-action">
+              <button class="resource-card-btn" onclick="togglePodcast(this)" id="podcast-toggle">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                Watch Podcast
+              </button>
+            </div>
+            <div class="podcast-embed" id="podcast-embed">
+              <div class="podcast-video-container">
+                <iframe
+                  id="podcast-iframe"
+                  src=""
+                  data-src="https://www.youtube.com/embed/A4NZ-_ZMm-0?rel=0&modestbranding=1"
+                  title="AI Reality Check: Tools vs. Talent"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen>
+                </iframe>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /resource-cards -->
+
+        <div class="resource-timing">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <p><strong>When to use these:</strong> Read the PDF and watch the podcast before completing your Claude setup below — or return to them after your first coaching session if any hesitation surfaces during the work.</p>
+        </div>
+
+      </div>
+    </div><!-- /resource-block -->
 
     <!-- ══ STEPS ══ -->
     <span class="section-label">Setup — Five Steps, Less Than Ten Minutes</span>
@@ -650,6 +830,21 @@
           btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy to Clipboard';
         }, 2500);
       });
+    }
+
+    function togglePodcast(btn) {
+      const embed = document.getElementById('podcast-embed');
+      const iframe = document.getElementById('podcast-iframe');
+      const isOpen = embed.classList.contains('open');
+      if (!isOpen) {
+        iframe.src = iframe.getAttribute('data-src');
+        embed.classList.add('open');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Close';
+      } else {
+        embed.classList.remove('open');
+        iframe.src = '';
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="10"/><polygon points=\"10 8 16 12 10 16 10 8\"/></svg> Watch Podcast';
+      }
     }
   </script>
 
