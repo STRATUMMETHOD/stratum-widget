@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calibrating Your Coach — STRATUM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:        #faf4e8;
+      --cream-dark:   #f2ead8;
+      --cream-mid:    #ede5d4;
+      --tan:          #c4a882;
+      --tan-mid:      #a8895e;
+      --tan-light:    #ddd0b8;
+      --tan-faint:    #ede5d4;
+      --brown:        #2e1f0e;
+      --brown-mid:    #5c3d1e;
+      --brown-light:  #8b6340;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Spectral', Georgia, serif;
+      background: var(--cream);
+      color: var(--brown);
+      line-height: 1;
+    }
+
+    /* ══ COMPLETE BANNER ══ */
+    .complete-banner {
+      background: var(--brown);
+      border-bottom: 2px solid var(--tan);
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .complete-banner-icon {
+      width: 36px; height: 36px;
+      border: 2px solid var(--tan);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .complete-banner-icon svg {
+      width: 18px; height: 18px;
+      stroke: var(--tan); fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .complete-banner-text {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 15px; font-weight: 500;
+      letter-spacing: 0.02em;
+      color: #faf4e8; line-height: 1.5;
+    }
+    .complete-banner-text strong { color: var(--tan); font-weight: 700; }
+
+    /* ══ VIDEO ══ */
+    .video-wrap { background: #100a04; }
+    .video-container {
+      position: relative; width: 100%;
+      padding-bottom: 56.25%; height: 0; overflow: hidden;
+    }
+    .video-container iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border: none; display: block;
+    }
+
+    /* ── Transcript ── */
+    .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
+    .transcript-btn {
+      width: 100%; background: transparent; border: none;
+      padding: 13px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; gap: 12px;
+    }
+    .transcript-btn:hover { background: rgba(196,168,130,0.06); }
+    .transcript-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--tan);
+    }
+    .transcript-chevron {
+      width: 16px; height: 16px;
+      stroke: var(--tan); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      transition: transform 0.3s ease; flex-shrink: 0;
+    }
+    .transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
+    .transcript-body { display: none; padding: 0 28px 22px; }
+    .transcript-body.open { display: block; }
+    .transcript-body p {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 13px; font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.72);
+      line-height: 1.8; margin-bottom: 12px;
+    }
+    .transcript-body p:last-child { margin-bottom: 0; }
+    .transcript-body p.pause {
+      font-style: normal; font-size: 11px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(196,168,130,0.45);
+      margin-bottom: 8px;
+    }
+
+    /* ══ MAIN ══ */
+    .main {
+      padding: 48px 32px 24px;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .lesson-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan-mid); margin-bottom: 10px; display: block;
+    }
+    .page-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 36px; font-weight: 300;
+      color: var(--brown); line-height: 1.15;
+    }
+    .page-title em { font-style: italic; color: var(--brown-mid); }
+    .title-rule { width: 48px; height: 1px; background: var(--tan); margin: 18px 0 28px; }
+
+    .lead {
+      font-size: 16px; font-weight: 300; line-height: 1.75;
+      color: var(--brown-mid); margin-bottom: 32px;
+    }
+
+    /* ══ WHY IT MATTERS ══ */
+    .why-block {
+      background: var(--cream-dark);
+      border: 1px solid var(--tan-light);
+      border-left: 3px solid var(--tan-mid);
+      padding: 22px 24px;
+      margin-bottom: 40px;
+    }
+    .why-block-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 15px; font-weight: 600;
+      color: var(--brown); display: block; margin-bottom: 12px;
+    }
+    .why-block p {
+      font-size: 14px; font-weight: 300; line-height: 1.75;
+      color: var(--brown); margin-bottom: 10px;
+    }
+    .why-block p:last-child { margin-bottom: 0; }
+
+    /* ══ CONTRAST GRID ══ */
+    .contrast-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--tan-light);
+      margin-bottom: 40px;
+    }
+    .contrast-col { }
+    .contrast-head {
+      padding: 12px 20px;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+    }
+    .contrast-head.no { background: var(--brown-mid); color: var(--cream); }
+    .contrast-head.yes { background: var(--brown); color: var(--tan); border-left: 1px solid rgba(196,168,130,0.2); }
+    .contrast-items { }
+    .contrast-item {
+      padding: 12px 20px;
+      font-size: 13px; font-weight: 300; line-height: 1.6;
+      color: var(--brown);
+      border-top: 1px solid var(--tan-faint);
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .contrast-col:last-child .contrast-item { border-left: 1px solid var(--tan-light); }
+    .contrast-item::before {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 14px; flex-shrink: 0; margin-top: 1px;
+    }
+    .contrast-col:first-child .contrast-item::before { content: '—'; color: var(--tan-light); }
+    .contrast-col:last-child .contrast-item::before { content: '✓'; color: var(--tan-mid); font-weight: 600; }
+
+    /* ══ INSTRUCTIONS BAND ══ */
+    .instructions-band {
+      background: var(--brown);
+      padding: 20px 24px;
+      margin-bottom: 4px;
+    }
+    .instructions-band-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px; font-weight: 300;
+      color: var(--cream); margin-bottom: 10px;
+    }
+    .instructions-list {
+      list-style: none; padding: 0;
+    }
+    .instructions-list li {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 13px; font-weight: 300;
+      color: rgba(250,244,232,0.8);
+      line-height: 1.65; padding: 5px 0;
+      border-bottom: 1px solid rgba(196,168,130,0.12);
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .instructions-list li:last-child { border-bottom: none; }
+    .instructions-list li::before {
+      content: attr(data-n);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 11px; color: var(--tan);
+      flex-shrink: 0; margin-top: 2px;
+      min-width: 14px;
+    }
+    .instructions-list li strong { color: var(--tan); font-weight: 500; }
+
+    /* ══ SECTION LABEL ══ */
+    .section-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.24em; text-transform: uppercase;
+      color: var(--tan-mid); display: block;
+      margin-bottom: 16px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--tan-light);
+    }
+
+    /* ══ JOTFORM CONTAINER ══ */
+    .form-outer {
+      border: 1px solid var(--tan-light);
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .form-outer .jotform-embed {
+      display: block;
+      min-height: 1200px;
+      background: var(--cream);
+    }
+
+    /* ══ SAVE REMINDER ══ */
+    .save-reminder {
+      background: var(--brown-mid);
+      border: 1px solid rgba(196,168,130,0.25);
+      padding: 16px 22px;
+      margin-bottom: 40px;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .save-reminder-icon {
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .save-reminder-icon svg {
+      width: 18px; height: 18px;
+      stroke: var(--tan); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .save-reminder p {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 14px; font-weight: 500;
+      color: var(--cream); line-height: 1.6;
+    }
+    .save-reminder p strong { color: var(--tan); }
+
+    /* ══ ACTION BOX ══ */
+    .action-box {
+      background: var(--brown);
+      padding: 28px 32px;
+      margin: 16px 0 0;
+      text-align: center;
+      border-bottom: 1px solid rgba(196,168,130,0.3);
+    }
+    .action-box-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 10px;
+    }
+    .action-box p {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 17px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.6; margin: 0;
+    }
+    .action-box p strong { font-style: normal; font-weight: 500; color: var(--tan); }
+
+    .closing {
+      background: var(--brown);
+      padding: 36px 32px;
+      text-align: center; margin-top: 0;
+    }
+    .closing-quote {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 21px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.65; margin-bottom: 20px;
+    }
+    .closing-attr {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 400;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--tan);
+    }
+
+    @media (max-width: 560px) {
+      .main { padding: 32px 20px 24px; }
+      .page-title { font-size: 28px; }
+      .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .contrast-grid { grid-template-columns: 1fr; }
+      .contrast-col:last-child .contrast-item { border-left: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ COMPLETE BANNER ══ -->
+  <div class="complete-banner">
+    <div class="complete-banner-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <p class="complete-banner-text">
+      When you finish this lesson, scroll past the content below to find the
+      <strong>Mark as Complete</strong> button. Click it before moving to Lesson 1.
+    </p>
+  </div>
+
+  <!-- ══ VIDEO ══ -->
+  <div class="video-wrap">
+    <div class="video-container">
+      <iframe
+        src="https://www.youtube.com/embed/Tr_1A9v5q7I?rel=0&modestbranding=1"
+        title="Calibrating Your Coach — STRATUM"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <div class="transcript">
+      <button class="transcript-btn" aria-expanded="false" aria-controls="transcript-body" onclick="toggleTranscript(this)">
+        <span class="transcript-label">Video Transcript</span>
+        <svg class="transcript-chevron" viewBox="0 0 24 24">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+      <div class="transcript-body" id="transcript-body">
+        <p>Before you sit down with your AI coach in Lesson 1, there's one short additional step. You're going to fill out a context form.</p>
+        <p class="pause">[ pause ]</p>
+        <p>Think about what it would be like to work with a human writing coach — someone you'd hired, someone with real expertise. The first thing they'd do before your first session is ask you some questions. What are you working on? Where are you in the process? What's giving you trouble?</p>
+        <p>Without that context, even the best coach is guessing. They're giving you generic guidance instead of targeted guidance. They're asking questions they wouldn't need to ask if they'd known going in.</p>
+        <p class="pause">[ pause ]</p>
+        <p>Your AI coach works exactly the same way.</p>
+        <p>When you tell it your genre, it knows the conventions your character lives inside. When you tell it where you are in the writing process, it knows whether to push harder or move carefully. When you tell it what's giving you trouble, it knows where to focus.</p>
+        <p class="pause">[ pause ]</p>
+        <p>The form takes about five minutes. Answer quickly — your first instinct is almost always right. Don't overthink it.</p>
+        <p>Be sure to print to a PDF and save. You will use it in Lesson 1.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main">
+
+    <span class="lesson-label">Before You Excavate · STRATUM: AI Character Coaching</span>
+    <h1 class="page-title">Calibrating Your <em>Coach</em></h1>
+    <div class="title-rule"></div>
+
+    <p class="lead">Your coach is configured. Now it needs context. The form below takes five minutes and determines the quality of every session that follows.</p>
+
+    <!-- WHY IT MATTERS -->
+    <div class="why-block">
+      <span class="why-block-title">Why This Step Matters</span>
+      <p>Think about what it would be like to work with a human writing coach — someone you'd hired, someone with real expertise. The first thing they'd do before your first session is ask you some questions. What are you working on? Where are you in the process? What's giving you trouble?</p>
+      <p>Without that context, even the best coach is guessing. They're giving you generic guidance instead of targeted guidance. Your AI coach works exactly the same way.</p>
+    </div>
+
+    <!-- CONTRAST GRID -->
+    <div class="contrast-grid">
+      <div class="contrast-col">
+        <div class="contrast-head no">Without Context</div>
+        <div class="contrast-items">
+          <div class="contrast-item">Asks questions it wouldn't need to ask</div>
+          <div class="contrast-item">Gives generic guidance for a generic writer</div>
+          <div class="contrast-item">Doesn't know the conventions of your genre</div>
+          <div class="contrast-item">Can't calibrate how hard to push</div>
+          <div class="contrast-item">Wastes the first ten minutes of every session</div>
+        </div>
+      </div>
+      <div class="contrast-col">
+        <div class="contrast-head yes">With This Form</div>
+        <div class="contrast-items">
+          <div class="contrast-item">Starts excavating immediately</div>
+          <div class="contrast-item">Asks questions specific to your character</div>
+          <div class="contrast-item">Knows your genre, stage, and sticking points</div>
+          <div class="contrast-item">Knows whether to push or move carefully</div>
+          <div class="contrast-item">Focuses where you need it most</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSTRUCTIONS BAND -->
+    <div class="instructions-band">
+      <div class="instructions-band-title">Before You Fill Out the Form</div>
+      <ul class="instructions-list">
+        <li data-n="1">Answer quickly. Your first instinct is almost always right. Don't overthink it.</li>
+        <li data-n="2">Be honest about where you are. If you're stuck, say so. That's exactly the kind of signal your coach needs.</li>
+        <li data-n="3">When finished, <strong>print to PDF and save</strong>. You will attach this to your Lesson 1 coaching session.</li>
+      </ul>
+    </div>
+
+    <!-- SAVE REMINDER -->
+    <div class="save-reminder">
+      <div class="save-reminder-icon">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      </div>
+      <p><strong>Print and save this form as a PDF when complete.</strong> You will attach it to your Lesson 1 coaching session. Your coach cannot read what's in this form unless you bring it to the session.</p>
+    </div>
+
+    <!-- FORM -->
+    <span class="section-label">Your Context Form</span>
+    <div class="form-outer">
+      <div class="jotform-embed">
+        <script type="text/javascript" src="https://form.jotform.com/jsform/260554202562854"></script>
+      </div>
+    </div>
+
+    <div class="action-box">
+      <span class="action-box-label">When You're Ready</span>
+      <p>Move to <strong>Lesson 1: The Surface Pattern.</strong><br>The excavation begins.</p>
+    </div>
+
+  </div><!-- /main -->
+
+  <div class="closing">
+    <p class="closing-quote">A coach without context gives generic guidance.<br>A coach with context asks the right questions from the first exchange.</p>
+    <span class="closing-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
+  </div>
+
+  <script>
+    function toggleTranscript(btn) {
+      const body = document.getElementById('transcript-body');
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    }
+  </script>
+
+</body>
+</html>
