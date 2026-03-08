@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Building Your AI Coach — STRATUM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:        #faf4e8;
+      --cream-dark:   #f2ead8;
+      --cream-mid:    #ede5d4;
+      --tan:          #c4a882;
+      --tan-mid:      #a8895e;
+      --tan-light:    #ddd0b8;
+      --tan-faint:    #ede5d4;
+      --brown:        #2e1f0e;
+      --brown-mid:    #5c3d1e;
+      --brown-light:  #8b6340;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Spectral', Georgia, serif;
+      background: var(--cream);
+      color: var(--brown);
+      line-height: 1;
+    }
+
+    /* ══ COMPLETE BANNER ══ */
+    .complete-banner {
+      background: var(--brown);
+      border-bottom: 2px solid var(--tan);
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .complete-banner-icon {
+      width: 36px; height: 36px;
+      border: 2px solid var(--tan);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .complete-banner-icon svg {
+      width: 18px; height: 18px;
+      stroke: var(--tan); fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .complete-banner-text {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 15px; font-weight: 500;
+      letter-spacing: 0.02em;
+      color: #faf4e8; line-height: 1.5;
+    }
+    .complete-banner-text strong { color: var(--tan); font-weight: 700; }
+
+    /* ══ VIDEO ══ */
+    .video-wrap { background: #100a04; }
+    .video-container {
+      position: relative; width: 100%;
+      padding-bottom: 56.25%; height: 0; overflow: hidden;
+    }
+    .video-container iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border: none; display: block;
+    }
+
+    /* ── Transcript ── */
+    .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
+    .transcript-btn {
+      width: 100%; background: transparent; border: none;
+      padding: 13px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; gap: 12px;
+    }
+    .transcript-btn:hover { background: rgba(196,168,130,0.06); }
+    .transcript-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--tan);
+    }
+    .transcript-chevron {
+      width: 16px; height: 16px;
+      stroke: var(--tan); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      transition: transform 0.3s ease; flex-shrink: 0;
+    }
+    .transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
+    .transcript-body { display: none; padding: 0 28px 22px; }
+    .transcript-body.open { display: block; }
+    .transcript-body p {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 13px; font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.72);
+      line-height: 1.8; margin-bottom: 12px;
+    }
+    .transcript-body p:last-child { margin-bottom: 0; }
+    .transcript-body p.pause {
+      font-style: normal; font-size: 11px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(196,168,130,0.45);
+      margin-bottom: 8px;
+    }
+    .transcript-body p.step-head {
+      font-style: normal; font-weight: 500;
+      color: var(--tan); font-size: 12px;
+      letter-spacing: 0.06em;
+      margin-top: 14px; margin-bottom: 4px;
+    }
+
+    /* ══ MAIN ══ */
+    .main {
+      padding: 48px 32px 24px;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .lesson-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan-mid); margin-bottom: 10px; display: block;
+    }
+    .page-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 36px; font-weight: 300;
+      color: var(--brown); line-height: 1.15; margin-bottom: 6px;
+    }
+    .page-title em { font-style: italic; color: var(--brown-mid); }
+    .title-rule { width: 48px; height: 1px; background: var(--tan); margin: 18px 0 28px; }
+
+    .lead {
+      font-size: 16px; font-weight: 300; line-height: 1.75;
+      color: var(--brown-mid); margin-bottom: 40px;
+      padding-bottom: 32px; border-bottom: 1px solid var(--tan-light);
+    }
+
+    /* ══ SECTION TITLE ══ */
+    .section-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.24em; text-transform: uppercase;
+      color: var(--tan-mid); display: block;
+      margin-bottom: 20px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--tan-light);
+    }
+
+    /* ══ STEPS ══ */
+    .steps { margin-bottom: 48px; }
+
+    .step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 0;
+      margin-bottom: 4px;
+      border: 1px solid var(--tan-light);
+    }
+
+    .step-num {
+      background: var(--brown);
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 22px 0 0;
+    }
+    .step-num span {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 22px; font-weight: 300;
+      color: var(--tan); line-height: 1;
+    }
+
+    .step-content { padding: 20px 24px; background: var(--cream); }
+
+    .step-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 17px; font-weight: 600;
+      color: var(--brown); display: block; margin-bottom: 8px;
+    }
+
+    .step-body {
+      font-size: 14px; font-weight: 300;
+      line-height: 1.75; color: var(--brown);
+    }
+    .step-body p { margin-bottom: 10px; }
+    .step-body p:last-child { margin-bottom: 0; }
+    .step-body a { color: var(--brown-mid); }
+
+    /* ══ PROMPT BOX ══ */
+    .prompt-wrap {
+      background: var(--brown);
+      margin: 16px 0 0;
+      padding: 18px 20px;
+    }
+    .prompt-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 10px;
+    }
+    .prompt-text {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 13px; font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.85);
+      line-height: 1.7;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(196,168,130,0.2);
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      user-select: all;
+    }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent;
+      border: 1px solid rgba(196,168,130,0.45);
+      padding: 9px 16px;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--tan); cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .copy-btn:hover { border-color: var(--tan); color: var(--cream); }
+    .copy-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .copy-btn.copied { color: #8bc48a; border-color: #8bc48a; }
+
+    /* ══ MEMORY NOTE ══ */
+    .memory-block {
+      background: var(--cream-dark);
+      border: 1px solid var(--tan-light);
+      border-left: 3px solid var(--tan-mid);
+      padding: 22px 24px;
+      margin-bottom: 40px;
+    }
+    .memory-block-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 15px; font-weight: 600;
+      color: var(--brown); display: block; margin-bottom: 10px;
+    }
+    .memory-block p {
+      font-size: 14px; font-weight: 300; line-height: 1.75;
+      color: var(--brown); margin-bottom: 10px;
+    }
+    .memory-block p:last-child { margin-bottom: 0; }
+
+    /* ══ CHECKLIST ══ */
+    .checklist-wrap {
+      border: 1px solid var(--tan-light);
+      margin-bottom: 40px;
+    }
+    .checklist-head {
+      background: var(--brown);
+      padding: 14px 24px;
+    }
+    .checklist-head-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px; font-weight: 300;
+      color: var(--cream);
+    }
+    .checklist-head-sub {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-style: italic;
+      color: var(--tan); margin-top: 3px;
+    }
+    .checklist-body { padding: 6px 0; }
+
+    .check-item {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--tan-faint);
+    }
+    .check-item:last-child { border-bottom: none; }
+
+    .check-box {
+      width: 20px; height: 20px;
+      border: 1.5px solid var(--tan);
+      flex-shrink: 0; margin-top: 2px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .check-box:hover { border-color: var(--brown-mid); }
+    .check-box.checked { background: var(--brown); border-color: var(--brown); }
+    .check-box.checked svg { display: block; }
+    .check-box svg {
+      display: none; width: 11px; height: 11px;
+      stroke: var(--tan); fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .check-content { flex: 1; }
+    .check-step-tag {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--tan-mid); display: block; margin-bottom: 4px;
+    }
+    .check-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 15px; font-weight: 600;
+      color: var(--brown); display: block; margin-bottom: 5px;
+    }
+    .check-detail {
+      font-size: 13px; font-weight: 300; line-height: 1.7;
+      color: var(--brown-light);
+    }
+
+    /* prompt inside checklist */
+    .check-prompt {
+      background: var(--brown);
+      margin-top: 10px; padding: 12px 16px;
+    }
+    .check-prompt p {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 12.5px; font-style: italic; font-weight: 300;
+      color: rgba(250,244,232,0.82); line-height: 1.65; margin-bottom: 10px;
+    }
+
+    /* ══ NEXT LESSON CALLOUT ══ */
+    .next-block {
+      background: var(--cream-dark);
+      border: 1px solid var(--tan-light);
+      padding: 24px 28px;
+      margin-bottom: 8px;
+    }
+    .next-block-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.24em; text-transform: uppercase;
+      color: var(--tan-mid); display: block; margin-bottom: 10px;
+    }
+    .next-block-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px; font-weight: 300;
+      color: var(--brown); margin-bottom: 12px;
+    }
+    .next-block p {
+      font-size: 14px; font-weight: 300; line-height: 1.75;
+      color: var(--brown); margin-bottom: 10px;
+    }
+    .next-block p:last-child { margin-bottom: 0; }
+    .next-block strong { font-weight: 500; }
+
+    /* ══ ACTION BOX ══ */
+    .action-box {
+      background: var(--brown);
+      padding: 28px 32px;
+      margin: 16px 0 0;
+      text-align: center;
+      border-bottom: 1px solid rgba(196,168,130,0.3);
+    }
+    .action-box-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 10px;
+    }
+    .action-box p {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 17px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.6; margin: 0;
+    }
+    .action-box p strong { font-style: normal; font-weight: 500; color: var(--tan); }
+
+    .closing {
+      background: var(--brown);
+      padding: 36px 32px;
+      text-align: center; margin-top: 0;
+    }
+    .closing-quote {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 21px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.65; margin-bottom: 20px;
+    }
+    .closing-attr {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10px; font-weight: 400;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--tan);
+    }
+
+    @media (max-width: 560px) {
+      .main { padding: 32px 20px 24px; }
+      .page-title { font-size: 28px; }
+      .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .step { grid-template-columns: 38px 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ COMPLETE BANNER ══ -->
+  <div class="complete-banner">
+    <div class="complete-banner-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <p class="complete-banner-text">
+      When you finish this lesson, scroll past the content below to find the
+      <strong>Mark as Complete</strong> button. Click it before moving to the next lesson.
+    </p>
+  </div>
+
+  <!-- ══ VIDEO ══ -->
+  <div class="video-wrap">
+    <div class="video-container">
+      <iframe
+        src="https://www.youtube.com/embed/3u9b5YZ27yw?rel=0&modestbranding=1"
+        title="Building Your AI Coach — STRATUM"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <div class="transcript">
+      <button class="transcript-btn" aria-expanded="false" aria-controls="transcript-body" onclick="toggleTranscript(this)">
+        <span class="transcript-label">Video Transcript</span>
+        <svg class="transcript-chevron" viewBox="0 0 24 24">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+      <div class="transcript-body" id="transcript-body">
+        <p>This course uses AI as your Socratic coaching partner. You'll need an account with an AI system to run your sessions. I use Claude, and I recommend it — it has a feature called Projects that gives you memory continuity across all eight lessons. That means your coach remembers your character, your anchor behavior, your hidden truth, and everything you've built, every time you return.</p>
+        <p>If you use a different system — Gemini, ChatGPT, Copilot — the lesson prompts will still work. You may have to paste in your previous session summary at the start of each chat to give context. The setup steps below are for Claude only.</p>
+        <p class="pause">[ pause ]</p>
+        <p class="step-head">Step 1 — Create Your Account.</p>
+        <p>Go to claude.ai. Create a free account, or sign in if you already have one. Claude offers a free tier and a paid plan called Pro. The free tier works for this course. Pro gives you higher usage limits, which you may want if you're working through lessons quickly. That decision is yours.</p>
+        <p class="pause">[ pause ]</p>
+        <p class="step-head">Step 2 — Create A Project.</p>
+        <p>Once you're logged in, look for Projects in the left sidebar. Click it, then click New Project. Name it something clear — STRATUM Character Development works well. This Project is the container for your entire course experience. Every lesson session you run will live here, and Claude will carry context from one session to the next.</p>
+        <p class="pause">[ pause ]</p>
+        <p class="step-head">Step 3 — Add Project Instructions.</p>
+        <p>Inside your Project, you'll see a section called Project Instructions. This is where you tell Claude its role for the entire course. Click to edit it and paste in the following instruction. This instruction stays active for every session. You won't need to re-enter it.</p>
+        <p class="pause">[ pause ]</p>
+        <p class="step-head">Step 4 — Upload Your Files.</p>
+        <p>Inside your Project, you can upload files that Claude can reference throughout the course. At minimum, upload any character notes, story outlines, or reference material you already have. As you complete each lesson, you can add your Reflection Journal entries here as well. This deepens Claude's context over time. To upload: look for the Add content or paperclip option within the Project. Supported formats include PDF, Word documents, and plain text.</p>
+        <p class="pause">[ pause ]</p>
+        <p class="step-head">Step 5 — Test Your Setup.</p>
+        <p>Open a new chat inside your Project — not from the main sidebar, but from within the Project itself. This ensures the session inherits your instructions and files. Type: "What do you know about my character so far?" If it's your first session, Claude will tell you it has your instructions but no character details yet. That's correct. Either way, you're ready.</p>
+        <p class="pause">[ pause ]</p>
+        <p>Each time you return for a new lesson, open a new chat inside the same Project. Claude will remember your anchor behavior from Lesson 1, your hidden truth from Lesson 2, and so on. You don't need to re-explain your character from scratch each session. This is the core advantage of the Project setup. It allows the coaching to deepen progressively — exactly the way the methodology is designed.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main">
+
+    <span class="lesson-label">Before You Excavate · STRATUM: AI Character Coaching</span>
+    <h1 class="page-title">Building Your <em>AI Coach</em></h1>
+    <div class="title-rule"></div>
+
+    <p class="lead">Your AI coaching sessions are the core of this course. Before Lesson 1 opens, you need a configured coaching environment that carries context from session to session. This lesson walks you through that setup in five steps.</p>
+
+    <!-- ══ STEPS ══ -->
+    <span class="section-label">Setup — Five Steps, Less Than Ten Minutes</span>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num"><span>1</span></div>
+        <div class="step-content">
+          <span class="step-title">Create Your Account</span>
+          <div class="step-body">
+            <p>Go to <a href="https://claude.ai" target="_blank">claude.ai</a> and create a free account, or sign in if you already have one.</p>
+            <p>Claude offers a free tier and a paid plan called Pro. The free tier works for this course. Pro gives you higher usage limits if you're moving through lessons quickly. That decision is yours.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"><span>2</span></div>
+        <div class="step-content">
+          <span class="step-title">Create a Project</span>
+          <div class="step-body">
+            <p>Once logged in, look for <strong>Projects</strong> in the left sidebar. Click it, then click <strong>New Project</strong>.</p>
+            <p>Name it <strong>STRATUM Character Development</strong>. This Project is the container for your entire course experience. Every lesson session you run will live here, and Claude will carry context from one session to the next.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"><span>3</span></div>
+        <div class="step-content">
+          <span class="step-title">Add Project Instructions</span>
+          <div class="step-body">
+            <p>Inside your Project, find the <strong>Project Instructions</strong> section. This is where you tell Claude its role for the entire course. Click to edit it and paste in the following exactly as written.</p>
+            <p>This instruction stays active for every session. You won't need to re-enter it.</p>
+          </div>
+          <div class="prompt-wrap">
+            <span class="prompt-label">Project Instructions — Copy and Paste Exactly</span>
+            <div class="prompt-text" id="project-instructions">You are an expert writing coach specializing in character development using the STRATUM excavation methodology. You are a Socratic questioner, not a content generator. Your role is to help me discover what I already intuitively know about my character — never to generate content for me. You have memory of our previous sessions and should refer to prior work when relevant.</div>
+            <button class="copy-btn" id="copy-btn" onclick="copyInstructions()">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Copy to Clipboard
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"><span>4</span></div>
+        <div class="step-content">
+          <span class="step-title">Upload Your Files</span>
+          <div class="step-body">
+            <p>Inside your Project, look for the <strong>Add content</strong> or paperclip option. Upload any character notes, story outlines, or reference material you already have.</p>
+            <p>As you complete each lesson, add your saved Reflection Journal PDFs here as well. This deepens Claude's context over time. Supported formats: PDF, Word documents, plain text.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"><span>5</span></div>
+        <div class="step-content">
+          <span class="step-title">Test Your Setup</span>
+          <div class="step-body">
+            <p>Open a new chat from <strong>inside your Project</strong> — not from the main sidebar. This ensures the session inherits your instructions and uploaded files.</p>
+            <p>Type the following to confirm everything is working:</p>
+          </div>
+          <div class="prompt-wrap">
+            <span class="prompt-label">Test Message</span>
+            <div class="prompt-text">"What do you know about my character so far?"</div>
+          </div>
+          <div class="step-body" style="padding-top:14px;">
+            <p>If it's your first session, Claude will confirm it has your instructions but no character details yet. That's the correct response. If you've uploaded files, it may reference those. Either way — you're ready.</p>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /steps -->
+
+    <!-- ══ MEMORY NOTE ══ -->
+    <div class="memory-block">
+      <span class="memory-block-title">What Memory Continuity Means in Practice</span>
+      <p>Each time you return for a new lesson, open a new chat inside the same Project. Claude will remember your anchor behavior from Lesson 1, your hidden truth from Lesson 2, and everything you build as you go deeper. You don't need to re-explain your character from scratch each session — though the lesson prompts include a brief summary field to sharpen focus.</p>
+      <p>This is the core advantage of the Project setup. It's not just convenience. It allows the coaching to deepen progressively, exactly the way the methodology is designed.</p>
+    </div>
+
+    <!-- ══ CHECKLIST ══ -->
+    <span class="section-label">Your Setup Checklist</span>
+    <div class="checklist-wrap">
+      <div class="checklist-head">
+        <div class="checklist-head-title">Complete before moving to the next lesson</div>
+        <div class="checklist-head-sub">Each step takes less than two minutes</div>
+      </div>
+      <div class="checklist-body">
+
+        <div class="check-item">
+          <div class="check-box" onclick="toggleCheck(this)" role="checkbox" aria-checked="false" tabindex="0">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="check-content">
+            <span class="check-step-tag">Step 1</span>
+            <span class="check-title">Create your account at claude.ai</span>
+            <div class="check-detail">Free tier is sufficient. Pro gives higher usage limits if you're moving through lessons quickly.</div>
+          </div>
+        </div>
+
+        <div class="check-item">
+          <div class="check-box" onclick="toggleCheck(this)" role="checkbox" aria-checked="false" tabindex="0">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="check-content">
+            <span class="check-step-tag">Step 2</span>
+            <span class="check-title">Create a Project named STRATUM Character Development</span>
+            <div class="check-detail">In the left sidebar: Projects → New Project.</div>
+          </div>
+        </div>
+
+        <div class="check-item">
+          <div class="check-box" onclick="toggleCheck(this)" role="checkbox" aria-checked="false" tabindex="0">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="check-content">
+            <span class="check-step-tag">Step 3</span>
+            <span class="check-title">Add Project Instructions</span>
+            <div class="check-detail">Inside your Project, open Project Instructions and paste in the text from Step 3 above exactly as written.</div>
+          </div>
+        </div>
+
+        <div class="check-item">
+          <div class="check-box" onclick="toggleCheck(this)" role="checkbox" aria-checked="false" tabindex="0">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="check-content">
+            <span class="check-step-tag">Step 4</span>
+            <span class="check-title">Upload any existing character files</span>
+            <div class="check-detail">Notes, outlines, reference material. Add Reflection Journal PDFs here after each lesson to deepen Claude's context over time.</div>
+          </div>
+        </div>
+
+        <div class="check-item">
+          <div class="check-box" onclick="toggleCheck(this)" role="checkbox" aria-checked="false" tabindex="0">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="check-content">
+            <span class="check-step-tag">Step 5</span>
+            <span class="check-title">Test your setup</span>
+            <div class="check-detail">Open a new chat from inside your Project — not the main sidebar. Send: "What do you know about my character so far?" A response confirming your instructions are active means you're ready.</div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /checklist -->
+
+    <!-- ══ NEXT LESSON ══ -->
+    <div class="next-block">
+      <span class="next-block-label">One More Step Before Lesson 1</span>
+      <div class="next-block-title">Your coach is ready. Now it needs context.</div>
+      <p>Your Project is configured and your coach is ready to receive instructions. But before your first excavation session, you'll complete a short piece of pre-work in the next lesson — a context form that tells your coach what you're working on, where you are in the process, and what's giving you trouble.</p>
+      <p>Think of it as the intake conversation a human coach would have before your first meeting. <strong>A coach without context gives generic guidance. A coach with context asks the right questions from the first exchange.</strong></p>
+    </div>
+
+    <div class="action-box">
+      <span class="action-box-label">When You're Ready</span>
+      <p>Move to the next lesson: <strong>Calibrating Your Coach.</strong></p>
+    </div>
+
+  </div><!-- /main -->
+
+  <div class="closing">
+    <p class="closing-quote">The setup takes ten minutes. What it makes possible takes eight lessons.</p>
+    <span class="closing-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
+  </div>
+
+  <script>
+    function toggleTranscript(btn) {
+      const body = document.getElementById('transcript-body');
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    }
+
+    function toggleCheck(el) {
+      el.classList.toggle('checked');
+      el.setAttribute('aria-checked', el.classList.contains('checked') ? 'true' : 'false');
+    }
+
+    function copyInstructions() {
+      const text = document.getElementById('project-instructions').textContent.trim();
+      const btn = document.getElementById('copy-btn');
+      navigator.clipboard.writeText(text).then(() => {
+        btn.classList.add('copied');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy to Clipboard';
+        }, 2500);
+      });
+    }
+  </script>
+
+</body>
+</html>
