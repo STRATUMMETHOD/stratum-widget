@@ -26,6 +26,22 @@
       --amber:        #7a4e10;
       --amber-bg:     #fdf3e3;
       --amber-border: #d4b88a;
+
+      /* ── Typography scale ──────────────────────────────────────
+         Floor rules (from readability audit):
+           • Nothing displayed to users below 11px
+           • Uppercase/tracked labels: 11–12px minimum
+           • Reading-length paragraphs: 15px minimum
+           • Primary body text: 16px
+         Aesthetic is unchanged — same faces, same tracking,
+         same uppercase treatment — just at legible sizes.
+      ───────────────────────────────────────────────────────── */
+      --label-xs:   11px;   /* was 9–10px — eyebrows, small caps labels  */
+      --label-sm:   12px;   /* was 11px  — transcript toggle, section num */
+      --label-md:   13px;   /* unchanged — deliverables title             */
+      --body-sm:    14px;   /* was 13px  — table cells, callout body      */
+      --body-md:    15px;   /* was 14px  — callout/deliverable/claude text */
+      --body-lg:    16px;   /* was 15px  — primary section paragraphs     */
     }
 
     html { scroll-behavior: smooth; }
@@ -34,7 +50,7 @@
       font-family: 'Spectral', Georgia, serif;
       background: var(--cream);
       color: var(--brown);
-      line-height: 1;
+      line-height: 1.6; /* was 1 — corrected base; individual overrides still apply */
     }
 
     /* ══ COMPLETE BANNER ══ */
@@ -62,7 +78,7 @@
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 15px; font-weight: 500;
       letter-spacing: 0.02em;
-      color: #faf4e8; line-height: 1.5;
+      color: #faf4e8; line-height: 1.55;
     }
     .complete-banner-text strong { color: var(--tan); font-weight: 700; }
 
@@ -89,7 +105,8 @@
     .transcript-btn:hover { background: rgba(196,168,130,0.06); }
     .transcript-label {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 11px; font-weight: 500;
+      font-size: var(--label-sm); /* was 11px → 12px */
+      font-weight: 500;
       letter-spacing: 0.18em; text-transform: uppercase;
       color: var(--tan);
     }
@@ -104,9 +121,10 @@
     .transcript-body.open { display: block; }
     .transcript-body p {
       font-family: 'Spectral', Georgia, serif;
-      font-size: 13px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.72);
-      line-height: 1.8; margin-bottom: 12px;
+      font-size: var(--body-sm); /* was 13px → 14px */
+      font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.78); /* slightly increased opacity for contrast */
+      line-height: 1.85; margin-bottom: 14px;
     }
     .transcript-body p:last-child { margin-bottom: 0; }
 
@@ -119,7 +137,8 @@
 
     .lesson-label {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 10px; font-weight: 500;
+      font-size: var(--label-xs); /* was 10px → 11px */
+      font-weight: 500;
       letter-spacing: 0.22em; text-transform: uppercase;
       color: var(--tan-mid); margin-bottom: 10px; display: block;
     }
@@ -132,7 +151,8 @@
     .title-rule { width: 48px; height: 1px; background: var(--tan); margin: 18px 0 28px; }
 
     .lead {
-      font-size: 16px; font-weight: 300; line-height: 1.75;
+      font-size: var(--body-lg); /* was 16px → 16px (unchanged) */
+      font-weight: 300; line-height: 1.8;
       color: var(--brown-mid); margin-bottom: 40px;
       padding-bottom: 32px; border-bottom: 1px solid var(--tan-light);
     }
@@ -145,7 +165,8 @@
     }
     .section-num {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 500;
+      font-size: var(--label-sm); /* was 13px → 12px; it's a Roman numeral label */
+      font-weight: 500;
       letter-spacing: 0.1em; color: var(--tan-mid);
       text-transform: uppercase; flex-shrink: 0;
     }
@@ -155,9 +176,10 @@
       color: var(--brown); line-height: 1.2;
     }
     .section p {
-      font-size: 15px; font-weight: 300;
-      line-height: 1.8; color: var(--brown);
-      margin-bottom: 16px;
+      font-size: var(--body-lg); /* was 15px → 16px — primary reading text */
+      font-weight: 300;
+      line-height: 1.85; color: var(--brown);
+      margin-bottom: 18px;
     }
     .section p:last-child { margin-bottom: 0; }
 
@@ -176,7 +198,7 @@
     .pull-quote p {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 20px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.6; margin: 0;
+      color: var(--cream); line-height: 1.65; margin: 0;
     }
 
     /* ══ CALLOUT BOXES ══ */
@@ -188,15 +210,17 @@
     .callout.amber { background: var(--amber-bg); border-color: var(--amber); }
     .callout-label {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 10px; font-weight: 600;
+      font-size: var(--label-xs); /* was 10px → 11px */
+      font-weight: 600;
       letter-spacing: 0.18em; text-transform: uppercase;
-      display: block; margin-bottom: 8px;
+      display: block; margin-bottom: 9px;
     }
     .callout.green .callout-label { color: var(--green); }
     .callout.amber .callout-label { color: var(--amber); }
     .callout p {
-      font-size: 14px; font-weight: 300;
-      line-height: 1.75; color: var(--brown); margin: 0;
+      font-size: var(--body-md); /* was 14px → 15px */
+      font-weight: 300;
+      line-height: 1.8; color: var(--brown); margin: 0;
     }
     .callout p strong { font-weight: 500; }
 
@@ -208,7 +232,8 @@
     }
     .deliverables-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 600;
+      font-size: var(--label-md); /* was 13px — unchanged; it's a heading label, fine */
+      font-weight: 600;
       letter-spacing: 0.14em; text-transform: uppercase;
       color: var(--tan-mid); display: block; margin-bottom: 18px;
     }
@@ -232,8 +257,9 @@
       stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
     }
     .deliverable-text {
-      font-size: 14px; font-weight: 300;
-      line-height: 1.7; color: var(--brown);
+      font-size: var(--body-md); /* was 14px → 15px */
+      font-weight: 300;
+      line-height: 1.75; color: var(--brown);
     }
     .deliverable-text strong { font-weight: 500; color: var(--brown-mid); }
 
@@ -248,15 +274,17 @@
     .contrast-col.right { background: var(--cream-dark); }
     .contrast-col-label {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 10px; font-weight: 600;
+      font-size: var(--label-xs); /* was 10px → 11px */
+      font-weight: 600;
       letter-spacing: 0.18em; text-transform: uppercase;
-      display: block; margin-bottom: 12px;
+      display: block; margin-bottom: 14px;
     }
     .contrast-col:first-child .contrast-col-label { color: var(--brown-light); }
     .contrast-col.right .contrast-col-label { color: var(--tan-mid); }
     .contrast-col p {
-      font-size: 13px; font-weight: 300;
-      line-height: 1.75; color: var(--brown); margin-bottom: 8px;
+      font-size: var(--body-sm); /* was 13px → 14px */
+      font-weight: 300;
+      line-height: 1.8; color: var(--brown); margin-bottom: 10px;
     }
     .contrast-col p:last-child { margin-bottom: 0; }
 
@@ -272,9 +300,11 @@
     }
     .claude-block-eyebrow {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 9px; font-weight: 600;
-      letter-spacing: 0.26em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 5px;
+      font-size: var(--label-xs); /* was 9px → 11px — most critical fix */
+      font-weight: 600;
+      letter-spacing: 0.22em; /* slightly reduced from 0.26em — better at 11px */
+      text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 6px;
     }
     .claude-block-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
@@ -287,7 +317,8 @@
       padding: 22px 24px 24px;
     }
     .claude-block-intro {
-      font-size: 14px; font-weight: 300; line-height: 1.8;
+      font-size: var(--body-md); /* was 14px → 15px */
+      font-weight: 300; line-height: 1.8;
       color: var(--brown); margin-bottom: 22px;
     }
 
@@ -303,15 +334,28 @@
     }
     .ai-table thead th {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 10px; font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase;
+      font-size: var(--label-xs); /* was 10px → 11px */
+      font-weight: 600;
+      letter-spacing: 0.16em; /* slightly tighter at larger size — still caps style */
+      text-transform: uppercase;
       color: var(--tan);
-      padding: 10px 16px;
+      padding: 11px 16px;
       text-align: left;
     }
     .ai-table thead th:not(:first-child) {
       text-align: center;
       border-left: 1px solid rgba(196,168,130,0.2);
+    }
+    /* Vendor subtitle inside header cell */
+    .ai-table thead th span.vendor-name {
+      display: block;
+      font-weight: 300;
+      font-style: italic;
+      letter-spacing: 0;
+      text-transform: none;
+      font-size: 10px; /* was 9px → 10px; small but purely decorative subtitle */
+      opacity: 0.85;
+      margin-top: 2px;
     }
     .ai-table tbody tr {
       border-bottom: 1px solid var(--tan-faint);
@@ -319,9 +363,10 @@
     }
     .ai-table tbody tr:nth-child(even) { background: var(--cream-dark); }
     .ai-table tbody td {
-      font-size: 13px; font-weight: 300;
-      line-height: 1.5; color: var(--brown);
-      padding: 10px 16px;
+      font-size: var(--body-sm); /* was 13px → 14px */
+      font-weight: 300;
+      line-height: 1.55; color: var(--brown);
+      padding: 11px 16px;
       vertical-align: middle;
     }
     .ai-table tbody td:not(:first-child) {
@@ -349,10 +394,11 @@
     .claude-why {
       background: var(--cream);
       border-left: 3px solid var(--tan);
-      padding: 14px 16px;
+      padding: 16px 18px;
     }
     .claude-why p {
-      font-size: 13px; font-weight: 300; line-height: 1.7;
+      font-size: var(--body-sm); /* was 13px → 14px */
+      font-weight: 300; line-height: 1.8;
       color: var(--brown-mid);
     }
     .claude-why p strong { font-weight: 500; color: var(--brown); }
@@ -366,14 +412,15 @@
     }
     .action-box-label {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 10px; font-weight: 600;
+      font-size: var(--label-xs); /* was 10px → 11px */
+      font-weight: 600;
       letter-spacing: 0.22em; text-transform: uppercase;
       color: var(--tan); display: block; margin-bottom: 10px;
     }
     .action-box p {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 17px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.6; margin: 0;
+      color: var(--cream); line-height: 1.65; margin: 0;
     }
     .action-box p strong { font-style: normal; font-weight: 500; color: var(--tan); }
 
@@ -389,7 +436,8 @@
     }
     .closing-attr {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 10px; font-weight: 400;
+      font-size: var(--label-xs); /* was 10px → 11px */
+      font-weight: 400;
       letter-spacing: 0.2em; text-transform: uppercase;
       color: var(--tan);
     }
@@ -401,7 +449,9 @@
       .pull-quote { padding: 22px 20px; }
       .deliverables { padding: 22px 20px; }
       .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .ai-table thead th, .ai-table tbody td { padding: 8px 10px; font-size: 12px; }
+      /* On mobile, bump table text slightly for thumb-distance reading */
+      .ai-table thead th { font-size: 12px; padding: 9px 11px; }
+      .ai-table tbody td { font-size: 14px; padding: 9px 11px; }
     }
   </style>
 </head>
@@ -564,10 +614,10 @@
             <thead>
               <tr>
                 <th>Feature</th>
-                <th>ChatGPT<br><span style="font-weight:300;font-style:italic;letter-spacing:0;text-transform:none;font-size:9px;">OpenAI</span></th>
-                <th>Gemini<br><span style="font-weight:300;font-style:italic;letter-spacing:0;text-transform:none;font-size:9px;">Google</span></th>
-                <th>Copilot<br><span style="font-weight:300;font-style:italic;letter-spacing:0;text-transform:none;font-size:9px;">Microsoft</span></th>
-                <th>Claude<br><span style="font-weight:300;font-style:italic;letter-spacing:0;text-transform:none;font-size:9px;">Anthropic</span></th>
+                <th>ChatGPT<span class="vendor-name">OpenAI</span></th>
+                <th>Gemini<span class="vendor-name">Google</span></th>
+                <th>Copilot<span class="vendor-name">Microsoft</span></th>
+                <th>Claude<span class="vendor-name">Anthropic</span></th>
               </tr>
             </thead>
             <tbody>
