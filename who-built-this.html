@@ -353,9 +353,21 @@
       font-style: italic;
       letter-spacing: 0;
       text-transform: none;
-      font-size: 10px; /* was 9px → 10px; small but purely decorative subtitle */
-      opacity: 0.85;
-      margin-top: 2px;
+      font-size: 13px;
+      opacity: 1;
+      color: rgba(196,168,130,0.75);
+      margin-top: 3px;
+    }
+
+    /* Scrollable table wrapper — prevents narrow mobile columns */
+    .ai-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 20px;
+    }
+    .ai-table-wrap .ai-table {
+      margin-bottom: 0;
+      min-width: 480px;
     }
     .ai-table tbody tr {
       border-bottom: 1px solid var(--tan-faint);
@@ -610,6 +622,9 @@
         <div class="claude-block-body">
           <p class="claude-block-intro">You've almost certainly heard of ChatGPT. Claude is in the same category — a large language model AI — but made by a different company, Anthropic, with a different design philosophy. Understanding the distinction matters for how you'll use it in this course.</p>
 
+          <p class="claude-block-intro" style="font-style: italic; font-size: var(--body-sm); color: var(--brown-light); margin-top: -10px;">If you already use another AI tool, you don't have to switch. That said, Claude is the recommended choice for this course — and the table below explains why.</p>
+
+          <div class="ai-table-wrap">
           <table class="ai-table">
             <thead>
               <tr>
@@ -665,6 +680,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
 
           <div class="claude-why">
             <p><strong>The single reason Claude was chosen over the others: Projects.</strong> Claude's Projects feature gives your coach persistent memory across all eight lessons. It remembers your character's anchor behavior from Lesson 1 when you arrive at Lesson 5. It accumulates context the way a human coach would across multiple sessions. No other major AI tool does this reliably without manual workarounds. For a course built on progressive depth, that continuity isn't a convenience — it's the foundation the methodology depends on.</p>
