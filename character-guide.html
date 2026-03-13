@@ -80,32 +80,6 @@ html,body{
   color:var(--tan);text-align:right;line-height:1.6;position:relative;z-index:1;
 }
 
-/* ─── TAB NAV ─── */
-.tab-nav{
-  background:var(--brown-mid);
-  border-bottom:1px solid rgba(196,168,130,.25);
-  display:flex;align-items:stretch;
-  flex-shrink:0;overflow-x:auto;
-  scrollbar-width:none;
-}
-.tab-nav::-webkit-scrollbar{display:none;}
-.tab{
-  font-family:'Cormorant Garamond',Georgia,serif;
-  font-size:var(--label-xs);letter-spacing:.18em;text-transform:uppercase;
-  color:rgba(196,168,130,.6);
-  padding:9px 18px;
-  border:none;background:transparent;cursor:pointer;
-  white-space:nowrap;border-bottom:2px solid transparent;
-  transition:color .2s,border-color .2s;
-  flex-shrink:0;
-}
-.tab:hover{color:var(--tan);}
-.tab.active{
-  color:var(--tan);
-  border-bottom-color:var(--tan);
-  background:rgba(196,168,130,.07);
-}
-
 /* ─── PANELS ─── */
 .panels{
   flex:1;overflow:hidden;position:relative;
@@ -315,18 +289,6 @@ ul.ck li:last-child{border-bottom:none;}
       <div class="ltitle">Choosing Your <em>Character</em></div>
     </div>
     <div class="lmeta">Complete before Course Reference Materials<br>Estimated time: 15 minutes</div>
-  </div>
-
-  <!-- TAB NAV -->
-  <div class="tab-nav" id="tabNav">
-    <button class="tab active" data-panel="0">Intro &amp; Video</button>
-    <button class="tab" data-panel="1">I &mdash; The Core Requirement</button>
-    <button class="tab" data-panel="2">II &mdash; Who to Bring</button>
-    <button class="tab" data-panel="3">III &mdash; Diagnostic Questions</button>
-    <button class="tab" data-panel="4">IV &mdash; Written vs. Unwritten</button>
-    <button class="tab" data-panel="5">V &mdash; Multiple Characters</button>
-    <button class="tab" data-panel="6">VI &mdash; Emotional Distance</button>
-    <button class="tab" data-panel="7">VII &mdash; Checklist</button>
   </div>
 
   <!-- PANELS -->
@@ -610,29 +572,17 @@ for(var i=0;i<total;i++){
 
 function goTo(n){
   var panels = document.querySelectorAll('.panel');
-  var tabs = document.querySelectorAll('.tab');
   var dots = document.querySelectorAll('.dot');
   panels[current].classList.remove('active');
-  tabs[current].classList.remove('active');
   dots[current].classList.remove('active');
   current = n;
   panels[current].classList.add('active');
-  tabs[current].classList.add('active');
   dots[current].classList.add('active');
   document.getElementById('prevBtn').disabled = current===0;
   document.getElementById('nextBtn').disabled = current===total-1;
-  // scroll tab into view
-  tabs[current].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
 }
 
 function navigate(dir){ goTo(current+dir); }
-
-// Tab clicks
-document.getElementById('tabNav').addEventListener('click', function(e){
-  var t = e.target.closest('.tab');
-  if(!t) return;
-  goTo(parseInt(t.getAttribute('data-panel')));
-});
 
 // Transcript toggle
 function txToggle(btn){
