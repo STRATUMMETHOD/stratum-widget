@@ -374,6 +374,8 @@
     /* hide video on complete tab */
     body.tab-complete .video-wrap { display: none; }
     body.tab-complete .complete-banner { display: none; }
+    body.tab-complete .tab-panel#panel-complete { min-height: 0; }
+    body.tab-complete { height: auto; overflow: visible; }
     .complete-dark {
       background: var(--brown);
       padding: 36px 32px 32px;
@@ -778,7 +780,13 @@
       document.body.className = tabId === 'complete' ? 'tab-complete' : '';
 
       if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      document.querySelector('.tab-bar').scrollIntoView({ behavior: 'smooth' });
+
+      /* on complete tab, jump to very top so Systeme button is immediately below */
+      if (tabId === 'complete') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        document.querySelector('.tab-bar').scrollIntoView({ behavior: 'smooth' });
+      }
     }
 
     /* tab bar clicks — no done marking on direct tab click */
