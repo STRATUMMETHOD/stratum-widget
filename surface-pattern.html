@@ -374,56 +374,52 @@
     /* ══ COMPLETE PANEL ══ */
     .complete-dark {
       background: var(--brown);
-      padding: 52px 32px 48px;
+      padding: 36px 32px 32px;
       text-align: center;
     }
     .complete-dark-eyebrow {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 600;
       letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 20px;
+      color: var(--tan); display: block; margin-bottom: 14px;
     }
     .complete-dark-heading {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 26px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.5; margin-bottom: 10px;
+      font-size: 24px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.45; margin-bottom: 6px;
     }
     .complete-dark-sub {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 18px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.7); line-height: 1.6; margin-bottom: 40px;
+      font-size: 16px; font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.65); line-height: 1.55; margin-bottom: 24px;
     }
-    .complete-rule { width: 40px; height: 1px; background: rgba(196,168,130,0.35); margin: 0 auto 36px; }
-    .complete-steps {
-      max-width: 480px; margin: 0 auto 40px;
-      text-align: left;
+    .complete-instruction {
+      max-width: 480px; margin: 0 auto 24px;
+      background: rgba(196,168,130,0.1);
+      border: 1px solid rgba(196,168,130,0.2);
+      padding: 16px 20px;
+      display: flex; align-items: flex-start; gap: 12px; text-align: left;
     }
-    .complete-step {
-      display: flex; align-items: flex-start; gap: 16px;
-      padding: 14px 0; border-bottom: 1px solid rgba(196,168,130,0.12);
+    .complete-instruction svg {
+      width: 16px; height: 16px; stroke: var(--tan); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0; margin-top: 2px;
     }
-    .complete-step:last-child { border-bottom: none; }
-    .complete-step-num {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 22px; font-weight: 300; font-style: italic;
-      color: var(--tan); flex-shrink: 0; line-height: 1; margin-top: 1px;
-      min-width: 24px;
-    }
-    .complete-step-text {
+    .complete-instruction p {
       font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.82); line-height: 1.72;
+      color: rgba(250,244,232,0.82); line-height: 1.7;
     }
-    .complete-step-text strong { color: var(--tan); font-weight: 500; }
-    .complete-rule-bottom { width: 40px; height: 1px; background: rgba(196,168,130,0.25); margin: 0 auto 32px; }
+    .complete-instruction p strong { color: var(--tan); font-weight: 500; }
+    .complete-rule { width: 36px; height: 1px; background: rgba(196,168,130,0.25); margin: 0 auto 20px; }
     .complete-quote {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 19px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.65; margin-bottom: 18px;
+      font-size: 17px; font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.75); line-height: 1.65; margin-bottom: 14px;
     }
     .complete-attr {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 400;
-      letter-spacing: 0.2em; text-transform: uppercase; color: var(--tan);
+      letter-spacing: 0.2em; text-transform: uppercase; color: rgba(196,168,130,0.55);
     }
 
     /* ══ RESPONSIVE ══ */
@@ -736,25 +732,12 @@
       <p class="complete-dark-heading">Move to Lesson 2: The Hidden Truth.</p>
       <p class="complete-dark-sub">The excavation goes deeper.</p>
 
-      <div class="complete-rule"></div>
-
-      <div class="complete-steps">
-        <div class="complete-step">
-          <span class="complete-step-num">1</span>
-          <p class="complete-step-text">Make sure you have <strong>printed your Reflection Journal to PDF</strong> from the Your Session tab. You will need it in Lesson 2.</p>
-        </div>
-        <div class="complete-step">
-          <span class="complete-step-num">2</span>
-          <p class="complete-step-text">Scroll down past this lesson page to find the <strong>Mark as Complete</strong> button in Systeme. Click it to unlock Lesson 2.</p>
-        </div>
-        <div class="complete-step">
-          <span class="complete-step-num">3</span>
-          <p class="complete-step-text">Keep that character close. The surface behavior you uncovered today is just the first layer. Beneath it is a wound, a lie your character believes because of it, and an entire psychological architecture waiting to be excavated.</p>
-        </div>
+      <div class="complete-instruction">
+        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <p>Make sure you have <strong>printed your Reflection Journal to PDF</strong> from the Your Session tab — you'll need it in Lesson 2. Then scroll down and click <strong>Mark as Complete</strong> below to unlock Lesson 2.</p>
       </div>
 
-      <div class="complete-rule-bottom"></div>
-
+      <div class="complete-rule"></div>
       <p class="complete-quote">One example could be situational.<br>Three instances across different contexts prove it's structural to who they are.</p>
       <span class="complete-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
     </div>
