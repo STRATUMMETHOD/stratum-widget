@@ -371,7 +371,9 @@
     .jotform-title em { font-style: italic; color: var(--tan); }
     .jotform-embed { background: var(--cream-dark); }
 
-    /* ══ COMPLETE PANEL ══ */
+    /* hide video on complete tab */
+    body.tab-complete .video-wrap { display: none; }
+    body.tab-complete .complete-banner { display: none; }
     .complete-dark {
       background: var(--brown);
       padding: 36px 32px 32px;
@@ -771,6 +773,9 @@
           if (prevBtn) prevBtn.classList.add('done');
         }
       }
+
+      /* toggle body class so complete tab can hide the video */
+      document.body.className = tabId === 'complete' ? 'tab-complete' : '';
 
       if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       document.querySelector('.tab-bar').scrollIntoView({ behavior: 'smooth' });
