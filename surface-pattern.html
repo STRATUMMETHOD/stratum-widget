@@ -419,19 +419,74 @@
       border-bottom: 1px solid var(--tan-light);
     }
 
-    /* ══ JOTFORM CONTAINER ══ */
-    .form-outer {
+    /* ══ JOURNAL CTA ══ */
+    .journal-cta {
       border: 1px solid var(--tan-light);
       margin-bottom: 8px;
     }
-    .form-outer iframe {
-      display: block;
-      width: 100%;
-      height: 800px; /* initial fallback — JS will take over immediately */
-      border: none;
-      background: var(--cream);
-      transition: height 0.2s ease;
+    .journal-cta-head {
+      background: var(--brown);
+      padding: 20px 24px 18px;
+      border-bottom: 1px solid rgba(196,168,130,0.2);
     }
+    .journal-cta-eyebrow {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs);
+      font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 7px;
+    }
+    .journal-cta-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px; font-weight: 300;
+      color: var(--cream); line-height: 1.3;
+    }
+    .journal-cta-title em { font-style: italic; color: var(--tan); }
+    .journal-cta-body {
+      padding: 24px 24px 28px;
+      background: var(--cream-dark);
+    }
+    .journal-cta-desc {
+      font-size: var(--body-md);
+      font-weight: 300; line-height: 1.8;
+      color: var(--brown-mid); margin-bottom: 22px;
+    }
+    .journal-cta-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--brown);
+      padding: 14px 28px;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 13px; font-weight: 500;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--tan); text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      margin-bottom: 18px;
+    }
+    .journal-cta-btn:hover { background: var(--brown-mid); color: var(--cream); }
+    .journal-cta-btn svg {
+      width: 14px; height: 14px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+    .journal-cta-return {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 14px 16px;
+      background: var(--cream);
+      border-left: 3px solid var(--tan);
+    }
+    .journal-cta-return svg {
+      width: 14px; height: 14px;
+      stroke: var(--tan-mid); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .journal-cta-return p {
+      font-size: var(--body-sm);
+      font-weight: 300; line-height: 1.72;
+      color: var(--brown-mid);
+    }
+    .journal-cta-return p strong { font-weight: 500; color: var(--brown); }
 
     /* ══ SAVE REMINDER ══ */
     .save-reminder {
@@ -748,13 +803,24 @@
 
     <!-- FORM -->
     <span class="section-label">Your Coaching Session &amp; Reflection Journal</span>
-    <div class="form-outer">
-      <iframe
-        id="jotform-iframe"
-        src="https://form.jotform.com/260514112639855"
-        title="Lesson 1 Reflection Journal"
-        allowfullscreen>
-      </iframe>
+    <div class="journal-cta">
+      <div class="journal-cta-head">
+        <span class="journal-cta-eyebrow">Reflection Journal — Lesson 1</span>
+        <div class="journal-cta-title">The Surface <em>Pattern</em> · Workspace</div>
+      </div>
+      <div class="journal-cta-body">
+        <p class="journal-cta-desc">Your reflection journal opens in a new tab. Complete it after your coaching session, then print to PDF and save — you'll attach it to your Lesson 2 session.</p>
+        <a class="journal-cta-btn"
+           href="https://form.jotform.com/260514112639855"
+           target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Open Reflection Journal
+        </a>
+        <div class="journal-cta-return">
+          <svg viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
+          <p><strong>When you're done:</strong> Return to this tab, print the completed form to PDF, then click <strong>Mark as Complete</strong> below to move to Lesson 2.</p>
+        </div>
+      </div>
     </div>
 
     <div class="action-box">
@@ -777,56 +843,6 @@
       body.classList.toggle('open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
     }
-
-    /* ── Jotform dynamic height ──
-       Jotform sends postMessage on every page change. We parse every
-       known format and apply the tallest plausible value.
-    ── */
-    (function () {
-      var jfIframe = document.getElementById('jotform-iframe');
-      var MIN_H = 500; // never shrink below this
-
-      function applyHeight(h) {
-        h = parseInt(h, 10);
-        if (!isNaN(h) && h > MIN_H) {
-          jfIframe.style.height = (h + 40) + 'px';
-        }
-      }
-
-      window.addEventListener('message', function (e) {
-        if (!e.data) return;
-        var data = e.data;
-
-        /* ── String formats ── */
-        if (typeof data === 'string') {
-          /* "setHeight:1234:formID"  or  "setHeight:1234" */
-          if (data.indexOf('setHeight') !== -1) {
-            var parts = data.split(':');
-            applyHeight(parts[1]);
-            return;
-          }
-          /* Try parsing as JSON string */
-          try { data = JSON.parse(data); } catch (err) { return; }
-        }
-
-        /* ── Object formats ── */
-        if (typeof data === 'object' && data !== null) {
-          /* { action:"setHeight", height:NNN }
-             { action:"scrollIntoView", ... } — ignore
-             { heightCalculated: NNN }
-             { frameHeight: NNN }
-             { scrollHeight: NNN }
-             { height: NNN }                              */
-          var h = null;
-          if (data.action === 'setHeight')   h = data.height;
-          if (!h && data.heightCalculated)   h = data.heightCalculated;
-          if (!h && data.frameHeight)        h = data.frameHeight;
-          if (!h && data.scrollHeight)       h = data.scrollHeight;
-          if (!h && data.height)             h = data.height;
-          if (h) applyHeight(h);
-        }
-      });
-    }());
   </script>
 
 </body>
