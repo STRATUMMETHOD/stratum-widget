@@ -779,36 +779,51 @@
     }
 
     /* ── Jotform dynamic height ──
-       Jotform broadcasts its current height via postMessage on every
-       page change. We catch it here and resize the iframe to match,
-       eliminating the dead space between form pages.
+       Jotform sends postMessage on every page change. We parse every
+       known format and apply the tallest plausible value.
     ── */
     (function () {
       var jfIframe = document.getElementById('jotform-iframe');
+      var MIN_H = 500; // never shrink below this
+
+      function applyHeight(h) {
+        h = parseInt(h, 10);
+        if (!isNaN(h) && h > MIN_H) {
+          jfIframe.style.height = (h + 40) + 'px';
+        }
+      }
 
       window.addEventListener('message', function (e) {
         if (!e.data) return;
-
         var data = e.data;
 
-        /* Jotform sends either a plain string "setHeight:NNN" or a
-           JSON object { action: "setHeight", height: NNN }          */
+        /* ── String formats ── */
         if (typeof data === 'string') {
+          /* "setHeight:1234:formID"  or  "setHeight:1234" */
           if (data.indexOf('setHeight') !== -1) {
             var parts = data.split(':');
-            var h = parseInt(parts[1], 10);
-            if (!isNaN(h) && h > 100) {
-              jfIframe.style.height = (h + 30) + 'px';
-            }
+            applyHeight(parts[1]);
+            return;
           }
-        } else if (typeof data === 'object') {
-          var h = data.height || (data.action === 'setHeight' && data.height);
-          if (!h && data.scrollHeight) h = data.scrollHeight;
-          if (!h && data.frameHeight) h = data.frameHeight;
-          h = parseInt(h, 10);
-          if (!isNaN(h) && h > 100) {
-            jfIframe.style.height = (h + 30) + 'px';
-          }
+          /* Try parsing as JSON string */
+          try { data = JSON.parse(data); } catch (err) { return; }
+        }
+
+        /* ── Object formats ── */
+        if (typeof data === 'object' && data !== null) {
+          /* { action:"setHeight", height:NNN }
+             { action:"scrollIntoView", ... } — ignore
+             { heightCalculated: NNN }
+             { frameHeight: NNN }
+             { scrollHeight: NNN }
+             { height: NNN }                              */
+          var h = null;
+          if (data.action === 'setHeight')   h = data.height;
+          if (!h && data.heightCalculated)   h = data.heightCalculated;
+          if (!h && data.frameHeight)        h = data.frameHeight;
+          if (!h && data.scrollHeight)       h = data.scrollHeight;
+          if (!h && data.height)             h = data.height;
+          if (h) applyHeight(h);
         }
       });
     }());
