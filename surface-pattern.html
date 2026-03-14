@@ -129,7 +129,6 @@
     .tab-btn:hover { color: var(--tan); background: rgba(196,168,130,0.05); }
     .tab-btn.active { color: var(--tan); border-bottom-color: var(--tan); }
 
-    /* completion circle */
     .tab-check {
       width: 14px; height: 14px;
       border: 1px solid rgba(196,168,130,0.25); border-radius: 50%;
@@ -183,11 +182,31 @@
       color: var(--brown-mid); margin-bottom: 32px;
     }
 
-    /* ══ CONTINUE BUTTON ══ */
-    .continue-wrap {
+    /* ══ NAV BUTTONS (back + continue) ══ */
+    .nav-wrap {
       padding: 24px 32px 32px; max-width: 760px; margin: 0 auto;
       border-top: 1px solid var(--tan-light);
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
     }
+    .nav-wrap.no-back { justify-content: flex-end; }
+
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent;
+      border: 1px solid var(--tan-light);
+      padding: 12px 22px;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 13px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--tan-mid); cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .back-btn:hover { background: var(--cream-dark); border-color: var(--tan-mid); color: var(--brown); }
+    .back-btn svg {
+      width: 13px; height: 13px; stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
     .continue-btn {
       display: inline-flex; align-items: center; gap: 10px;
       background: var(--brown); border: none; padding: 14px 28px;
@@ -246,48 +265,6 @@
       font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
       color: var(--brown-mid); border-top: 1px solid var(--tan-light);
     }
-    .supp-video-foot strong { font-weight: 500; color: var(--brown); }
-
-    /* ══ RESOURCE CARDS ══ */
-    .resource-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
-    .resource-card { background: var(--cream-dark); border: 1px solid var(--tan-light); display: flex; flex-direction: column; }
-    .resource-card-top { padding: 18px 18px 14px; flex: 1; }
-    .resource-card-type {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.20em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 9px;
-    }
-    .resource-card-name {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 600; color: var(--brown); line-height: 1.3; margin-bottom: 9px; display: block;
-    }
-    .resource-card-desc { font-size: var(--body-sm); font-weight: 300; line-height: 1.75; color: var(--brown-light); }
-    .resource-card-action { padding: 0 18px 16px; }
-    .resource-card-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--brown); border: none; padding: 10px 16px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan); cursor: pointer; text-decoration: none;
-      transition: background 0.2s, color 0.2s;
-    }
-    .resource-card-btn:hover { background: var(--brown-mid); color: var(--cream); }
-    .resource-card-btn svg {
-      width: 13px; height: 13px; stroke: currentColor; fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .resource-timing {
-      padding: 14px 16px; background: var(--cream-mid);
-      border-left: 3px solid var(--tan); display: flex; align-items: flex-start; gap: 10px;
-    }
-    .resource-timing svg {
-      width: 14px; height: 14px; stroke: var(--tan-mid); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 2px;
-    }
-    .resource-timing p { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); }
-    .resource-timing p strong { font-weight: 500; color: var(--brown); }
 
     /* ══ REQUIREMENTS ══ */
     .requirements-label {
@@ -310,7 +287,9 @@
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 17px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 8px;
     }
-    .req-card-desc { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); margin-bottom: 10px; }
+    .req-card-desc {
+      font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); margin-bottom: 10px;
+    }
     .req-card-example {
       font-size: 13px; font-weight: 300; font-style: italic;
       color: var(--brown-light); line-height: 1.65; padding-top: 8px; border-top: 1px solid var(--tan-faint);
@@ -370,69 +349,78 @@
     }
     .save-reminder p strong { color: var(--tan); }
 
-    /* ══ JOURNAL CTA ══ */
-    .journal-cta { border: 1px solid var(--tan-light); margin-bottom: 8px; }
-    .journal-cta-head { background: var(--brown); padding: 20px 24px 18px; border-bottom: 1px solid rgba(196,168,130,0.2); }
-    .journal-cta-eyebrow {
+    /* ══ JOTFORM EMBED ══ */
+    .jotform-wrap {
+      border: 1px solid var(--tan-light);
+      margin-bottom: 0;
+      overflow: hidden;
+    }
+    .jotform-wrap-head {
+      background: var(--brown); padding: 18px 24px;
+      border-bottom: 1px solid rgba(196,168,130,0.2);
+    }
+    .jotform-eyebrow {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 7px;
+      letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 6px;
     }
-    .journal-cta-title {
+    .jotform-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 20px; font-weight: 300; color: var(--cream); line-height: 1.3;
     }
-    .journal-cta-title em { font-style: italic; color: var(--tan); }
-    .journal-cta-body { padding: 24px 24px 28px; background: var(--cream-dark); }
-    .journal-cta-desc { font-size: var(--body-md); font-weight: 300; line-height: 1.8; color: var(--brown-mid); margin-bottom: 22px; }
-    .journal-cta-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--brown); padding: 14px 28px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--tan); text-decoration: none;
-      transition: background 0.2s, color 0.2s; margin-bottom: 18px;
-    }
-    .journal-cta-btn:hover { background: var(--brown-mid); color: var(--cream); }
-    .journal-cta-btn svg {
-      width: 14px; height: 14px; stroke: currentColor; fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .journal-cta-return {
-      display: flex; align-items: flex-start; gap: 10px;
-      padding: 14px 16px; background: var(--cream); border-left: 3px solid var(--tan);
-    }
-    .journal-cta-return svg {
-      width: 14px; height: 14px; stroke: var(--tan-mid); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 2px;
-    }
-    .journal-cta-return p { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); }
-    .journal-cta-return p strong { font-weight: 500; color: var(--brown); }
+    .jotform-title em { font-style: italic; color: var(--tan); }
+    .jotform-embed { background: var(--cream-dark); }
 
-    /* ══ ACTION BOX ══ */
-    .action-box {
-      background: var(--brown); padding: 28px 32px; text-align: center;
-      border-top: 1px solid rgba(196,168,130,0.2);
+    /* ══ COMPLETE PANEL ══ */
+    .complete-dark {
+      background: var(--brown);
+      padding: 52px 32px 48px;
+      text-align: center;
     }
-    .action-box-label {
+    .complete-dark-eyebrow {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 10px;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 20px;
     }
-    .action-box p {
+    .complete-dark-heading {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 17px; font-weight: 300; font-style: italic; color: var(--cream); line-height: 1.65; margin: 0;
+      font-size: 26px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.5; margin-bottom: 10px;
     }
-    .action-box p strong { font-style: normal; font-weight: 500; color: var(--tan); }
-
-    /* ══ CLOSING ══ */
-    .closing { background: var(--brown); padding: 36px 32px; text-align: center; }
-    .closing-quote {
+    .complete-dark-sub {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 21px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.65; margin-bottom: 20px;
+      font-size: 18px; font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.7); line-height: 1.6; margin-bottom: 40px;
     }
-    .closing-attr {
+    .complete-rule { width: 40px; height: 1px; background: rgba(196,168,130,0.35); margin: 0 auto 36px; }
+    .complete-steps {
+      max-width: 480px; margin: 0 auto 40px;
+      text-align: left;
+    }
+    .complete-step {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding: 14px 0; border-bottom: 1px solid rgba(196,168,130,0.12);
+    }
+    .complete-step:last-child { border-bottom: none; }
+    .complete-step-num {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 22px; font-weight: 300; font-style: italic;
+      color: var(--tan); flex-shrink: 0; line-height: 1; margin-top: 1px;
+      min-width: 24px;
+    }
+    .complete-step-text {
+      font-size: var(--body-sm); font-weight: 300;
+      color: rgba(250,244,232,0.82); line-height: 1.72;
+    }
+    .complete-step-text strong { color: var(--tan); font-weight: 500; }
+    .complete-rule-bottom { width: 40px; height: 1px; background: rgba(196,168,130,0.25); margin: 0 auto 32px; }
+    .complete-quote {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 19px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.65; margin-bottom: 18px;
+    }
+    .complete-attr {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 400;
       letter-spacing: 0.2em; text-transform: uppercase; color: var(--tan);
@@ -440,16 +428,18 @@
 
     /* ══ RESPONSIVE ══ */
     @media (max-width: 580px) {
-      .resource-cards { grid-template-columns: 1fr; }
       .requirements-grid { grid-template-columns: 1fr; }
       .supp-video-head { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .nav-wrap { flex-direction: column; align-items: stretch; }
+      .back-btn, .continue-btn { justify-content: center; }
     }
     @media (max-width: 560px) {
       .panel-inner { padding: 28px 20px 24px; }
-      .continue-wrap { padding: 20px; }
+      .nav-wrap { padding: 20px; }
       .panel-title { font-size: 24px; }
       .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
       .tab-btn { padding: 14px 13px 12px; }
+      .complete-dark { padding: 40px 24px 36px; }
     }
   </style>
 </head>
@@ -461,8 +451,8 @@
       <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
     </div>
     <p class="complete-banner-text">
-      When you finish this lesson, scroll past the content below to find the
-      <strong>Mark as Complete</strong> button. Click it before moving to Lesson 2.
+      When you finish this lesson, go to the <strong>Complete Lesson</strong> tab and click
+      <strong>Mark as Complete</strong> before moving to Lesson 2.
     </p>
   </div>
 
@@ -528,10 +518,6 @@
       <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
       Overview
     </button>
-    <button class="tab-btn" data-tab="resources">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Resources
-    </button>
     <button class="tab-btn" data-tab="requirements">
       <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
       4 Requirements
@@ -543,6 +529,10 @@
     <button class="tab-btn" data-tab="session">
       <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
       Your Session
+    </button>
+    <button class="tab-btn" data-tab="complete">
+      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
+      Complete Lesson
     </button>
   </nav>
 
@@ -583,57 +573,7 @@
         <p class="supp-video-foot">Watch this if the inner critic is telling you you don't know your character well enough to begin. It addresses the most common reason writers stall before their first coaching session.</p>
       </div>
     </div>
-    <div class="continue-wrap">
-      <button class="continue-btn" data-next="resources">
-        Continue to Resources
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
-    </div>
-  </div>
-
-  <!-- ══ PANEL: RESOURCES ══ -->
-  <div class="tab-panel" id="panel-resources">
-    <div class="panel-inner">
-      <span class="panel-eyebrow">Before You Begin</span>
-      <h2 class="panel-title">The Observer's <em>Toolkit</em></h2>
-      <div class="panel-rule"></div>
-      <p class="panel-lead">Two short reads before your first coaching session. The first addresses the inner critic that tells you you don't know your character well enough. The second explains why behavioral specificity is the engine of compelling fiction.</p>
-
-      <div class="resource-cards">
-        <div class="resource-card">
-          <div class="resource-card-top">
-            <span class="resource-card-type">PDF Download · 8 min read</span>
-            <span class="resource-card-name">The Self-Doubt Trap</span>
-            <p class="resource-card-desc">Why writers underestimate what they already know about their characters — and how to use your adaptive unconscious deliberately.</p>
-          </div>
-          <div class="resource-card-action">
-            <a class="resource-card-btn" href="#" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Download PDF
-            </a>
-          </div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-card-top">
-            <span class="resource-card-type">PDF Download · 6 min read</span>
-            <span class="resource-card-name">Stop Boring Your Readers</span>
-            <p class="resource-card-desc">The difference between "she's guarded" and behavior a camera can film — and why that gap is where most character writing loses its readers.</p>
-          </div>
-          <div class="resource-card-action">
-            <a class="resource-card-btn" href="#" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Download PDF
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="resource-timing">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <p><strong>When to use these:</strong> Read both before starting your coaching session — or return to them after if the session surfaces questions about what counts as behavior versus trait.</p>
-      </div>
-    </div>
-    <div class="continue-wrap">
+    <div class="nav-wrap no-back">
       <button class="continue-btn" data-next="requirements">
         Continue to 4 Requirements
         <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
@@ -693,7 +633,11 @@
         <p class="supp-video-foot">Watch before your coaching session. Moving from a label to a filmable behavior is the single hardest shift in Lesson 1. This video models the thinking in real time — with Katniss and two other characters — before you attempt it yourself.</p>
       </div>
     </div>
-    <div class="continue-wrap">
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="overview">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
+        Back to Overview
+      </button>
       <button class="continue-btn" data-next="redflags">
         Continue to Red Flags
         <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
@@ -726,7 +670,11 @@
         <p class="redflag-text"><strong>Your coach is doing most of the talking.</strong> Your adaptive unconscious is the source here. The coach should be asking questions. You should be answering them.</p>
       </div>
     </div>
-    <div class="continue-wrap">
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="requirements">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
+        Back to 4 Requirements
+      </button>
       <button class="continue-btn" data-next="session">
         Continue to Your Session
         <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
@@ -734,7 +682,7 @@
     </div>
   </div>
 
-  <!-- ══ PANEL: SESSION ══ -->
+  <!-- ══ PANEL: YOUR SESSION ══ -->
   <div class="tab-panel" id="panel-session">
     <div class="panel-inner">
       <span class="panel-eyebrow">Lesson 1 · Coaching Session</span>
@@ -748,7 +696,7 @@
           <li data-n="1">Copy the prompt to clipboard and open Claude at claude.ai in a new tab. Paste the prompt to begin your session.</li>
           <li data-n="2">Attach the <strong>PDF you saved from Calibrating Your Coach</strong>. Your coach needs that context to work effectively from the first exchange.</li>
           <li data-n="3">Set a timer for <strong>35 minutes</strong>. Stay in observer mode — what the camera sees, not what it means.</li>
-          <li data-n="4">When your session is complete, return here to fill out your <strong>Reflection Journal</strong> and print to PDF.</li>
+          <li data-n="4">When your session is complete, return here and fill out your <strong>Reflection Journal</strong> below, then print to PDF.</li>
         </ul>
       </div>
 
@@ -759,58 +707,80 @@
         <p><strong>Print and save this form as a PDF when complete.</strong> You will attach it to your Lesson 2 coaching session. Your coach cannot read your work unless you bring it to the next session.</p>
       </div>
 
-      <div class="journal-cta">
-        <div class="journal-cta-head">
-          <span class="journal-cta-eyebrow">Reflection Journal — Lesson 1</span>
-          <div class="journal-cta-title">The Surface <em>Pattern</em> · Workspace</div>
+      <div class="jotform-wrap">
+        <div class="jotform-wrap-head">
+          <span class="jotform-eyebrow">Reflection Journal — Lesson 1</span>
+          <div class="jotform-title">The Surface <em>Pattern</em> · Workspace</div>
         </div>
-        <div class="journal-cta-body">
-          <p class="journal-cta-desc">Your reflection journal opens in a new tab. Complete it after your coaching session, then print to PDF and save — you'll attach it to your Lesson 2 session.</p>
-          <a class="journal-cta-btn" href="https://form.jotform.com/260514112639855" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Open Reflection Journal
-          </a>
-          <div class="journal-cta-return">
-            <svg viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
-            <p><strong>When you're done:</strong> Return to this tab, print the completed form to PDF, then click <strong>Mark as Complete</strong> below to move to Lesson 2.</p>
-          </div>
+        <div class="jotform-embed">
+          <script type="text/javascript" src="https://form.jotform.com/jsform/260514112639855"></script>
         </div>
       </div>
     </div>
-
-    <div class="action-box">
-      <span class="action-box-label">When You're Ready</span>
-      <p>Move to <strong>Lesson 2: The Hidden Truth.</strong><br>The excavation goes deeper.</p>
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="redflags">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
+        Back to Red Flags
+      </button>
+      <button class="continue-btn" data-next="complete">
+        Continue to Complete Lesson
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+      </button>
     </div>
   </div>
 
-  <!-- ══ CLOSING ══ -->
-  <div class="closing">
-    <p class="closing-quote">One example could be situational.<br>Three instances across different contexts prove it's structural to who they are.</p>
-    <span class="closing-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
+  <!-- ══ PANEL: COMPLETE LESSON ══ -->
+  <div class="tab-panel" id="panel-complete">
+    <div class="complete-dark">
+      <span class="complete-dark-eyebrow">When You're Ready</span>
+      <p class="complete-dark-heading">Move to Lesson 2: The Hidden Truth.</p>
+      <p class="complete-dark-sub">The excavation goes deeper.</p>
+
+      <div class="complete-rule"></div>
+
+      <div class="complete-steps">
+        <div class="complete-step">
+          <span class="complete-step-num">1</span>
+          <p class="complete-step-text">Make sure you have <strong>printed your Reflection Journal to PDF</strong> from the Your Session tab. You will need it in Lesson 2.</p>
+        </div>
+        <div class="complete-step">
+          <span class="complete-step-num">2</span>
+          <p class="complete-step-text">Scroll down past this lesson page to find the <strong>Mark as Complete</strong> button in Systeme. Click it to unlock Lesson 2.</p>
+        </div>
+        <div class="complete-step">
+          <span class="complete-step-num">3</span>
+          <p class="complete-step-text">Keep that character close. The surface behavior you uncovered today is just the first layer. Beneath it is a wound, a lie your character believes because of it, and an entire psychological architecture waiting to be excavated.</p>
+        </div>
+      </div>
+
+      <div class="complete-rule-bottom"></div>
+
+      <p class="complete-quote">One example could be situational.<br>Three instances across different contexts prove it's structural to who they are.</p>
+      <span class="complete-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
+    </div>
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="session">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
+        Back to Your Session
+      </button>
+    </div>
   </div>
 
   <script>
-    const TAB_ORDER = ['overview', 'resources', 'requirements', 'redflags', 'session'];
+    const TAB_ORDER = ['overview', 'requirements', 'redflags', 'session', 'complete'];
 
-    function activateTab(tabId, markPreviousDone) {
-      /* hide blank state */
+    function activateTab(tabId, markPrev) {
       document.getElementById('blank-state').style.display = 'none';
-
-      /* deactivate all tab buttons and panels */
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
 
-      /* activate the target tab button */
       const btn = document.querySelector('[data-tab="' + tabId + '"]');
       if (btn) btn.classList.add('active');
 
-      /* activate the target panel */
       const panel = document.getElementById('panel-' + tabId);
       if (panel) panel.classList.add('active');
 
-      /* optionally mark the previous tab done */
-      if (markPreviousDone) {
+      if (markPrev) {
         const prevIdx = TAB_ORDER.indexOf(tabId) - 1;
         if (prevIdx >= 0) {
           const prevBtn = document.querySelector('[data-tab="' + TAB_ORDER[prevIdx] + '"]');
@@ -818,24 +788,25 @@
         }
       }
 
-      /* scroll the active tab into view in the nav */
       if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-
-      /* scroll page to top of tab bar */
       document.querySelector('.tab-bar').scrollIntoView({ behavior: 'smooth' });
     }
 
-    /* tab bar clicks */
+    /* tab bar clicks — no done marking on direct tab click */
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => activateTab(btn.getAttribute('data-tab'), false));
     });
 
-    /* continue button clicks */
+    /* continue buttons — mark previous done */
     document.querySelectorAll('.continue-btn').forEach(btn => {
       btn.addEventListener('click', () => activateTab(btn.getAttribute('data-next'), true));
     });
 
-    /* transcript toggle */
+    /* back buttons — no done marking */
+    document.querySelectorAll('.back-btn').forEach(btn => {
+      btn.addEventListener('click', () => activateTab(btn.getAttribute('data-prev'), false));
+    });
+
     function toggleTranscript(btn) {
       const body = document.getElementById('transcript-body');
       const isOpen = body.classList.contains('open');
