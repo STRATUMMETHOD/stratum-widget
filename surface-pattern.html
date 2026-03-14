@@ -427,9 +427,10 @@
     .form-outer iframe {
       display: block;
       width: 100%;
-      height: 2400px;
+      height: 800px; /* initial fallback — JS will take over immediately */
       border: none;
       background: var(--cream);
+      transition: height 0.2s ease;
     }
 
     /* ══ SAVE REMINDER ══ */
@@ -749,6 +750,7 @@
     <span class="section-label">Your Coaching Session &amp; Reflection Journal</span>
     <div class="form-outer">
       <iframe
+        id="jotform-iframe"
         src="https://form.jotform.com/260514112639855"
         title="Lesson 1 Reflection Journal"
         allowfullscreen>
@@ -768,12 +770,48 @@
   </div>
 
   <script>
+    /* ── Transcript toggle ── */
     function toggleTranscript(btn) {
       const body = document.getElementById('transcript-body');
       const isOpen = body.classList.contains('open');
       body.classList.toggle('open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
     }
+
+    /* ── Jotform dynamic height ──
+       Jotform broadcasts its current height via postMessage on every
+       page change. We catch it here and resize the iframe to match,
+       eliminating the dead space between form pages.
+    ── */
+    (function () {
+      var jfIframe = document.getElementById('jotform-iframe');
+
+      window.addEventListener('message', function (e) {
+        if (!e.data) return;
+
+        var data = e.data;
+
+        /* Jotform sends either a plain string "setHeight:NNN" or a
+           JSON object { action: "setHeight", height: NNN }          */
+        if (typeof data === 'string') {
+          if (data.indexOf('setHeight') !== -1) {
+            var parts = data.split(':');
+            var h = parseInt(parts[1], 10);
+            if (!isNaN(h) && h > 100) {
+              jfIframe.style.height = (h + 30) + 'px';
+            }
+          }
+        } else if (typeof data === 'object') {
+          var h = data.height || (data.action === 'setHeight' && data.height);
+          if (!h && data.scrollHeight) h = data.scrollHeight;
+          if (!h && data.frameHeight) h = data.frameHeight;
+          h = parseInt(h, 10);
+          if (!isNaN(h) && h > 100) {
+            jfIframe.style.height = (h + 30) + 'px';
+          }
+        }
+      });
+    }());
   </script>
 
 </body>
