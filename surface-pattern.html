@@ -424,8 +424,11 @@
       border: 1px solid var(--tan-light);
       margin-bottom: 8px;
     }
-    .form-outer .jotform-embed {
+    .form-outer iframe {
       display: block;
+      width: 100%;
+      height: 2400px;
+      border: none;
       background: var(--cream);
     }
 
@@ -745,9 +748,11 @@
     <!-- FORM -->
     <span class="section-label">Your Coaching Session &amp; Reflection Journal</span>
     <div class="form-outer">
-      <div class="jotform-embed">
-        <script type="text/javascript" src="https://form.jotform.com/jsform/260514112639855"></script>
-      </div>
+      <iframe
+        src="https://form.jotform.com/260514112639855"
+        title="Lesson 1 Reflection Journal"
+        allowfullscreen>
+      </iframe>
     </div>
 
     <div class="action-box">
