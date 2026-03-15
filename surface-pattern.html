@@ -10,24 +10,23 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --cream:       #faf4e8;
-      --cream-dark:  #f2ead8;
-      --cream-mid:   #ede5d4;
-      --tan:         #c4a882;
-      --tan-mid:     #a8895e;
-      --tan-light:   #ddd0b8;
-      --tan-faint:   #ede5d4;
-      --brown:       #2e1f0e;
-      --brown-mid:   #5c3d1e;
-      --brown-light: #8b6340;
-      --label-xs:    11px;
-      --body-sm:     14px;
-      --body-md:     15px;
-      --body-lg:     16px;
+      --cream:        #faf4e8;
+      --cream-dark:   #f2ead8;
+      --cream-mid:    #ede5d4;
+      --tan:          #c4a882;
+      --tan-mid:      #a8895e;
+      --tan-light:    #ddd0b8;
+      --tan-faint:    #ede5d4;
+      --brown:        #2e1f0e;
+      --brown-mid:    #5c3d1e;
+      --brown-light:  #8b6340;
+      --label-xs:     11px;
+      --body-sm:      14px;
+      --body-md:      15px;
+      --body-lg:      16px;
     }
 
     html { scroll-behavior: smooth; }
-
     body {
       font-family: 'Spectral', Georgia, serif;
       background: var(--cream);
@@ -39,39 +38,45 @@
     .complete-banner {
       background: var(--brown);
       border-bottom: 2px solid var(--tan);
-      padding: 18px 28px;
-      display: flex; align-items: center; gap: 16px;
+      padding: 14px 28px;
+      display: flex; align-items: center; gap: 14px;
     }
     .complete-banner-icon {
-      width: 36px; height: 36px;
+      width: 30px; height: 30px;
       border: 2px solid var(--tan); border-radius: 50%;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .complete-banner-icon svg {
-      width: 18px; height: 18px; stroke: var(--tan); fill: none;
+      width: 15px; height: 15px;
+      stroke: var(--tan); fill: none;
       stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
     }
     .complete-banner-text {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 500; letter-spacing: 0.02em;
-      color: #faf4e8; line-height: 1.55;
+      font-size: 14px; font-weight: 500; letter-spacing: 0.02em;
+      color: rgba(250,244,232,0.85); line-height: 1.5;
     }
     .complete-banner-text strong { color: var(--tan); font-weight: 700; }
 
-    /* ══ MAIN VIDEO ══ */
+    /* ══ VIDEO ══ */
     .video-wrap { background: #100a04; }
     .video-container {
-      position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden;
+      position: relative; width: 100%;
+      padding-bottom: 56.25%; height: 0; overflow: hidden;
     }
     .video-container iframe {
-      position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block;
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border: none; display: block;
     }
 
-    /* transcript */
+    /* ── Transcript ── */
     .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
     .transcript-btn {
-      width: 100%; background: transparent; border: none; padding: 13px 24px;
-      display: flex; align-items: center; justify-content: space-between; cursor: pointer; gap: 12px;
+      width: 100%; background: transparent; border: none;
+      padding: 11px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; gap: 12px;
     }
     .transcript-btn:hover { background: rgba(196,168,130,0.06); }
     .transcript-label {
@@ -80,193 +85,201 @@
       letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan);
     }
     .transcript-chevron {
-      width: 16px; height: 16px; stroke: var(--tan); fill: none;
+      width: 15px; height: 15px;
+      stroke: var(--tan); fill: none;
       stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
       transition: transform 0.3s ease; flex-shrink: 0;
     }
     .transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
-    .transcript-body { display: none; padding: 0 28px 22px; }
+    .transcript-body { display: none; padding: 0 28px 20px; }
     .transcript-body.open { display: block; }
     .transcript-body p {
+      font-family: 'Spectral', Georgia, serif;
       font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.78); line-height: 1.85; margin-bottom: 14px;
+      color: rgba(250,244,232,0.78); line-height: 1.85; margin-bottom: 12px;
     }
     .transcript-body p:last-child { margin-bottom: 0; }
     .transcript-body p.pause {
       font-style: normal; font-size: var(--label-xs);
       letter-spacing: 0.14em; text-transform: uppercase;
-      color: rgba(196,168,130,0.45); margin-bottom: 8px;
+      color: rgba(196,168,130,0.45); margin-bottom: 6px;
     }
     .transcript-body p.section-marker {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-style: normal; font-weight: 500; font-size: var(--label-xs);
       letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--tan); margin-top: 20px; margin-bottom: 8px;
+      color: var(--tan); margin-top: 18px; margin-bottom: 6px;
     }
 
-    /* ══ TAB BAR ══ */
-    .tab-bar {
-      position: sticky; top: 0; z-index: 50;
+    /* ══ TAB NAV ══ */
+    .tab-nav {
       background: var(--brown);
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-      display: flex; align-items: stretch;
-      overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+      border-top: 1px solid rgba(196,168,130,0.2);
+      display: flex; overflow-x: auto;
+      scrollbar-width: none;
     }
-    .tab-bar::-webkit-scrollbar { display: none; }
-
+    .tab-nav::-webkit-scrollbar { display: none; }
     .tab-btn {
+      flex: 1; min-width: 0;
+      background: transparent; border: none;
+      padding: 13px 10px 11px;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { background: rgba(196,168,130,0.07); }
+    .tab-btn.active {
+      border-bottom-color: var(--tan);
+      background: rgba(196,168,130,0.1);
+    }
+    .tab-icon {
+      width: 16px; height: 16px;
+      border: 1.5px solid rgba(196,168,130,0.45);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      transition: border-color 0.2s;
+    }
+    .tab-btn.active .tab-icon,
+    .tab-btn:hover .tab-icon { border-color: var(--tan); }
+    .tab-icon svg {
+      width: 8px; height: 8px;
+      stroke: rgba(196,168,130,0.45); fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+      transition: stroke 0.2s;
+    }
+    .tab-btn.active .tab-icon svg,
+    .tab-btn:hover .tab-icon svg { stroke: var(--tan); }
+    .tab-label {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 500;
       letter-spacing: 0.16em; text-transform: uppercase;
-      color: rgba(196,168,130,0.5);
-      background: transparent; border: none;
-      border-bottom: 2px solid transparent;
-      padding: 15px 20px 13px;
-      cursor: pointer; white-space: nowrap; flex-shrink: 0;
-      display: flex; align-items: center; gap: 8px;
-      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      color: rgba(196,168,130,0.55);
+      transition: color 0.2s;
     }
-    .tab-btn:hover { color: var(--tan); background: rgba(196,168,130,0.05); }
-    .tab-btn.active { color: var(--tan); border-bottom-color: var(--tan); }
-
-    .tab-check {
-      width: 14px; height: 14px;
-      border: 1px solid rgba(196,168,130,0.25); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      transition: background 0.25s, border-color 0.25s;
-    }
-    .tab-check svg {
-      width: 8px; height: 8px; stroke: rgba(196,168,130,0.25); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .tab-btn.done .tab-check { background: var(--tan); border-color: var(--tan); }
-    .tab-btn.done .tab-check svg { stroke: var(--brown); }
-
-    /* ══ BLANK STATE ══ */
-    .blank-state {
-      padding: 64px 32px 80px; text-align: center;
-      max-width: 520px; margin: 0 auto;
-    }
-    .blank-rule { width: 28px; height: 1px; background: var(--tan-light); margin: 0 auto 24px; }
-    .blank-state p {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 18px; font-weight: 300; font-style: italic;
-      color: var(--tan-mid); line-height: 1.65;
-    }
+    .tab-btn.active .tab-label,
+    .tab-btn:hover .tab-label { color: var(--tan); }
 
     /* ══ TAB PANELS ══ */
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* ══ PANEL INNER ══ */
+    /* ══ SHARED PANEL WRAPPER ══ */
     .panel-inner {
-      padding: 44px 32px 32px;
-      max-width: 760px; margin: 0 auto;
+      padding: 40px 32px 32px;
+      max-width: 760px;
+      margin: 0 auto;
     }
 
-    /* ══ PANEL TYPOGRAPHY ══ */
-    .panel-eyebrow {
+    .lesson-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs); font-weight: 500;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan-mid); margin-bottom: 10px; display: block;
+    }
+    .page-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 32px; font-weight: 300;
+      color: var(--brown); line-height: 1.15;
+    }
+    .page-title em { font-style: italic; color: var(--brown-mid); }
+    .title-rule { width: 48px; height: 1px; background: var(--tan); margin: 16px 0 24px; }
+
+    .lead {
+      font-size: var(--body-lg); font-weight: 300; line-height: 1.8;
+      color: var(--brown-mid); margin-bottom: 28px;
+    }
+
+    /* ── Resource Block ── */
+    .resource-block { border: 1px solid var(--tan-light); margin-bottom: 36px; }
+    .resource-block-head {
+      background: var(--brown); padding: 16px 22px 14px;
+      border-bottom: 1px solid rgba(196,168,130,0.2);
+    }
+    .resource-block-eyebrow {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 600;
       letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 6px;
+    }
+    .resource-block-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 19px; font-weight: 300; color: var(--cream); line-height: 1.3;
+    }
+    .resource-block-title em { font-style: italic; color: var(--tan); }
+    .resource-block-body { padding: 20px 22px 22px; background: var(--cream-dark); }
+    .resource-block-intro {
+      font-size: var(--body-md); font-weight: 300; line-height: 1.78;
+      color: var(--brown-mid); margin-bottom: 20px;
+    }
+    .resource-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .resource-card {
+      background: var(--cream); border: 1px solid var(--tan-light);
+      display: flex; flex-direction: column;
+    }
+    .resource-card-top { padding: 16px 16px 12px; flex: 1; }
+    .resource-card-type {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs); font-weight: 600;
+      letter-spacing: 0.20em; text-transform: uppercase;
       color: var(--tan-mid); display: block; margin-bottom: 8px;
     }
-    .panel-title {
+    .resource-card-name {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 30px; font-weight: 300; color: var(--brown); line-height: 1.15;
+      font-size: 15px; font-weight: 600; color: var(--brown);
+      line-height: 1.3; margin-bottom: 8px; display: block;
     }
-    .panel-title em { font-style: italic; color: var(--brown-mid); }
-    .panel-rule { width: 40px; height: 1px; background: var(--tan); margin: 16px 0 26px; }
-    .panel-lead {
-      font-size: var(--body-lg); font-weight: 300; line-height: 1.8;
-      color: var(--brown-mid); margin-bottom: 32px;
+    .resource-card-desc {
+      font-size: var(--body-sm); font-weight: 300; line-height: 1.75; color: var(--brown-light);
     }
-
-    /* ══ NAV BUTTONS (back + continue) ══ */
-    .nav-wrap {
-      padding: 24px 32px 32px; max-width: 760px; margin: 0 auto;
-      border-top: 1px solid var(--tan-light);
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    }
-    .nav-wrap.no-back { justify-content: flex-end; }
-
-    .back-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: transparent;
-      border: 1px solid var(--tan-light);
-      padding: 12px 22px;
+    .resource-card-action { padding: 0 16px 14px; }
+    .resource-card-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--brown); border: none; padding: 9px 14px;
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 500;
+      font-size: var(--label-xs); font-weight: 500;
       letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan-mid); cursor: pointer;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
-    }
-    .back-btn:hover { background: var(--cream-dark); border-color: var(--tan-mid); color: var(--brown); }
-    .back-btn svg {
-      width: 13px; height: 13px; stroke: currentColor; fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
-
-    .continue-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--brown); border: none; padding: 14px 28px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 500;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--tan); cursor: pointer;
+      color: var(--tan); cursor: pointer; text-decoration: none;
       transition: background 0.2s, color 0.2s;
     }
-    .continue-btn:hover { background: var(--brown-mid); color: var(--cream); }
-    .continue-btn svg {
-      width: 14px; height: 14px; stroke: currentColor; fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    .resource-card-btn:hover { background: var(--brown-mid); color: var(--cream); }
+    .resource-card-btn svg {
+      width: 12px; height: 12px; stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0;
     }
+    .resource-timing {
+      margin-top: 16px; padding: 13px 15px;
+      background: var(--cream); border-left: 3px solid var(--tan);
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .resource-timing svg {
+      width: 13px; height: 13px; stroke: var(--tan-mid); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .resource-timing p {
+      font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid);
+    }
+    .resource-timing p strong { font-weight: 500; color: var(--brown); }
 
-    /* ══ WHY BLOCK ══ */
+    /* ── Why Block ── */
     .why-block {
       background: var(--cream-dark); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan-mid); padding: 22px 24px; margin-bottom: 32px;
+      border-left: 3px solid var(--tan-mid); padding: 20px 22px; margin-bottom: 0;
     }
     .why-block-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 12px;
+      font-size: 15px; font-weight: 600; color: var(--brown);
+      display: block; margin-bottom: 10px;
     }
     .why-block p {
-      font-size: var(--body-md); font-weight: 300; line-height: 1.8; color: var(--brown); margin-bottom: 12px;
+      font-size: var(--body-md); font-weight: 300; line-height: 1.8;
+      color: var(--brown); margin-bottom: 10px;
     }
     .why-block p:last-child { margin-bottom: 0; }
 
-    /* ══ SUPPLEMENTAL VIDEO ══ */
-    .supp-video { border: 1px solid var(--tan-light); margin-bottom: 32px; overflow: hidden; }
-    .supp-video-head {
-      background: var(--cream-mid); padding: 14px 20px;
-      display: flex; align-items: center; gap: 14px;
-      border-bottom: 1px solid var(--tan-light); flex-wrap: wrap;
-    }
-    .supp-video-badge {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--brown-mid); background: var(--tan-faint);
-      border: 1px solid var(--tan-light); padding: 4px 11px; flex-shrink: 0;
-    }
-    .supp-video-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 500; color: var(--brown); line-height: 1.3;
-    }
-    .supp-video-container {
-      position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #100a04;
-    }
-    .supp-video-container iframe {
-      position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block;
-    }
-    .supp-video-foot {
-      padding: 14px 20px; background: var(--cream-dark);
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown-mid); border-top: 1px solid var(--tan-light);
-    }
-
-    /* ══ REQUIREMENTS ══ */
+    /* ── Requirements Grid ── */
     .requirements-label {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 600;
@@ -275,31 +288,45 @@
     }
     .requirements-grid {
       display: grid; grid-template-columns: 1fr 1fr;
-      gap: 2px; background: var(--tan-light); border: 1px solid var(--tan-light); margin-bottom: 32px;
+      gap: 2px; background: var(--tan-light);
+      border: 1px solid var(--tan-light); margin-bottom: 0;
     }
-    .req-card { background: var(--cream); padding: 20px 22px; }
+    .req-card { background: var(--cream); padding: 20px 20px; }
     .req-card-number {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 28px; font-weight: 300; font-style: italic;
-      color: var(--tan); line-height: 1; margin-bottom: 6px; display: block;
+      font-size: 26px; font-weight: 300; font-style: italic;
+      color: var(--tan); line-height: 1; margin-bottom: 5px; display: block;
     }
     .req-card-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 17px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 8px;
+      font-size: 16px; font-weight: 600; color: var(--brown);
+      display: block; margin-bottom: 7px; letter-spacing: 0.01em;
     }
     .req-card-desc {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); margin-bottom: 10px;
+      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
+      color: var(--brown-mid); margin-bottom: 10px;
     }
     .req-card-example {
+      font-family: 'Spectral', Georgia, serif;
       font-size: 13px; font-weight: 300; font-style: italic;
-      color: var(--brown-light); line-height: 1.65; padding-top: 8px; border-top: 1px solid var(--tan-faint);
+      color: var(--brown-light); line-height: 1.65;
+      padding-top: 8px; border-top: 1px solid var(--tan-faint);
     }
     .req-card-example strong { font-style: normal; font-weight: 500; color: var(--tan-mid); }
 
-    /* ══ RED FLAGS ══ */
+    /* ── Red Flags ── */
+    .redflags-block {
+      background: var(--cream-dark); border: 1px solid var(--tan-light);
+      padding: 20px 22px; margin-bottom: 0;
+    }
+    .redflags-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 15px; font-weight: 600; color: var(--brown);
+      display: block; margin-bottom: 14px;
+    }
     .redflag-item {
       display: flex; align-items: flex-start; gap: 14px;
-      padding: 12px 0; border-bottom: 1px solid var(--tan-faint);
+      padding: 10px 0; border-bottom: 1px solid var(--tan-faint);
     }
     .redflag-item:last-child { border-bottom: none; padding-bottom: 0; }
     .redflag-marker {
@@ -308,39 +335,55 @@
       letter-spacing: 0.12em; text-transform: uppercase;
       color: var(--tan-mid); flex-shrink: 0; margin-top: 2px; min-width: 64px;
     }
-    .redflag-text { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown); }
+    .redflag-text {
+      font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown);
+    }
     .redflag-text strong { font-weight: 500; color: var(--brown-mid); }
-    .redflag-text em { font-style: italic; }
 
-    /* ══ INSTRUCTIONS ══ */
-    .instructions-band { background: var(--brown); padding: 20px 24px; margin-bottom: 24px; }
+    /* ── Your Session ── */
+    .instructions-band { background: var(--brown); padding: 18px 22px; margin-bottom: 4px; }
     .instructions-band-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 300; color: var(--cream); margin-bottom: 12px;
+      font-size: 16px; font-weight: 300; color: var(--cream); margin-bottom: 10px;
     }
-    .instructions-list { list-style: none; }
+    .instructions-list { list-style: none; padding: 0; }
     .instructions-list li {
+      font-family: 'Spectral', Georgia, serif;
       font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.85); line-height: 1.72; padding: 7px 0;
-      border-bottom: 1px solid rgba(196,168,130,0.12);
+      color: rgba(250,244,232,0.85); line-height: 1.72;
+      padding: 6px 0; border-bottom: 1px solid rgba(196,168,130,0.12);
       display: flex; gap: 10px; align-items: flex-start;
     }
     .instructions-list li:last-child { border-bottom: none; }
     .instructions-list li::before {
       content: attr(data-n);
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); color: var(--tan); flex-shrink: 0; margin-top: 2px; min-width: 14px;
+      font-size: var(--label-xs); color: var(--tan);
+      flex-shrink: 0; margin-top: 2px; min-width: 14px;
     }
     .instructions-list li strong { color: var(--tan); font-weight: 500; }
 
-    /* ══ SAVE REMINDER ══ */
+    .section-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs); font-weight: 600;
+      letter-spacing: 0.24em; text-transform: uppercase;
+      color: var(--tan-mid); display: block;
+      margin-bottom: 14px; padding-bottom: 7px;
+      border-bottom: 1px solid var(--tan-light);
+    }
+    .form-outer {
+      border: 1px solid var(--tan-light); margin-bottom: 6px; overflow: hidden;
+    }
+    .form-outer .jotform-embed { display: block; background: var(--cream); }
+
     .save-reminder {
       background: var(--brown-mid); border: 1px solid rgba(196,168,130,0.25);
-      padding: 16px 22px; margin-bottom: 28px; display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 20px; margin-bottom: 32px;
+      display: flex; align-items: flex-start; gap: 13px;
     }
     .save-reminder-icon { flex-shrink: 0; margin-top: 2px; }
     .save-reminder-icon svg {
-      width: 18px; height: 18px; stroke: var(--tan); fill: none;
+      width: 17px; height: 17px; stroke: var(--tan); fill: none;
       stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
     }
     .save-reminder p {
@@ -349,97 +392,154 @@
     }
     .save-reminder p strong { color: var(--tan); }
 
-    /* ══ JOTFORM EMBED ══ */
-    .jotform-wrap {
-      border: 1px solid var(--tan-light);
-      margin-bottom: 0;
-      overflow: hidden;
+    /* ── Complete Lesson tab ── */
+    .complete-lesson-content {
+      background: var(--cream-dark); border: 1px solid var(--tan-light);
+      border-left: 3px solid var(--tan-mid); padding: 22px 24px; margin-bottom: 28px;
     }
-    .jotform-wrap-head {
-      background: var(--brown); padding: 18px 24px;
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-    }
-    .jotform-eyebrow {
+    .complete-lesson-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 6px;
+      font-size: 15px; font-weight: 600; color: var(--brown);
+      display: block; margin-bottom: 10px;
     }
-    .jotform-title {
+    .complete-lesson-content p {
+      font-size: var(--body-md); font-weight: 300; line-height: 1.8;
+      color: var(--brown); margin-bottom: 10px;
+    }
+    .complete-lesson-content p:last-child { margin-bottom: 0; }
+    .complete-lesson-checklist { list-style: none; padding: 0; margin-bottom: 0; }
+    .complete-lesson-checklist li {
+      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
+      color: var(--brown-mid); padding: 7px 0;
+      border-bottom: 1px solid var(--tan-faint);
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .complete-lesson-checklist li:last-child { border-bottom: none; }
+    .check-icon {
+      width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px;
+      border: 1.5px solid var(--tan-mid); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .check-icon svg {
+      width: 8px; height: 8px; stroke: var(--tan-mid); fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .finish-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%;
+      background: var(--brown); border: 2px solid var(--tan);
+      padding: 16px 24px; margin-top: 28px;
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px; font-weight: 300; color: var(--cream); line-height: 1.3;
-    }
-    .jotform-title em { font-style: italic; color: var(--tan); }
-    .jotform-embed { background: var(--cream-dark); }
-
-    /* hide video on complete tab */
-    body.tab-complete .video-wrap { display: none; }
-    body.tab-complete .complete-banner { display: none; }
-    body.tab-complete .tab-panel#panel-complete { min-height: 0; }
-    body.tab-complete { height: auto; overflow: visible; }
-    .complete-dark {
-      background: var(--brown);
-      padding: 36px 32px 32px;
-      text-align: center;
-    }
-    .complete-dark-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
+      font-size: 13px; font-weight: 600;
       letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 14px;
+      color: var(--tan); cursor: pointer; text-decoration: none;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
     }
-    .complete-dark-heading {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 24px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.45; margin-bottom: 6px;
+    .finish-btn:hover { background: var(--tan); color: var(--brown); border-color: var(--tan); }
+    .finish-btn svg {
+      width: 14px; height: 14px; stroke: currentColor; fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
     }
-    .complete-dark-sub {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.65); line-height: 1.55; margin-bottom: 24px;
+
+    /* ── Finish tab ── */
+    .finish-screen {
+      text-align: center;
+      padding: 56px 32px 64px;
+      max-width: 560px;
+      margin: 0 auto;
     }
-    .complete-instruction {
-      max-width: 480px; margin: 0 auto 24px;
-      background: rgba(196,168,130,0.1);
-      border: 1px solid rgba(196,168,130,0.2);
-      padding: 16px 20px;
-      display: flex; align-items: flex-start; gap: 12px; text-align: left;
+    .finish-circle {
+      width: 72px; height: 72px;
+      border: 2px solid var(--tan); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 28px;
     }
-    .complete-instruction svg {
-      width: 16px; height: 16px; stroke: var(--tan); fill: none;
+    .finish-circle svg {
+      width: 32px; height: 32px; stroke: var(--tan); fill: none;
       stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      flex-shrink: 0; margin-top: 2px;
     }
-    .complete-instruction p {
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.82); line-height: 1.7;
-    }
-    .complete-instruction p strong { color: var(--tan); font-weight: 500; }
-    .complete-rule { width: 36px; height: 1px; background: rgba(196,168,130,0.25); margin: 0 auto 20px; }
-    .complete-quote {
+    .finish-eyebrow {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 17px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.75); line-height: 1.65; margin-bottom: 14px;
+      font-size: var(--label-xs); font-weight: 600;
+      letter-spacing: 0.26em; text-transform: uppercase;
+      color: var(--tan-mid); display: block; margin-bottom: 14px;
     }
-    .complete-attr {
+    .finish-heading {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 28px; font-weight: 300; color: var(--brown);
+      line-height: 1.2; margin-bottom: 18px;
+    }
+    .finish-heading em { font-style: italic; color: var(--brown-mid); }
+    .finish-rule { width: 40px; height: 1px; background: var(--tan); margin: 0 auto 22px; }
+    .finish-body {
+      font-size: var(--body-md); font-weight: 300; line-height: 1.82;
+      color: var(--brown-mid); margin-bottom: 36px;
+    }
+    .finish-body strong { color: var(--brown); font-weight: 500; }
+    .finish-instruction {
+      background: var(--brown);
+      padding: 22px 26px;
+      border: 1px solid rgba(196,168,130,0.25);
+      margin-bottom: 0;
+    }
+    .finish-instruction-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs); font-weight: 600;
+      letter-spacing: 0.20em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 12px;
+    }
+    .finish-arrow {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 14px;
+    }
+    .finish-arrow-icon {
+      width: 40px; height: 40px; flex-shrink: 0;
+      border: 1.5px solid rgba(196,168,130,0.35); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .finish-arrow-icon svg {
+      width: 18px; height: 18px; stroke: var(--tan); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .finish-arrow-text {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px; font-weight: 300; color: var(--cream); line-height: 1.5;
+    }
+    .finish-arrow-text strong { font-weight: 500; color: var(--tan); }
+    .finish-note {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: var(--body-sm); font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.6); line-height: 1.65;
+      border-top: 1px solid rgba(196,168,130,0.15);
+      padding-top: 12px; margin-top: 4px;
+    }
+
+    /* ══ CLOSING ══ */
+    .closing {
+      background: var(--brown); padding: 32px;
+      text-align: center; margin-top: 0;
+    }
+    .closing-quote {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 19px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.65; margin-bottom: 18px;
+    }
+    .closing-attr {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 400;
-      letter-spacing: 0.2em; text-transform: uppercase; color: rgba(196,168,130,0.55);
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--tan);
     }
 
     /* ══ RESPONSIVE ══ */
     @media (max-width: 580px) {
+      .resource-cards { grid-template-columns: 1fr; }
       .requirements-grid { grid-template-columns: 1fr; }
-      .supp-video-head { flex-direction: column; align-items: flex-start; gap: 8px; }
-      .nav-wrap { flex-direction: column; align-items: stretch; }
-      .back-btn, .continue-btn { justify-content: center; }
     }
     @media (max-width: 560px) {
-      .panel-inner { padding: 28px 20px 24px; }
-      .nav-wrap { padding: 20px; }
-      .panel-title { font-size: 24px; }
-      .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .tab-btn { padding: 14px 13px 12px; }
-      .complete-dark { padding: 40px 24px 36px; }
+      .panel-inner { padding: 28px 18px 28px; }
+      .page-title { font-size: 26px; }
+      .tab-label { font-size: 10px; letter-spacing: 0.10em; }
+      .tab-btn { padding: 11px 6px 9px; gap: 5px; }
+      .finish-screen { padding: 40px 20px 48px; }
     }
   </style>
 </head>
@@ -451,12 +551,12 @@
       <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
     </div>
     <p class="complete-banner-text">
-      When you finish this lesson, go to the <strong>Complete Lesson</strong> tab and click
-      <strong>Mark as Complete</strong> to unlock Lesson 2.
+      Work through each section using the tabs below. When finished, open the
+      <strong>Finish</strong> tab to mark this lesson complete.
     </p>
   </div>
 
-  <!-- ══ MAIN VIDEO ══ -->
+  <!-- ══ VIDEO ══ -->
   <div class="video-wrap">
     <div class="video-container">
       <iframe
@@ -466,8 +566,9 @@
         allowfullscreen>
       </iframe>
     </div>
+
     <div class="transcript">
-      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this)">
+      <button class="transcript-btn" aria-expanded="false" aria-controls="transcript-body" onclick="toggleTranscript(this)">
         <span class="transcript-label">Video Transcript</span>
         <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
       </button>
@@ -491,6 +592,7 @@
         <p>Surface to depth. Present to past. Observable to psychological. That's the excavation ladder. And today, you're climbing the first rung.</p>
         <p class="pause">[ 2:49 ]</p>
         <p class="section-marker">Today's Work: Pure Observation</p>
+        <p>I want to be very specific about what you're doing — and not doing — in this lesson. You're not exploring why your character behaves this way. You're not digging into beliefs or backstory. That's Lessons 2 and 3.</p>
         <p>Today, you're being a documentary filmmaker. You're capturing what happens on camera. No interpretation. No analysis. Just behavior.</p>
         <p>Think about Katniss Everdeen. What does she do? She volunteers at the Reaping. She steps between danger and the people she loves — with Prim, with Rue, with Peeta. She positions herself as protector, again and again, in different situations, with different people, under different kinds of pressure. That's what you'd see on film.</p>
         <p>Or Sherlock Holmes. What does he do? He examines. He picks up objects others ignore. He studies faces, clothing, hands. Every scene, every case — the same compulsion, expressing itself differently depending on context.</p>
@@ -502,53 +604,108 @@
         <p>Visible. Put a camera on your character. Would this show up? "She feels insecure" doesn't pass the test. "She apologizes before stating any opinion" does.</p>
         <p>Recurring. This isn't a one-time reaction. It's a pattern across relationships, contexts, and time. Patterns signal psychology.</p>
         <p>Consequential. This behavior affects relationships, decisions, the trajectory of their life. It creates conflict or shapes how others respond to them. It matters.</p>
+        <p>These four work together. Specificity makes it writable. Visibility makes it cinematic. Recurrence makes it meaningful. Consequence makes it story-worthy.</p>
         <p class="pause">[ 5:44 ]</p>
+        <p class="section-marker">Why One Example Is Never Enough</p>
+        <p>Here's what makes this genuinely challenging — and genuinely important. One example isn't enough. One example could be situational. A reaction to a specific circumstance, not a revealing pattern.</p>
+        <p>You need to see this behavior with different people, in different settings, under different kinds of pressure. Your character tests new people by sharing something vulnerable and watching how they respond. Okay — where have you seen this? With their sister? Their boss? A romantic partner? A stranger at a coffee shop?</p>
+        <p>The more contexts you can identify, the more you prove this is structural to who they are — not something you invented for one scene. This is what separates characters who feel real from characters who feel assembled. Your adaptive unconscious has already noticed these patterns. The coaching session is designed to help you access them.</p>
+        <p class="pause">[ 6:48 ]</p>
         <p class="section-marker">Your AI Coaching Session</p>
-        <p>Your AI coach is a Socratic partner. Its job is to help you see what you already know — not to tell you things about your character.</p>
-        <p>If your coach asks why — stop it. Today is what, not why. Tell it to stay in observer mode. If you have only one or two examples — keep digging. You haven't found a pattern yet. You've found a moment.</p>
-        <p>By the end of today's session, you'll have two things: one anchor behavior and at least three concrete instances across different contexts. That's the foundation everything else is built on.</p>
+        <p>Your AI coach is a Socratic partner. Its job is to help you see what you already know — not to tell you things about your character. Think of it like this: the right question at the right moment unlocks something you've been sitting next to without quite seeing it. That's what a good coach does. That's what the session is designed to do.</p>
+        <p>A few things to watch for. If your coach asks why — stop it. "This sounds like abandonment issues" is interpretation. We're not there yet. Today is what, not why. Tell it to stay in observer mode.</p>
+        <p>If you have only one or two examples — keep digging. You haven't found a pattern yet. You've found a moment.</p>
+        <p>If your description sounds like a label — "guarded," "controlling," "anxious" — push yourself. What does guarded actually look like? What specific actions would you film?</p>
+        <p>If your coach is doing most of the talking — pause. Your adaptive unconscious is the source here. The coach should be asking questions. You should be answering them. You're the expert on your character. The coaching session is a tool for accessing what you already know.</p>
+        <p class="pause">[ 8:14 ]</p>
+        <p class="section-marker">What You're Building Today</p>
+        <p>By the end of today's session, you'll have two things: one anchor behavior — specific, visible, recurring, and consequential — and at least three concrete instances of that behavior across different contexts with different people.</p>
+        <p>That's the foundation everything else is built on. In Lesson 2, you'll shift from observer to interpreter. You'll ask what I call the therapist's question: what would my character have to believe for this behavior to feel like the only reasonable response? That's where the excavation goes deeper.</p>
+        <p>But none of that work is possible without the precision you build today. The good news? You already know more about your character than you think you do. Your adaptive unconscious has been paying attention. Today, we're going to prove it.</p>
         <p>Let's go find your character's behavior.</p>
       </div>
     </div>
   </div>
 
-  <!-- ══ TAB BAR ══ -->
-  <nav class="tab-bar" aria-label="Lesson sections">
-    <button class="tab-btn" data-tab="overview">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Overview
+  <!-- ══ TAB NAV ══ -->
+  <nav class="tab-nav" role="tablist">
+    <button class="tab-btn active" role="tab" aria-selected="true"  data-tab="overview"       onclick="switchTab('overview')">
+      <span class="tab-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+      <span class="tab-label">Overview</span>
     </button>
-    <button class="tab-btn" data-tab="requirements">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      4 Requirements
+    <button class="tab-btn"        role="tab" aria-selected="false" data-tab="requirements"   onclick="switchTab('requirements')">
+      <span class="tab-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+      <span class="tab-label">4 Requirements</span>
     </button>
-    <button class="tab-btn" data-tab="redflags">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Red Flags
+    <button class="tab-btn"        role="tab" aria-selected="false" data-tab="redflags"       onclick="switchTab('redflags')">
+      <span class="tab-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+      <span class="tab-label">Red Flags</span>
     </button>
-    <button class="tab-btn" data-tab="session">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Your Session
+    <button class="tab-btn"        role="tab" aria-selected="false" data-tab="yoursession"    onclick="switchTab('yoursession')">
+      <span class="tab-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+      <span class="tab-label">Your Session</span>
     </button>
-    <button class="tab-btn" data-tab="complete">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Complete Lesson
+    <button class="tab-btn"        role="tab" aria-selected="false" data-tab="completelesson" onclick="switchTab('completelesson')">
+      <span class="tab-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+      <span class="tab-label">Complete Lesson</span>
+    </button>
+    <button class="tab-btn"        role="tab" aria-selected="false" data-tab="finish"         onclick="switchTab('finish')">
+      <span class="tab-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+      <span class="tab-label">Finish</span>
     </button>
   </nav>
 
-  <!-- ══ BLANK STATE ══ -->
-  <div id="blank-state" class="blank-state">
-    <div class="blank-rule"></div>
-    <p>Select a section above to begin.</p>
-  </div>
+  <!-- ══ TAB PANELS ══ -->
 
-  <!-- ══ PANEL: OVERVIEW ══ -->
-  <div class="tab-panel" id="panel-overview">
+  <!-- OVERVIEW -->
+  <div class="tab-panel active" id="tab-overview" role="tabpanel">
     <div class="panel-inner">
-      <span class="panel-eyebrow">Lesson 1 · The Excavation Ladder · STRATUM: AI Character Coaching</span>
-      <h1 class="panel-title">The Surface <em>Pattern</em></h1>
-      <div class="panel-rule"></div>
-      <p class="panel-lead">Today you're not analyzing your character. You're being a documentary filmmaker — capturing only what a camera could record. No interpretation. No backstory. Just the behavior your character returns to again and again.</p>
+      <span class="lesson-label">Lesson 1 · The Excavation Ladder · STRATUM: AI Character Coaching</span>
+      <h1 class="page-title">The Surface <em>Pattern</em></h1>
+      <div class="title-rule"></div>
+      <p class="lead">Today you're not analyzing your character. You're being a documentary filmmaker — capturing only what a camera could record. No interpretation. No backstory. Just the behavior your character returns to again and again.</p>
+
+      <div class="resource-block">
+        <div class="resource-block-head">
+          <span class="resource-block-eyebrow">Before You Begin — Student Resources</span>
+          <div class="resource-block-title">The Observer's <em>Toolkit</em></div>
+        </div>
+        <div class="resource-block-body">
+          <p class="resource-block-intro">Before your first coaching session, two resources worth reading. The first addresses the inner critic that tells you you don't know your character well enough. The second explains why behavioral specificity is the engine of compelling fiction — and why labels kill scenes.</p>
+          <div class="resource-cards">
+            <div class="resource-card">
+              <div class="resource-card-top">
+                <span class="resource-card-type">PDF Download · 8 min read</span>
+                <span class="resource-card-name">The Self-Doubt Trap</span>
+                <p class="resource-card-desc">Why writers underestimate what they already know about their characters — and how to use your adaptive unconscious deliberately.</p>
+              </div>
+              <div class="resource-card-action">
+                <a class="resource-card-btn" href="#" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download PDF
+                </a>
+              </div>
+            </div>
+            <div class="resource-card">
+              <div class="resource-card-top">
+                <span class="resource-card-type">PDF Download · 6 min read</span>
+                <span class="resource-card-name">Stop Boring Your Readers</span>
+                <p class="resource-card-desc">The difference between "she's guarded" and behavior a camera can film — and why that gap is where most character writing loses its readers.</p>
+              </div>
+              <div class="resource-card-action">
+                <a class="resource-card-btn" href="#" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download PDF
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="resource-timing">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <p><strong>When to use these:</strong> Read both before starting your coaching session — or return to them after if the session surfaces questions about what counts as behavior versus trait.</p>
+          </div>
+        </div>
+      </div>
 
       <div class="why-block">
         <span class="why-block-title">Why We Start With Behavior, Not Backstory</span>
@@ -556,40 +713,13 @@
         <p>The result often feels exactly like what it is: constructed. It fits the plot. It doesn't feel like a person.</p>
         <p>We go the other direction. We start with what your character does right now — observable, specific, present-day behavior. From there, we dig down layer by layer. Surface to depth. Present to past. Observable to psychological. That's the excavation ladder. This lesson is the first rung.</p>
       </div>
-
-      <div class="supp-video">
-        <div class="supp-video-head">
-          <span class="supp-video-badge">Supplemental · Writing Psychology</span>
-          <span class="supp-video-title">Self Doubt — Why You Know More Than You Think</span>
-        </div>
-        <div class="supp-video-container">
-          <iframe
-            src="https://www.youtube.com/embed/UZVKhfXhQw4?rel=0&modestbranding=1"
-            title="Self Doubt — Why You Know More Than You Think"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
-        </div>
-        <p class="supp-video-foot">Watch this if the inner critic is telling you you don't know your character well enough to begin. It addresses the most common reason writers stall before their first coaching session.</p>
-      </div>
-    </div>
-    <div class="nav-wrap no-back">
-      <button class="continue-btn" data-next="requirements">
-        Continue to 4 Requirements
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
     </div>
   </div>
 
-  <!-- ══ PANEL: REQUIREMENTS ══ -->
-  <div class="tab-panel" id="panel-requirements">
+  <!-- 4 REQUIREMENTS -->
+  <div class="tab-panel" id="tab-requirements" role="tabpanel">
     <div class="panel-inner">
-      <span class="panel-eyebrow">The Methodology</span>
-      <h2 class="panel-title">Four Requirements of a Strong <em>Surface Behavior</em></h2>
-      <div class="panel-rule"></div>
-      <p class="panel-lead">These aren't suggestions. If your character's behavior doesn't meet all four, keep digging.</p>
-
-      <span class="requirements-label">The Four Requirements</span>
+      <span class="requirements-label">The Four Requirements of a Strong Surface Behavior</span>
       <div class="requirements-grid">
         <div class="req-card">
           <span class="req-card-number">01</span>
@@ -616,87 +746,44 @@
           <p class="req-card-example"><strong>Decorative:</strong> She hums when she's nervous.<br><strong>Consequential:</strong> Her self-sacrifice reshapes every alliance and every enemy she makes.</p>
         </div>
       </div>
-
-      <div class="supp-video">
-        <div class="supp-video-head">
-          <span class="supp-video-badge">Supplemental · The Methodology</span>
-          <span class="supp-video-title">Behavior vs. Trait — The Camera Test</span>
-        </div>
-        <div class="supp-video-container">
-          <iframe
-            src="https://www.youtube.com/embed/rIeMCJZWfMg?rel=0&modestbranding=1"
-            title="Behavior vs. Trait — The Camera Test"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
-        </div>
-        <p class="supp-video-foot">Watch before your coaching session. Moving from a label to a filmable behavior is the single hardest shift in Lesson 1. This video models the thinking in real time — with Katniss and two other characters — before you attempt it yourself.</p>
-      </div>
-    </div>
-    <div class="nav-wrap">
-      <button class="back-btn" data-prev="overview">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Overview
-      </button>
-      <button class="continue-btn" data-next="redflags">
-        Continue to Red Flags
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
     </div>
   </div>
 
-  <!-- ══ PANEL: RED FLAGS ══ -->
-  <div class="tab-panel" id="panel-redflags">
+  <!-- RED FLAGS -->
+  <div class="tab-panel" id="tab-redflags" role="tabpanel">
     <div class="panel-inner">
-      <span class="panel-eyebrow">Before Your Coaching Session</span>
-      <h2 class="panel-title">Four Signs You Haven't <em>Found It Yet</em></h2>
-      <div class="panel-rule"></div>
-      <p class="panel-lead">Read these before you start. They describe the four most common ways the session goes sideways — and how to correct each one in the moment.</p>
-
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 1</span>
-        <p class="redflag-text"><strong>Your coach asks "why."</strong> Stop it. "This sounds like abandonment issues" is interpretation. Today is <em>what</em>, not <em>why</em>. Tell it to stay in observer mode.</p>
+      <div class="redflags-block">
+        <span class="redflags-title">Four Signs You Haven't Found Your Behavior Yet</span>
+        <div class="redflag-item">
+          <span class="redflag-marker">Red Flag 1</span>
+          <p class="redflag-text"><strong>Your coach asks "why."</strong> Stop it. "This sounds like abandonment issues" is interpretation. Today is <em>what</em>, not <em>why</em>. Tell it to stay in observer mode.</p>
+        </div>
+        <div class="redflag-item">
+          <span class="redflag-marker">Red Flag 2</span>
+          <p class="redflag-text"><strong>You only have one or two examples.</strong> Keep digging. You haven't found a pattern yet. You've found a moment.</p>
+        </div>
+        <div class="redflag-item">
+          <span class="redflag-marker">Red Flag 3</span>
+          <p class="redflag-text"><strong>Your description sounds like a label.</strong> "Guarded," "controlling," "anxious" — push past it. What does guarded actually look like? What specific actions would you film?</p>
+        </div>
+        <div class="redflag-item">
+          <span class="redflag-marker">Red Flag 4</span>
+          <p class="redflag-text"><strong>Your coach is doing most of the talking.</strong> Your adaptive unconscious is the source here. The coach should be asking questions. You should be answering them.</p>
+        </div>
       </div>
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 2</span>
-        <p class="redflag-text"><strong>You only have one or two examples.</strong> Keep digging. You haven't found a pattern yet. You've found a moment.</p>
-      </div>
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 3</span>
-        <p class="redflag-text"><strong>Your description sounds like a label.</strong> "Guarded," "controlling," "anxious" — push past it. What does guarded actually look like? What specific actions would you film?</p>
-      </div>
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 4</span>
-        <p class="redflag-text"><strong>Your coach is doing most of the talking.</strong> Your adaptive unconscious is the source here. The coach should be asking questions. You should be answering them.</p>
-      </div>
-    </div>
-    <div class="nav-wrap">
-      <button class="back-btn" data-prev="requirements">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to 4 Requirements
-      </button>
-      <button class="continue-btn" data-next="session">
-        Continue to Your Session
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
     </div>
   </div>
 
-  <!-- ══ PANEL: YOUR SESSION ══ -->
-  <div class="tab-panel" id="panel-session">
+  <!-- YOUR SESSION -->
+  <div class="tab-panel" id="tab-yoursession" role="tabpanel">
     <div class="panel-inner">
-      <span class="panel-eyebrow">Lesson 1 · Coaching Session</span>
-      <h2 class="panel-title">Your <em>Session</em></h2>
-      <div class="panel-rule"></div>
-      <p class="panel-lead">You're ready. Your job now is to observe — what a camera sees, not what it means. The coach will ask the questions. You provide the answers.</p>
-
       <div class="instructions-band">
-        <div class="instructions-band-title">Before You Start</div>
+        <div class="instructions-band-title">Before You Start Your Coaching Session</div>
         <ul class="instructions-list">
           <li data-n="1">Copy the prompt to clipboard and open Claude at claude.ai in a new tab. Paste the prompt to begin your session.</li>
           <li data-n="2">Attach the <strong>PDF you saved from Calibrating Your Coach</strong>. Your coach needs that context to work effectively from the first exchange.</li>
           <li data-n="3">Set a timer for <strong>35 minutes</strong>. Stay in observer mode — what the camera sees, not what it means.</li>
-          <li data-n="4">When your session is complete, return here and fill out your <strong>Reflection Journal</strong> below, then print to PDF.</li>
+          <li data-n="4">When your session is complete, return here to fill out your <strong>Reflection Journal</strong> and print to PDF.</li>
         </ul>
       </div>
 
@@ -707,109 +794,110 @@
         <p><strong>Print and save this form as a PDF when complete.</strong> You will attach it to your Lesson 2 coaching session. Your coach cannot read your work unless you bring it to the next session.</p>
       </div>
 
-      <div class="jotform-wrap">
-        <div class="jotform-wrap-head">
-          <span class="jotform-eyebrow">Reflection Journal — Lesson 1</span>
-          <div class="jotform-title">The Surface <em>Pattern</em> · Workspace</div>
-        </div>
+      <span class="section-label">Your Coaching Session &amp; Reflection Journal</span>
+      <div class="form-outer">
         <div class="jotform-embed">
           <script type="text/javascript" src="https://form.jotform.com/jsform/260514112639855"></script>
         </div>
       </div>
     </div>
-    <div class="nav-wrap">
-      <button class="back-btn" data-prev="redflags">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Red Flags
+  </div>
+
+  <!-- COMPLETE LESSON -->
+  <div class="tab-panel" id="tab-completelesson" role="tabpanel">
+    <div class="panel-inner">
+
+      <div class="complete-lesson-content">
+        <span class="complete-lesson-title">Before You Move On — A Checklist</span>
+        <p>The excavation ladder only works if each rung is solid before you step to the next. Make sure you have all three deliverables from this lesson before continuing to Lesson 2.</p>
+        <ul class="complete-lesson-checklist">
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+            <span>One anchor behavior that is <strong>specific, visible, recurring, and consequential</strong> — not a label, not a trait, but something a camera would film.</span>
+          </li>
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+            <span>At least <strong>three instances</strong> of that behavior across different contexts, different people, and different kinds of pressure.</span>
+          </li>
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+            <span>Your <strong>Reflection Journal completed and saved as a PDF</strong> — you will attach it to your Lesson 2 coaching session.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="why-block">
+        <span class="why-block-title">What You've Established</span>
+        <p>You've done something most writers never do deliberately: you've documented the visible surface of a psychology. That pattern — specific, recurring, consequential — is the anchor point for everything that follows.</p>
+        <p>In Lesson 2, you shift from observer to interpreter. You'll ask the therapist's question: <em>what would my character have to believe for this behavior to feel like the only reasonable response?</em> That's where the excavation goes deeper.</p>
+        <p>But none of that work is possible without the precision you've built here. The behavior you've identified is the first rung of the ladder. It holds everything else.</p>
+      </div>
+
+      <button class="finish-btn" onclick="switchTab('finish')">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        I'm ready — take me to Finish
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
       </button>
-      <button class="continue-btn" data-next="complete">
-        Continue to Complete Lesson
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+
     </div>
   </div>
 
-  <!-- ══ PANEL: COMPLETE LESSON ══ -->
-  <div class="tab-panel" id="panel-complete">
-    <div class="complete-dark">
-      <span class="complete-dark-eyebrow">When You're Ready</span>
-      <p class="complete-dark-heading">Move to Lesson 2: The Hidden Truth.</p>
-      <p class="complete-dark-sub">The excavation goes deeper.</p>
-
-      <div class="complete-instruction">
-        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        <p>Make sure you have <strong>printed your Reflection Journal to PDF</strong> from the Your Session tab — you'll need it in Lesson 2. Then click <strong>Mark as Complete</strong> below to open your lesson page and unlock Lesson 2.</p>
+  <!-- FINISH -->
+  <div class="tab-panel" id="tab-finish" role="tabpanel">
+    <div class="finish-screen">
+      <div class="finish-circle">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
       </div>
+      <span class="finish-eyebrow">Lesson 1 · The Surface Pattern</span>
+      <h2 class="finish-heading">You've completed<br><em>the first excavation.</em></h2>
+      <div class="finish-rule"></div>
+      <p class="finish-body">
+        One anchor behavior. Three instances across different contexts. Your reflection journal saved as a PDF.<br><br>
+        That's the foundation. <strong>One step remains.</strong>
+      </p>
 
-      <div class="complete-rule"></div>
-      <p class="complete-quote">One example could be situational.<br>Three instances across different contexts prove it's structural to who they are.</p>
-      <span class="complete-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
-
-      <div style="margin-top: 28px; display: flex; justify-content: center;">
-        <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/8103212"
-           target="_blank"
-           rel="noopener"
-           style="display:inline-flex;align-items:center;gap:10px;background:var(--tan);border:none;padding:16px 36px;font-family:'Cormorant Garamond',Georgia,serif;font-size:13px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--brown);text-decoration:none;transition:background 0.2s;">
-          <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:var(--brown);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Mark as Complete
-        </a>
+      <div class="finish-instruction">
+        <span class="finish-instruction-label">To Mark This Lesson Complete</span>
+        <div class="finish-arrow">
+          <div class="finish-arrow-icon">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+          </div>
+          <p class="finish-arrow-text">Scroll down below this window and click the <strong>Mark as Complete</strong> button to record your progress and unlock Lesson 2.</p>
+        </div>
+        <p class="finish-note">The button appears in the course player just below this lesson window. Clicking it moves you forward on the excavation ladder.</p>
       </div>
+    </div>
+
+    <div class="closing">
+      <p class="closing-quote">One example could be situational.<br>Three instances across different contexts prove it's structural to who they are.</p>
+      <span class="closing-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
     </div>
   </div>
 
   <script>
-    const TAB_ORDER = ['overview', 'requirements', 'redflags', 'session', 'complete'];
+    function switchTab(tabId) {
+      // Deactivate all tabs and panels
+      document.querySelectorAll('.tab-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+      });
+      document.querySelectorAll('.tab-panel').forEach(function(panel) {
+        panel.classList.remove('active');
+      });
 
-    function activateTab(tabId, markPrev) {
-      document.getElementById('blank-state').style.display = 'none';
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      // Activate selected tab and panel
+      var btn = document.querySelector('[data-tab="' + tabId + '"]');
+      var panel = document.getElementById('tab-' + tabId);
+      if (btn) { btn.classList.add('active'); btn.setAttribute('aria-selected', 'true'); }
+      if (panel) { panel.classList.add('active'); }
 
-      const btn = document.querySelector('[data-tab="' + tabId + '"]');
-      if (btn) btn.classList.add('active');
-
-      const panel = document.getElementById('panel-' + tabId);
-      if (panel) panel.classList.add('active');
-
-      if (markPrev) {
-        const prevIdx = TAB_ORDER.indexOf(tabId) - 1;
-        if (prevIdx >= 0) {
-          const prevBtn = document.querySelector('[data-tab="' + TAB_ORDER[prevIdx] + '"]');
-          if (prevBtn) prevBtn.classList.add('done');
-        }
-      }
-
-      /* toggle body class so complete tab can hide the video */
-      document.body.className = tabId === 'complete' ? 'tab-complete' : '';
-
-      if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-
-      /* on complete tab, jump to very top so Systeme button is immediately below */
-      if (tabId === 'complete') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        document.querySelector('.tab-bar').scrollIntoView({ behavior: 'smooth' });
-      }
+      // Scroll to top of widget
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    /* tab bar clicks — no done marking on direct tab click */
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => activateTab(btn.getAttribute('data-tab'), false));
-    });
-
-    /* continue buttons — mark previous done */
-    document.querySelectorAll('.continue-btn').forEach(btn => {
-      btn.addEventListener('click', () => activateTab(btn.getAttribute('data-next'), true));
-    });
-
-    /* back buttons — no done marking */
-    document.querySelectorAll('.back-btn').forEach(btn => {
-      btn.addEventListener('click', () => activateTab(btn.getAttribute('data-prev'), false));
-    });
-
     function toggleTranscript(btn) {
-      const body = document.getElementById('transcript-body');
-      const isOpen = body.classList.contains('open');
+      var body = document.getElementById('transcript-body');
+      var isOpen = body.classList.contains('open');
       body.classList.toggle('open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
     }
@@ -817,5 +905,3 @@
 
 </body>
 </html>
-
-
