@@ -862,7 +862,7 @@
       if (btn) { btn.classList.add('active'); btn.setAttribute('aria-selected', 'true'); }
       if (panel) { panel.classList.add('active'); }
 
-      // On Finish tab: hide banner, video, and tab nav to collapse iframe height
+      // On Finish tab: collapse everything to force iframe to shrink
       var isFinish = (tabId === 'finish');
       var banner = document.querySelector('.complete-banner');
       var video  = document.querySelector('.video-wrap');
@@ -870,6 +870,26 @@
       if (banner) banner.style.display = isFinish ? 'none' : '';
       if (video)  video.style.display  = isFinish ? 'none' : '';
       if (tabnav) tabnav.style.display = isFinish ? 'none' : '';
+
+      // Force body/html to minimal height so iframe resizer collapses the frame
+      if (isFinish) {
+        document.body.style.height    = '1px';
+        document.body.style.minHeight = '0';
+        document.body.style.overflow  = 'hidden';
+        document.documentElement.style.height    = '1px';
+        document.documentElement.style.minHeight = '0';
+        document.documentElement.style.overflow  = 'hidden';
+        // Also try postMessage for common iframe resizer libraries
+        try { window.parent.postMessage({ type: 'setHeight', height: 1 }, '*'); } catch(e) {}
+        try { window.parent.postMessage('resize', '*'); } catch(e) {}
+      } else {
+        document.body.style.height    = '';
+        document.body.style.minHeight = '';
+        document.body.style.overflow  = '';
+        document.documentElement.style.height    = '';
+        document.documentElement.style.minHeight = '';
+        document.documentElement.style.overflow  = '';
+      }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
