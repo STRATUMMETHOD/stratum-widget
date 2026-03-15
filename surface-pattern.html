@@ -72,12 +72,12 @@
 
     /* ══ LESSON COMPLETE IMAGE ══ */
     .lesson-complete-img {
-      display: block;
-      line-height: 0;
+      text-align: center;
+      margin-bottom: 28px;
     }
     .lesson-complete-img img {
-      width: 100%;
-      display: block;
+      width: 75%;
+      display: inline-block;
     }
 
     /* ── Transcript ── */
@@ -564,10 +564,6 @@
       </iframe>
     </div>
 
-    <div class="lesson-complete-img">
-      <img src="./congratulations-surface-patterns.png" alt="Congratulations — You've Completed The Surface Patterns Lesson">
-    </div>
-
     <div class="transcript">
       <button class="transcript-btn" aria-expanded="false" aria-controls="transcript-body" onclick="toggleTranscript(this)">
         <span class="transcript-label">Video Transcript</span>
@@ -803,6 +799,11 @@
   <!-- COMPLETE LESSON -->
   <div class="tab-panel" id="tab-completelesson" role="tabpanel">
     <div class="panel-inner">
+
+      <!-- Congratulations image -->
+      <div class="lesson-complete-img">
+        <img src="./congratulations-surface-patterns.png" alt="Congratulations — You've Completed The Surface Patterns Lesson">
+      </div>
 
       <!-- Checklist -->
       <div class="complete-lesson-content">
