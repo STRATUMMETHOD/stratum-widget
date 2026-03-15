@@ -76,8 +76,16 @@
       margin-bottom: 28px;
     }
     .lesson-complete-img img {
-      width: 75%;
+      width: 86%;
       display: inline-block;
+      border: 1px solid var(--tan);
+      border-radius: 4px;
+      box-shadow: 0 8px 32px rgba(46,31,14,0.25);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .lesson-complete-img img:hover {
+      transform: scale(1.01);
+      box-shadow: 0 12px 40px rgba(46,31,14,0.35);
     }
 
     /* ── Transcript ── */
