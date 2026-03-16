@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lesson 2: The Hidden Truth — STRATUM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -111,37 +111,74 @@
     .tab-bar {
       position: sticky; top: 0; z-index: 50;
       background: var(--brown);
+      border-top: 3px solid var(--tan);
       border-bottom: 1px solid rgba(196,168,130,0.2);
       display: flex; align-items: stretch;
       overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+      box-shadow: 0 3px 14px rgba(0,0,0,0.40);
     }
     .tab-bar::-webkit-scrollbar { display: none; }
+
     .tab-btn {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 500;
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: rgba(196,168,130,0.5);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.17em; text-transform: uppercase;
+      color: rgba(196,168,130,0.72);
       background: transparent; border: none;
-      border-bottom: 2px solid transparent;
-      padding: 15px 18px 13px;
+      border-right: 1px solid rgba(196,168,130,0.1);
+      padding: 0 20px;
+      min-height: 52px;
       cursor: pointer; white-space: nowrap; flex-shrink: 0;
-      display: flex; align-items: center; gap: 8px;
-      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      display: flex; align-items: center; gap: 9px;
+      transition: color 0.2s, background 0.2s;
+      position: relative;
     }
-    .tab-btn:hover { color: var(--tan); background: rgba(196,168,130,0.05); }
-    .tab-btn.active { color: var(--tan); border-bottom-color: var(--tan); }
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn:hover {
+      color: var(--tan);
+      background: rgba(196,168,130,0.08);
+    }
+
+    /* Active: full-brightness tan — stays in the design system */
+    .tab-btn.active {
+      color: var(--tan);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.13em;
+      background: transparent;
+    }
+    .tab-btn.active::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--tan);
+    }
+
+    /* ── Step indicator circles ── */
     .tab-check {
-      width: 14px; height: 14px;
-      border: 1px solid rgba(196,168,130,0.25); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 18px; height: 18px;
+      border: 1.5px solid rgba(196,168,130,0.35);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
       transition: background 0.25s, border-color 0.25s;
     }
     .tab-check svg {
-      width: 8px; height: 8px; stroke: rgba(196,168,130,0.25); fill: none;
+      width: 9px; height: 9px;
+      stroke: rgba(196,168,130,0.25); fill: none;
       stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
     }
+    /* Active: circle brightens to match active tan */
+    .tab-btn.active .tab-check {
+      border-color: var(--tan);
+      background: rgba(196,168,130,0.18);
+    }
+    .tab-btn.active .tab-check svg { stroke: var(--tan); }
+
+    /* Done: solid tan fill */
     .tab-btn.done .tab-check { background: var(--tan); border-color: var(--tan); }
     .tab-btn.done .tab-check svg { stroke: var(--brown); }
+    .tab-btn.done { color: rgba(196,168,130,0.6); }
 
     /* ══ BLANK STATE ══ */
     .blank-state {
@@ -441,9 +478,7 @@
     .jotform-embed { background: var(--cream-dark); }
 
     /* ══ COMPLETE LESSON TAB ══ */
-    .lesson-complete-img {
-      text-align: center; margin-bottom: 28px;
-    }
+    .lesson-complete-img { text-align: center; margin-bottom: 28px; }
     .lesson-complete-img img {
       width: 86%; display: inline-block;
       border: 1px solid var(--tan); border-radius: 4px;
@@ -626,9 +661,16 @@
       .nav-wrap { padding: 20px; }
       .panel-title { font-size: 24px; }
       .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .tab-btn { padding: 14px 12px 12px; }
       .complete-dark { padding: 40px 24px 36px; }
       .question-block-text { font-size: 18px; }
+      .tab-btn {
+        padding: 0 14px;
+        font-size: 11px;
+        letter-spacing: 0.13em;
+        min-height: 52px;
+      }
+      .tab-check { width: 16px; height: 16px; }
+      .tab-check svg { width: 8px; height: 8px; }
     }
   </style>
 </head>
@@ -846,7 +888,7 @@
 
       <div class="redflag-item">
         <span class="redflag-marker">Red Flag 1</span>
-        <p class="redflag-text"><strong>The belief sounds like a virtue.</strong> <em>"She believes in protecting people."</em> <em>"He believes in doing things right."</em> These are too clean. Hidden truths carry an edge of fear, scarcity, or loss. If your character would put the belief on a motivational poster, keep digging.</p>
+        <p class="redflag-text"><strong>The belief sounds like a virtue.</strong> <em>"She believes in protecting people." "He believes in doing things right."</em> These are too clean. Hidden truths carry an edge of fear, scarcity, or loss. If your character would put the belief on a motivational poster, keep digging.</p>
       </div>
       <div class="redflag-item">
         <span class="redflag-marker">Red Flag 2</span>
@@ -925,12 +967,8 @@
   <div class="tab-panel" id="panel-complete">
     <div class="panel-inner">
 
-      <!-- Congratulations image -->
-      <div class="lesson-complete-img">
-        &nbsp;
-      </div>
+      <div class="lesson-complete-img">&nbsp;</div>
 
-      <!-- Checklist -->
       <div class="complete-lesson-content">
         <span class="complete-lesson-title">Before You Move On — A Checklist</span>
         <p>The excavation ladder only works if each rung is solid before you step to the next. Make sure you have all three deliverables from this lesson before continuing to Lesson 3.</p>
@@ -950,7 +988,6 @@
         </ul>
       </div>
 
-      <!-- What You've Established -->
       <div class="why-block">
         <span class="why-block-title">What You've Established</span>
         <p>In Lesson 1 you documented what your character does. Today you uncovered why — the belief operating beneath their awareness that makes their behavior feel not just reasonable, but necessary.</p>
@@ -958,14 +995,12 @@
         <p>In Lesson 3 you will trace this belief back to its origin — the specific experience that made it feel true. Your character believes this. But they weren't born believing it. Something taught them. That is the next question.</p>
       </div>
 
-      <!-- Bridge Question -->
       <div class="bridge-block">
         <span class="bridge-eyebrow">A Question to Carry Into Lesson 3</span>
         <p class="bridge-question">"Your character believes this. But they weren't born believing it. Something taught them. What was it?"</p>
         <p class="bridge-note">You don't need an answer right now. This is the exact question that opens Lesson 3: The Formative Wound. Sit with it. Your character's belief had an origin — a specific moment or experience that made the hidden truth feel like the only reasonable conclusion. Your adaptive unconscious is already working on it.</p>
       </div>
 
-      <!-- Ted's Note -->
       <div class="teds-note">
         <span class="teds-note-eyebrow">A Note from Ted</span>
         <p>The hidden truth you uncovered today is the architecture beneath everything your character does. Every scene they appear in is now more legible to you — because you know what belief is running underneath the behavior.</p>
@@ -973,7 +1008,6 @@
         <span class="teds-note-sig">— Ted Baker</span>
       </div>
 
-      <!-- Questions & Contact Jotform -->
       <div class="questions-block">
         <div class="questions-head">
           <span class="questions-eyebrow">Lesson 2 · Contact Ted</span>
@@ -987,7 +1021,6 @@
 
     </div>
 
-    <!-- Mark as Complete -->
     <div class="complete-dark">
       <span class="complete-dark-eyebrow">When You're Ready</span>
       <p class="complete-dark-heading">Move to Lesson 3: The Formative Wound.</p>
@@ -1015,7 +1048,7 @@
   </div>
 
   <script>
-    const TAB_ORDER = ['overview', 'question', 'redflags', 'session', 'complete'];
+    var TAB_ORDER = ['overview', 'question', 'redflags', 'session', 'complete'];
 
     function activateTab(tabId, markPrev) {
       document.getElementById('blank-state').style.display = 'none';
