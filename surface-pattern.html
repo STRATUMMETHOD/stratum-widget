@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lesson 1: The Surface Pattern — STRATUM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -111,37 +111,74 @@
     .tab-bar {
       position: sticky; top: 0; z-index: 50;
       background: var(--brown);
+      border-top: 3px solid var(--tan);
       border-bottom: 1px solid rgba(196,168,130,0.2);
       display: flex; align-items: stretch;
       overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+      box-shadow: 0 3px 14px rgba(0,0,0,0.40);
     }
     .tab-bar::-webkit-scrollbar { display: none; }
+
     .tab-btn {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 500;
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: rgba(196,168,130,0.5);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.17em; text-transform: uppercase;
+      color: rgba(196,168,130,0.72);
       background: transparent; border: none;
-      border-bottom: 2px solid transparent;
-      padding: 15px 18px 13px;
+      border-right: 1px solid rgba(196,168,130,0.1);
+      padding: 0 20px;
+      min-height: 52px;
       cursor: pointer; white-space: nowrap; flex-shrink: 0;
-      display: flex; align-items: center; gap: 8px;
-      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      display: flex; align-items: center; gap: 9px;
+      transition: color 0.2s, background 0.2s;
+      position: relative;
     }
-    .tab-btn:hover { color: var(--tan); background: rgba(196,168,130,0.05); }
-    .tab-btn.active { color: var(--tan); border-bottom-color: var(--tan); }
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn:hover {
+      color: var(--tan);
+      background: rgba(196,168,130,0.08);
+    }
+
+    /* Active: full-brightness tan — stays in the design system */
+    .tab-btn.active {
+      color: var(--tan);
+      font-weight: 700;
+      font-size: 13px;             /* slightly larger — active tab earns more space */
+      letter-spacing: 0.13em;      /* tighter — bold + wide tracking fight at small sizes */
+      background: transparent;
+    }
+    .tab-btn.active::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--tan);      /* full tan, not tan-mid — matches the text exactly */
+    }
+
+    /* ── Step indicator circles ── */
     .tab-check {
-      width: 14px; height: 14px;
-      border: 1px solid rgba(196,168,130,0.25); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 18px; height: 18px;
+      border: 1.5px solid rgba(196,168,130,0.35);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
       transition: background 0.25s, border-color 0.25s;
     }
     .tab-check svg {
-      width: 8px; height: 8px; stroke: rgba(196,168,130,0.25); fill: none;
+      width: 9px; height: 9px;
+      stroke: rgba(196,168,130,0.25); fill: none;
       stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
     }
+    /* Active: circle brightens to match active tan */
+    .tab-btn.active .tab-check {
+      border-color: var(--tan);
+      background: rgba(196,168,130,0.18);
+    }
+    .tab-btn.active .tab-check svg { stroke: var(--tan); }
+
+    /* Done: solid tan fill */
     .tab-btn.done .tab-check { background: var(--tan); border-color: var(--tan); }
     .tab-btn.done .tab-check svg { stroke: var(--brown); }
+    .tab-btn.done { color: rgba(196,168,130,0.6); }
 
     /* ══ BLANK STATE ══ */
     .blank-state {
@@ -376,9 +413,7 @@
     .jotform-embed { background: var(--cream-dark); }
 
     /* ══ COMPLETE LESSON TAB ══ */
-    .lesson-complete-img {
-      text-align: center; margin-bottom: 28px;
-    }
+    .lesson-complete-img { text-align: center; margin-bottom: 28px; }
     .lesson-complete-img img {
       width: 86%; display: inline-block;
       border: 1px solid var(--tan); border-radius: 4px;
@@ -562,8 +597,16 @@
       .nav-wrap { padding: 20px; }
       .panel-title { font-size: 24px; }
       .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .tab-btn { padding: 14px 12px 12px; }
       .complete-dark { padding: 40px 24px 36px; }
+      /* Tab bar stays full-height — touch targets must not shrink */
+      .tab-btn {
+        padding: 0 14px;
+        font-size: 11px;
+        letter-spacing: 0.13em;
+        min-height: 52px;
+      }
+      .tab-check { width: 16px; height: 16px; }
+      .tab-check svg { width: 8px; height: 8px; }
     }
   </style>
 </head>
@@ -859,7 +902,7 @@
 
       <!-- Congratulations image -->
       <div class="lesson-complete-img">
-        <img src="./congratulations-surface-patterns.png" alt="Congratulations — You've Completed The Surface Patterns Lesson">
+        &nbsp;
       </div>
 
       <!-- Checklist -->
@@ -944,7 +987,7 @@
   </div>
 
   <script>
-    const TAB_ORDER = ['overview', 'requirements', 'redflags', 'session', 'complete'];
+    var TAB_ORDER = ['overview', 'requirements', 'redflags', 'session', 'complete'];
 
     function activateTab(tabId, markPrev) {
       document.getElementById('blank-state').style.display = 'none';
