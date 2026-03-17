@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lesson 1: The Surface Pattern — STRATUM</title>
+  <title>The Surface Pattern — STRATUM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -20,13 +20,21 @@
       --brown:        #2e1f0e;
       --brown-mid:    #5c3d1e;
       --brown-light:  #8b6340;
-      --label-xs:     11px;
-      --body-sm:      14px;
-      --body-md:      15px;
-      --body-lg:      16px;
+      --green:        #2a5c2a;
+      --green-bg:     #f0f5f0;
+      --amber:        #7a4e10;
+      --amber-bg:     #fdf3e3;
+
+      --label-xs:   11px;
+      --label-sm:   12px;
+      --label-md:   13px;
+      --body-sm:    14px;
+      --body-md:    15px;
+      --body-lg:    16px;
     }
 
     html { scroll-behavior: smooth; }
+
     body {
       font-family: 'Spectral', Georgia, serif;
       background: var(--cream);
@@ -38,22 +46,28 @@
     .complete-banner {
       background: var(--brown);
       border-bottom: 2px solid var(--tan);
-      padding: 14px 28px;
-      display: flex; align-items: center; gap: 14px;
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
     .complete-banner-icon {
-      width: 30px; height: 30px;
-      border: 2px solid var(--tan); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 36px; height: 36px;
+      border: 2px solid var(--tan);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
     }
     .complete-banner-icon svg {
-      width: 15px; height: 15px; stroke: var(--tan); fill: none;
+      width: 18px; height: 18px;
+      stroke: var(--tan); fill: none;
       stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
     }
     .complete-banner-text {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 14px; font-weight: 500; letter-spacing: 0.02em;
-      color: rgba(250,244,232,0.85); line-height: 1.5;
+      font-size: 15px; font-weight: 500;
+      letter-spacing: 0.02em;
+      color: #faf4e8; line-height: 1.55;
     }
     .complete-banner-text strong { color: var(--tan); font-weight: 700; }
 
@@ -64,68 +78,81 @@
       padding-bottom: 56.25%; height: 0; overflow: hidden;
     }
     .video-container iframe {
-      position: absolute; inset: 0; width: 100%; height: 100%;
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
       border: none; display: block;
     }
 
-    /* ── Transcript ── */
+    /* ── Transcript (main video) ── */
     .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
     .transcript-btn {
-      width: 100%; background: transparent; border: none; padding: 11px 24px;
+      width: 100%; background: transparent; border: none;
+      padding: 13px 24px;
       display: flex; align-items: center; justify-content: space-between;
       cursor: pointer; gap: 12px;
     }
     .transcript-btn:hover { background: rgba(196,168,130,0.06); }
     .transcript-label {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan);
+      font-size: var(--label-xs);
+      font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--tan);
     }
     .transcript-chevron {
-      width: 15px; height: 15px; stroke: var(--tan); fill: none;
+      width: 16px; height: 16px;
+      stroke: var(--tan); fill: none;
       stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
       transition: transform 0.3s ease; flex-shrink: 0;
     }
     .transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
-    .transcript-body { display: none; padding: 0 28px 20px; }
+    .transcript-body { display: none; padding: 0 28px 22px; }
     .transcript-body.open { display: block; }
     .transcript-body p {
       font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.78); line-height: 1.85; margin-bottom: 12px;
+      font-size: var(--body-sm);
+      font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.78);
+      line-height: 1.85; margin-bottom: 14px;
     }
     .transcript-body p:last-child { margin-bottom: 0; }
-    .transcript-body p.pause {
-      font-style: normal; font-size: var(--label-xs);
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: rgba(196,168,130,0.45); margin-bottom: 6px;
-    }
-    .transcript-body p.section-marker {
+    .transcript-body .section-marker {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-style: normal; font-weight: 500; font-size: var(--label-xs);
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--tan); margin-top: 18px; margin-bottom: 6px;
+      font-size: var(--label-xs);
+      font-weight: 600; font-style: normal;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--tan);
+      margin-top: 20px; margin-bottom: 8px;
     }
+
+    /* ── Supplemental video transcript ── */
+    .supp-transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.12); }
+    .supp-transcript-btn {
+      width: 100%; background: transparent; border: none;
+      padding: 11px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; gap: 12px;
+    }
+    .supp-transcript-btn:hover { background: rgba(196,168,130,0.06); }
+    .supp-transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
+    .supp-transcript .transcript-body { padding: 0 20px 18px; }
 
     /* ══ TAB BAR ══ */
     .tab-bar {
-      position: sticky; top: 0; z-index: 50;
+      display: flex; overflow-x: auto;
       background: var(--brown);
-      border-top: 3px solid var(--tan);
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-      display: flex; align-items: stretch;
-      overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
-      box-shadow: 0 3px 14px rgba(0,0,0,0.40);
+      border-bottom: 1px solid rgba(196,168,130,0.18);
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
     .tab-bar::-webkit-scrollbar { display: none; }
-
     .tab-btn {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 12px; font-weight: 600;
-      letter-spacing: 0.17em; text-transform: uppercase;
-      color: rgba(196,168,130,0.72);
+      font-size: 12px; font-weight: 500;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: rgba(196,168,130,0.55);
       background: transparent; border: none;
-      border-right: 1px solid rgba(196,168,130,0.1);
+      border-right: 1px solid rgba(196,168,130,0.12);
       padding: 0 20px;
       min-height: 52px;
       cursor: pointer; white-space: nowrap; flex-shrink: 0;
@@ -134,27 +161,20 @@
       position: relative;
     }
     .tab-btn:last-child { border-right: none; }
-    .tab-btn:hover {
-      color: var(--tan);
-      background: rgba(196,168,130,0.08);
-    }
-
-    /* Active: full-brightness tan — stays in the design system */
+    .tab-btn:hover { color: var(--tan); background: rgba(196,168,130,0.08); }
     .tab-btn.active {
       color: var(--tan);
       font-weight: 700;
-      font-size: 13px;             /* slightly larger — active tab earns more space */
-      letter-spacing: 0.13em;      /* tighter — bold + wide tracking fight at small sizes */
+      font-size: 13px;
+      letter-spacing: 0.13em;
       background: transparent;
     }
     .tab-btn.active::after {
       content: '';
       position: absolute; bottom: 0; left: 0; right: 0;
       height: 3px;
-      background: var(--tan);      /* full tan, not tan-mid — matches the text exactly */
+      background: var(--tan);
     }
-
-    /* ── Step indicator circles ── */
     .tab-check {
       width: 18px; height: 18px;
       border: 1.5px solid rgba(196,168,130,0.35);
@@ -168,23 +188,14 @@
       stroke: rgba(196,168,130,0.25); fill: none;
       stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
     }
-    /* Active: circle brightens to match active tan */
-    .tab-btn.active .tab-check {
-      border-color: var(--tan);
-      background: rgba(196,168,130,0.18);
-    }
+    .tab-btn.active .tab-check { border-color: var(--tan); background: rgba(196,168,130,0.18); }
     .tab-btn.active .tab-check svg { stroke: var(--tan); }
-
-    /* Done: solid tan fill */
     .tab-btn.done .tab-check { background: var(--tan); border-color: var(--tan); }
     .tab-btn.done .tab-check svg { stroke: var(--brown); }
     .tab-btn.done { color: rgba(196,168,130,0.6); }
 
     /* ══ BLANK STATE ══ */
-    .blank-state {
-      padding: 64px 32px 80px; text-align: center;
-      max-width: 520px; margin: 0 auto;
-    }
+    .blank-state { padding: 64px 32px 80px; text-align: center; max-width: 520px; margin: 0 auto; }
     .blank-rule { width: 28px; height: 1px; background: var(--tan-light); margin: 0 auto 24px; }
     .blank-state p {
       font-family: 'Cormorant Garamond', Georgia, serif;
@@ -197,10 +208,7 @@
     .tab-panel.active { display: block; }
 
     /* ══ PANEL INNER ══ */
-    .panel-inner {
-      padding: 44px 32px 32px;
-      max-width: 760px; margin: 0 auto;
-    }
+    .panel-inner { padding: 44px 32px 32px; max-width: 760px; margin: 0 auto; }
 
     /* ══ PANEL TYPOGRAPHY ══ */
     .panel-eyebrow {
@@ -354,259 +362,202 @@
     .redflag-text strong { font-weight: 500; color: var(--brown-mid); }
     .redflag-text em { font-style: italic; }
 
-    /* ══ INSTRUCTIONS ══ */
-    .instructions-band { background: var(--brown); padding: 20px 24px; margin-bottom: 24px; }
-    .instructions-band-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 300; color: var(--cream); margin-bottom: 12px;
+    /* ══ SESSION: JOTFORM SECTIONS ══ */
+    .jotform-section { margin-bottom: 36px; }
+    .jotform-section-head {
+      background: var(--brown);
+      padding: 18px 24px;
+      margin-bottom: 0;
     }
-    .instructions-list { list-style: none; }
+    .jotform-section-eyebrow {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs); font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 5px;
+    }
+    .jotform-section-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 22px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.2;
+    }
+    .jotform-section-title em { color: var(--tan); font-style: italic; }
+    .jotform-embed { width: 100%; }
+
+    /* ══ SESSION: BEGIN COACHING ══ */
+    .session-begin-band {
+      background: var(--brown);
+      padding: 24px 28px 20px;
+      margin-bottom: 36px;
+    }
+    .session-begin-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 26px; font-weight: 500;
+      letter-spacing: 0.03em;
+      color: var(--cream);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(196,168,130,0.25);
+      line-height: 1.2;
+    }
+    .session-begin-title em { color: var(--tan); font-style: italic; }
+
+    /* ══ PROMPT WRAP ══ */
+    .prompt-wrap {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(196,168,130,0.2);
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+    .prompt-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs);
+      font-weight: 600;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 11px;
+    }
+    .prompt-text {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: var(--body-sm);
+      font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.88);
+      line-height: 1.75;
+      margin-bottom: 12px;
+      user-select: all;
+    }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent;
+      border: 1px solid rgba(196,168,130,0.45);
+      padding: 9px 16px;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs);
+      font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--tan); cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .copy-btn:hover { background: rgba(196,168,130,0.1); border-color: var(--tan); }
+    .copy-btn svg {
+      width: 13px; height: 13px; stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* ══ INSTRUCTIONS LIST ══ */
+    .instructions-list { list-style: none; margin-top: 4px; }
     .instructions-list li {
       font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.85); line-height: 1.72; padding: 7px 0;
+      color: rgba(250,244,232,0.85); line-height: 1.72; padding: 9px 0;
       border-bottom: 1px solid rgba(196,168,130,0.12);
-      display: flex; gap: 10px; align-items: flex-start;
+      display: flex; gap: 12px; align-items: flex-start;
     }
     .instructions-list li:last-child { border-bottom: none; }
     .instructions-list li::before {
       content: attr(data-n);
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); color: var(--tan);
-      flex-shrink: 0; margin-top: 2px; min-width: 14px;
+      flex-shrink: 0; margin-top: 3px; min-width: 14px;
     }
     .instructions-list li strong { color: var(--tan); font-weight: 500; }
+    .instructions-list li a {
+      color: var(--tan); text-decoration: underline;
+      text-underline-offset: 2px; opacity: 0.85;
+    }
+    .instructions-list li a:hover { opacity: 1; }
 
-    /* ══ SAVE REMINDER ══ */
-    .save-reminder {
-      background: var(--brown-mid); border: 1px solid rgba(196,168,130,0.25);
-      padding: 16px 22px; margin-bottom: 28px;
-      display: flex; align-items: flex-start; gap: 14px;
-    }
-    .save-reminder-icon { flex-shrink: 0; margin-top: 2px; }
-    .save-reminder-icon svg {
-      width: 18px; height: 18px; stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .save-reminder p {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 500; color: var(--cream); line-height: 1.65;
-    }
-    .save-reminder p strong { color: var(--tan); }
-
-    /* ══ JOTFORM WRAP ══ */
-    .jotform-wrap { border: 1px solid var(--tan-light); margin-bottom: 28px; overflow: hidden; }
-    .jotform-wrap-head {
-      background: var(--brown); padding: 18px 24px;
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-    }
-    .jotform-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 6px;
-    }
-    .jotform-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px; font-weight: 300; color: var(--cream); line-height: 1.3;
-    }
-    .jotform-title em { font-style: italic; color: var(--tan); }
-    .jotform-embed { background: var(--cream-dark); }
-
-    /* ══ COMPLETE LESSON TAB ══ */
-    .lesson-complete-img { text-align: center; margin-bottom: 28px; }
-    .lesson-complete-img img {
-      width: 86%; display: inline-block;
-      border: 1px solid var(--tan); border-radius: 4px;
-      box-shadow: 0 8px 32px rgba(46,31,14,0.25);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .lesson-complete-img img:hover {
-      transform: scale(1.01);
-      box-shadow: 0 12px 40px rgba(46,31,14,0.35);
-    }
-
-    .complete-lesson-content {
-      background: var(--cream-dark); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan-mid); padding: 22px 24px; margin-bottom: 28px;
-    }
-    .complete-lesson-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 600; color: var(--brown);
-      display: block; margin-bottom: 10px;
-    }
-    .complete-lesson-content p {
-      font-size: var(--body-md); font-weight: 300; line-height: 1.8;
-      color: var(--brown); margin-bottom: 10px;
-    }
-    .complete-lesson-content p:last-child { margin-bottom: 0; }
-    .complete-lesson-checklist { list-style: none; padding: 0; margin-bottom: 0; }
-    .complete-lesson-checklist li {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown-mid); padding: 7px 0;
-      border-bottom: 1px solid var(--tan-faint);
-      display: flex; align-items: flex-start; gap: 10px;
-    }
-    .complete-lesson-checklist li:last-child { border-bottom: none; }
-    .check-icon {
-      width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px;
-      border: 1.5px solid var(--tan-mid); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .check-icon svg {
-      width: 8px; height: 8px; stroke: var(--tan-mid); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-
-    /* ── Bridge Question ── */
-    .bridge-block {
-      background: var(--brown); border: 1px solid rgba(196,168,130,0.2);
-      padding: 24px 26px; margin-bottom: 28px;
-    }
-    .bridge-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 14px;
-    }
-    .bridge-question {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.6; margin-bottom: 14px;
-    }
-    .bridge-note {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.65); line-height: 1.72;
-      border-top: 1px solid rgba(196,168,130,0.15); padding-top: 12px;
-    }
-
-    /* ── Ted's Note ── */
-    .teds-note {
-      background: var(--cream-dark); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan); padding: 22px 24px; margin-bottom: 28px;
-    }
-    .teds-note-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 12px;
-    }
-    .teds-note p {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-md); font-weight: 300; font-style: italic;
-      color: var(--brown-mid); line-height: 1.82; margin-bottom: 10px;
-    }
-    .teds-note p:last-child { margin-bottom: 0; }
-    .teds-note-sig {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 400; font-style: normal;
-      color: var(--brown); display: block; margin-top: 14px;
-    }
-
-    /* ── Questions Jotform ── */
-    .questions-block { border: 1px solid var(--tan-light); margin-bottom: 28px; overflow: hidden; }
-    .questions-head {
-      background: var(--brown); padding: 16px 22px 14px;
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-    }
-    .questions-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 5px;
-    }
-    .questions-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 19px; font-weight: 300; color: var(--cream); line-height: 1.3;
-    }
-    .questions-title em { font-style: italic; color: var(--tan); }
-
-    /* ── Mark as Complete section ── */
+    /* ══ COMPLETE LESSON ══ */
     .complete-dark {
-      background: var(--brown); padding: 36px 32px 32px; text-align: center;
+      background: var(--brown); padding: 44px 32px;
+      text-align: center;
     }
     .complete-dark-eyebrow {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 600;
       letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 14px;
+      color: var(--tan); display: block; margin-bottom: 12px;
     }
     .complete-dark-heading {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 24px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.45; margin-bottom: 6px;
+      font-size: 26px; font-weight: 300;
+      color: var(--cream); margin-bottom: 8px; line-height: 1.2;
     }
     .complete-dark-sub {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.65); line-height: 1.55; margin-bottom: 24px;
+      font-size: var(--body-sm); font-weight: 300; font-style: italic;
+      color: rgba(196,168,130,0.7); margin-bottom: 28px;
     }
     .complete-instruction {
-      max-width: 480px; margin: 0 auto 24px;
-      background: rgba(196,168,130,0.1);
-      border: 1px solid rgba(196,168,130,0.2);
-      padding: 16px 20px;
-      display: flex; align-items: flex-start; gap: 12px; text-align: left;
+      display: flex; align-items: flex-start; gap: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(196,168,130,0.15);
+      padding: 18px 20px; margin-bottom: 28px;
+      text-align: left;
     }
     .complete-instruction svg {
-      width: 16px; height: 16px; stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      flex-shrink: 0; margin-top: 2px;
+      width: 20px; height: 20px; stroke: var(--tan); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0;
     }
     .complete-instruction p {
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.82); line-height: 1.7;
+      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
+      color: rgba(250,244,232,0.8);
     }
     .complete-instruction p strong { color: var(--tan); font-weight: 500; }
-    .complete-rule { width: 36px; height: 1px; background: rgba(196,168,130,0.25); margin: 0 auto 20px; }
+    .complete-rule { width: 40px; height: 1px; background: rgba(196,168,130,0.3); margin: 0 auto 24px; }
     .complete-quote {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 17px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.75); line-height: 1.65; margin-bottom: 14px;
+      color: rgba(196,168,130,0.7); line-height: 1.65; margin-bottom: 10px;
     }
     .complete-attr {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 400;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: rgba(196,168,130,0.55);
+      font-size: var(--label-xs); letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(196,168,130,0.4); display: block; margin-bottom: 28px;
     }
     .mark-complete-btn {
       display: inline-flex; align-items: center; gap: 10px;
-      background: var(--tan); border: none; padding: 16px 36px;
+      background: var(--tan); color: var(--brown);
+      border: none; padding: 15px 32px;
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--brown); text-decoration: none;
-      transition: background 0.2s, color 0.2s;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      cursor: pointer; text-decoration: none;
+      transition: background 0.2s;
     }
-    .mark-complete-btn:hover { background: var(--cream); color: var(--brown); }
+    .mark-complete-btn:hover { background: var(--tan-mid); }
     .mark-complete-btn svg {
-      width: 15px; height: 15px; stroke: var(--brown); fill: none;
+      width: 15px; height: 15px; stroke: currentColor; fill: none;
       stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
     }
 
-    /* ══ RESPONSIVE ══ */
-    @media (max-width: 580px) {
-      .requirements-grid { grid-template-columns: 1fr; }
-      .supp-video-head { flex-direction: column; align-items: flex-start; gap: 8px; }
-      .nav-wrap { flex-direction: column; align-items: stretch; }
-      .back-btn, .continue-btn { justify-content: center; }
+    /* ══ COMPLETE LESSON CHECKLIST ══ */
+    .complete-lesson-content {
+      background: var(--cream-dark); border: 1px solid var(--tan-light);
+      padding: 24px 26px; margin-bottom: 32px;
     }
-    @media (max-width: 560px) {
-      .panel-inner { padding: 28px 20px 24px; }
-      .nav-wrap { padding: 20px; }
-      .panel-title { font-size: 24px; }
-      .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .complete-dark { padding: 40px 24px 36px; }
-      /* Tab bar stays full-height — touch targets must not shrink */
-      .tab-btn {
-        padding: 0 14px;
-        font-size: 11px;
-        letter-spacing: 0.13em;
-        min-height: 52px;
-      }
-      .tab-check { width: 16px; height: 16px; }
-      .tab-check svg { width: 8px; height: 8px; }
+    .complete-lesson-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 17px; font-weight: 600; color: var(--brown);
+      display: block; margin-bottom: 16px;
+    }
+    .checklist { list-style: none; }
+    .checklist li {
+      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
+      color: var(--brown); padding: 8px 0;
+      border-bottom: 1px solid var(--tan-faint);
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist li::before {
+      content: '✓';
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 14px; color: var(--tan-mid);
+      flex-shrink: 0; margin-top: 1px;
+    }
+
+    @media (max-width: 540px) {
+      .requirements-grid { grid-template-columns: 1fr; }
+      .panel-inner { padding: 28px 20px 20px; }
+      .nav-wrap { padding: 20px; flex-direction: column; }
+      .continue-btn, .back-btn { width: 100%; justify-content: center; }
+      .session-begin-band { padding: 20px; }
     }
   </style>
 </head>
@@ -615,12 +566,9 @@
   <!-- ══ COMPLETE BANNER ══ -->
   <div class="complete-banner">
     <div class="complete-banner-icon">
-      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
     </div>
-    <p class="complete-banner-text">
-      Work through each section using the tabs below. When finished, open the
-      <strong>Complete Lesson</strong> tab and click <strong>Mark as Complete</strong> to unlock Lesson 2.
-    </p>
+    <p class="complete-banner-text">Work through each section using the tabs below. When finished, open the <strong>Complete Lesson</strong> tab and click <strong>Mark as Complete</strong> to unlock <strong>The Hidden Truth</strong>.</p>
   </div>
 
   <!-- ══ MAIN VIDEO ══ -->
@@ -634,42 +582,43 @@
       </iframe>
     </div>
     <div class="transcript">
-      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this)">
+      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this, 'transcript-main')">
         <span class="transcript-label">Video Transcript</span>
-        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
-      <div class="transcript-body" id="transcript-body">
+      <div class="transcript-body" id="transcript-main">
         <p>I want to start with something that happened early in my corporate coaching career.</p>
         <p>I was working with a senior executive — brilliant woman, led a team of two hundred people — and I asked her to describe a colleague who was causing problems. Someone who was derailing team decisions.</p>
         <p>She didn't hesitate. She said: "He agrees in every meeting. Then he goes back to his office and does exactly what he was going to do anyway. And he's been doing it for fifteen years."</p>
         <p>She didn't have a psychology degree. She hadn't run any assessments. But she had watched this person across dozens of situations, with different people, under different kinds of pressure. And she knew exactly what he did.</p>
         <p>That's what you're going to do today. With your character.</p>
-        <p class="pause">[ 0:48 ]</p>
+
         <p class="section-marker">The Library You Don't Know You Have</p>
         <p>That kind of knowing has a name. Psychologists call it the adaptive unconscious — the part of your mind that processes patterns before your conscious awareness can catch up.</p>
         <p>It's what lets you walk into a room and immediately sense the tension. It's what tells you, thirty seconds into meeting someone, whether they're being genuine. You didn't calculate that. You just knew.</p>
         <p>Every person you've ever observed. Every relationship you've navigated. Every character you've read who felt completely real to you. It's all filed away in there — a massive, lifetime database of human behavior.</p>
         <p>Your adaptive unconscious is the most powerful character development tool you have. And most writers never use it deliberately. That's what this course teaches you to do. Not to invent psychology. To excavate what you already know.</p>
-        <p class="pause">[ 1:47 ]</p>
+
         <p class="section-marker">Where Most Character Work Goes Wrong</p>
         <p>Most writers approach character development chronologically. They start at the beginning — childhood, backstory, formative trauma — and build forward. They construct a psychology and attach it to a character.</p>
         <p>The result often feels exactly like what it is: constructed. It fits the plot. It doesn't feel like a person.</p>
         <p>We're going the other direction. We start with what your character does right now. Observable, specific, present-day behavior. From there, we dig down — layer by layer — to the belief that drives that behavior, the wound that created that belief, and the distorted conclusion they drew from the wound.</p>
         <p>Surface to depth. Present to past. Observable to psychological. That's the excavation ladder. And today, you're climbing the first rung.</p>
-        <p class="pause">[ 2:49 ]</p>
+
         <p class="section-marker">Today's Work: Pure Observation</p>
         <p>Today, you're being a documentary filmmaker. You're capturing what happens on camera. No interpretation. No analysis. Just behavior.</p>
         <p>Think about Katniss Everdeen. What does she do? She volunteers at the Reaping. She steps between danger and the people she loves — with Prim, with Rue, with Peeta. She positions herself as protector, again and again, in different situations, with different people, under different kinds of pressure. That's what you'd see on film.</p>
         <p>Or Sherlock Holmes. What does he do? He examines. He picks up objects others ignore. He studies faces, clothing, hands. Every scene, every case — the same compulsion, expressing itself differently depending on context.</p>
         <p>Notice what those descriptions aren't. They're not labels. They're not "she's protective" or "he's observant." They're specific actions. Things you can write. Things you can film. That's what you're finding today.</p>
-        <p class="pause">[ 4:20 ]</p>
+
         <p class="section-marker">The Four Requirements</p>
         <p>A strong surface behavior has four characteristics. And I want to be direct with you: these aren't suggestions. If your character's behavior doesn't meet all four, keep digging.</p>
         <p>Specific. Not a label — a concrete action. Not "she's anxious." What does anxious look like? Does she check her phone repeatedly in social situations? Does she apologize before stating any opinion? Get specific.</p>
         <p>Visible. Put a camera on your character. Would this show up? "She feels insecure" doesn't pass the test. "She apologizes before stating any opinion" does.</p>
         <p>Recurring. This isn't a one-time reaction. It's a pattern across relationships, contexts, and time. Patterns signal psychology.</p>
         <p>Consequential. This behavior affects relationships, decisions, the trajectory of their life. It creates conflict or shapes how others respond to them. It matters.</p>
-        <p class="pause">[ 5:44 ]</p>
+        <p>These four work together. Specificity makes it writable. Visibility makes it cinematic. Recurrence makes it meaningful. Consequence makes it story-worthy.</p>
+
         <p class="section-marker">Your AI Coaching Session</p>
         <p>Your AI coach is a Socratic partner. Its job is to help you see what you already know — not to tell you things about your character.</p>
         <p>If your coach asks why — stop it. Today is what, not why. Tell it to stay in observer mode. If you have only one or two examples — keep digging. You haven't found a pattern yet. You've found a moment.</p>
@@ -682,23 +631,23 @@
   <!-- ══ TAB BAR ══ -->
   <nav class="tab-bar" aria-label="Lesson sections">
     <button class="tab-btn" data-tab="overview">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
+      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
       Overview
     </button>
     <button class="tab-btn" data-tab="requirements">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      4 Requirements
+      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
+      Four Requirements
     </button>
     <button class="tab-btn" data-tab="redflags">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
+      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
       Red Flags
     </button>
     <button class="tab-btn" data-tab="session">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
+      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
       Your Session
     </button>
     <button class="tab-btn" data-tab="complete">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
+      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
       Complete Lesson
     </button>
   </nav>
@@ -712,18 +661,20 @@
   <!-- ══ PANEL: OVERVIEW ══ -->
   <div class="tab-panel" id="panel-overview">
     <div class="panel-inner">
-      <span class="panel-eyebrow">Lesson 1 · The Excavation Ladder · STRATUM: AI Character Coaching</span>
+      <span class="panel-eyebrow">The Excavation Ladder · STRATUM: AI Character Coaching</span>
       <h1 class="panel-title">The Surface <em>Pattern</em></h1>
       <div class="panel-rule"></div>
-      <p class="panel-lead">Today you're not analyzing your character. You're being a documentary filmmaker — capturing only what a camera could record. No interpretation. No backstory. Just the behavior your character returns to again and again.</p>
+      <p class="panel-lead">The lesson video has shown you what this lesson asks of you. Before you open your coaching session, there is one more thing to do — and it matters more than you might expect.</p>
 
       <div class="why-block">
-        <span class="why-block-title">Why We Start With Behavior, Not Backstory</span>
-        <p>Most writers approach character development chronologically. They start at the beginning — childhood, backstory, formative trauma — and build forward. They construct a psychology and attach it to a character.</p>
-        <p>The result often feels exactly like what it is: constructed. It fits the plot. It doesn't feel like a person.</p>
-        <p>We go the other direction. We start with what your character does right now — observable, specific, present-day behavior. From there, we dig down layer by layer. Surface to depth. Present to past. Observable to psychological. That's the excavation ladder. This lesson is the first rung.</p>
+        <span class="why-block-title">The Voice That Arrives Right Now</span>
+        <p>You know what the session requires: find the one behavior your character returns to, again and again, across different people and different situations. You know the four criteria. You know what a camera would see.</p>
+        <p>And right now — before you've typed a single word — a familiar voice may have arrived. It says things like: <em>I don't know my character well enough to begin.</em> Or: <em>What if I choose the wrong behavior?</em> Or simply: <em>I'm not ready.</em></p>
+        <p>That voice is not telling you the truth. It is protecting you from the discomfort of beginning. It arrives at exactly this moment, for almost every writer, every time. And it has a name, a pattern, and a solution.</p>
+        <p>Watch the video below before you open your coaching session. What it explains is not background reading. It is the difference between writers who begin and writers who find reasons not to.</p>
       </div>
 
+      <!-- Self Doubt Supplemental Video -->
       <div class="supp-video">
         <div class="supp-video-head">
           <span class="supp-video-badge">Supplemental · Writing Psychology</span>
@@ -731,24 +682,56 @@
         </div>
         <div class="supp-video-container">
           <iframe
-            src="https://www.youtube.com/embed/UZVKhfXhQw4?rel=0&modestbranding=1"
+            src="https://www.youtube.com/embed/nmmHoMxyZL8?rel=0&modestbranding=1"
             title="Self Doubt — Why You Know More Than You Think"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen>
           </iframe>
         </div>
-        <p class="supp-video-foot">Watch this if the inner critic is telling you you don't know your character well enough to begin. It addresses the most common reason writers stall before their first coaching session.</p>
+        <div class="supp-transcript">
+          <button class="supp-transcript-btn transcript-btn" aria-expanded="false" onclick="toggleTranscript(this, 'transcript-self-doubt')">
+            <span class="transcript-label">Video Transcript</span>
+            <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="transcript-body" id="transcript-self-doubt">
+            <p>Today we're talking about self-doubt and AI coaching, and why the internal critic that helps you succeed in one domain can absolutely destroy you in another.</p>
+            <p>I thought I had conquered my inner critic decades ago. I'd spent 35 years teaching complex problem-solving in corporate settings. I was confident. Competent. Known for breaking down impossible challenges into manageable pieces.</p>
+            <p>Then I sat down to write a novel. And that's when the critic returned — louder, meaner, more relentless than ever.</p>
+            <p>Here's what nobody tells you about learning fiction writing: the more you study craft, the more inadequate you feel. I spent months diving into story structure, character development, dialogue technique. I read the masters. I took courses. I studied my favorite thrillers. And every new lesson made me feel smaller.</p>
+            <p>My opening chapter? Nothing like the thrillers I admired. The voice was wrong. The pacing felt forced. The characters were cardboard cutouts pretending to be human.</p>
+            <p>In my consulting career, I could break down any complex problem. Systems thinking. Root cause analysis. Strategic frameworks. I had methods. I had confidence. But writing felt different. Fix your pacing, and suddenly your character development feels rushed. Strengthen your dialogue, and your scenes become too dialogue-heavy. Everything was connected to everything else. And I had no idea where to start.</p>
+            <p>That's when the internal critic got loud: Will I ever truly be able to call myself a writer?</p>
+            <p>Here's what I realized: most aspiring writers quit right here. Not because they lack talent. Not because their stories aren't worth telling. They quit because the learning curve feels endless, the self-doubt becomes unbearable, and there's no safe space to be genuinely terrible while they learn.</p>
+            <p>I could have quit too. I almost did. But then I discovered AI coaching. Not AI that writes for you. Not AI that generates content. AI that creates a judgment-free space where you can be a beginner without performance anxiety.</p>
+
+            <p class="section-marker">First: Permission to Be a Beginner</p>
+            <p>One of the most freeing things about AI coaching? The complete absence of human judgment. When I asked for critique from other writers, there was always some level of performance anxiety. Some desire to seem competent. Some fear of looking foolish.</p>
+            <p>With AI? I could be genuinely terrible. I could ask embarrassingly basic questions. I could explore ridiculous ideas without worrying about someone's opinion of my intelligence. This created what I call "permission to be a beginner." That psychological safety? It's the foundation of accelerated learning.</p>
+
+            <p class="section-marker">Second: Replacing the Destructive Voice</p>
+            <p>Here's what makes the internal critic so devastating: it's loud but vague. It doesn't offer specifics. It delivers sweeping judgments that shut down creativity: This is terrible. You'll never get this right. Real writers don't struggle like this.</p>
+            <p>It's reactive, not constructive. It points out flaws without suggesting fixes. It stalls momentum. Instead of helping you move forward, it paralyzes you with uncertainty.</p>
+            <p>Now compare that to AI coaching. AI is solution-oriented and collaborative. Instead of dismissing your work as "bad," it might say: "This sentence could be unclear to some readers. Let's look at how you can make it more direct and engaging." The internal critic tears down. AI coaching builds up.</p>
+
+            <p class="section-marker">Third: Confidence Scaffolding</p>
+            <p>I call this "building yourself up one small win at a time." Instead of chasing perfection, you shift your mindset. Each small victory becomes a building block. Over time, those blocks form a sturdy foundation of confidence. You're growing. You're learning. You're proving to yourself that you can do this.</p>
+            <p>Here's what makes this powerful: AI coaching doesn't just help you improve your writing. It prepares you for the inevitable external judgment that comes with sharing your work. Through objective feedback — feedback that's constructive rather than devastating — AI takes away criticism's power to destroy you.</p>
+            <p>If you're drowning in self-doubt right now, here's what I want you to understand: you don't have to figure this out alone. The internal critic that's destroying your confidence? It's not telling you the truth. It's protecting you from the discomfort of being a beginner. But here's the paradox: the only way to stop being a beginner is to give yourself permission to be one first.</p>
+            <p>Your voice matters. Your story matters. And you don't have to do this alone.</p>
+          </div>
+        </div>
+        <p class="supp-video-foot">Watch this before you open your coaching session. The inner critic that's speaking to you right now has a name, a pattern, and a solution. Understanding it is not optional — it is what separates writers who begin from those who find reasons not to.</p>
       </div>
     </div>
     <div class="nav-wrap no-back">
       <button class="continue-btn" data-next="requirements">
-        Continue to 4 Requirements
+        Continue to Four Requirements
         <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
       </button>
     </div>
   </div>
 
-  <!-- ══ PANEL: REQUIREMENTS ══ -->
+  <!-- ══ PANEL: FOUR REQUIREMENTS ══ -->
   <div class="tab-panel" id="panel-requirements">
     <div class="panel-inner">
       <span class="panel-eyebrow">The Methodology</span>
@@ -784,6 +767,7 @@
         </div>
       </div>
 
+      <!-- Behavior vs. Trait Supplemental Video -->
       <div class="supp-video">
         <div class="supp-video-head">
           <span class="supp-video-badge">Supplemental · The Methodology</span>
@@ -796,6 +780,32 @@
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen>
           </iframe>
+        </div>
+        <div class="supp-transcript">
+          <button class="supp-transcript-btn transcript-btn" aria-expanded="false" onclick="toggleTranscript(this, 'transcript-camera-test')">
+            <span class="transcript-label">Video Transcript</span>
+            <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="transcript-body" id="transcript-camera-test">
+            <p>I want to teach you a skill that will change how you see every character you ever write. It's a diagnostic. A one-question test you can run on any description of a character — yours or anyone else's — that tells you immediately whether you're working with something real or something that only sounds real.</p>
+            <p>The question is this: could a camera film it? That's it. That's the whole test. And it's harder to pass than it sounds.</p>
+            <p>Most writers describe their characters with traits. She's guarded. He's ambitious. She's self-destructive. He's charming but unreliable. These descriptions feel accurate. They might even be accurate. But none of them pass the camera test, because a camera can't film guarded. It can't film ambitious. A camera can only film what someone does — specific actions, in specific moments, with specific people.</p>
+            <p>That's the difference between a trait and a behavior. A trait tells you what a character is like. A behavior shows you what they actually do. And only a behavior gives you something to excavate.</p>
+
+            <p class="section-marker">Making the Conversion</p>
+            <p>Take a trait — any trait. Let's use guarded. Now ask: what does guarded actually look like? What does a guarded person do in conversation, in conflict, in moments of intimacy? What specific action would you see on film? Maybe they change the subject whenever someone asks about the past. Maybe they answer personal questions with questions of their own. Maybe they go physically still when a conversation gets too close — a pause before they speak, a slight turn of the body. Each of those is a behavior. Each of them passes the camera test.</p>
+            <p>Now take ambitious. What does ambitious look like? Does your character take credit for other people's work? Do they agree with whoever is in the room and then pursue their own agenda the moment the room empties? Do they reframe every social situation as an opportunity before the other person has finished speaking? Trait to behavior. Vague to specific. Abstract to observable.</p>
+            <p>This is what the excavation requires. Not the word, but the action underneath the word.</p>
+
+            <p class="section-marker">Katniss and Sherlock</p>
+            <p>Katniss Everdeen. One word: protective. That's the trait. Accurate, but it gives you nothing to work with. Now put the camera on her. She volunteers for Prim at the Reaping. She steps between Rue and the tribute who's hunting her. She keeps Peeta alive in the arena at direct cost to her own survival. She positions herself between danger and the people she loves — again and again, with different people, under different kinds of pressure. That pattern of specific actions is the behavior. And that behavior is something you can follow all the way down to the psychology that drives it.</p>
+            <p>Sherlock Holmes. One word: observant. Everyone says it. Now put the camera on him. He picks up objects other people walk past without seeing. He studies the position of someone's hands, the wear pattern on their shoes, the small tells in their face before they speak. He connects details in ways no one else sees coming. Every scene, the same compulsion — expressing itself differently depending on what the situation requires. That's not a trait. That's a pattern of behavior. And a pattern of behavior has a source.</p>
+
+            <p class="section-marker">Why This Distinction Matters</p>
+            <p>Readers don't experience traits. They experience behaviors. They don't read "she was guarded" and feel anything. They watch her turn away, change the subject, keep her eyes on the exit — and they feel it. The behavior is what creates the experience of the character. The trait is just a shortcut writers use when they haven't yet found the behavior underneath it.</p>
+            <p>The next time you write a description of your character — even a note in your own journal — stop at every adjective. Every word that ends in -ed or -ive or -ous. Guarded. Ambitious. Protective. Anxious. Defensive. Run the camera test. What does that actually look like? What would you see on film? Write the behavior instead of the label. One specific action. One thing the camera could capture.</p>
+            <p>Do that consistently, and your characters will stop feeling like descriptions of people. They'll start feeling like people. That's what this methodology is built on. And that's what you're learning to do.</p>
+          </div>
         </div>
         <p class="supp-video-foot">Watch before your coaching session. Moving from a label to a filmable behavior is the single hardest shift in Lesson 1. This video models the thinking in real time — with Katniss and two other characters — before you attempt it yourself.</p>
       </div>
@@ -840,7 +850,7 @@
     <div class="nav-wrap">
       <button class="back-btn" data-prev="requirements">
         <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to 4 Requirements
+        Back to Four Requirements
       </button>
       <button class="continue-btn" data-next="session">
         Continue to Your Session
@@ -852,37 +862,54 @@
   <!-- ══ PANEL: YOUR SESSION ══ -->
   <div class="tab-panel" id="panel-session">
     <div class="panel-inner">
-      <span class="panel-eyebrow">Lesson 1 · Coaching Session</span>
-      <h2 class="panel-title">Your <em>Session</em></h2>
-      <div class="panel-rule"></div>
-      <p class="panel-lead">You're ready. Your job now is to observe — what a camera sees, not what it means. The coach will ask the questions. You provide the answers.</p>
 
-      <div class="instructions-band">
-        <div class="instructions-band-title">Before You Start</div>
-        <ul class="instructions-list">
-          <li data-n="1">Copy the prompt to clipboard and open Claude at claude.ai in a new tab. Paste the prompt to begin your session.</li>
-          <li data-n="2">Attach the <strong>PDF you saved from Calibrating Your Coach</strong>. Your coach needs that context to work effectively from the first exchange.</li>
-          <li data-n="3">Set a timer for <strong>35 minutes</strong>. Stay in observer mode — what the camera sees, not what it means.</li>
-          <li data-n="4">When your session is complete, return here and fill out your <strong>Reflection Journal</strong> below, then print to PDF.</li>
-        </ul>
-      </div>
-
-      <div class="save-reminder">
-        <div class="save-reminder-icon">
-          <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        </div>
-        <p><strong>Print and save this form as a PDF when complete.</strong> You will attach it to your Lesson 2 coaching session. Your coach cannot read your work unless you bring it to the next session.</p>
-      </div>
-
-      <div class="jotform-wrap">
-        <div class="jotform-wrap-head">
-          <span class="jotform-eyebrow">Reflection Journal — Lesson 1</span>
-          <div class="jotform-title">The Surface <em>Pattern</em> · Workspace</div>
+      <!-- PREP WORK JOTFORM -->
+      <div class="jotform-section">
+        <div class="jotform-section-head">
+          <span class="jotform-section-eyebrow">The Surface Pattern</span>
+          <div class="jotform-section-title">The Surface <em>Pattern</em> — Prep Work</div>
         </div>
         <div class="jotform-embed">
           <script type="text/javascript" src="https://form.jotform.com/jsform/260514112639855"></script>
         </div>
       </div>
+
+      <!-- BEGIN YOUR COACHING SESSION -->
+      <div class="session-begin-band">
+        <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
+
+        <!-- PROMPT -->
+        <div class="prompt-wrap">
+          <span class="prompt-label">Your Coaching Prompt</span>
+          <p class="prompt-text">
+            <!-- PROMPT TEXT TO BE ADDED — paste full Lesson 1 prompt here -->
+            [PROMPT TEXT PENDING — paste Lesson 1 coaching prompt here]
+          </p>
+          <button class="copy-btn" onclick="copyPrompt(this)">
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy Prompt to Clipboard
+          </button>
+        </div>
+
+        <ul class="instructions-list">
+          <li data-n="1">Copy the prompt above and open Claude at <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> in a new tab. Paste the prompt to begin your session.</li>
+          <li data-n="2">After pasting the prompt, attach the <strong>PDF you saved from Calibrating Your Coach</strong>. Your coach needs that context to work effectively from the first exchange.</li>
+          <li data-n="3">Set a timer for <strong>35 minutes</strong>. Stay in observer mode — what the camera sees, not what it means.</li>
+          <li data-n="4">When your session is complete, return here and fill out your <strong>Reflection Journal</strong> below.</li>
+        </ul>
+      </div>
+
+      <!-- REFLECTION JOURNAL JOTFORM -->
+      <div class="jotform-section">
+        <div class="jotform-section-head">
+          <span class="jotform-section-eyebrow">Reflection Journal — Lesson 1</span>
+          <div class="jotform-section-title">The Surface <em>Pattern</em> · Workspace</div>
+        </div>
+        <div class="jotform-embed">
+          <script type="text/javascript" src="https://form.jotform.com/jsform/260755899682882"></script>
+        </div>
+      </div>
+
     </div>
     <div class="nav-wrap">
       <button class="back-btn" data-prev="redflags">
@@ -899,76 +926,30 @@
   <!-- ══ PANEL: COMPLETE LESSON ══ -->
   <div class="tab-panel" id="panel-complete">
     <div class="panel-inner">
+      <span class="panel-eyebrow">Before You Move On</span>
+      <h2 class="panel-title">A <em>Checklist</em></h2>
+      <div class="panel-rule"></div>
+      <p class="panel-lead">The excavation ladder only works if each rung is solid before you step to the next.</p>
 
-      <!-- Congratulations image -->
-      <div class="lesson-complete-img">
-        &nbsp;
-      </div>
-
-      <!-- Checklist -->
       <div class="complete-lesson-content">
         <span class="complete-lesson-title">Before You Move On — A Checklist</span>
-        <p>The excavation ladder only works if each rung is solid before you step to the next. Make sure you have all three deliverables from this lesson before continuing to Lesson 2.</p>
-        <ul class="complete-lesson-checklist">
-          <li>
-            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-            <span>One anchor behavior that is <strong>specific, visible, recurring, and consequential</strong> — not a label, not a trait, but something a camera would film.</span>
-          </li>
-          <li>
-            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-            <span>At least <strong>three instances</strong> of that behavior across different contexts, different people, and different kinds of pressure.</span>
-          </li>
-          <li>
-            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-            <span>Your <strong>Reflection Journal completed and saved as a PDF</strong> — you will attach it to your Lesson 2 coaching session.</span>
-          </li>
+        <ul class="checklist">
+          <li>You have identified one anchor behavior — specific, visible, recurring, and consequential.</li>
+          <li>You have at least three concrete instances of that behavior across different contexts and different people.</li>
+          <li>Your behavior passes the camera test — a filmmaker could capture it on film.</li>
+          <li>You have printed your Reflection Journal to PDF — you will attach it to your Lesson 2 coaching session.</li>
         </ul>
       </div>
-
-      <!-- What You've Established -->
-      <div class="why-block">
-        <span class="why-block-title">What You've Established</span>
-        <p>You've done something most writers never do deliberately: documented the visible surface of a psychology. That pattern — specific, recurring, consequential — is the anchor point for everything that follows.</p>
-        <p>In Lesson 2, you shift from observer to interpreter. You'll ask the therapist's question: <em>what would my character have to believe for this behavior to feel like the only reasonable response?</em> That's where the excavation goes deeper. But none of that work is possible without the precision you've built here.</p>
-      </div>
-
-      <!-- Bridge Question -->
-      <div class="bridge-block">
-        <span class="bridge-eyebrow">A Question to Carry Into Lesson 2</span>
-        <p class="bridge-question">"What do you sense might be driving this behavior — even if you can't fully articulate it yet?"</p>
-        <p class="bridge-note">You don't need an answer right now. This is the exact question that opens Lesson 2: The Hidden Truth. Sit with it. Your adaptive unconscious is already working on it.</p>
-      </div>
-
-      <!-- Ted's Note -->
-      <div class="teds-note">
-        <span class="teds-note-eyebrow">A Note from Ted</span>
-        <p>The surface behavior you uncovered today is just the first layer. Beneath it is a wound, a lie your character believes because of it, and an entire psychological architecture waiting to be excavated.</p>
-        <p>Keep that character close. There's more to discover.</p>
-        <span class="teds-note-sig">— Ted Baker</span>
-      </div>
-
-      <!-- Questions & Submission Jotform -->
-      <div class="questions-block">
-        <div class="questions-head">
-          <span class="questions-eyebrow">Lesson 1 · Submit Your Work</span>
-          <div class="questions-title">Questions &amp; <em>Submission</em></div>
-        </div>
-        <div class="jotform-embed">
-          <script type="text/javascript" src="https://form.jotform.com/jsform/260734440316047"></script>
-        </div>
-      </div>
-
     </div>
 
-    <!-- Mark as Complete -->
     <div class="complete-dark">
       <span class="complete-dark-eyebrow">When You're Ready</span>
-      <p class="complete-dark-heading">Move to Lesson 2: The Hidden Truth.</p>
+      <p class="complete-dark-heading">Move to The Hidden Truth.</p>
       <p class="complete-dark-sub">The excavation goes deeper.</p>
 
       <div class="complete-instruction">
         <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        <p>Make sure you have <strong>printed your Reflection Journal to PDF</strong> from the Your Session tab — you'll need it in Lesson 2. Then click <strong>Mark as Complete</strong> below to record your progress and unlock Lesson 2.</p>
+        <p>Make sure you have <strong>printed your Reflection Journal to PDF</strong> from the Your Session tab — you'll need it in The Hidden Truth. Then click <strong>Mark as Complete</strong> below to record your progress and unlock your next lesson.</p>
       </div>
 
       <div class="complete-rule"></div>
@@ -979,7 +960,7 @@
         <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/9425074"
            target="_blank" rel="noopener"
            class="mark-complete-btn">
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
           Mark as Complete
         </a>
       </div>
@@ -1008,36 +989,42 @@
       }
 
       if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      document.querySelector('.tab-bar').scrollIntoView({ behavior: 'smooth' });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    /* tab bar clicks */
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
         activateTab(btn.getAttribute('data-tab'), false);
       });
     });
 
-    /* continue buttons — mark previous done */
     document.querySelectorAll('.continue-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
         activateTab(btn.getAttribute('data-next'), true);
       });
     });
 
-    /* back buttons */
     document.querySelectorAll('.back-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
         activateTab(btn.getAttribute('data-prev'), false);
       });
     });
 
-    function toggleTranscript(btn) {
-      var body   = document.getElementById('transcript-body');
+    function toggleTranscript(btn, bodyId) {
+      var body   = document.getElementById(bodyId);
       var isOpen = body.classList.contains('open');
       body.classList.toggle('open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
+    }
+
+    function copyPrompt(btn) {
+      var promptEl = btn.previousElementSibling;
+      var text = promptEl.innerText;
+      navigator.clipboard.writeText(text).then(function() {
+        var orig = btn.innerHTML;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        setTimeout(function() { btn.innerHTML = orig; }, 2000);
+      });
     }
   </script>
 
