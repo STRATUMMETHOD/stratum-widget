@@ -8,562 +8,181 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --cream:        #faf4e8;
-      --cream-dark:   #f2ead8;
-      --cream-mid:    #ede5d4;
-      --tan:          #c4a882;
-      --tan-mid:      #a8895e;
-      --tan-light:    #ddd0b8;
-      --tan-faint:    #ede5d4;
-      --brown:        #2e1f0e;
-      --brown-mid:    #5c3d1e;
-      --brown-light:  #8b6340;
-      --green:        #2a5c2a;
-      --green-bg:     #f0f5f0;
-      --amber:        #7a4e10;
-      --amber-bg:     #fdf3e3;
-
-      --label-xs:   11px;
-      --label-sm:   12px;
-      --label-md:   13px;
-      --body-sm:    14px;
-      --body-md:    15px;
-      --body-lg:    16px;
+      --cream:#faf4e8; --cream-dark:#f2ead8; --cream-mid:#ede5d4;
+      --tan:#c4a882; --tan-mid:#a8895e; --tan-light:#ddd0b8; --tan-faint:#ede5d4;
+      --brown:#2e1f0e; --brown-mid:#5c3d1e; --brown-light:#8b6340;
+      --label-xs:11px; --label-sm:12px; --label-md:13px;
+      --body-sm:14px; --body-md:15px; --body-lg:16px;
     }
-
     html { scroll-behavior: smooth; }
+    body { font-family:'Spectral',Georgia,serif; background:var(--cream); color:var(--brown); line-height:1.6; }
 
-    body {
-      font-family: 'Spectral', Georgia, serif;
-      background: var(--cream);
-      color: var(--brown);
-      line-height: 1.6;
-    }
-
-    /* ══ COMPLETE BANNER ══ */
-    .complete-banner {
-      background: var(--brown);
-      border-bottom: 2px solid var(--tan);
-      padding: 18px 28px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .complete-banner-icon {
-      width: 36px; height: 36px;
-      border: 2px solid var(--tan);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .complete-banner-icon svg {
-      width: 18px; height: 18px;
-      stroke: var(--tan); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .complete-banner-text {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 500;
-      letter-spacing: 0.02em;
-      color: #faf4e8; line-height: 1.55;
-    }
-    .complete-banner-text strong { color: var(--tan); font-weight: 700; }
+    /* ══ BANNER ══ */
+    .complete-banner { background:var(--brown); border-bottom:2px solid var(--tan); padding:18px 28px; display:flex; align-items:center; gap:16px; }
+    .complete-banner-icon { width:36px; height:36px; border:2px solid var(--tan); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .complete-banner-icon svg { width:18px; height:18px; stroke:var(--tan); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .complete-banner-text { font-family:'Cormorant Garamond',Georgia,serif; font-size:15px; font-weight:500; letter-spacing:0.02em; color:#faf4e8; line-height:1.55; }
+    .complete-banner-text strong { color:var(--tan); font-weight:700; }
 
     /* ══ MAIN VIDEO ══ */
-    .video-wrap { background: #100a04; }
-    .video-container {
-      position: relative; width: 100%;
-      padding-bottom: 56.25%; height: 0; overflow: hidden;
-    }
-    .video-container iframe {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      border: none; display: block;
-    }
+    .video-wrap { background:#100a04; }
+    .video-container { position:relative; width:100%; padding-bottom:56.25%; height:0; overflow:hidden; }
+    .video-container iframe { position:absolute; inset:0; width:100%; height:100%; border:none; display:block; }
 
-    /* ── Transcript (main video) ── */
-    .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
-    .transcript-btn {
-      width: 100%; background: transparent; border: none;
-      padding: 13px 24px;
-      display: flex; align-items: center; justify-content: space-between;
-      cursor: pointer; gap: 12px;
-    }
-    .transcript-btn:hover { background: rgba(196,168,130,0.06); }
-    .transcript-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs);
-      font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan);
-    }
-    .transcript-chevron {
-      width: 16px; height: 16px;
-      stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      transition: transform 0.3s ease; flex-shrink: 0;
-    }
-    .transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
-    .transcript-body { display: none; padding: 0 28px 22px; }
-    .transcript-body.open { display: block; }
-    .transcript-body p {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm);
-      font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.78);
-      line-height: 1.85; margin-bottom: 14px;
-    }
-    .transcript-body p:last-child { margin-bottom: 0; }
-    .transcript-body .section-marker {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs);
-      font-weight: 600; font-style: normal;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan);
-      margin-top: 20px; margin-bottom: 8px;
-    }
-
-    /* ── Supplemental video transcript ── */
-    .supp-transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.12); }
-    .supp-transcript-btn {
-      width: 100%; background: transparent; border: none;
-      padding: 11px 20px;
-      display: flex; align-items: center; justify-content: space-between;
-      cursor: pointer; gap: 12px;
-    }
-    .supp-transcript-btn:hover { background: rgba(196,168,130,0.06); }
-    .supp-transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
-    .supp-transcript .transcript-body { padding: 0 20px 18px; }
+    /* ── Transcript ── */
+    .transcript { background:var(--brown); border-top:1px solid rgba(196,168,130,0.15); }
+    .transcript-btn { width:100%; background:transparent; border:none; padding:13px 24px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; gap:12px; }
+    .transcript-btn:hover { background:rgba(196,168,130,0.06); }
+    .transcript-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan); }
+    .transcript-chevron { width:16px; height:16px; stroke:var(--tan); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:transform 0.3s ease; flex-shrink:0; }
+    .transcript-btn[aria-expanded="true"] .transcript-chevron { transform:rotate(180deg); }
+    .transcript-body { display:none; padding:0 28px 22px; }
+    .transcript-body.open { display:block; }
+    .transcript-body p { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(250,244,232,0.78); line-height:1.85; margin-bottom:14px; }
+    .transcript-body p:last-child { margin-bottom:0; }
+    .transcript-body .section-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; font-style:normal; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan); margin-top:20px; margin-bottom:8px; display:block; }
+    .supp-transcript { background:var(--brown); border-top:1px solid rgba(196,168,130,0.12); }
+    .supp-transcript .transcript-body { padding:0 20px 18px; }
 
     /* ══ TAB BAR ══ */
-    .tab-bar {
-      display: flex; overflow-x: auto;
-      background: var(--brown);
-      border-bottom: 1px solid rgba(196,168,130,0.18);
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-    }
-    .tab-bar::-webkit-scrollbar { display: none; }
-    .tab-btn {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 12px; font-weight: 500;
-      letter-spacing: 0.15em; text-transform: uppercase;
-      color: rgba(196,168,130,0.55);
-      background: transparent; border: none;
-      border-right: 1px solid rgba(196,168,130,0.12);
-      padding: 0 20px;
-      min-height: 52px;
-      cursor: pointer; white-space: nowrap; flex-shrink: 0;
-      display: flex; align-items: center; gap: 9px;
-      transition: color 0.2s, background 0.2s;
-      position: relative;
-    }
-    .tab-btn:last-child { border-right: none; }
-    .tab-btn:hover { color: var(--tan); background: rgba(196,168,130,0.08); }
-    .tab-btn.active {
-      color: var(--tan);
-      font-weight: 700;
-      font-size: 13px;
-      letter-spacing: 0.13em;
-      background: transparent;
-    }
-    .tab-btn.active::after {
-      content: '';
-      position: absolute; bottom: 0; left: 0; right: 0;
-      height: 3px;
-      background: var(--tan);
-    }
-    .tab-check {
-      width: 18px; height: 18px;
-      border: 1.5px solid rgba(196,168,130,0.35);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.25s, border-color 0.25s;
-    }
-    .tab-check svg {
-      width: 9px; height: 9px;
-      stroke: rgba(196,168,130,0.25); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .tab-btn.active .tab-check { border-color: var(--tan); background: rgba(196,168,130,0.18); }
-    .tab-btn.active .tab-check svg { stroke: var(--tan); }
-    .tab-btn.done .tab-check { background: var(--tan); border-color: var(--tan); }
-    .tab-btn.done .tab-check svg { stroke: var(--brown); }
-    .tab-btn.done { color: rgba(196,168,130,0.6); }
+    .tab-bar { display:flex; overflow-x:auto; background:var(--brown); border-bottom:1px solid rgba(196,168,130,0.18); -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .tab-bar::-webkit-scrollbar { display:none; }
+    .tab-btn { font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; font-weight:500; letter-spacing:0.15em; text-transform:uppercase; color:rgba(196,168,130,0.55); background:transparent; border:none; border-right:1px solid rgba(196,168,130,0.12); padding:0 20px; min-height:52px; cursor:pointer; white-space:nowrap; flex-shrink:0; display:flex; align-items:center; gap:9px; transition:color 0.2s,background 0.2s; position:relative; }
+    .tab-btn:last-child { border-right:none; }
+    .tab-btn:hover { color:var(--tan); background:rgba(196,168,130,0.08); }
+    .tab-btn.active { color:var(--tan); font-weight:700; font-size:13px; letter-spacing:0.13em; }
+    .tab-btn.active::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:var(--tan); }
+    .tab-check { width:18px; height:18px; border:1.5px solid rgba(196,168,130,0.35); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.25s,border-color 0.25s; }
+    .tab-check svg { width:9px; height:9px; stroke:rgba(196,168,130,0.25); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .tab-btn.active .tab-check { border-color:var(--tan); background:rgba(196,168,130,0.18); }
+    .tab-btn.active .tab-check svg { stroke:var(--tan); }
+    .tab-btn.done .tab-check { background:var(--tan); border-color:var(--tan); }
+    .tab-btn.done .tab-check svg { stroke:var(--brown); }
+    .tab-btn.done { color:rgba(196,168,130,0.6); }
 
     /* ══ BLANK STATE ══ */
-    .blank-state { padding: 64px 32px 80px; text-align: center; max-width: 520px; margin: 0 auto; }
-    .blank-rule { width: 28px; height: 1px; background: var(--tan-light); margin: 0 auto 24px; }
-    .blank-state p {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 18px; font-weight: 300; font-style: italic;
-      color: var(--tan-mid); line-height: 1.65;
-    }
+    .blank-state { padding:64px 32px 80px; text-align:center; max-width:520px; margin:0 auto; }
+    .blank-rule { width:28px; height:1px; background:var(--tan-light); margin:0 auto 24px; }
+    .blank-state p { font-family:'Cormorant Garamond',Georgia,serif; font-size:18px; font-weight:300; font-style:italic; color:var(--tan-mid); line-height:1.65; }
 
-    /* ══ TAB PANELS ══ */
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    /* ══ PANEL INNER ══ */
-    .panel-inner { padding: 44px 32px 32px; max-width: 760px; margin: 0 auto; }
-
-    /* ══ PANEL TYPOGRAPHY ══ */
-    .panel-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 8px;
-    }
-    .panel-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 30px; font-weight: 300; color: var(--brown); line-height: 1.15;
-    }
-    .panel-title em { font-style: italic; color: var(--brown-mid); }
-    .panel-rule { width: 40px; height: 1px; background: var(--tan); margin: 16px 0 26px; }
-    .panel-lead {
-      font-size: var(--body-lg); font-weight: 300; line-height: 1.8;
-      color: var(--brown-mid); margin-bottom: 32px;
-    }
+    /* ══ PANELS ══ */
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .panel-inner { padding:44px 32px 32px; max-width:760px; margin:0 auto; }
+    .panel-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:8px; }
+    .panel-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:30px; font-weight:300; color:var(--brown); line-height:1.15; }
+    .panel-title em { font-style:italic; color:var(--brown-mid); }
+    .panel-rule { width:40px; height:1px; background:var(--tan); margin:16px 0 26px; }
+    .panel-lead { font-size:var(--body-lg); font-weight:300; line-height:1.8; color:var(--brown-mid); margin-bottom:32px; }
 
     /* ══ NAV BUTTONS ══ */
-    .nav-wrap {
-      padding: 24px 32px 32px; max-width: 760px; margin: 0 auto;
-      border-top: 1px solid var(--tan-light);
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    }
-    .nav-wrap.no-back { justify-content: flex-end; }
-    .back-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: transparent; border: 1px solid var(--tan-light);
-      padding: 12px 22px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan-mid); cursor: pointer;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
-    }
-    .back-btn:hover { background: var(--cream-dark); border-color: var(--tan-mid); color: var(--brown); }
-    .back-btn svg {
-      width: 13px; height: 13px; stroke: currentColor; fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .continue-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--brown); border: none; padding: 14px 28px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 500;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--tan); cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-    }
-    .continue-btn:hover { background: var(--brown-mid); color: var(--cream); }
-    .continue-btn svg {
-      width: 14px; height: 14px; stroke: currentColor; fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
+    .nav-wrap { padding:24px 32px 32px; max-width:760px; margin:0 auto; border-top:1px solid var(--tan-light); display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .nav-wrap.no-back { justify-content:flex-end; }
+    .back-btn { display:inline-flex; align-items:center; gap:8px; background:transparent; border:1px solid var(--tan-light); padding:12px 22px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan-mid); cursor:pointer; transition:background 0.2s,color 0.2s,border-color 0.2s; }
+    .back-btn:hover { background:var(--cream-dark); border-color:var(--tan-mid); color:var(--brown); }
+    .back-btn svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .continue-btn { display:inline-flex; align-items:center; gap:10px; background:var(--brown); border:none; padding:14px 28px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; color:var(--tan); cursor:pointer; transition:background 0.2s,color 0.2s; }
+    .continue-btn:hover { background:var(--brown-mid); color:var(--cream); }
+    .continue-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 
     /* ══ WHY BLOCK ══ */
-    .why-block {
-      background: var(--cream-dark); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan-mid); padding: 20px 22px; margin-bottom: 28px;
-    }
-    .why-block-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 600; color: var(--brown);
-      display: block; margin-bottom: 10px;
-    }
-    .why-block p {
-      font-size: var(--body-md); font-weight: 300; line-height: 1.8;
-      color: var(--brown); margin-bottom: 10px;
-    }
-    .why-block p:last-child { margin-bottom: 0; }
+    .why-block { background:var(--cream-dark); border:1px solid var(--tan-light); border-left:3px solid var(--tan-mid); padding:20px 22px; margin-bottom:28px; }
+    .why-block-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:15px; font-weight:600; color:var(--brown); display:block; margin-bottom:10px; }
+    .why-block p { font-size:var(--body-md); font-weight:300; line-height:1.8; color:var(--brown); margin-bottom:10px; }
+    .why-block p:last-child { margin-bottom:0; }
 
     /* ══ SUPPLEMENTAL VIDEO ══ */
-    .supp-video { border: 1px solid var(--tan-light); margin-bottom: 32px; overflow: hidden; }
-    .supp-video-head {
-      background: var(--cream-mid); padding: 14px 20px;
-      display: flex; align-items: center; gap: 14px;
-      border-bottom: 1px solid var(--tan-light); flex-wrap: wrap;
-    }
-    .supp-video-badge {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--brown-mid); background: var(--tan-faint);
-      border: 1px solid var(--tan-light); padding: 4px 11px; flex-shrink: 0;
-    }
-    .supp-video-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 500; color: var(--brown); line-height: 1.3;
-    }
-    .supp-video-container {
-      position: relative; width: 100%; padding-bottom: 56.25%;
-      height: 0; overflow: hidden; background: #100a04;
-    }
-    .supp-video-container iframe {
-      position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block;
-    }
-    .supp-video-foot {
-      padding: 14px 20px; background: var(--cream-dark);
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown-mid); border-top: 1px solid var(--tan-light);
-    }
+    .supp-video { border:1px solid var(--tan-light); margin-bottom:32px; overflow:hidden; }
+    .supp-video-head { background:var(--cream-mid); padding:14px 20px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--tan-light); flex-wrap:wrap; }
+    .supp-video-badge { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--brown-mid); background:var(--tan-faint); border:1px solid var(--tan-light); padding:4px 11px; flex-shrink:0; }
+    .supp-video-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:15px; font-weight:500; color:var(--brown); line-height:1.3; }
+    .supp-video-container { position:relative; width:100%; padding-bottom:56.25%; height:0; overflow:hidden; background:#100a04; }
+    .supp-video-container iframe { position:absolute; inset:0; width:100%; height:100%; border:none; display:block; }
+    .supp-video-foot { padding:14px 20px; background:var(--cream-dark); font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown-mid); border-top:1px solid var(--tan-light); }
 
     /* ══ REQUIREMENTS ══ */
-    .requirements-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 14px;
-    }
-    .requirements-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 2px; background: var(--tan-light);
-      border: 1px solid var(--tan-light); margin-bottom: 32px;
-    }
-    .req-card { background: var(--cream); padding: 20px 22px; }
-    .req-card-number {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 28px; font-weight: 300; font-style: italic;
-      color: var(--tan); line-height: 1; margin-bottom: 6px; display: block;
-    }
-    .req-card-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 17px; font-weight: 600; color: var(--brown);
-      display: block; margin-bottom: 8px;
-    }
-    .req-card-desc {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown-mid); margin-bottom: 10px;
-    }
-    .req-card-example {
-      font-size: 13px; font-weight: 300; font-style: italic;
-      color: var(--brown-light); line-height: 1.65;
-      padding-top: 8px; border-top: 1px solid var(--tan-faint);
-    }
-    .req-card-example strong { font-style: normal; font-weight: 500; color: var(--tan-mid); }
+    .requirements-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:14px; }
+    .requirements-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--tan-light); border:1px solid var(--tan-light); margin-bottom:32px; }
+    .req-card { background:var(--cream); padding:20px 22px; }
+    .req-card-number { font-family:'Cormorant Garamond',Georgia,serif; font-size:28px; font-weight:300; font-style:italic; color:var(--tan); line-height:1; margin-bottom:6px; display:block; }
+    .req-card-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; font-weight:600; color:var(--brown); display:block; margin-bottom:8px; }
+    .req-card-desc { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown-mid); margin-bottom:10px; }
+    .req-card-example { font-size:13px; font-weight:300; font-style:italic; color:var(--brown-light); line-height:1.65; padding-top:8px; border-top:1px solid var(--tan-faint); }
+    .req-card-example strong { font-style:normal; font-weight:500; color:var(--tan-mid); }
 
     /* ══ RED FLAGS ══ */
-    .redflag-item {
-      display: flex; align-items: flex-start; gap: 14px;
-      padding: 12px 0; border-bottom: 1px solid var(--tan-faint);
-    }
-    .redflag-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .redflag-marker {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--tan-mid); flex-shrink: 0; margin-top: 2px; min-width: 64px;
-    }
-    .redflag-text { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown); }
-    .redflag-text strong { font-weight: 500; color: var(--brown-mid); }
-    .redflag-text em { font-style: italic; }
+    .redflag-item { display:flex; align-items:flex-start; gap:14px; padding:12px 0; border-bottom:1px solid var(--tan-faint); }
+    .redflag-item:last-child { border-bottom:none; padding-bottom:0; }
+    .redflag-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--tan-mid); flex-shrink:0; margin-top:2px; min-width:64px; }
+    .redflag-text { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown); }
+    .redflag-text strong { font-weight:500; color:var(--brown-mid); }
+    .redflag-text em { font-style:italic; }
 
-    /* ══ SESSION: JOTFORM SECTIONS ══ */
-    .jotform-section { margin-bottom: 36px; }
-    .jotform-section-head {
-      background: var(--brown);
-      padding: 18px 24px;
-      margin-bottom: 0;
-    }
-    .jotform-section-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 5px;
-    }
-    .jotform-section-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 22px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.2;
-    }
-    .jotform-section-title em { color: var(--tan); font-style: italic; }
-    .jotform-embed { width: 100%; }
+    /* ══ SESSION ══ */
+    .jotform-section { margin-bottom:36px; }
+    .jotform-section-head { background:var(--brown); padding:18px 24px; }
+    .jotform-section-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:5px; }
+    .jotform-section-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:22px; font-weight:300; font-style:italic; color:var(--cream); line-height:1.2; }
+    .jotform-section-title em { color:var(--tan); }
+    .jotform-iframe-wrap { width:100%; overflow:hidden; }
+    .jotform-iframe-wrap iframe { width:100%; border:none; display:block; }
 
-    /* ══ SESSION: BEGIN COACHING ══ */
-    .session-begin-band {
-      background: var(--brown);
-      padding: 24px 28px 20px;
-      margin-bottom: 36px;
-    }
-    .session-begin-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 26px; font-weight: 500;
-      letter-spacing: 0.03em;
-      color: var(--cream);
-      margin-bottom: 16px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid rgba(196,168,130,0.25);
-      line-height: 1.2;
-    }
-    .session-begin-title em { color: var(--tan); font-style: italic; }
+    .session-begin-band { background:var(--brown); padding:24px 28px 20px; margin-bottom:36px; }
+    .session-begin-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:26px; font-weight:500; letter-spacing:0.03em; color:var(--cream); margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid rgba(196,168,130,0.25); line-height:1.2; }
+    .session-begin-title em { color:var(--tan); font-style:italic; }
 
-    /* ══ PROMPT WRAP ══ */
-    .prompt-wrap {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(196,168,130,0.2);
-      padding: 18px 20px;
-      margin-bottom: 20px;
-    }
-    .prompt-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs);
-      font-weight: 600;
-      letter-spacing: 0.20em;
-      text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 11px;
-    }
-    .prompt-text {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm);
-      font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.88);
-      line-height: 1.75;
-      margin-bottom: 12px;
-      user-select: all;
-    }
-    .copy-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: transparent;
-      border: 1px solid rgba(196,168,130,0.45);
-      padding: 9px 16px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs);
-      font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan); cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-    }
-    .copy-btn:hover { background: rgba(196,168,130,0.1); border-color: var(--tan); }
-    .copy-btn svg {
-      width: 13px; height: 13px; stroke: currentColor; fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
+    /* ══ PROMPT ══ */
+    .prompt-wrap { background:rgba(255,255,255,0.04); border:1px solid rgba(196,168,130,0.2); padding:18px 20px; margin-bottom:20px; }
+    .prompt-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.20em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:11px; }
+    .prompt-text { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(250,244,232,0.88); line-height:1.75; margin-bottom:12px; white-space:pre-wrap; }
+    .copy-btn { display:inline-flex; align-items:center; gap:8px; background:transparent; border:1px solid rgba(196,168,130,0.45); padding:9px 16px; font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan); cursor:pointer; transition:background 0.2s,border-color 0.2s; }
+    .copy-btn:hover { background:rgba(196,168,130,0.1); border-color:var(--tan); }
+    .copy-btn svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .copy-btn.copied { background:rgba(196,168,130,0.15); border-color:var(--tan); }
 
-    /* ══ INSTRUCTIONS LIST ══ */
-    .instructions-list { list-style: none; margin-top: 4px; }
-    .instructions-list li {
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.85); line-height: 1.72; padding: 9px 0;
-      border-bottom: 1px solid rgba(196,168,130,0.12);
-      display: flex; gap: 12px; align-items: flex-start;
-    }
-    .instructions-list li:last-child { border-bottom: none; }
-    .instructions-list li::before {
-      content: attr(data-n);
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); color: var(--tan);
-      flex-shrink: 0; margin-top: 3px; min-width: 14px;
-    }
-    .instructions-list li strong { color: var(--tan); font-weight: 500; }
-    .instructions-list li a {
-      color: var(--tan); text-decoration: underline;
-      text-underline-offset: 2px; opacity: 0.85;
-    }
-    .instructions-list li a:hover { opacity: 1; }
+    .instructions-list { list-style:none; margin-top:4px; }
+    .instructions-list li { font-size:var(--body-sm); font-weight:300; color:rgba(250,244,232,0.85); line-height:1.72; padding:9px 0; border-bottom:1px solid rgba(196,168,130,0.12); display:flex; gap:12px; align-items:flex-start; }
+    .instructions-list li:last-child { border-bottom:none; }
+    .instructions-list li::before { content:attr(data-n); font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); color:var(--tan); flex-shrink:0; margin-top:3px; min-width:14px; }
+    .instructions-list li strong { color:var(--tan); font-weight:500; }
+    .instructions-list li a { color:var(--tan); text-decoration:underline; text-underline-offset:2px; opacity:0.85; }
+    .instructions-list li a:hover { opacity:1; }
 
-    /* ══ COMPLETE LESSON ══ */
-    .complete-dark {
-      background: var(--brown); padding: 44px 32px;
-      text-align: center;
-    }
-    .complete-dark-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 12px;
-    }
-    .complete-dark-heading {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 26px; font-weight: 300;
-      color: var(--cream); margin-bottom: 8px; line-height: 1.2;
-    }
-    .complete-dark-sub {
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(196,168,130,0.7); margin-bottom: 28px;
-    }
-    .complete-instruction {
-      display: flex; align-items: flex-start; gap: 14px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(196,168,130,0.15);
-      padding: 18px 20px; margin-bottom: 28px;
-      text-align: left;
-    }
-    .complete-instruction svg {
-      width: 20px; height: 20px; stroke: var(--tan); fill: none;
-      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0;
-    }
-    .complete-instruction p {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: rgba(250,244,232,0.8);
-    }
-    .complete-instruction p strong { color: var(--tan); font-weight: 500; }
-    .complete-rule { width: 40px; height: 1px; background: rgba(196,168,130,0.3); margin: 0 auto 24px; }
-    .complete-quote {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 17px; font-weight: 300; font-style: italic;
-      color: rgba(196,168,130,0.7); line-height: 1.65; margin-bottom: 10px;
-    }
-    .complete-attr {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); letter-spacing: 0.14em; text-transform: uppercase;
-      color: rgba(196,168,130,0.4); display: block; margin-bottom: 28px;
-    }
-    .mark-complete-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--tan); color: var(--brown);
-      border: none; padding: 15px 32px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 700;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      cursor: pointer; text-decoration: none;
-      transition: background 0.2s;
-    }
-    .mark-complete-btn:hover { background: var(--tan-mid); }
-    .mark-complete-btn svg {
-      width: 15px; height: 15px; stroke: currentColor; fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
+    /* ══ COMPLETE ══ */
+    .complete-dark { background:var(--brown); padding:44px 32px; text-align:center; }
+    .complete-dark-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:12px; }
+    .complete-dark-heading { font-family:'Cormorant Garamond',Georgia,serif; font-size:26px; font-weight:300; color:var(--cream); margin-bottom:8px; line-height:1.2; }
+    .complete-dark-sub { font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(196,168,130,0.7); margin-bottom:28px; }
+    .complete-instruction { display:flex; align-items:flex-start; gap:14px; background:rgba(255,255,255,0.05); border:1px solid rgba(196,168,130,0.15); padding:18px 20px; margin-bottom:28px; text-align:left; }
+    .complete-instruction svg { width:20px; height:20px; stroke:var(--tan); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+    .complete-instruction p { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:rgba(250,244,232,0.8); }
+    .complete-instruction p strong { color:var(--tan); font-weight:500; }
+    .complete-rule { width:40px; height:1px; background:rgba(196,168,130,0.3); margin:0 auto 24px; }
+    .complete-quote { font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; font-weight:300; font-style:italic; color:rgba(196,168,130,0.7); line-height:1.65; margin-bottom:10px; }
+    .complete-attr { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); letter-spacing:0.14em; text-transform:uppercase; color:rgba(196,168,130,0.4); display:block; margin-bottom:28px; }
+    .mark-complete-btn { display:inline-flex; align-items:center; gap:10px; background:var(--tan); color:var(--brown); border:none; padding:15px 32px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer; text-decoration:none; transition:background 0.2s; }
+    .mark-complete-btn:hover { background:var(--tan-mid); }
+    .mark-complete-btn svg { width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .complete-lesson-content { background:var(--cream-dark); border:1px solid var(--tan-light); padding:24px 26px; margin-bottom:32px; }
+    .complete-lesson-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; font-weight:600; color:var(--brown); display:block; margin-bottom:16px; }
+    .checklist { list-style:none; }
+    .checklist li { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown); padding:8px 0; border-bottom:1px solid var(--tan-faint); display:flex; gap:12px; align-items:flex-start; }
+    .checklist li:last-child { border-bottom:none; }
+    .checklist li::before { content:'✓'; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; color:var(--tan-mid); flex-shrink:0; margin-top:1px; }
 
-    /* ══ COMPLETE LESSON CHECKLIST ══ */
-    .complete-lesson-content {
-      background: var(--cream-dark); border: 1px solid var(--tan-light);
-      padding: 24px 26px; margin-bottom: 32px;
-    }
-    .complete-lesson-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 17px; font-weight: 600; color: var(--brown);
-      display: block; margin-bottom: 16px;
-    }
-    .checklist { list-style: none; }
-    .checklist li {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown); padding: 8px 0;
-      border-bottom: 1px solid var(--tan-faint);
-      display: flex; gap: 12px; align-items: flex-start;
-    }
-    .checklist li:last-child { border-bottom: none; }
-    .checklist li::before {
-      content: '✓';
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 14px; color: var(--tan-mid);
-      flex-shrink: 0; margin-top: 1px;
-    }
-
-    @media (max-width: 540px) {
-      .requirements-grid { grid-template-columns: 1fr; }
-      .panel-inner { padding: 28px 20px 20px; }
-      .nav-wrap { padding: 20px; flex-direction: column; }
-      .continue-btn, .back-btn { width: 100%; justify-content: center; }
-      .session-begin-band { padding: 20px; }
+    @media (max-width:540px) {
+      .requirements-grid { grid-template-columns:1fr; }
+      .panel-inner { padding:28px 20px 20px; }
+      .nav-wrap { padding:20px; flex-direction:column; }
+      .continue-btn, .back-btn { width:100%; justify-content:center; }
+      .session-begin-band { padding:20px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ══ COMPLETE BANNER ══ -->
+  <!-- ══ BANNER ══ -->
   <div class="complete-banner">
     <div class="complete-banner-icon">
       <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
@@ -574,15 +193,10 @@
   <!-- ══ MAIN VIDEO ══ -->
   <div class="video-wrap">
     <div class="video-container">
-      <iframe
-        src="https://www.youtube.com/embed/4GEodVaKiKc?rel=0&modestbranding=1"
-        title="Lesson 1: The Surface Pattern — STRATUM"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-      </iframe>
+      <iframe src="https://www.youtube.com/embed/4GEodVaKiKc?rel=0&modestbranding=1" title="Lesson 1: The Surface Pattern — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
     <div class="transcript">
-      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this, 'transcript-main')">
+      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-main')">
         <span class="transcript-label">Video Transcript</span>
         <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
@@ -590,35 +204,28 @@
         <p>I want to start with something that happened early in my corporate coaching career.</p>
         <p>I was working with a senior executive — brilliant woman, led a team of two hundred people — and I asked her to describe a colleague who was causing problems. Someone who was derailing team decisions.</p>
         <p>She didn't hesitate. She said: "He agrees in every meeting. Then he goes back to his office and does exactly what he was going to do anyway. And he's been doing it for fifteen years."</p>
-        <p>She didn't have a psychology degree. She hadn't run any assessments. But she had watched this person across dozens of situations, with different people, under different kinds of pressure. And she knew exactly what he did.</p>
-        <p>That's what you're going to do today. With your character.</p>
-
+        <p>She didn't have a psychology degree. She hadn't run any assessments. But she had watched this person across dozens of situations, with different people, under different kinds of pressure. And she knew exactly what he did. That's what you're going to do today. With your character.</p>
         <p class="section-marker">The Library You Don't Know You Have</p>
         <p>That kind of knowing has a name. Psychologists call it the adaptive unconscious — the part of your mind that processes patterns before your conscious awareness can catch up.</p>
         <p>It's what lets you walk into a room and immediately sense the tension. It's what tells you, thirty seconds into meeting someone, whether they're being genuine. You didn't calculate that. You just knew.</p>
         <p>Every person you've ever observed. Every relationship you've navigated. Every character you've read who felt completely real to you. It's all filed away in there — a massive, lifetime database of human behavior.</p>
         <p>Your adaptive unconscious is the most powerful character development tool you have. And most writers never use it deliberately. That's what this course teaches you to do. Not to invent psychology. To excavate what you already know.</p>
-
         <p class="section-marker">Where Most Character Work Goes Wrong</p>
         <p>Most writers approach character development chronologically. They start at the beginning — childhood, backstory, formative trauma — and build forward. They construct a psychology and attach it to a character.</p>
         <p>The result often feels exactly like what it is: constructed. It fits the plot. It doesn't feel like a person.</p>
         <p>We're going the other direction. We start with what your character does right now. Observable, specific, present-day behavior. From there, we dig down — layer by layer — to the belief that drives that behavior, the wound that created that belief, and the distorted conclusion they drew from the wound.</p>
         <p>Surface to depth. Present to past. Observable to psychological. That's the excavation ladder. And today, you're climbing the first rung.</p>
-
         <p class="section-marker">Today's Work: Pure Observation</p>
         <p>Today, you're being a documentary filmmaker. You're capturing what happens on camera. No interpretation. No analysis. Just behavior.</p>
         <p>Think about Katniss Everdeen. What does she do? She volunteers at the Reaping. She steps between danger and the people she loves — with Prim, with Rue, with Peeta. She positions herself as protector, again and again, in different situations, with different people, under different kinds of pressure. That's what you'd see on film.</p>
         <p>Or Sherlock Holmes. What does he do? He examines. He picks up objects others ignore. He studies faces, clothing, hands. Every scene, every case — the same compulsion, expressing itself differently depending on context.</p>
         <p>Notice what those descriptions aren't. They're not labels. They're not "she's protective" or "he's observant." They're specific actions. Things you can write. Things you can film. That's what you're finding today.</p>
-
         <p class="section-marker">The Four Requirements</p>
         <p>A strong surface behavior has four characteristics. And I want to be direct with you: these aren't suggestions. If your character's behavior doesn't meet all four, keep digging.</p>
         <p>Specific. Not a label — a concrete action. Not "she's anxious." What does anxious look like? Does she check her phone repeatedly in social situations? Does she apologize before stating any opinion? Get specific.</p>
         <p>Visible. Put a camera on your character. Would this show up? "She feels insecure" doesn't pass the test. "She apologizes before stating any opinion" does.</p>
         <p>Recurring. This isn't a one-time reaction. It's a pattern across relationships, contexts, and time. Patterns signal psychology.</p>
         <p>Consequential. This behavior affects relationships, decisions, the trajectory of their life. It creates conflict or shapes how others respond to them. It matters.</p>
-        <p>These four work together. Specificity makes it writable. Visibility makes it cinematic. Recurrence makes it meaningful. Consequence makes it story-worthy.</p>
-
         <p class="section-marker">Your AI Coaching Session</p>
         <p>Your AI coach is a Socratic partner. Its job is to help you see what you already know — not to tell you things about your character.</p>
         <p>If your coach asks why — stop it. Today is what, not why. Tell it to stay in observer mode. If you have only one or two examples — keep digging. You haven't found a pattern yet. You've found a moment.</p>
@@ -630,42 +237,22 @@
 
   <!-- ══ TAB BAR ══ -->
   <nav class="tab-bar" aria-label="Lesson sections">
-    <button class="tab-btn" data-tab="overview">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
-      Overview
-    </button>
-    <button class="tab-btn" data-tab="requirements">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
-      Four Requirements
-    </button>
-    <button class="tab-btn" data-tab="redflags">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
-      Red Flags
-    </button>
-    <button class="tab-btn" data-tab="session">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
-      Your Session
-    </button>
-    <button class="tab-btn" data-tab="complete">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
-      Complete Lesson
-    </button>
+    <button class="tab-btn" data-tab="overview"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Overview</button>
+    <button class="tab-btn" data-tab="requirements"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Four Requirements</button>
+    <button class="tab-btn" data-tab="redflags"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Red Flags</button>
+    <button class="tab-btn" data-tab="session"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Your Session</button>
+    <button class="tab-btn" data-tab="complete"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Complete Lesson</button>
   </nav>
 
-  <!-- ══ BLANK STATE ══ -->
-  <div id="blank-state" class="blank-state">
-    <div class="blank-rule"></div>
-    <p>Select a section above to begin.</p>
-  </div>
+  <div id="blank-state" class="blank-state"><div class="blank-rule"></div><p>Select a section above to begin.</p></div>
 
-  <!-- ══ PANEL: OVERVIEW ══ -->
+  <!-- ══ OVERVIEW ══ -->
   <div class="tab-panel" id="panel-overview">
     <div class="panel-inner">
       <span class="panel-eyebrow">The Excavation Ladder · STRATUM: AI Character Coaching</span>
       <h1 class="panel-title">The Surface <em>Pattern</em></h1>
       <div class="panel-rule"></div>
       <p class="panel-lead">The lesson video has shown you what this lesson asks of you. Before you open your coaching session, there is one more thing to do — and it matters more than you might expect.</p>
-
       <div class="why-block">
         <span class="why-block-title">The Voice That Arrives Right Now</span>
         <p>You know what the session requires: find the one behavior your character returns to, again and again, across different people and different situations. You know the four criteria. You know what a camera would see.</p>
@@ -673,266 +260,140 @@
         <p>That voice is not telling you the truth. It is protecting you from the discomfort of beginning. It arrives at exactly this moment, for almost every writer, every time. And it has a name, a pattern, and a solution.</p>
         <p>Watch the video below before you open your coaching session. What it explains is not background reading. It is the difference between writers who begin and writers who find reasons not to.</p>
       </div>
-
-      <!-- Self Doubt Supplemental Video -->
       <div class="supp-video">
         <div class="supp-video-head">
           <span class="supp-video-badge">Supplemental · Writing Psychology</span>
           <span class="supp-video-title">Self Doubt — Why You Know More Than You Think</span>
         </div>
         <div class="supp-video-container">
-          <iframe
-            src="https://www.youtube.com/embed/nmmHoMxyZL8?rel=0&modestbranding=1"
-            title="Self Doubt — Why You Know More Than You Think"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
+          <iframe src="https://www.youtube.com/embed/nmmHoMxyZL8?rel=0&modestbranding=1" title="Self Doubt — Why You Know More Than You Think" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
         <div class="supp-transcript">
-          <button class="supp-transcript-btn transcript-btn" aria-expanded="false" onclick="toggleTranscript(this, 'transcript-self-doubt')">
+          <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-self-doubt')">
             <span class="transcript-label">Video Transcript</span>
             <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="transcript-body" id="transcript-self-doubt">
             <p>Today we're talking about self-doubt and AI coaching, and why the internal critic that helps you succeed in one domain can absolutely destroy you in another.</p>
-            <p>I thought I had conquered my inner critic decades ago. I'd spent 35 years teaching complex problem-solving in corporate settings. I was confident. Competent. Known for breaking down impossible challenges into manageable pieces.</p>
-            <p>Then I sat down to write a novel. And that's when the critic returned — louder, meaner, more relentless than ever.</p>
+            <p>I thought I had conquered my inner critic decades ago. I'd spent 35 years teaching complex problem-solving in corporate settings. I was confident. Competent. Known for breaking down impossible challenges into manageable pieces. Then I sat down to write a novel. And that's when the critic returned — louder, meaner, more relentless than ever.</p>
             <p>Here's what nobody tells you about learning fiction writing: the more you study craft, the more inadequate you feel. I spent months diving into story structure, character development, dialogue technique. I read the masters. I took courses. I studied my favorite thrillers. And every new lesson made me feel smaller.</p>
             <p>My opening chapter? Nothing like the thrillers I admired. The voice was wrong. The pacing felt forced. The characters were cardboard cutouts pretending to be human.</p>
             <p>In my consulting career, I could break down any complex problem. Systems thinking. Root cause analysis. Strategic frameworks. I had methods. I had confidence. But writing felt different. Fix your pacing, and suddenly your character development feels rushed. Strengthen your dialogue, and your scenes become too dialogue-heavy. Everything was connected to everything else. And I had no idea where to start.</p>
             <p>That's when the internal critic got loud: Will I ever truly be able to call myself a writer?</p>
-            <p>Here's what I realized: most aspiring writers quit right here. Not because they lack talent. Not because their stories aren't worth telling. They quit because the learning curve feels endless, the self-doubt becomes unbearable, and there's no safe space to be genuinely terrible while they learn.</p>
-            <p>I could have quit too. I almost did. But then I discovered AI coaching. Not AI that writes for you. Not AI that generates content. AI that creates a judgment-free space where you can be a beginner without performance anxiety.</p>
-
+            <p>Here's what I realized: most aspiring writers quit right here. Not because they lack talent. Not because their stories aren't worth telling. They quit because the learning curve feels endless, the self-doubt becomes unbearable, and there's no safe space to be genuinely terrible while they learn. I could have quit too. I almost did. But then I discovered AI coaching.</p>
             <p class="section-marker">First: Permission to Be a Beginner</p>
-            <p>One of the most freeing things about AI coaching? The complete absence of human judgment. When I asked for critique from other writers, there was always some level of performance anxiety. Some desire to seem competent. Some fear of looking foolish.</p>
-            <p>With AI? I could be genuinely terrible. I could ask embarrassingly basic questions. I could explore ridiculous ideas without worrying about someone's opinion of my intelligence. This created what I call "permission to be a beginner." That psychological safety? It's the foundation of accelerated learning.</p>
-
+            <p>One of the most freeing things about AI coaching? The complete absence of human judgment. When I asked for critique from other writers, there was always some level of performance anxiety. With AI? I could be genuinely terrible. I could ask embarrassingly basic questions. I could explore ridiculous ideas without worrying about someone's opinion of my intelligence. That psychological safety? It's the foundation of accelerated learning.</p>
             <p class="section-marker">Second: Replacing the Destructive Voice</p>
-            <p>Here's what makes the internal critic so devastating: it's loud but vague. It doesn't offer specifics. It delivers sweeping judgments that shut down creativity: This is terrible. You'll never get this right. Real writers don't struggle like this.</p>
-            <p>It's reactive, not constructive. It points out flaws without suggesting fixes. It stalls momentum. Instead of helping you move forward, it paralyzes you with uncertainty.</p>
-            <p>Now compare that to AI coaching. AI is solution-oriented and collaborative. Instead of dismissing your work as "bad," it might say: "This sentence could be unclear to some readers. Let's look at how you can make it more direct and engaging." The internal critic tears down. AI coaching builds up.</p>
-
+            <p>Here's what makes the internal critic so devastating: it's loud but vague. It delivers sweeping judgments that shut down creativity. It's reactive, not constructive. It stalls momentum. Now compare that to AI coaching. AI is solution-oriented and collaborative. Instead of dismissing your work as "bad," it offers specific, constructive alternatives. The internal critic tears down. AI coaching builds up.</p>
             <p class="section-marker">Third: Confidence Scaffolding</p>
             <p>I call this "building yourself up one small win at a time." Instead of chasing perfection, you shift your mindset. Each small victory becomes a building block. Over time, those blocks form a sturdy foundation of confidence. You're growing. You're learning. You're proving to yourself that you can do this.</p>
-            <p>Here's what makes this powerful: AI coaching doesn't just help you improve your writing. It prepares you for the inevitable external judgment that comes with sharing your work. Through objective feedback — feedback that's constructive rather than devastating — AI takes away criticism's power to destroy you.</p>
-            <p>If you're drowning in self-doubt right now, here's what I want you to understand: you don't have to figure this out alone. The internal critic that's destroying your confidence? It's not telling you the truth. It's protecting you from the discomfort of being a beginner. But here's the paradox: the only way to stop being a beginner is to give yourself permission to be one first.</p>
-            <p>Your voice matters. Your story matters. And you don't have to do this alone.</p>
+            <p>If you're drowning in self-doubt right now: you don't have to figure this out alone. The internal critic that's destroying your confidence? It's not telling you the truth. It's protecting you from the discomfort of being a beginner. But the only way to stop being a beginner is to give yourself permission to be one first. Your voice matters. Your story matters. And you don't have to do this alone.</p>
           </div>
         </div>
         <p class="supp-video-foot">Watch this before you open your coaching session. The inner critic that's speaking to you right now has a name, a pattern, and a solution. Understanding it is not optional — it is what separates writers who begin from those who find reasons not to.</p>
       </div>
     </div>
     <div class="nav-wrap no-back">
-      <button class="continue-btn" data-next="requirements">
-        Continue to Four Requirements
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="continue-btn" data-next="requirements">Continue to Four Requirements<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
   </div>
 
-  <!-- ══ PANEL: FOUR REQUIREMENTS ══ -->
+  <!-- ══ FOUR REQUIREMENTS ══ -->
   <div class="tab-panel" id="panel-requirements">
     <div class="panel-inner">
       <span class="panel-eyebrow">The Methodology</span>
       <h2 class="panel-title">Four Requirements of a Strong <em>Surface Behavior</em></h2>
       <div class="panel-rule"></div>
       <p class="panel-lead">These aren't suggestions. If your character's behavior doesn't meet all four, keep digging.</p>
-
       <span class="requirements-label">The Four Requirements</span>
       <div class="requirements-grid">
-        <div class="req-card">
-          <span class="req-card-number">01</span>
-          <span class="req-card-title">Specific</span>
-          <p class="req-card-desc">Not a label — a concrete action. "She's anxious" is a label. What does anxious look like on film? Get to the exact thing your character does.</p>
-          <p class="req-card-example"><strong>Label:</strong> She's protective.<br><strong>Behavior:</strong> She volunteers at the Reaping when her sister's name is called.</p>
-        </div>
-        <div class="req-card">
-          <span class="req-card-number">02</span>
-          <span class="req-card-title">Visible</span>
-          <p class="req-card-desc">Put a camera on your character. Would this behavior show up? "She feels insecure" fails the test. "She apologizes before stating any opinion" passes.</p>
-          <p class="req-card-example"><strong>Invisible:</strong> He feels compelled to understand.<br><strong>Visible:</strong> He picks up objects others ignore and examines them in detail.</p>
-        </div>
-        <div class="req-card">
-          <span class="req-card-number">03</span>
-          <span class="req-card-title">Recurring</span>
-          <p class="req-card-desc">This isn't a one-time reaction. It's a pattern across relationships, contexts, and time. One instance could be situational. A pattern signals psychology.</p>
-          <p class="req-card-example"><strong>Single moment:</strong> She protected Prim at the Reaping.<br><strong>Pattern:</strong> She protected Prim, then Rue, then Peeta — each time, different context.</p>
-        </div>
-        <div class="req-card">
-          <span class="req-card-number">04</span>
-          <span class="req-card-title">Consequential</span>
-          <p class="req-card-desc">This behavior affects relationships, decisions, and the trajectory of their life. It creates conflict or shapes how others respond. It matters to the story.</p>
-          <p class="req-card-example"><strong>Decorative:</strong> She hums when she's nervous.<br><strong>Consequential:</strong> Her self-sacrifice reshapes every alliance and every enemy she makes.</p>
-        </div>
+        <div class="req-card"><span class="req-card-number">01</span><span class="req-card-title">Specific</span><p class="req-card-desc">Not a label — a concrete action. "She's anxious" is a label. What does anxious look like on film? Get to the exact thing your character does.</p><p class="req-card-example"><strong>Label:</strong> She's protective.<br><strong>Behavior:</strong> She volunteers at the Reaping when her sister's name is called.</p></div>
+        <div class="req-card"><span class="req-card-number">02</span><span class="req-card-title">Visible</span><p class="req-card-desc">Put a camera on your character. Would this behavior show up? "She feels insecure" fails the test. "She apologizes before stating any opinion" passes.</p><p class="req-card-example"><strong>Invisible:</strong> He feels compelled to understand.<br><strong>Visible:</strong> He picks up objects others ignore and examines them in detail.</p></div>
+        <div class="req-card"><span class="req-card-number">03</span><span class="req-card-title">Recurring</span><p class="req-card-desc">This isn't a one-time reaction. It's a pattern across relationships, contexts, and time. One instance could be situational. A pattern signals psychology.</p><p class="req-card-example"><strong>Single moment:</strong> She protected Prim at the Reaping.<br><strong>Pattern:</strong> She protected Prim, then Rue, then Peeta — each time, different context.</p></div>
+        <div class="req-card"><span class="req-card-number">04</span><span class="req-card-title">Consequential</span><p class="req-card-desc">This behavior affects relationships, decisions, and the trajectory of their life. It creates conflict or shapes how others respond. It matters to the story.</p><p class="req-card-example"><strong>Decorative:</strong> She hums when she's nervous.<br><strong>Consequential:</strong> Her self-sacrifice reshapes every alliance and every enemy she makes.</p></div>
       </div>
-
-      <!-- Behavior vs. Trait Supplemental Video -->
       <div class="supp-video">
         <div class="supp-video-head">
           <span class="supp-video-badge">Supplemental · The Methodology</span>
           <span class="supp-video-title">Behavior vs. Trait — The Camera Test</span>
         </div>
         <div class="supp-video-container">
-          <iframe
-            src="https://www.youtube.com/embed/rIeMCJZWfMg?rel=0&modestbranding=1"
-            title="Behavior vs. Trait — The Camera Test"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
+          <iframe src="https://www.youtube.com/embed/rIeMCJZWfMg?rel=0&modestbranding=1" title="Behavior vs. Trait — The Camera Test" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
         <div class="supp-transcript">
-          <button class="supp-transcript-btn transcript-btn" aria-expanded="false" onclick="toggleTranscript(this, 'transcript-camera-test')">
+          <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-camera-test')">
             <span class="transcript-label">Video Transcript</span>
             <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="transcript-body" id="transcript-camera-test">
             <p>I want to teach you a skill that will change how you see every character you ever write. It's a diagnostic. A one-question test you can run on any description of a character — yours or anyone else's — that tells you immediately whether you're working with something real or something that only sounds real.</p>
             <p>The question is this: could a camera film it? That's it. That's the whole test. And it's harder to pass than it sounds.</p>
-            <p>Most writers describe their characters with traits. She's guarded. He's ambitious. She's self-destructive. He's charming but unreliable. These descriptions feel accurate. They might even be accurate. But none of them pass the camera test, because a camera can't film guarded. It can't film ambitious. A camera can only film what someone does — specific actions, in specific moments, with specific people.</p>
+            <p>Most writers describe their characters with traits. She's guarded. He's ambitious. She's self-destructive. He's charming but unreliable. These descriptions feel accurate. They might even be accurate. But none of them pass the camera test, because a camera can't film guarded. It can only film what someone does — specific actions, in specific moments, with specific people.</p>
             <p>That's the difference between a trait and a behavior. A trait tells you what a character is like. A behavior shows you what they actually do. And only a behavior gives you something to excavate.</p>
-
             <p class="section-marker">Making the Conversion</p>
-            <p>Take a trait — any trait. Let's use guarded. Now ask: what does guarded actually look like? What does a guarded person do in conversation, in conflict, in moments of intimacy? What specific action would you see on film? Maybe they change the subject whenever someone asks about the past. Maybe they answer personal questions with questions of their own. Maybe they go physically still when a conversation gets too close — a pause before they speak, a slight turn of the body. Each of those is a behavior. Each of them passes the camera test.</p>
-            <p>Now take ambitious. What does ambitious look like? Does your character take credit for other people's work? Do they agree with whoever is in the room and then pursue their own agenda the moment the room empties? Do they reframe every social situation as an opportunity before the other person has finished speaking? Trait to behavior. Vague to specific. Abstract to observable.</p>
-            <p>This is what the excavation requires. Not the word, but the action underneath the word.</p>
-
+            <p>Take a trait — any trait. Let's use guarded. Now ask: what does guarded actually look like? What does a guarded person do in conversation, in conflict, in moments of intimacy? Maybe they change the subject whenever someone asks about the past. Maybe they answer personal questions with questions of their own. Each of those is a behavior. Each of them passes the camera test.</p>
+            <p>Now take ambitious. Does your character take credit for other people's work? Do they agree with whoever is in the room and then pursue their own agenda the moment the room empties? Trait to behavior. Vague to specific. Abstract to observable. This is what the excavation requires.</p>
             <p class="section-marker">Katniss and Sherlock</p>
-            <p>Katniss Everdeen. One word: protective. That's the trait. Accurate, but it gives you nothing to work with. Now put the camera on her. She volunteers for Prim at the Reaping. She steps between Rue and the tribute who's hunting her. She keeps Peeta alive in the arena at direct cost to her own survival. She positions herself between danger and the people she loves — again and again, with different people, under different kinds of pressure. That pattern of specific actions is the behavior. And that behavior is something you can follow all the way down to the psychology that drives it.</p>
-            <p>Sherlock Holmes. One word: observant. Everyone says it. Now put the camera on him. He picks up objects other people walk past without seeing. He studies the position of someone's hands, the wear pattern on their shoes, the small tells in their face before they speak. He connects details in ways no one else sees coming. Every scene, the same compulsion — expressing itself differently depending on what the situation requires. That's not a trait. That's a pattern of behavior. And a pattern of behavior has a source.</p>
-
+            <p>Katniss Everdeen. One word: protective. That's the trait. Now put the camera on her. She volunteers for Prim at the Reaping. She steps between Rue and the tribute who's hunting her. She keeps Peeta alive in the arena at direct cost to her own survival. That pattern of specific actions is the behavior. And that behavior is something you can follow all the way down to the psychology that drives it.</p>
+            <p>Sherlock Holmes. One word: observant. Now put the camera on him. He picks up objects other people walk past without seeing. He studies the position of someone's hands, the wear pattern on their shoes, the small tells in their face before they speak. Every scene, the same compulsion. That's not a trait. That's a pattern of behavior. And a pattern of behavior has a source.</p>
             <p class="section-marker">Why This Distinction Matters</p>
             <p>Readers don't experience traits. They experience behaviors. They don't read "she was guarded" and feel anything. They watch her turn away, change the subject, keep her eyes on the exit — and they feel it. The behavior is what creates the experience of the character. The trait is just a shortcut writers use when they haven't yet found the behavior underneath it.</p>
-            <p>The next time you write a description of your character — even a note in your own journal — stop at every adjective. Every word that ends in -ed or -ive or -ous. Guarded. Ambitious. Protective. Anxious. Defensive. Run the camera test. What does that actually look like? What would you see on film? Write the behavior instead of the label. One specific action. One thing the camera could capture.</p>
-            <p>Do that consistently, and your characters will stop feeling like descriptions of people. They'll start feeling like people. That's what this methodology is built on. And that's what you're learning to do.</p>
+            <p>The next time you write a description of your character, stop at every adjective. Run the camera test. What does that actually look like? What would you see on film? Write the behavior instead of the label. Do that consistently, and your characters will stop feeling like descriptions of people. They'll start feeling like people.</p>
           </div>
         </div>
         <p class="supp-video-foot">Watch before your coaching session. Moving from a label to a filmable behavior is the single hardest shift in this lesson. This video models the thinking in real time — with Katniss and two other characters — before you attempt it yourself.</p>
       </div>
     </div>
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="overview">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Overview
-      </button>
-      <button class="continue-btn" data-next="redflags">
-        Continue to Red Flags
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="overview"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Overview</button>
+      <button class="continue-btn" data-next="redflags">Continue to Red Flags<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
   </div>
 
-  <!-- ══ PANEL: RED FLAGS ══ -->
+  <!-- ══ RED FLAGS ══ -->
   <div class="tab-panel" id="panel-redflags">
     <div class="panel-inner">
       <span class="panel-eyebrow">Before Your Coaching Session</span>
       <h2 class="panel-title">Four Signs You Haven't <em>Found It Yet</em></h2>
       <div class="panel-rule"></div>
       <p class="panel-lead">Read these before you start. They describe the four most common ways the session goes sideways — and how to correct each one in the moment.</p>
-
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 1</span>
-        <p class="redflag-text"><strong>Your coach asks "why."</strong> Stop it. "This sounds like abandonment issues" is interpretation. Today is <em>what</em>, not <em>why</em>. Tell it to stay in observer mode.</p>
-      </div>
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 2</span>
-        <p class="redflag-text"><strong>You only have one or two examples.</strong> Keep digging. You haven't found a pattern yet. You've found a moment.</p>
-      </div>
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 3</span>
-        <p class="redflag-text"><strong>Your description sounds like a label.</strong> "Guarded," "controlling," "anxious" — push past it. What does guarded actually look like? What specific actions would you film?</p>
-      </div>
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 4</span>
-        <p class="redflag-text"><strong>Your coach is doing most of the talking.</strong> Your adaptive unconscious is the source here. The coach should be asking questions. You should be answering them.</p>
-      </div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 1</span><p class="redflag-text"><strong>Your coach asks "why."</strong> Stop it. "This sounds like abandonment issues" is interpretation. Today is <em>what</em>, not <em>why</em>. Tell it to stay in observer mode.</p></div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 2</span><p class="redflag-text"><strong>You only have one or two examples.</strong> Keep digging. You haven't found a pattern yet. You've found a moment.</p></div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 3</span><p class="redflag-text"><strong>Your description sounds like a label.</strong> "Guarded," "controlling," "anxious" — push past it. What does guarded actually look like? What specific actions would you film?</p></div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 4</span><p class="redflag-text"><strong>Your coach is doing most of the talking.</strong> Your adaptive unconscious is the source here. The coach should be asking questions. You should be answering them.</p></div>
     </div>
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="requirements">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Four Requirements
-      </button>
-      <button class="continue-btn" data-next="session">
-        Continue to Your Session
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="requirements"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Four Requirements</button>
+      <button class="continue-btn" data-next="session">Continue to Your Session<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
   </div>
 
-  <!-- ══ PANEL: YOUR SESSION ══ -->
+  <!-- ══ YOUR SESSION ══ -->
   <div class="tab-panel" id="panel-session">
     <div class="panel-inner">
 
-      <!-- PREP WORK JOTFORM -->
+      <!-- PREP WORK -->
       <div class="jotform-section">
         <div class="jotform-section-head">
           <span class="jotform-section-eyebrow">The Surface Pattern</span>
           <div class="jotform-section-title">The Surface <em>Pattern</em> — Prep Work</div>
         </div>
-        <div class="jotform-embed" style="min-height: 900px;">
-          <script type="text/javascript" src="https://form.jotform.com/jsform/260514112639855"></script>
+        <div class="jotform-iframe-wrap">
+          <iframe id="JotFormIFrame-260514112639855" title="The Surface Pattern — Prep Work" onload="window.parent.scrollTo(0,0)" allowtransparency="true" allow="geolocation; microphone; camera; fullscreen" src="https://form.jotform.com/260514112639855?isIframeEmbed=1" frameborder="0" style="width:100%;height:800px;border:none;" scrolling="no"></iframe>
         </div>
       </div>
 
-      <!-- BEGIN YOUR COACHING SESSION -->
+      <!-- BEGIN COACHING SESSION -->
       <div class="session-begin-band">
         <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
-
-        <!-- PROMPT -->
         <div class="prompt-wrap">
           <span class="prompt-label">Your Coaching Prompt</span>
-          <p class="prompt-text" id="lesson1-prompt">ROLE
-Your role is to help me identify one anchor behavior — a specific, visible, recurring, and consequential thing my character does — through structured observation. You are a Socratic questioner, not a content generator. Do not suggest behaviors. Do not interpret what behaviors mean. Keep me in pure observer mode throughout this session.
-
-BOUNDARIES — WHAT TO AVOID
-Do not suggest or generate behaviors for me. Do not let me describe traits, personality labels, or adjectives — push for observable actions only. Do not interpret or explain behaviors during this session — that comes in Lesson 2. Do not let me move forward with a behavior that fails the four-criteria test. Do not do most of the talking — I should be observing, you should be questioning.
-
-TWO REQUIRED DELIVERABLES
-1. One anchor behavior stated as a specific, observable action.
-2. Three recurring instances — each with context (situation), who is involved, and exactly what my character does.
-
-SESSION STRUCTURE
-
-Stage 1: Discovery — Brainstorm Surface Behaviors (10 minutes)
-Ask me to name 2–3 things my character does repeatedly. Push for observable actions, not traits. If I give you a label like "she's protective," ask: what exactly does she do? What would a camera capture?
-
-Stage 2: Testing — Apply the Four Criteria (10 minutes)
-Take the behavior I'm most drawn to and test it against all four criteria:
-• Specific: Is this a concrete action or a vague trait?
-• Visible: Could a camera film it happening?
-• Recurring: Does it show up in multiple situations?
-• Consequential: Does it shape the story, relationships, or arc in a meaningful way?
-If it fails any criterion, push me to refine it until it passes all four.
-
-Stage 3: Validation — Three Recurring Instances (10 minutes)
-Once the behavior passes the criteria test, ask me to document three specific instances of it occurring. For each instance I need: the situation or context, who else is involved, and exactly what my character does. Push for specificity. "She protects her sister" is not enough. "She steps in front of Prim when the Peacekeepers arrive" is an instance.
-
-Stage 4: Confirmation (5 minutes)
-Ask me: Is this behavior foundational to who your character is — or could it be a plot device? If I have any doubt, push me to reconsider. When I'm confident, help me write the final one-sentence statement of the anchor behavior.
-
-ADAPTIVE COACHING BASED ON MY CONTEXT
-Adjust your approach based on the prework PDF:
-- If role = Protagonist: This anchor behavior should be central to their entire arc. Make sure it can sustain an entire story.
-- If role = Supporting Character: We want clear behavior but don't need the same depth as a protagonist. Find one strong pattern that makes them memorable.
-- If haven't started writing: Trust your intuition. What do you see when you picture them in different situations?
-- If revising: You've already written scenes. Pull from what's on the page. What does your character actually do in your manuscript?
-- If stuck on something specific: Reference what they wrote in the pre-work about what feels unclear. Let's see if identifying their core behavior helps clarify that.
-
-CRITICAL REMINDERS
-- I'm the expert on my character — you're the guide helping me access what I already know
-- Every behavior must pass all 4 criteria or we keep refining
-- 3 recurring instances, no exceptions
-- Keep me in observer mode, not interpreter mode
-- The deliverables are concrete: 1 anchor behavior + 3 instances with context/people/action documented
-
-BEGIN
-I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 1 by asking me about my character and what patterns I've noticed.</p>
+          <p class="prompt-text" id="prompt-display"></p>
           <button class="copy-btn" id="copy-prompt-btn" onclick="copyPrompt()">
             <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
             Copy Prompt to Clipboard
           </button>
         </div>
-
         <ul class="instructions-list">
           <li data-n="1">Copy the prompt above and open Claude at <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> in a new tab. Paste the prompt to begin your session.</li>
           <li data-n="2">After pasting the prompt, attach the <strong>PDF you saved from Calibrating Your Coach</strong>. Your coach needs that context to work effectively from the first exchange.</li>
@@ -941,87 +402,133 @@ I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 
         </ul>
       </div>
 
-      <!-- REFLECTION JOURNAL JOTFORM -->
+      <!-- REFLECTION JOURNAL -->
       <div class="jotform-section">
         <div class="jotform-section-head">
           <span class="jotform-section-eyebrow">Reflection Journal</span>
           <div class="jotform-section-title">The Surface <em>Pattern</em> · Workspace</div>
         </div>
-        <div class="jotform-embed" style="min-height: 1400px;">
-          <script type="text/javascript" src="https://form.jotform.com/jsform/260755899682882"></script>
+        <div class="jotform-iframe-wrap">
+          <iframe id="JotFormIFrame-260755899682882" title="The Surface Pattern — Reflection Journal" onload="window.parent.scrollTo(0,0)" allowtransparency="true" allow="geolocation; microphone; camera; fullscreen" src="https://form.jotform.com/260755899682882?isIframeEmbed=1" frameborder="0" style="width:100%;height:1400px;border:none;" scrolling="no"></iframe>
         </div>
       </div>
 
     </div>
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="redflags">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Red Flags
-      </button>
-      <button class="continue-btn" data-next="complete">
-        Continue to Complete Lesson
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="redflags"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Red Flags</button>
+      <button class="continue-btn" data-next="complete">Continue to Complete Lesson<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
   </div>
 
-  <!-- ══ PANEL: COMPLETE LESSON ══ -->
+  <!-- ══ COMPLETE LESSON ══ -->
   <div class="tab-panel" id="panel-complete">
     <div class="panel-inner">
       <span class="panel-eyebrow">Before You Move On</span>
       <h2 class="panel-title">A <em>Checklist</em></h2>
       <div class="panel-rule"></div>
       <p class="panel-lead">The excavation ladder only works if each rung is solid before you step to the next.</p>
-
       <div class="complete-lesson-content">
         <span class="complete-lesson-title">Before You Move On — A Checklist</span>
         <ul class="checklist">
           <li>You have identified one anchor behavior — specific, visible, recurring, and consequential.</li>
           <li>You have at least three concrete instances of that behavior across different contexts and different people.</li>
           <li>Your behavior passes the camera test — a filmmaker could capture it on film.</li>
-          <li>You have printed your Reflection Journal to PDF — you will attach it to your Lesson 2 coaching session.</li>
+          <li>You have printed your Reflection Journal to PDF — you will attach it to your next coaching session.</li>
         </ul>
       </div>
     </div>
-
     <div class="complete-dark">
       <span class="complete-dark-eyebrow">When You're Ready</span>
       <p class="complete-dark-heading">Move to The Hidden Truth.</p>
       <p class="complete-dark-sub">The excavation goes deeper.</p>
-
       <div class="complete-instruction">
         <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
         <p>Make sure you have <strong>printed your Reflection Journal to PDF</strong> from the Your Session tab — you'll need it in The Hidden Truth. Then click <strong>Mark as Complete</strong> below to record your progress and unlock your next lesson.</p>
       </div>
-
       <div class="complete-rule"></div>
       <p class="complete-quote">One example could be situational.<br>Three instances across different contexts prove it's structural to who they are.</p>
       <span class="complete-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
-
-      <div style="margin-top: 28px; display: flex; justify-content: center;">
-        <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/9425074"
-           target="_blank" rel="noopener"
-           class="mark-complete-btn">
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Mark as Complete
+      <div style="margin-top:28px;display:flex;justify-content:center;">
+        <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/9425074" target="_blank" rel="noopener" class="mark-complete-btn">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Mark as Complete
         </a>
       </div>
     </div>
   </div>
 
   <script>
-    var TAB_ORDER = ['overview', 'requirements', 'redflags', 'session', 'complete'];
+    /* ── PROMPT stored as JS string — copied directly, never read from DOM ── */
+    var LESSON1_PROMPT = "ROLE\nYour role is to help me identify one anchor behavior — a specific, visible, recurring, and consequential thing my character does — through structured observation. You are a Socratic questioner, not a content generator. Do not suggest behaviors. Do not interpret what behaviors mean. Keep me in pure observer mode throughout this session.\n\nBOUNDARIES — WHAT TO AVOID\nDo not suggest or generate behaviors for me. Do not let me describe traits, personality labels, or adjectives — push for observable actions only. Do not interpret or explain behaviors during this session — that comes in Lesson 2. Do not let me move forward with a behavior that fails the four-criteria test. Do not do most of the talking — I should be observing, you should be questioning.\n\nTWO REQUIRED DELIVERABLES\n1. One anchor behavior stated as a specific, observable action.\n2. Three recurring instances — each with context (situation), who is involved, and exactly what my character does.\n\nSESSION STRUCTURE\n\nStage 1: Discovery — Brainstorm Surface Behaviors (10 minutes)\nAsk me to name 2–3 things my character does repeatedly. Push for observable actions, not traits. If I give you a label like \"she's protective,\" ask: what exactly does she do? What would a camera capture?\n\nStage 2: Testing — Apply the Four Criteria (10 minutes)\nTake the behavior I'm most drawn to and test it against all four criteria:\n• Specific: Is this a concrete action or a vague trait?\n• Visible: Could a camera film it happening?\n• Recurring: Does it show up in multiple situations?\n• Consequential: Does it shape the story, relationships, or arc in a meaningful way?\nIf it fails any criterion, push me to refine it until it passes all four.\n\nStage 3: Validation — Three Recurring Instances (10 minutes)\nOnce the behavior passes the criteria test, ask me to document three specific instances of it occurring. For each instance I need: the situation or context, who else is involved, and exactly what my character does. Push for specificity. \"She protects her sister\" is not enough. \"She steps in front of Prim when the Peacekeepers arrive\" is an instance.\n\nStage 4: Confirmation (5 minutes)\nAsk me: Is this behavior foundational to who your character is — or could it be a plot device? If I have any doubt, push me to reconsider. When I'm confident, help me write the final one-sentence statement of the anchor behavior.\n\nADAPTIVE COACHING BASED ON MY CONTEXT\nAdjust your approach based on the prework PDF:\n- If role = Protagonist: This anchor behavior should be central to their entire arc. Make sure it can sustain an entire story.\n- If role = Supporting Character: We want clear behavior but don't need the same depth as a protagonist. Find one strong pattern that makes them memorable.\n- If haven't started writing: Trust your intuition. What do you see when you picture them in different situations?\n- If revising: You've already written scenes. Pull from what's on the page. What does your character actually do in your manuscript?\n- If stuck on something specific: Reference what they wrote in the pre-work about what feels unclear. Let's see if identifying their core behavior helps clarify that.\n\nCRITICAL REMINDERS\n- I'm the expert on my character — you're the guide helping me access what I already know\n- Every behavior must pass all 4 criteria or we keep refining\n- 3 recurring instances, no exceptions\n- Keep me in observer mode, not interpreter mode\n- The deliverables are concrete: 1 anchor behavior + 3 instances with context/people/action documented\n\nBEGIN\nI've attached my completed Pre-Work PDF. Please read it first, then begin Stage 1 by asking me about my character and what patterns I've noticed.";
+
+    /* Render prompt text into display element */
+    document.getElementById('prompt-display').textContent = LESSON1_PROMPT;
+
+    /* ── COPY — reads directly from JS variable, never from DOM ── */
+    function copyPrompt() {
+      var btn = document.getElementById('copy-prompt-btn');
+      var origHTML = btn.innerHTML;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(LESSON1_PROMPT).then(function() {
+          btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+          btn.classList.add('copied');
+          setTimeout(function() { btn.innerHTML = origHTML; btn.classList.remove('copied'); }, 2500);
+        }).catch(function() { fallbackCopy(btn, origHTML); });
+      } else {
+        fallbackCopy(btn, origHTML);
+      }
+    }
+
+    function fallbackCopy(btn, origHTML) {
+      var ta = document.createElement('textarea');
+      ta.value = LESSON1_PROMPT;
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try {
+        document.execCommand('copy');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() { btn.innerHTML = origHTML; btn.classList.remove('copied'); }, 2500);
+      } catch(e) { alert('Please press Ctrl+C (or Cmd+C) to copy.'); }
+      document.body.removeChild(ta);
+    }
+
+    /* ── JOTFORM dynamic resize via postMessage ── */
+    window.handleIFrameMessage = function(e) {
+      if (typeof e.data === 'object') { return; }
+      var args = e.data.split(':');
+      var iframe = null;
+      if (args.length > 2) { iframe = document.getElementById('JotFormIFrame-' + args[args.length - 1]); }
+      if (!iframe) { return; }
+      switch (args[0]) {
+        case 'setHeight':
+          iframe.style.height = args[1] + 'px';
+          break;
+        case 'collapseErrorPage':
+          if (iframe.clientHeight > Number(args[1])) { iframe.style.height = args[1] + 'px'; }
+          break;
+        case 'reloadPage':
+          window.location.reload();
+          break;
+        case 'scrollIntoView':
+          iframe.scrollIntoView();
+          break;
+      }
+    };
+    if (window.addEventListener) { window.addEventListener('message', window.handleIFrameMessage, false); }
+    else if (window.attachEvent) { window.attachEvent('onmessage', window.handleIFrameMessage); }
+
+    /* ── TABS ── */
+    var TAB_ORDER = ['overview','requirements','redflags','session','complete'];
 
     function activateTab(tabId, markPrev) {
       document.getElementById('blank-state').style.display = 'none';
       document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
       document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
-
       var btn   = document.querySelector('[data-tab="' + tabId + '"]');
       var panel = document.getElementById('panel-' + tabId);
       if (btn)   btn.classList.add('active');
       if (panel) panel.classList.add('active');
-
       if (markPrev) {
         var prevIdx = TAB_ORDER.indexOf(tabId) - 1;
         if (prevIdx >= 0) {
@@ -1029,45 +536,25 @@ I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 
           if (prevBtn) prevBtn.classList.add('done');
         }
       }
-
-      if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (btn) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+      window.scrollTo({ top:0, behavior:'smooth' });
     }
 
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-tab'), false);
-      });
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-tab'), false); });
     });
-
     document.querySelectorAll('.continue-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-next'), true);
-      });
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-next'), true); });
     });
-
     document.querySelectorAll('.back-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-prev'), false);
-      });
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-prev'), false); });
     });
 
     function toggleTranscript(btn, bodyId) {
-      var body   = document.getElementById(bodyId);
+      var body = document.getElementById(bodyId);
       var isOpen = body.classList.contains('open');
       body.classList.toggle('open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
-    }
-
-    function copyPrompt() {
-      var promptEl = document.getElementById('lesson1-prompt');
-      var btn = document.getElementById('copy-prompt-btn');
-      var text = promptEl.innerText;
-      navigator.clipboard.writeText(text).then(function() {
-        var orig = btn.innerHTML;
-        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
-        setTimeout(function() { btn.innerHTML = orig; }, 2000);
-      });
     }
   </script>
 
