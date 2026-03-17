@@ -171,9 +171,6 @@
     .checklist li:last-child { border-bottom:none; }
     .checklist li::before { content:'✓'; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; color:var(--tan-mid); flex-shrink:0; margin-top:1px; }
 
-    /* ══ COMPLETE TAB — hide main video ══ */
-    body.tab-complete .video-wrap { display:none; }
-
     /* ══ CONGRATULATIONS IMAGE ══ */
     .congratulations-img-wrap {
       padding: 36px 32px 40px;
@@ -183,8 +180,8 @@
       align-items: flex-start;
     }
     .congratulations-img-wrap img {
-      width: 85%;
-      max-width: 640px;
+      width: 65%;
+      max-width: 520px;
       display: block;
       box-shadow:
         0 0 0 1px rgba(196,168,130,0.35),
@@ -533,11 +530,10 @@
           if (prevBtn) prevBtn.classList.add('done');
         }
       }
-      /* Hide main video on Complete Lesson tab */
-      if (tabId === 'complete') {
-        document.body.classList.add('tab-complete');
-      } else {
-        document.body.classList.remove('tab-complete');
+      /* Directly hide/show main video on Complete Lesson tab */
+      var videoWrap = document.querySelector('.video-wrap');
+      if (videoWrap) {
+        videoWrap.style.display = (tabId === 'complete') ? 'none' : 'block';
       }
       if (btn) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
       window.scrollTo({ top:0, behavior:'smooth' });
