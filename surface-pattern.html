@@ -409,7 +409,7 @@
           <div class="jotform-section-title">The Surface <em>Pattern</em> · Workspace</div>
         </div>
         <div class="jotform-iframe-wrap">
-          <iframe id="JotFormIFrame-260755899682882" title="The Surface Pattern — Reflection Journal" allowtransparency="true" allow="geolocation; microphone; camera; fullscreen" src="https://form.jotform.com/260755899682882?isIframeEmbed=1" frameborder="0" style="width:100%;height:3200px;border:none;" scrolling="no"></iframe>
+          <iframe id="JotFormIFrame-260755899682882" title="The Surface Pattern — Reflection Journal" allowtransparency="true" allow="geolocation; microphone; camera; fullscreen" src="https://form.jotform.com/260755899682882?isIframeEmbed=1" frameborder="0" style="width:100%;height:5000px;border:none;" scrolling="no"></iframe>
         </div>
       </div>
 
@@ -473,26 +473,26 @@
     function copyPrompt() {
       var btn = document.getElementById('copy-prompt-btn');
       var origHTML = btn.innerHTML;
-      var scrollX = window.scrollX || window.pageXOffset;
-      var scrollY = window.scrollY || window.pageYOffset;
+      var scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
 
       function showCopied() {
         btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
         btn.classList.add('copied');
+        /* Restore scroll after browser settles from clipboard permission flow */
+        setTimeout(function() { window.scrollTo(0, scrollY); }, 50);
         setTimeout(function() { btn.innerHTML = origHTML; btn.classList.remove('copied'); }, 2500);
       }
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(LESSON1_PROMPT).then(function() {
-          window.scrollTo(scrollX, scrollY);
           showCopied();
-        }).catch(function() { fallbackCopy(scrollX, scrollY, showCopied); });
+        }).catch(function() { fallbackCopy(scrollY, showCopied); });
       } else {
-        fallbackCopy(scrollX, scrollY, showCopied);
+        fallbackCopy(scrollY, showCopied);
       }
     }
 
-    function fallbackCopy(scrollX, scrollY, callback) {
+    function fallbackCopy(scrollY, callback) {
       var ta = document.createElement('textarea');
       ta.value = LESSON1_PROMPT;
       ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;';
@@ -503,7 +503,7 @@
         callback();
       } catch(e) { alert('Please press Ctrl+C (or Cmd+C) to copy.'); }
       document.body.removeChild(ta);
-      window.scrollTo(scrollX, scrollY);
+      setTimeout(function() { window.scrollTo(0, scrollY); }, 50);
     }
 
     /* ── JOTFORM dynamic resize via postMessage ── */
@@ -523,9 +523,7 @@
         case 'reloadPage':
           window.location.reload();
           break;
-        case 'scrollIntoView':
-          iframe.scrollIntoView();
-          break;
+        /* scrollIntoView intentionally omitted — causes unwanted page jumps */
       }
     };
     if (window.addEventListener) { window.addEventListener('message', window.handleIFrameMessage, false); }
