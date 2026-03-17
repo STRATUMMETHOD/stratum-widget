@@ -499,9 +499,12 @@
       switch (args[0]) {
         case 'setHeight':
           iframe.style.height = args[1] + 'px';
+          /* After Jotform resizes, report new total height to Systeme.io */
+          setTimeout(reportHeightToParent, 100);
           break;
         case 'collapseErrorPage':
           if (iframe.clientHeight > Number(args[1])) { iframe.style.height = args[1] + 'px'; }
+          setTimeout(reportHeightToParent, 100);
           break;
         case 'reloadPage':
           window.location.reload();
@@ -511,6 +514,30 @@
     };
     if (window.addEventListener) { window.addEventListener('message', window.handleIFrameMessage, false); }
     else if (window.attachEvent) { window.attachEvent('onmessage', window.handleIFrameMessage); }
+
+    /* ── REPORT HEIGHT TO SYSTEME.IO PARENT FRAME ──
+       Systeme.io's course player listens for postMessage height reports
+       from embedded iframes so it can size the container to fit content exactly,
+       keeping the Mark as Complete button just below the widget.
+    ── */
+    function reportHeightToParent() {
+      var h = document.documentElement.scrollHeight || document.body.scrollHeight;
+      /* Systeme.io format */
+      try { window.parent.postMessage('{"type":"setHeight","value":' + h + '}', '*'); } catch(e) {}
+      /* Generic iframe resize format used by many platforms */
+      try { window.parent.postMessage({height: h}, '*'); } catch(e) {}
+      /* Additional format variants Systeme.io may use */
+      try { window.parent.postMessage('setHeight:' + h, '*'); } catch(e) {}
+    }
+
+    /* Report on page load */
+    window.addEventListener('load', function() {
+      setTimeout(reportHeightToParent, 300);
+    });
+    /* Report whenever window resizes */
+    window.addEventListener('resize', function() {
+      setTimeout(reportHeightToParent, 100);
+    });
 
     /* ── TABS ── */
     var TAB_ORDER = ['overview','requirements','redflags','session','complete'];
@@ -537,6 +564,8 @@
       }
       if (btn) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
       window.scrollTo({ top:0, behavior:'smooth' });
+      /* Tell Systeme.io the new height after panel switch */
+      setTimeout(reportHeightToParent, 400);
     }
 
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
