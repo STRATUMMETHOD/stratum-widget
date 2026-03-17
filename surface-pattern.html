@@ -807,7 +807,7 @@
             <p>Do that consistently, and your characters will stop feeling like descriptions of people. They'll start feeling like people. That's what this methodology is built on. And that's what you're learning to do.</p>
           </div>
         </div>
-        <p class="supp-video-foot">Watch before your coaching session. Moving from a label to a filmable behavior is the single hardest shift in Lesson 1. This video models the thinking in real time — with Katniss and two other characters — before you attempt it yourself.</p>
+        <p class="supp-video-foot">Watch before your coaching session. Moving from a label to a filmable behavior is the single hardest shift in this lesson. This video models the thinking in real time — with Katniss and two other characters — before you attempt it yourself.</p>
       </div>
     </div>
     <div class="nav-wrap">
@@ -869,7 +869,7 @@
           <span class="jotform-section-eyebrow">The Surface Pattern</span>
           <div class="jotform-section-title">The Surface <em>Pattern</em> — Prep Work</div>
         </div>
-        <div class="jotform-embed">
+        <div class="jotform-embed" style="min-height: 900px;">
           <script type="text/javascript" src="https://form.jotform.com/jsform/260514112639855"></script>
         </div>
       </div>
@@ -881,11 +881,53 @@
         <!-- PROMPT -->
         <div class="prompt-wrap">
           <span class="prompt-label">Your Coaching Prompt</span>
-          <p class="prompt-text">
-            <!-- PROMPT TEXT TO BE ADDED — paste full Lesson 1 prompt here -->
-            [PROMPT TEXT PENDING — paste Lesson 1 coaching prompt here]
-          </p>
-          <button class="copy-btn" onclick="copyPrompt(this)">
+          <p class="prompt-text" id="lesson1-prompt">ROLE
+Your role is to help me identify one anchor behavior — a specific, visible, recurring, and consequential thing my character does — through structured observation. You are a Socratic questioner, not a content generator. Do not suggest behaviors. Do not interpret what behaviors mean. Keep me in pure observer mode throughout this session.
+
+BOUNDARIES — WHAT TO AVOID
+Do not suggest or generate behaviors for me. Do not let me describe traits, personality labels, or adjectives — push for observable actions only. Do not interpret or explain behaviors during this session — that comes in Lesson 2. Do not let me move forward with a behavior that fails the four-criteria test. Do not do most of the talking — I should be observing, you should be questioning.
+
+TWO REQUIRED DELIVERABLES
+1. One anchor behavior stated as a specific, observable action.
+2. Three recurring instances — each with context (situation), who is involved, and exactly what my character does.
+
+SESSION STRUCTURE
+
+Stage 1: Discovery — Brainstorm Surface Behaviors (10 minutes)
+Ask me to name 2–3 things my character does repeatedly. Push for observable actions, not traits. If I give you a label like "she's protective," ask: what exactly does she do? What would a camera capture?
+
+Stage 2: Testing — Apply the Four Criteria (10 minutes)
+Take the behavior I'm most drawn to and test it against all four criteria:
+• Specific: Is this a concrete action or a vague trait?
+• Visible: Could a camera film it happening?
+• Recurring: Does it show up in multiple situations?
+• Consequential: Does it shape the story, relationships, or arc in a meaningful way?
+If it fails any criterion, push me to refine it until it passes all four.
+
+Stage 3: Validation — Three Recurring Instances (10 minutes)
+Once the behavior passes the criteria test, ask me to document three specific instances of it occurring. For each instance I need: the situation or context, who else is involved, and exactly what my character does. Push for specificity. "She protects her sister" is not enough. "She steps in front of Prim when the Peacekeepers arrive" is an instance.
+
+Stage 4: Confirmation (5 minutes)
+Ask me: Is this behavior foundational to who your character is — or could it be a plot device? If I have any doubt, push me to reconsider. When I'm confident, help me write the final one-sentence statement of the anchor behavior.
+
+ADAPTIVE COACHING BASED ON MY CONTEXT
+Adjust your approach based on the prework PDF:
+- If role = Protagonist: This anchor behavior should be central to their entire arc. Make sure it can sustain an entire story.
+- If role = Supporting Character: We want clear behavior but don't need the same depth as a protagonist. Find one strong pattern that makes them memorable.
+- If haven't started writing: Trust your intuition. What do you see when you picture them in different situations?
+- If revising: You've already written scenes. Pull from what's on the page. What does your character actually do in your manuscript?
+- If stuck on something specific: Reference what they wrote in the pre-work about what feels unclear. Let's see if identifying their core behavior helps clarify that.
+
+CRITICAL REMINDERS
+- I'm the expert on my character — you're the guide helping me access what I already know
+- Every behavior must pass all 4 criteria or we keep refining
+- 3 recurring instances, no exceptions
+- Keep me in observer mode, not interpreter mode
+- The deliverables are concrete: 1 anchor behavior + 3 instances with context/people/action documented
+
+BEGIN
+I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 1 by asking me about my character and what patterns I've noticed.</p>
+          <button class="copy-btn" id="copy-prompt-btn" onclick="copyPrompt()">
             <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
             Copy Prompt to Clipboard
           </button>
@@ -902,10 +944,10 @@
       <!-- REFLECTION JOURNAL JOTFORM -->
       <div class="jotform-section">
         <div class="jotform-section-head">
-          <span class="jotform-section-eyebrow">Reflection Journal — Lesson 1</span>
+          <span class="jotform-section-eyebrow">Reflection Journal</span>
           <div class="jotform-section-title">The Surface <em>Pattern</em> · Workspace</div>
         </div>
-        <div class="jotform-embed">
+        <div class="jotform-embed" style="min-height: 1400px;">
           <script type="text/javascript" src="https://form.jotform.com/jsform/260755899682882"></script>
         </div>
       </div>
@@ -1017,8 +1059,9 @@
       btn.setAttribute('aria-expanded', String(!isOpen));
     }
 
-    function copyPrompt(btn) {
-      var promptEl = btn.previousElementSibling;
+    function copyPrompt() {
+      var promptEl = document.getElementById('lesson1-prompt');
+      var btn = document.getElementById('copy-prompt-btn');
       var text = promptEl.innerText;
       navigator.clipboard.writeText(text).then(function() {
         var orig = btn.innerHTML;
