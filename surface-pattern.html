@@ -125,8 +125,22 @@
     .jotform-section-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:5px; }
     .jotform-section-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:22px; font-weight:300; font-style:italic; color:var(--cream); line-height:1.2; }
     .jotform-section-title em { color:var(--tan); }
-    .jotform-iframe-wrap { width:100%; overflow:hidden; }
-    .jotform-iframe-wrap iframe { width:100%; border:none; display:block; }
+    .jotform-clip-wrap {
+      overflow: hidden;
+      /* Pull iframe up to clip top whitespace, extend bottom to clip bottom whitespace */
+      margin-top: -60px;
+      margin-bottom: -60px;
+    }
+    .jotform-clip-wrap .jotform-embed {
+      position: relative;
+      top: 0;
+    }
+    /* Target the iframe Jotform's script creates */
+    .jotform-clip-wrap iframe {
+      display: block;
+      width: 100% !important;
+      margin-top: 0 !important;
+    }
 
     .session-begin-band {
       background: var(--brown);
@@ -471,8 +485,10 @@
     <div class="panel-inner" style="padding-top:8px;padding-bottom:0;">
       <!-- REFLECTION JOURNAL -->
       <div class="jotform-section" style="margin-bottom:0;">
-        <div class="jotform-embed">
-          <script type="text/javascript" src="https://form.jotform.com/jsform/260764372735059"></script>
+        <div class="jotform-clip-wrap">
+          <div class="jotform-embed">
+            <script type="text/javascript" src="https://form.jotform.com/jsform/260764372735059"></script>
+          </div>
         </div>
       </div>
     </div>
