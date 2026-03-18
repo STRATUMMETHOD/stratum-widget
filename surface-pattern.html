@@ -37,7 +37,22 @@
       position: sticky; top: 0; z-index: 50;
     }
 
-    /* Animated scroll hint button */
+    /* Left scroll hint */
+    .tab-scroll-hint-left {
+      position: absolute;
+      top: 0; left: 0;
+      height: 100%;
+      width: 52px;
+      background: linear-gradient(to left, transparent, var(--brown) 55%);
+      display: flex; align-items: center; justify-content: flex-start;
+      padding-left: 8px;
+      z-index: 52;
+      transition: opacity 0.3s;
+      opacity: 0; pointer-events: none;
+    }
+    .tab-scroll-hint-left.visible { opacity: 1; pointer-events: all; }
+
+    /* Right scroll hint */
     .tab-scroll-hint {
       position: absolute;
       top: 0; right: 0;
@@ -46,11 +61,11 @@
       background: linear-gradient(to right, transparent, var(--brown) 55%);
       display: flex; align-items: center; justify-content: flex-end;
       padding-right: 8px;
-      pointer-events: none;
       z-index: 52;
       transition: opacity 0.3s;
     }
     .tab-scroll-hint.hidden { opacity: 0; pointer-events: none; }
+
     .tab-scroll-arrow {
       width: 28px; height: 28px;
       border: 1.5px solid rgba(196,168,130,0.5);
@@ -247,7 +262,13 @@
       <button class="tab-btn" data-tab="session"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Your Session</button>
       <button class="tab-btn" data-tab="complete"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Complete Lesson</button>
     </nav>
-    <!-- Scroll hint — visible when more tabs are off-screen to the right -->
+    <!-- Left scroll hint — visible when scrolled right -->
+    <div class="tab-scroll-hint-left" id="tab-scroll-hint-left">
+      <div class="tab-scroll-arrow" onclick="scrollTabBarLeft()">
+        <svg viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg>
+      </div>
+    </div>
+    <!-- Right scroll hint — visible when more tabs off-screen right -->
     <div class="tab-scroll-hint" id="tab-scroll-hint">
       <div class="tab-scroll-arrow" id="tab-scroll-arrow" onclick="scrollTabBar()">
         <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
@@ -580,11 +601,14 @@
     /* ── TAB BAR SCROLL HINT ── */
     var tabBar = document.getElementById('tab-bar');
     var scrollHint = document.getElementById('tab-scroll-hint');
+    var scrollHintLeft = document.getElementById('tab-scroll-hint-left');
 
     function updateScrollHint() {
-      if (!tabBar || !scrollHint) { return; }
+      if (!tabBar) { return; }
       var atEnd = tabBar.scrollLeft + tabBar.clientWidth >= tabBar.scrollWidth - 4;
-      scrollHint.classList.toggle('hidden', atEnd);
+      var atStart = tabBar.scrollLeft <= 4;
+      if (scrollHint) scrollHint.classList.toggle('hidden', atEnd);
+      if (scrollHintLeft) scrollHintLeft.classList.toggle('visible', !atStart);
     }
 
     function scrollTabBar() {
@@ -592,10 +616,14 @@
       tabBar.scrollBy({ left: 160, behavior: 'smooth' });
     }
 
+    function scrollTabBarLeft() {
+      if (!tabBar) { return; }
+      tabBar.scrollBy({ left: -160, behavior: 'smooth' });
+    }
+
     if (tabBar) {
       tabBar.addEventListener('scroll', updateScrollHint);
       window.addEventListener('resize', updateScrollHint);
-      /* Initial check after render */
       setTimeout(updateScrollHint, 100);
     }
 
