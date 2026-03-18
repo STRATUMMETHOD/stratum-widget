@@ -454,22 +454,19 @@
     <div class="session-begin-band">
       <div class="session-begin-inner">
         <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
-        <div class="prompt-dropdown">
-          <button class="prompt-toggle-btn" aria-expanded="false" onclick="togglePrompt(this)">
-            <span class="prompt-toggle-label">Your Coaching Prompt</span>
-            <span class="prompt-toggle-hint">Tap to expand · copy · paste into Claude</span>
-            <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+
+        <!-- COPY PROMPT — no dropdown, just the button -->
+        <div class="prompt-wrap">
+          <span class="prompt-label">Your Coaching Prompt</span>
+          <p style="font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(250,244,232,0.75); line-height:1.7; margin-bottom:14px;">Click the button below to copy your coaching prompt. Once you've pasted it into Claude you can read it there — no need to review it here first.</p>
+          <button class="copy-btn" id="copy-prompt-btn" onclick="copyPrompt()">
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy Prompt to Clipboard
           </button>
-          <div class="prompt-dropdown-body" id="prompt-dropdown-body">
-            <p class="prompt-text" id="prompt-display"></p>
-            <button class="copy-btn" id="copy-prompt-btn" onclick="copyPrompt()">
-              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-              Copy Prompt to Clipboard
-            </button>
-          </div>
         </div>
+
         <ul class="instructions-list">
-          <li data-n="1">Expand the prompt above, copy it, and open Claude at <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> in a new tab. Paste the prompt to begin your session.</li>
+          <li data-n="1">Copy the prompt above and open Claude at <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> in a new tab. Paste the prompt to begin — you can read it there once it's in Claude.</li>
           <li data-n="2">After pasting the prompt, attach the <strong>PDF you saved from Calibrating Your Coach</strong>. Your coach needs that context to work effectively from the first exchange.</li>
           <li data-n="3">Set a timer for <strong>35 minutes</strong>. Stay in observer mode — what the camera sees, not what it means.</li>
           <li data-n="4">When your session is complete, return here and fill out your <strong>Reflection Journal</strong> below.</li>
@@ -516,7 +513,7 @@
     /* ── PROMPT ── */
     var LESSON1_PROMPT = "ROLE\nYour role is to help me identify one anchor behavior — a specific, visible, recurring, and consequential thing my character does — through structured observation. You are a Socratic questioner, not a content generator. Do not suggest behaviors. Do not interpret what behaviors mean. Keep me in pure observer mode throughout this session.\n\nBOUNDARIES — WHAT TO AVOID\nDo not suggest or generate behaviors for me. Do not let me describe traits, personality labels, or adjectives — push for observable actions only. Do not interpret or explain behaviors during this session — that comes in Lesson 2. Do not let me move forward with a behavior that fails the four-criteria test. Do not do most of the talking — I should be observing, you should be questioning.\n\nTWO REQUIRED DELIVERABLES\n1. One anchor behavior stated as a specific, observable action.\n2. Three recurring instances — each with context (situation), who is involved, and exactly what my character does.\n\nSESSION STRUCTURE\n\nStage 1: Discovery — Brainstorm Surface Behaviors (10 minutes)\nAsk me to name 2–3 things my character does repeatedly. Push for observable actions, not traits. If I give you a label like \"she's protective,\" ask: what exactly does she do? What would a camera capture?\n\nStage 2: Testing — Apply the Four Criteria (10 minutes)\nTake the behavior I'm most drawn to and test it against all four criteria:\n• Specific: Is this a concrete action or a vague trait?\n• Visible: Could a camera film it happening?\n• Recurring: Does it show up in multiple situations?\n• Consequential: Does it shape the story, relationships, or arc in a meaningful way?\nIf it fails any criterion, push me to refine it until it passes all four.\n\nStage 3: Validation — Three Recurring Instances (10 minutes)\nOnce the behavior passes the criteria test, ask me to document three specific instances of it occurring. For each instance I need: the situation or context, who else is involved, and exactly what my character does. Push for specificity. \"She protects her sister\" is not enough. \"She steps in front of Prim when the Peacekeepers arrive\" is an instance.\n\nStage 4: Confirmation (5 minutes)\nAsk me: Is this behavior foundational to who your character is — or could it be a plot device? If I have any doubt, push me to reconsider. When I'm confident, help me write the final one-sentence statement of the anchor behavior.\n\nADAPTIVE COACHING BASED ON MY CONTEXT\nAdjust your approach based on the prework PDF:\n- If role = Protagonist: This anchor behavior should be central to their entire arc. Make sure it can sustain an entire story.\n- If role = Supporting Character: We want clear behavior but don't need the same depth as a protagonist. Find one strong pattern that makes them memorable.\n- If haven't started writing: Trust your intuition. What do you see when you picture them in different situations?\n- If revising: You've already written scenes. Pull from what's on the page. What does your character actually do in your manuscript?\n- If stuck on something specific: Reference what they wrote in the pre-work about what feels unclear. Let's see if identifying their core behavior helps clarify that.\n\nCRITICAL REMINDERS\n- I'm the expert on my character — you're the guide helping me access what I already know\n- Every behavior must pass all 4 criteria or we keep refining\n- 3 recurring instances, no exceptions\n- Keep me in observer mode, not interpreter mode\n- The deliverables are concrete: 1 anchor behavior + 3 instances with context/people/action documented\n\nBEGIN\nI've attached my completed Pre-Work PDF. Please read it first, then begin Stage 1 by asking me about my character and what patterns I've noticed.";
 
-    document.getElementById('prompt-display').textContent = LESSON1_PROMPT;
+
 
     /* ── COPY ── */
     function copyPrompt() {
@@ -625,12 +622,6 @@
       setTimeout(updateScrollHint, 100);
     }
 
-    function togglePrompt(btn) {
-      var body = document.getElementById('prompt-dropdown-body');
-      var isOpen = body.classList.contains('open');
-      body.classList.toggle('open', !isOpen);
-      btn.setAttribute('aria-expanded', String(!isOpen));
-    }
     function toggleTranscript(btn, bodyId) {
       var body = document.getElementById(bodyId);
       var isOpen = body.classList.contains('open');
