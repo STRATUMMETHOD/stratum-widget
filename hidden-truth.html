@@ -91,10 +91,6 @@
       color: var(--tan); margin-top: 18px; margin-bottom: 6px;
     }
 
-    /* ══ HERO VIDEO (outside panels, shown only on Video tab) ══ */
-    .hero-video { display: none; background: #100a04; }
-
-    /* ══ TAB BAR WRAP + SCROLL ARROWS ══ */
     .tab-bar-wrap { position: sticky; top: 0; z-index: 50; }
     .tab-scroll-hint-left {
       position: absolute; top: 0; left: 0; height: 100%; width: 52px;
@@ -638,69 +634,69 @@
     </div>
   </div>
 
-  <!-- ══ HERO AREA — below tab bar, outside panels ══ -->
-  <!-- Welcome image: shown on load, hidden when any tab clicked -->
+  <!-- ══ WELCOME IMAGE — outside all panels, visible on load only ══ -->
   <div class="hero-welcome" id="hero-welcome">
     <img src="https://stratummethod.github.io/stratum-widget/welcome-hidden-truth.png" alt="Welcome — The Hidden Truth">
   </div>
 
-  <!-- Lesson video: shown only when Video tab is active -->
-  <div class="hero-video" id="hero-video">
-    <div class="video-container">
-      <iframe
-        src="https://www.youtube.com/embed/RNpquqxdjMg?rel=0&modestbranding=1"
-        title="The Hidden Truth — STRATUM"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-      </iframe>
-    </div>
-    <div class="transcript">
-      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this)">
-        <span class="transcript-label">Video Transcript</span>
-        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </button>
-      <div class="transcript-body" id="transcript-body">
-        <p>Think about someone you know who keeps doing something that makes no sense to you.</p>
-        <p>Maybe they apologize constantly — even when they've done nothing wrong. Maybe they push people away right when a relationship is going well. Maybe they volunteer for the hardest assignments even when they're already stretched thin and exhausted.</p>
-        <p>You've asked them why. They've given you an explanation. And something about that explanation felt incomplete. Like it was true — but not the whole truth.</p>
-        <p>That gap — between the explanation someone gives for their behavior and what's actually driving it — is what we're going to explore today. Because that gap is one of the most important things you can understand as a writer. And once you know how to find it, you'll see it everywhere.</p>
-        <p class="section-marker">The Two Levels</p>
-        <p>Every person who has a recurring behavior — something they do again and again, across different situations, with different people — has two answers for why they do it.</p>
-        <p>The first answer is the one they'd give you if you asked. It's articulate. It's defensible. It might even be partially true. Psychologists sometimes call this the conscious justification — the rationalized, socially acceptable version of what's driving the behavior.</p>
-        <p>The second answer is the one they've never said out loud. Maybe never even consciously thought. It's the belief operating so far beneath their awareness that it doesn't feel like a belief at all. It feels like reality. Like just the way things are.</p>
-        <p>That second answer is what I call the hidden truth. And the difference between those two answers — between what someone says and what's actually running underneath — is the difference between a character who feels explained and a character who feels real.</p>
-        <p class="section-marker">The Therapist's Framework</p>
-        <p>In cognitive behavioral therapy, practitioners operate from a foundational premise: no behavior is random. Every recurring pattern — no matter how self-defeating or irrational it looks from the outside — makes perfect sense from inside the belief system that produced it. The therapist's job isn't to judge the behavior. It's to reverse-engineer the belief that makes it feel necessary.</p>
-        <p>That's the tool I want to give you today. It's a single question. The phrasing matters, so I'll say it slowly: What would this person have to believe — about themselves, about other people, or about how the world works — for this behavior to feel like the only reasonable response?</p>
-        <p>Not what caused the behavior. Not what they feel. What they must believe for the behavior to be not just understandable — but inevitable. That's a precision instrument. And I want to show you exactly how to use it.</p>
-        <p class="section-marker">The Conscious Justification Trap</p>
-        <p>Your first answer to the question will almost always be the conscious justification. It will sound like this: "She protects people because she loves them." "He stays in control because he cares about quality." "She keeps her distance because she's been hurt before."</p>
-        <p>These answers are not wrong. But they're the mask over the thing you're actually looking for. And the mask looks convincing because the person themselves believes it. They're not lying to you. They're telling you what they tell themselves.</p>
-        <p>The hidden truth operates beneath that layer entirely. It's the belief that — if you named it out loud to them — they might initially deny. And then quietly recognize. Here's how you know you've broken through: the hidden truth usually has a quality of vulnerability to it. It's not a philosophy. It has an edge of fear, or scarcity, or loss embedded in it.</p>
-        <p class="section-marker">Katniss — The Method in Action</p>
-        <p>Let me model the process with a character most people know. Katniss Everdeen, from The Hunger Games.</p>
-        <p>Her surface behavior is consistent and specific: she repeatedly steps between danger and the people she loves. She volunteers at the Reaping when her sister's name is called. She shields Rue. She keeps Peeta alive. Different situations, different relationships, different stakes — the same compulsive pattern.</p>
-        <p>Now apply the question. What would Katniss have to believe for that behavior to feel like the only reasonable response?</p>
-        <p>First answer: "She loves the people she protects." True. Also the conscious justification. It doesn't explain the compulsion. Push deeper.</p>
-        <p>"I'm the only one who can keep them safe." Getting closer. But why does it have to be her? Keep going.</p>
-        <p>"If I don't protect them, no one will. And they will be destroyed." Now we're somewhere. Because that belief — if no one steps up, the people I love will be destroyed — doesn't just explain that she protects. It explains that she can't stop. The belief makes the behavior not just understandable — but compulsory. She doesn't feel like a hero stepping forward. She feels like the last line of defense. That's the hidden truth.</p>
-        <p class="section-marker">The Causal Lock</p>
-        <p>Here's how you verify you've found the real thing. Take the belief you've identified and complete this sentence: "Because I believe _________, I must _________."</p>
-        <p>With Katniss: Because I believe no one will protect the people I love if I don't, I must position myself between them and whatever threatens them — every time, regardless of the cost to me.</p>
-        <p>That sentence should feel airtight. The behavior should feel inevitable given the belief. If you read it and think "well, maybe" — keep going. You're still at the level of conscious justification. The lock works when you can't imagine the character doing anything else.</p>
-        <p class="section-marker">Why This Changes Everything</p>
-        <p>When you find the hidden truth beneath a recurring behavior, the behavior stops being a character flaw and starts being a survival strategy. It stops looking irrational and starts looking logical. Because from inside the belief system that produced it — it is logical.</p>
-        <p>That shift in perspective is what separates characters who feel constructed from characters who feel real. Real people aren't doing what they do because a writer decided they have trust issues. They're doing it because at some point, the world taught them something — and they drew a conclusion that shaped everything that followed.</p>
-        <p>The behavior is always the evidence. The question is what it's evidence of.</p>
-        <p class="section-marker">Closing</p>
-        <p>The therapist's question is simple. The answer is almost never the first thing you say. Push past the conscious justification. Find the belief that makes the behavior feel not just reasonable — but necessary. Test it with the causal lock. And when that sentence clicks — when the behavior becomes an inevitable consequence of the belief — you'll know you've found it.</p>
-        <p>That understanding is what makes writing feel less like invention and more like excavation. If this way of approaching character resonates with you, this is exactly the kind of thinking we work through in STRATUM — my AI character coaching course for fiction writers. You can learn more at myaiwritingcoach.com.</p>
+  <!-- ══ PANEL: VIDEO ══ -->
+  <div class="tab-panel" id="panel-video">
+
+    <!-- Lesson video -->
+    <div class="video-wrap">
+      <div class="video-container">
+        <iframe
+          src="https://www.youtube.com/embed/RNpquqxdjMg?rel=0&modestbranding=1"
+          title="The Hidden Truth — STRATUM"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+      <div class="transcript">
+        <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this)">
+          <span class="transcript-label">Video Transcript</span>
+          <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="transcript-body" id="transcript-body">
+          <p>Think about someone you know who keeps doing something that makes no sense to you.</p>
+          <p>Maybe they apologize constantly — even when they've done nothing wrong. Maybe they push people away right when a relationship is going well. Maybe they volunteer for the hardest assignments even when they're already stretched thin and exhausted.</p>
+          <p>You've asked them why. They've given you an explanation. And something about that explanation felt incomplete. Like it was true — but not the whole truth.</p>
+          <p>That gap — between the explanation someone gives for their behavior and what's actually driving it — is what we're going to explore today. Because that gap is one of the most important things you can understand as a writer. And once you know how to find it, you'll see it everywhere.</p>
+          <p class="section-marker">The Two Levels</p>
+          <p>Every person who has a recurring behavior — something they do again and again, across different situations, with different people — has two answers for why they do it.</p>
+          <p>The first answer is the one they'd give you if you asked. It's articulate. It's defensible. It might even be partially true. Psychologists sometimes call this the conscious justification — the rationalized, socially acceptable version of what's driving the behavior.</p>
+          <p>The second answer is the one they've never said out loud. Maybe never even consciously thought. It's the belief operating so far beneath their awareness that it doesn't feel like a belief at all. It feels like reality. Like just the way things are.</p>
+          <p>That second answer is what I call the hidden truth. And the difference between those two answers — between what someone says and what's actually running underneath — is the difference between a character who feels explained and a character who feels real.</p>
+          <p class="section-marker">The Therapist's Framework</p>
+          <p>In cognitive behavioral therapy, practitioners operate from a foundational premise: no behavior is random. Every recurring pattern — no matter how self-defeating or irrational it looks from the outside — makes perfect sense from inside the belief system that produced it. The therapist's job isn't to judge the behavior. It's to reverse-engineer the belief that makes it feel necessary.</p>
+          <p>That's the tool I want to give you today. It's a single question. The phrasing matters, so I'll say it slowly: What would this person have to believe — about themselves, about other people, or about how the world works — for this behavior to feel like the only reasonable response?</p>
+          <p>Not what caused the behavior. Not what they feel. What they must believe for the behavior to be not just understandable — but inevitable. That's a precision instrument. And I want to show you exactly how to use it.</p>
+          <p class="section-marker">The Conscious Justification Trap</p>
+          <p>Your first answer to the question will almost always be the conscious justification. It will sound like this: "She protects people because she loves them." "He stays in control because he cares about quality." "She keeps her distance because she's been hurt before."</p>
+          <p>These answers are not wrong. But they're the mask over the thing you're actually looking for. And the mask looks convincing because the person themselves believes it. They're not lying to you. They're telling you what they tell themselves.</p>
+          <p>The hidden truth operates beneath that layer entirely. It's the belief that — if you named it out loud to them — they might initially deny. And then quietly recognize. Here's how you know you've broken through: the hidden truth usually has a quality of vulnerability to it. It's not a philosophy. It has an edge of fear, or scarcity, or loss embedded in it.</p>
+          <p class="section-marker">Katniss — The Method in Action</p>
+          <p>Let me model the process with a character most people know. Katniss Everdeen, from The Hunger Games.</p>
+          <p>Her surface behavior is consistent and specific: she repeatedly steps between danger and the people she loves. She volunteers at the Reaping when her sister's name is called. She shields Rue. She keeps Peeta alive. Different situations, different relationships, different stakes — the same compulsive pattern.</p>
+          <p>Now apply the question. What would Katniss have to believe for that behavior to feel like the only reasonable response?</p>
+          <p>First answer: "She loves the people she protects." True. Also the conscious justification. It doesn't explain the compulsion. Push deeper.</p>
+          <p>"I'm the only one who can keep them safe." Getting closer. But why does it have to be her? Keep going.</p>
+          <p>"If I don't protect them, no one will. And they will be destroyed." Now we're somewhere. Because that belief — if no one steps up, the people I love will be destroyed — doesn't just explain that she protects. It explains that she can't stop. The belief makes the behavior not just understandable — but compulsory. She doesn't feel like a hero stepping forward. She feels like the last line of defense. That's the hidden truth.</p>
+          <p class="section-marker">The Causal Lock</p>
+          <p>Here's how you verify you've found the real thing. Take the belief you've identified and complete this sentence: "Because I believe _________, I must _________."</p>
+          <p>With Katniss: Because I believe no one will protect the people I love if I don't, I must position myself between them and whatever threatens them — every time, regardless of the cost to me.</p>
+          <p>That sentence should feel airtight. The behavior should feel inevitable given the belief. If you read it and think "well, maybe" — keep going. You're still at the level of conscious justification. The lock works when you can't imagine the character doing anything else.</p>
+          <p class="section-marker">Why This Changes Everything</p>
+          <p>When you find the hidden truth beneath a recurring behavior, the behavior stops being a character flaw and starts being a survival strategy. It stops looking irrational and starts looking logical. Because from inside the belief system that produced it — it is logical.</p>
+          <p>That shift in perspective is what separates characters who feel constructed from characters who feel real. Real people aren't doing what they do because a writer decided they have trust issues. They're doing it because at some point, the world taught them something — and they drew a conclusion that shaped everything that followed.</p>
+          <p>The behavior is always the evidence. The question is what it's evidence of.</p>
+          <p class="section-marker">Closing</p>
+          <p>The therapist's question is simple. The answer is almost never the first thing you say. Push past the conscious justification. Find the belief that makes the behavior feel not just reasonable — but necessary. Test it with the causal lock. And when that sentence clicks — when the behavior becomes an inevitable consequence of the belief — you'll know you've found it.</p>
+          <p>That understanding is what makes writing feel less like invention and more like excavation. If this way of approaching character resonates with you, this is exactly the kind of thinking we work through in STRATUM — my AI character coaching course for fiction writers. You can learn more at myaiwritingcoach.com.</p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- ══ PANEL: VIDEO — nav only, video lives in hero-video above ══ -->
-  <div class="tab-panel" id="panel-video">
     <div class="nav-wrap no-back">
       <button class="continue-btn" data-next="overview">
         Continue to Overview
@@ -1023,12 +1019,10 @@
 
   <script>
     var TAB_ORDER = ['video', 'overview', 'question', 'redflags', 'session', 'complete'];
-    var heroWelcome = document.getElementById('hero-welcome');
-    var heroVideo   = document.getElementById('hero-video');
 
     function activateTab(tabId, markPrev) {
-      heroWelcome.style.display = 'none';
-      heroVideo.style.display   = (tabId === 'video') ? 'block' : 'none';
+      var welcome = document.getElementById('hero-welcome');
+      if (welcome) welcome.style.display = 'none';
 
       document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
       document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
@@ -1050,7 +1044,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    /* Tab bar clicks */
+    /* Welcome image visible on load — hides when first tab is clicked */
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
         activateTab(btn.getAttribute('data-tab'), false);
