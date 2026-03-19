@@ -3,743 +3,337 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lesson 2: The Hidden Truth — STRATUM</title>
+  <title>The Hidden Truth — STRATUM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --cream:        #faf4e8;
-      --cream-dark:   #f2ead8;
-      --cream-mid:    #ede5d4;
-      --tan:          #c4a882;
-      --tan-mid:      #a8895e;
-      --tan-light:    #ddd0b8;
-      --tan-faint:    #ede5d4;
-      --brown:        #2e1f0e;
-      --brown-mid:    #5c3d1e;
-      --brown-light:  #8b6340;
-      --label-xs:     11px;
-      --body-sm:      14px;
-      --body-md:      15px;
-      --body-lg:      16px;
+      --cream:#faf4e8; --cream-dark:#f2ead8; --cream-mid:#ede5d4;
+      --tan:#c4a882; --tan-mid:#a8895e; --tan-light:#ddd0b8; --tan-faint:#ede5d4;
+      --brown:#2e1f0e; --brown-mid:#5c3d1e; --brown-light:#8b6340;
+      --label-xs:11px; --label-sm:12px; --label-md:13px;
+      --body-sm:14px; --body-md:15px; --body-lg:16px;
     }
-
     html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Spectral', Georgia, serif;
-      background: var(--cream);
-      color: var(--brown);
-      line-height: 1.6;
-    }
+    body { font-family:'Spectral',Georgia,serif; background:var(--cream); color:var(--brown); line-height:1.6; }
 
-    /* ══ COMPLETE BANNER ══ */
-    .complete-banner {
-      background: var(--brown);
-      border-bottom: 2px solid var(--tan);
-      padding: 14px 28px;
-      display: flex; align-items: center; gap: 14px;
-    }
-    .complete-banner-icon {
-      width: 30px; height: 30px;
-      border: 2px solid var(--tan); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .complete-banner-icon svg {
-      width: 15px; height: 15px; stroke: var(--tan); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .complete-banner-text {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 14px; font-weight: 500; letter-spacing: 0.02em;
-      color: rgba(250,244,232,0.85); line-height: 1.5;
-    }
-    .complete-banner-text strong { color: var(--tan); font-weight: 700; }
-
-    /* ══ MAIN VIDEO ══ */
-    .video-wrap { background: #100a04; }
-    .video-container {
-      position: relative; width: 100%;
-      padding-bottom: 56.25%; height: 0; overflow: hidden;
-    }
-    .video-container iframe {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      border: none; display: block;
-    }
-
-    /* ── Transcript ── */
-    .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
-    .transcript-btn {
-      width: 100%; background: transparent; border: none; padding: 11px 24px;
-      display: flex; align-items: center; justify-content: space-between;
-      cursor: pointer; gap: 12px;
-    }
-    .transcript-btn:hover { background: rgba(196,168,130,0.06); }
-    .transcript-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan);
-    }
-    .transcript-chevron {
-      width: 15px; height: 15px; stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      transition: transform 0.3s ease; flex-shrink: 0;
-    }
-    .transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
-    .transcript-body { display: none; padding: 0 28px 20px; }
-    .transcript-body.open { display: block; }
-    .transcript-body p {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.78); line-height: 1.85; margin-bottom: 12px;
-    }
-    .transcript-body p:last-child { margin-bottom: 0; }
-    .transcript-body p.pause {
-      font-style: normal; font-size: var(--label-xs);
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: rgba(196,168,130,0.45); margin-bottom: 6px;
-    }
-    .transcript-body p.section-marker {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-style: normal; font-weight: 500; font-size: var(--label-xs);
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--tan); margin-top: 18px; margin-bottom: 6px;
-    }
-
-    /* ══ TAB BAR ══ */
+    /* ══ TAB BAR — TOP, STICKY ══ */
     .tab-bar {
       position: sticky; top: 0; z-index: 50;
+      display: flex; overflow-x: auto;
       background: var(--brown);
       border-top: 3px solid var(--tan);
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-      display: flex; align-items: stretch;
-      overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+      border-bottom: 1px solid rgba(196,168,130,0.18);
       box-shadow: 0 3px 14px rgba(0,0,0,0.40);
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      scroll-behavior: smooth;
     }
     .tab-bar::-webkit-scrollbar { display: none; }
 
+    /* Scroll indicator wrapper */
+    .tab-bar-wrap { position: sticky; top: 0; z-index: 50; }
+
+    /* Left scroll hint */
+    .tab-scroll-hint-left {
+      position: absolute; top: 0; left: 0; height: 100%; width: 52px;
+      background: linear-gradient(to left, transparent, var(--brown) 55%);
+      display: flex; align-items: center; justify-content: flex-start;
+      padding-left: 8px; z-index: 52;
+      transition: opacity 0.3s; opacity: 0; pointer-events: none;
+    }
+    .tab-scroll-hint-left.visible { opacity: 1; pointer-events: all; }
+
+    /* Right scroll hint */
+    .tab-scroll-hint {
+      position: absolute; top: 0; right: 0; height: 100%; width: 52px;
+      background: linear-gradient(to right, transparent, var(--brown) 55%);
+      display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 8px; z-index: 52; transition: opacity 0.3s;
+    }
+    .tab-scroll-hint.hidden { opacity: 0; pointer-events: none; }
+
+    .tab-scroll-arrow {
+      width: 28px; height: 28px;
+      border: 1.5px solid rgba(196,168,130,0.5); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: all; cursor: pointer; background: var(--brown);
+      animation: pulse-arrow 1.5s ease-in-out infinite; flex-shrink: 0;
+    }
+    .tab-scroll-arrow svg { width: 12px; height: 12px; stroke: var(--tan); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    @keyframes pulse-arrow {
+      0%, 100% { border-color: rgba(196,168,130,0.4); box-shadow: none; }
+      50% { border-color: var(--tan); box-shadow: 0 0 8px rgba(196,168,130,0.4); }
+    }
+
     .tab-btn {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 12px; font-weight: 600;
-      letter-spacing: 0.17em; text-transform: uppercase;
-      color: rgba(196,168,130,0.72);
+      font-family:'Cormorant Garamond',Georgia,serif;
+      font-size: 12px; font-weight: 500;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: rgba(196,168,130,0.55);
       background: transparent; border: none;
-      border-right: 1px solid rgba(196,168,130,0.1);
-      padding: 0 20px;
-      min-height: 52px;
-      cursor: pointer; white-space: nowrap; flex-shrink: 0;
-      display: flex; align-items: center; gap: 9px;
-      transition: color 0.2s, background 0.2s;
-      position: relative;
+      border-right: 1px solid rgba(196,168,130,0.12);
+      padding: 0 16px; min-height: 52px;
+      cursor: pointer; white-space: nowrap;
+      flex: 0 0 auto; min-width: 140px;
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      transition: color 0.2s, background 0.2s; position: relative;
     }
     .tab-btn:last-child { border-right: none; }
-    .tab-btn:hover {
-      color: var(--tan);
-      background: rgba(196,168,130,0.08);
-    }
-
-    /* Active: full-brightness tan — stays in the design system */
-    .tab-btn.active {
-      color: var(--tan);
-      font-weight: 700;
-      font-size: 13px;
-      letter-spacing: 0.13em;
-      background: transparent;
-    }
-    .tab-btn.active::after {
-      content: '';
-      position: absolute; bottom: 0; left: 0; right: 0;
-      height: 3px;
-      background: var(--tan);
-    }
-
-    /* ── Step indicator circles ── */
-    .tab-check {
-      width: 18px; height: 18px;
-      border: 1.5px solid rgba(196,168,130,0.35);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.25s, border-color 0.25s;
-    }
-    .tab-check svg {
-      width: 9px; height: 9px;
-      stroke: rgba(196,168,130,0.25); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-    /* Active: circle brightens to match active tan */
-    .tab-btn.active .tab-check {
-      border-color: var(--tan);
-      background: rgba(196,168,130,0.18);
-    }
+    .tab-btn:hover { color: var(--tan); background: rgba(196,168,130,0.08); }
+    .tab-btn.active { color: var(--tan); font-weight: 700; font-size: 13px; letter-spacing: 0.13em; }
+    .tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--tan); }
+    .tab-check { width: 18px; height: 18px; border: 1.5px solid rgba(196,168,130,0.35); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.25s, border-color 0.25s; }
+    .tab-check svg { width: 9px; height: 9px; stroke: rgba(196,168,130,0.25); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .tab-btn.active .tab-check { border-color: var(--tan); background: rgba(196,168,130,0.18); }
     .tab-btn.active .tab-check svg { stroke: var(--tan); }
-
-    /* Done: solid tan fill */
     .tab-btn.done .tab-check { background: var(--tan); border-color: var(--tan); }
     .tab-btn.done .tab-check svg { stroke: var(--brown); }
     .tab-btn.done { color: rgba(196,168,130,0.6); }
 
-    /* ══ BLANK STATE ══ */
-    .blank-state {
-      padding: 64px 32px 80px; text-align: center;
-      max-width: 520px; margin: 0 auto;
-    }
-    .blank-rule { width: 28px; height: 1px; background: var(--tan-light); margin: 0 auto 24px; }
-    .blank-state p {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 18px; font-weight: 300; font-style: italic;
-      color: var(--tan-mid); line-height: 1.65;
-    }
+    /* ══ HERO AREA ══ */
+    .hero-welcome { display: block; }
+    .hero-welcome img { width: 100%; display: block; }
+    .hero-video { display: none; background: #100a04; }
+    .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+    .video-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
 
-    /* ══ TAB PANELS ══ */
+    /* Transcript */
+    .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
+    .transcript-btn { width: 100%; background: transparent; border: none; padding: 13px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; gap: 12px; }
+    .transcript-btn:hover { background: rgba(196,168,130,0.06); }
+    .transcript-label { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan); }
+    .transcript-chevron { width: 16px; height: 16px; stroke: var(--tan); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.3s ease; flex-shrink: 0; }
+    .transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
+    .transcript-body { display: none; padding: 0 28px 22px; }
+    .transcript-body.open { display: block; }
+    .transcript-body p { font-family:'Spectral',Georgia,serif; font-size: var(--body-sm); font-weight: 300; font-style: italic; color: rgba(250,244,232,0.78); line-height: 1.85; margin-bottom: 14px; }
+    .transcript-body p:last-child { margin-bottom: 0; }
+    .transcript-body .section-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; font-style: normal; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan); margin-top: 20px; margin-bottom: 8px; display: block; }
+    .supp-transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.12); }
+    .supp-transcript .transcript-body { padding: 0 20px 18px; }
+
+    /* ══ PANELS ══ */
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
-
-    /* ══ PANEL INNER ══ */
-    .panel-inner {
-      padding: 44px 32px 32px;
-      max-width: 760px; margin: 0 auto;
-    }
-
-    /* ══ PANEL TYPOGRAPHY ══ */
-    .panel-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 8px;
-    }
-    .panel-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 30px; font-weight: 300; color: var(--brown); line-height: 1.15;
-    }
+    .panel-inner { padding: 44px 32px 32px; max-width: 760px; margin: 0 auto; }
+    .panel-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 8px; }
+    .panel-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 30px; font-weight: 300; color: var(--brown); line-height: 1.15; }
     .panel-title em { font-style: italic; color: var(--brown-mid); }
     .panel-rule { width: 40px; height: 1px; background: var(--tan); margin: 16px 0 26px; }
-    .panel-lead {
-      font-size: var(--body-lg); font-weight: 300; line-height: 1.8;
-      color: var(--brown-mid); margin-bottom: 32px;
-    }
+    .panel-lead { font-size: var(--body-lg); font-weight: 300; line-height: 1.8; color: var(--brown-mid); margin-bottom: 32px; }
 
     /* ══ NAV BUTTONS ══ */
-    .nav-wrap {
-      padding: 24px 32px 32px; max-width: 760px; margin: 0 auto;
-      border-top: 1px solid var(--tan-light);
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    }
+    .nav-wrap { padding: 24px 32px 32px; max-width: 760px; margin: 0 auto; border-top: 1px solid var(--tan-light); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
     .nav-wrap.no-back { justify-content: flex-end; }
-    .back-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: transparent; border: 1px solid var(--tan-light);
-      padding: 12px 22px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan-mid); cursor: pointer;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
-    }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid var(--tan-light); padding: 12px 22px; font-family:'Cormorant Garamond',Georgia,serif; font-size: 13px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan-mid); cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; }
     .back-btn:hover { background: var(--cream-dark); border-color: var(--tan-mid); color: var(--brown); }
-    .back-btn svg {
-      width: 13px; height: 13px; stroke: currentColor; fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .continue-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--brown); border: none; padding: 14px 28px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 500;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--tan); cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-    }
+    .back-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .continue-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--brown); border: none; padding: 14px 28px; font-family:'Cormorant Garamond',Georgia,serif; font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tan); cursor: pointer; transition: background 0.2s, color 0.2s; }
     .continue-btn:hover { background: var(--brown-mid); color: var(--cream); }
-    .continue-btn svg {
-      width: 14px; height: 14px; stroke: currentColor; fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
+    .continue-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
     /* ══ WHY BLOCK ══ */
-    .why-block {
-      background: var(--cream-dark); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan-mid); padding: 20px 22px; margin-bottom: 28px;
-    }
-    .why-block-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 600; color: var(--brown);
-      display: block; margin-bottom: 10px;
-    }
-    .why-block p {
-      font-size: var(--body-md); font-weight: 300; line-height: 1.8;
-      color: var(--brown); margin-bottom: 10px;
-    }
+    .why-block { background: var(--cream-dark); border: 1px solid var(--tan-light); border-left: 3px solid var(--tan-mid); padding: 20px 22px; margin-bottom: 28px; }
+    .why-block-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 15px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 10px; }
+    .why-block p { font-size: var(--body-md); font-weight: 300; line-height: 1.8; color: var(--brown); margin-bottom: 10px; }
     .why-block p:last-child { margin-bottom: 0; }
 
     /* ══ SUPPLEMENTAL VIDEO ══ */
     .supp-video { border: 1px solid var(--tan-light); margin-bottom: 32px; overflow: hidden; }
-    .supp-video-head {
-      background: var(--cream-mid); padding: 14px 20px;
-      display: flex; align-items: center; gap: 14px;
-      border-bottom: 1px solid var(--tan-light); flex-wrap: wrap;
-    }
-    .supp-video-badge {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--brown-mid); background: var(--tan-faint);
-      border: 1px solid var(--tan-light); padding: 4px 11px; flex-shrink: 0;
-    }
-    .supp-video-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 500; color: var(--brown); line-height: 1.3;
-    }
-    .supp-video-container {
-      position: relative; width: 100%; padding-bottom: 56.25%;
-      height: 0; overflow: hidden; background: #100a04;
-    }
-    .supp-video-container iframe {
-      position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block;
-    }
-    .supp-video-foot {
-      padding: 14px 20px; background: var(--cream-dark);
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown-mid); border-top: 1px solid var(--tan-light);
-    }
+    .supp-video-head { background: var(--cream-mid); padding: 14px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--tan-light); flex-wrap: wrap; }
+    .supp-video-badge { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brown-mid); background: var(--tan-faint); border: 1px solid var(--tan-light); padding: 4px 11px; flex-shrink: 0; }
+    .supp-video-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 15px; font-weight: 500; color: var(--brown); line-height: 1.3; }
+    .supp-video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #100a04; }
+    .supp-video-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
+    .supp-video-foot { padding: 14px 20px; background: var(--cream-dark); font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); border-top: 1px solid var(--tan-light); }
 
     /* ══ THE QUESTION BLOCK ══ */
-    .question-block {
-      background: var(--brown); border: 1px solid rgba(196,168,130,0.2);
-      padding: 28px 30px; margin-bottom: 28px;
-    }
-    .question-block-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 16px;
-    }
-    .question-block-text {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 22px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.6; margin-bottom: 18px;
-    }
-    .question-block-note {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.65); line-height: 1.72;
-      border-top: 1px solid rgba(196,168,130,0.15); padding-top: 14px;
-    }
+    .question-block { background: var(--brown); border: 1px solid rgba(196,168,130,0.2); padding: 28px 30px; margin-bottom: 28px; }
+    .question-block-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 16px; }
+    .question-block-text { font-family:'Cormorant Garamond',Georgia,serif; font-size: 22px; font-weight: 300; font-style: italic; color: var(--cream); line-height: 1.6; margin-bottom: 18px; }
+    .question-block-note { font-family:'Spectral',Georgia,serif; font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.65); line-height: 1.72; border-top: 1px solid rgba(196,168,130,0.15); padding-top: 14px; }
 
     /* ══ LOCK BLOCK ══ */
-    .lock-block {
-      background: var(--cream-mid); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan); padding: 22px 24px; margin-bottom: 28px;
-    }
-    .lock-block-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 600; color: var(--brown);
-      display: block; margin-bottom: 12px;
-    }
-    .lock-formula {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 19px; font-weight: 400; font-style: italic;
-      color: var(--brown-mid); line-height: 1.55; margin-bottom: 14px;
-    }
+    .lock-block { background: var(--cream-mid); border: 1px solid var(--tan-light); border-left: 3px solid var(--tan); padding: 22px 24px; margin-bottom: 28px; }
+    .lock-block-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 15px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 12px; }
+    .lock-formula { font-family:'Cormorant Garamond',Georgia,serif; font-size: 19px; font-weight: 400; font-style: italic; color: var(--brown-mid); line-height: 1.55; margin-bottom: 14px; }
     .lock-formula em { color: var(--tan-mid); font-style: normal; font-weight: 600; }
-    .lock-block p {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown-mid); margin-bottom: 8px;
-    }
+    .lock-block p { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); margin-bottom: 8px; }
     .lock-block p:last-child { margin-bottom: 0; }
-    .lock-example {
-      background: var(--cream); border: 1px solid var(--tan-faint);
-      padding: 14px 18px; margin-top: 14px;
-    }
-    .lock-example-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 8px;
-    }
-    .lock-example p {
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: var(--brown-mid); line-height: 1.72; margin-bottom: 0;
-    }
+    .lock-example { background: var(--cream); border: 1px solid var(--tan-faint); padding: 14px 18px; margin-top: 14px; }
+    .lock-example-label { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 8px; }
+    .lock-example p { font-size: var(--body-sm); font-weight: 300; font-style: italic; color: var(--brown-mid); line-height: 1.72; margin-bottom: 0; }
 
     /* ══ KATNISS WALKTHROUGH ══ */
-    .walkthrough {
-      border: 1px solid var(--tan-light); margin-bottom: 28px; overflow: hidden;
-    }
-    .walkthrough-head {
-      background: var(--brown); padding: 16px 22px;
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-    }
-    .walkthrough-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 6px;
-    }
-    .walkthrough-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 18px; font-weight: 300; color: var(--cream); line-height: 1.3;
-    }
+    .walkthrough { border: 1px solid var(--tan-light); margin-bottom: 28px; overflow: hidden; }
+    .walkthrough-head { background: var(--brown); padding: 16px 22px; border-bottom: 1px solid rgba(196,168,130,0.2); }
+    .walkthrough-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 6px; }
+    .walkthrough-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 18px; font-weight: 300; color: var(--cream); line-height: 1.3; }
     .walkthrough-title em { font-style: italic; color: var(--tan); }
     .walkthrough-body { background: var(--cream-dark); padding: 20px 22px; }
-    .walkthrough-step {
-      display: flex; align-items: flex-start; gap: 16px;
-      padding: 12px 0; border-bottom: 1px solid var(--tan-faint);
-    }
+    .walkthrough-step { display: flex; align-items: flex-start; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--tan-faint); }
     .walkthrough-step:last-child { border-bottom: none; padding-bottom: 0; }
-    .walkthrough-step-marker {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--tan-mid); flex-shrink: 0; margin-top: 2px; min-width: 80px;
-    }
+    .walkthrough-step-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan-mid); flex-shrink: 0; margin-top: 2px; min-width: 80px; }
     .walkthrough-step-content { flex: 1; }
-    .walkthrough-step-content p {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown);
-      margin-bottom: 6px;
-    }
+    .walkthrough-step-content p { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown); margin-bottom: 6px; }
     .walkthrough-step-content p:last-child { margin-bottom: 0; }
     .walkthrough-step-content em { font-style: italic; color: var(--brown-mid); }
     .walkthrough-step-content strong { font-weight: 500; color: var(--brown-mid); }
 
     /* ══ RED FLAGS ══ */
-    .redflag-item {
-      display: flex; align-items: flex-start; gap: 14px;
-      padding: 12px 0; border-bottom: 1px solid var(--tan-faint);
-    }
+    .redflag-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--tan-faint); }
     .redflag-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .redflag-marker {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--tan-mid); flex-shrink: 0; margin-top: 2px; min-width: 64px;
-    }
+    .redflag-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan-mid); flex-shrink: 0; margin-top: 2px; min-width: 64px; }
     .redflag-text { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown); }
     .redflag-text strong { font-weight: 500; color: var(--brown-mid); }
     .redflag-text em { font-style: italic; }
 
-    /* ══ INSTRUCTIONS ══ */
-    .instructions-band { background: var(--brown); padding: 20px 24px; margin-bottom: 24px; }
-    .instructions-band-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 300; color: var(--cream); margin-bottom: 12px;
-    }
-    .instructions-list { list-style: none; }
-    .instructions-list li {
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.85); line-height: 1.72; padding: 7px 0;
-      border-bottom: 1px solid rgba(196,168,130,0.12);
-      display: flex; gap: 10px; align-items: flex-start;
-    }
+    /* ══ SESSION ══ */
+    .session-begin-band { background: var(--brown); width: 100%; padding: 0; margin-bottom: 0; text-align: left !important; columns: 1 !important; column-count: 1 !important; }
+    .session-begin-inner { padding: 28px 32px 24px; max-width: 760px; margin: 0 auto; text-align: left !important; columns: 1 !important; column-count: 1 !important; }
+    .session-begin-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 26px; font-weight: 500; letter-spacing: 0.03em; color: var(--cream); margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid rgba(196,168,130,0.25); line-height: 1.2; }
+    .session-begin-title em { color: var(--tan); font-style: italic; }
+
+    /* Prompt copy */
+    .prompt-wrap { margin-bottom: 20px; }
+    .prompt-label { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 8px; }
+    .copy-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid rgba(196,168,130,0.45); padding: 9px 16px; font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan); cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+    .copy-btn:hover { background: rgba(196,168,130,0.1); border-color: var(--tan); }
+    .copy-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .copy-btn.copied { background: rgba(196,168,130,0.15); border-color: var(--tan); }
+
+    .instructions-list { list-style: none; margin-top: 4px; text-align: left !important; columns: 1 !important; column-count: 1 !important; }
+    .instructions-list li { font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.85); line-height: 1.72; padding: 9px 0 9px 26px; border-bottom: 1px solid rgba(196,168,130,0.12); display: block !important; text-align: left !important; position: relative; columns: 1 !important; column-count: 1 !important; }
     .instructions-list li:last-child { border-bottom: none; }
-    .instructions-list li::before {
-      content: attr(data-n);
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); color: var(--tan);
-      flex-shrink: 0; margin-top: 2px; min-width: 14px;
-    }
+    .instructions-list li::before { content: attr(data-n); font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); color: var(--tan); position: absolute; left: 0; top: 11px; }
     .instructions-list li strong { color: var(--tan); font-weight: 500; }
+    .instructions-list li a { color: var(--tan); text-decoration: underline; text-underline-offset: 2px; opacity: 0.85; }
+    .instructions-list li a:hover { opacity: 1; }
 
-    /* ══ SAVE REMINDER ══ */
-    .save-reminder {
-      background: var(--brown-mid); border: 1px solid rgba(196,168,130,0.25);
-      padding: 16px 22px; margin-bottom: 28px;
-      display: flex; align-items: flex-start; gap: 14px;
-    }
-    .save-reminder-icon { flex-shrink: 0; margin-top: 2px; }
-    .save-reminder-icon svg {
-      width: 18px; height: 18px; stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .save-reminder p {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 500; color: var(--cream); line-height: 1.65;
-    }
-    .save-reminder p strong { color: var(--tan); }
+    /* Jotform */
+    .jotform-section { margin-bottom: 0; }
+    .jotform-clip-wrap { overflow: hidden; margin: 0; }
+    .jotform-clip-wrap iframe { display: block; width: 100% !important; }
 
-    /* ══ JOTFORM WRAP ══ */
-    .jotform-wrap { border: 1px solid var(--tan-light); margin-bottom: 28px; overflow: hidden; }
-    .jotform-wrap-head {
-      background: var(--brown); padding: 18px 24px;
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-    }
-    .jotform-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 6px;
-    }
-    .jotform-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px; font-weight: 300; color: var(--cream); line-height: 1.3;
-    }
-    .jotform-title em { font-style: italic; color: var(--tan); }
-    .jotform-embed { background: var(--cream-dark); }
-
-    /* ══ COMPLETE LESSON TAB ══ */
-    .lesson-complete-img { text-align: center; margin-bottom: 28px; }
-    .lesson-complete-img img {
-      width: 86%; display: inline-block;
-      border: 1px solid var(--tan); border-radius: 4px;
-      box-shadow: 0 8px 32px rgba(46,31,14,0.25);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .lesson-complete-img img:hover {
-      transform: scale(1.01);
-      box-shadow: 0 12px 40px rgba(46,31,14,0.35);
-    }
-
-    .complete-lesson-content {
-      background: var(--cream-dark); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan-mid); padding: 22px 24px; margin-bottom: 28px;
-    }
-    .complete-lesson-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 600; color: var(--brown);
-      display: block; margin-bottom: 10px;
-    }
-    .complete-lesson-content p {
-      font-size: var(--body-md); font-weight: 300; line-height: 1.8;
-      color: var(--brown); margin-bottom: 10px;
-    }
+    /* ══ COMPLETE ══ */
+    .complete-lesson-content { background: var(--cream-dark); border: 1px solid var(--tan-light); border-left: 3px solid var(--tan-mid); padding: 22px 24px; margin-bottom: 28px; }
+    .complete-lesson-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 15px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 10px; }
+    .complete-lesson-content p { font-size: var(--body-md); font-weight: 300; line-height: 1.8; color: var(--brown); margin-bottom: 10px; }
     .complete-lesson-content p:last-child { margin-bottom: 0; }
     .complete-lesson-checklist { list-style: none; padding: 0; margin-bottom: 0; }
-    .complete-lesson-checklist li {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown-mid); padding: 7px 0;
-      border-bottom: 1px solid var(--tan-faint);
-      display: flex; align-items: flex-start; gap: 10px;
-    }
+    .complete-lesson-checklist li { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); padding: 7px 0; border-bottom: 1px solid var(--tan-faint); display: flex; align-items: flex-start; gap: 10px; }
     .complete-lesson-checklist li:last-child { border-bottom: none; }
-    .check-icon {
-      width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px;
-      border: 1.5px solid var(--tan-mid); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .check-icon svg {
-      width: 8px; height: 8px; stroke: var(--tan-mid); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
+    .check-icon { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; border: 1.5px solid var(--tan-mid); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .check-icon svg { width: 8px; height: 8px; stroke: var(--tan-mid); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* ── Bridge Question ── */
-    .bridge-block {
-      background: var(--brown); border: 1px solid rgba(196,168,130,0.2);
-      padding: 24px 26px; margin-bottom: 28px;
-    }
-    .bridge-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 14px;
-    }
-    .bridge-question {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.6; margin-bottom: 14px;
-    }
-    .bridge-note {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.65); line-height: 1.72;
-      border-top: 1px solid rgba(196,168,130,0.15); padding-top: 12px;
-    }
+    /* Bridge block */
+    .bridge-block { background: var(--brown); border: 1px solid rgba(196,168,130,0.2); padding: 24px 26px; margin-bottom: 28px; }
+    .bridge-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 14px; }
+    .bridge-question { font-family:'Cormorant Garamond',Georgia,serif; font-size: 20px; font-weight: 300; font-style: italic; color: var(--cream); line-height: 1.6; margin-bottom: 14px; }
+    .bridge-note { font-family:'Spectral',Georgia,serif; font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.65); line-height: 1.72; border-top: 1px solid rgba(196,168,130,0.15); padding-top: 12px; }
 
-    /* ── Ted's Note ── */
-    .teds-note {
-      background: var(--cream-dark); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan); padding: 22px 24px; margin-bottom: 28px;
-    }
-    .teds-note-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 12px;
-    }
-    .teds-note p {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-md); font-weight: 300; font-style: italic;
-      color: var(--brown-mid); line-height: 1.82; margin-bottom: 10px;
-    }
+    /* Ted's Note */
+    .teds-note { background: var(--cream-dark); border: 1px solid var(--tan-light); border-left: 3px solid var(--tan); padding: 22px 24px; margin-bottom: 28px; }
+    .teds-note-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 12px; }
+    .teds-note p { font-family:'Spectral',Georgia,serif; font-size: var(--body-md); font-weight: 300; font-style: italic; color: var(--brown-mid); line-height: 1.82; margin-bottom: 10px; }
     .teds-note p:last-child { margin-bottom: 0; }
-    .teds-note-sig {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 400; font-style: normal;
-      color: var(--brown); display: block; margin-top: 14px;
-    }
+    .teds-note-sig { font-family:'Cormorant Garamond',Georgia,serif; font-size: 16px; font-weight: 400; font-style: normal; color: var(--brown); display: block; margin-top: 14px; }
 
-    /* ── Questions & Contact Jotform ── */
-    .questions-block { border: 1px solid var(--tan-light); margin-bottom: 28px; overflow: hidden; }
-    .questions-head {
-      background: var(--brown); padding: 16px 22px 14px;
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-    }
-    .questions-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 5px;
-    }
-    .questions-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 19px; font-weight: 300; color: var(--cream); line-height: 1.3;
-    }
-    .questions-title em { font-style: italic; color: var(--tan); }
+    /* Congratulations image */
+    .congratulations-img-wrap { background: var(--brown); display: flex; justify-content: center; padding: 36px 32px 40px; }
+    .congratulations-img-wrap img { width: 65%; max-width: 520px; display: block; box-shadow: 0 0 0 1px rgba(196,168,130,0.35), 0 0 0 5px rgba(46,31,14,0.8), 0 0 0 6px rgba(196,168,130,0.2), 0 8px 40px rgba(0,0,0,0.55); }
 
-    /* ── Mark as Complete ── */
-    .complete-dark {
-      background: var(--brown); padding: 36px 32px 32px; text-align: center;
-    }
-    .complete-dark-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 14px;
-    }
-    .complete-dark-heading {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 24px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.45; margin-bottom: 6px;
-    }
-    .complete-dark-sub {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.65); line-height: 1.55; margin-bottom: 24px;
-    }
-    .complete-instruction {
-      max-width: 480px; margin: 0 auto 24px;
-      background: rgba(196,168,130,0.1);
-      border: 1px solid rgba(196,168,130,0.2);
-      padding: 16px 20px;
-      display: flex; align-items: flex-start; gap: 12px; text-align: left;
-    }
-    .complete-instruction svg {
-      width: 16px; height: 16px; stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      flex-shrink: 0; margin-top: 2px;
-    }
-    .complete-instruction p {
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.82); line-height: 1.7;
-    }
+    /* Complete dark section */
+    .complete-dark { background: var(--brown); padding: 44px 32px; text-align: center; }
+    .complete-dark-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 12px; }
+    .complete-dark-heading { font-family:'Cormorant Garamond',Georgia,serif; font-size: 26px; font-weight: 300; color: var(--cream); margin-bottom: 8px; line-height: 1.2; }
+    .complete-dark-sub { font-size: var(--body-sm); font-weight: 300; font-style: italic; color: rgba(196,168,130,0.7); margin-bottom: 28px; }
+    .complete-instruction { display: flex; align-items: flex-start; gap: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(196,168,130,0.15); padding: 18px 20px; margin-bottom: 28px; text-align: left; }
+    .complete-instruction svg { width: 20px; height: 20px; stroke: var(--tan); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .complete-instruction p { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: rgba(250,244,232,0.8); }
     .complete-instruction p strong { color: var(--tan); font-weight: 500; }
-    .complete-rule { width: 36px; height: 1px; background: rgba(196,168,130,0.25); margin: 0 auto 20px; }
-    .complete-quote {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 17px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.75); line-height: 1.65; margin-bottom: 14px;
-    }
-    .complete-attr {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 400;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: rgba(196,168,130,0.55);
-    }
-    .mark-complete-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--tan); border: none; padding: 16px 36px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--brown); text-decoration: none;
-      transition: background 0.2s, color 0.2s;
-    }
-    .mark-complete-btn:hover { background: var(--cream); color: var(--brown); }
-    .mark-complete-btn svg {
-      width: 15px; height: 15px; stroke: var(--brown); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
+    .complete-rule { width: 40px; height: 1px; background: rgba(196,168,130,0.3); margin: 0 auto 24px; }
+    .complete-quote { font-family:'Cormorant Garamond',Georgia,serif; font-size: 17px; font-weight: 300; font-style: italic; color: rgba(196,168,130,0.7); line-height: 1.65; margin-bottom: 10px; }
+    .complete-attr { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); letter-spacing: 0.14em; text-transform: uppercase; color: rgba(196,168,130,0.4); display: block; margin-bottom: 28px; }
+    .mark-complete-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--tan); color: var(--brown); border: none; padding: 15px 32px; font-family:'Cormorant Garamond',Georgia,serif; font-size: 13px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+    .mark-complete-btn:hover { background: var(--tan-mid); }
+    .mark-complete-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* ══ RESPONSIVE ══ */
-    @media (max-width: 580px) {
-      .supp-video-head { flex-direction: column; align-items: flex-start; gap: 8px; }
-      .nav-wrap { flex-direction: column; align-items: stretch; }
-      .back-btn, .continue-btn { justify-content: center; }
-    }
-    @media (max-width: 560px) {
-      .panel-inner { padding: 28px 20px 24px; }
-      .nav-wrap { padding: 20px; }
-      .panel-title { font-size: 24px; }
-      .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .complete-dark { padding: 40px 24px 36px; }
-      .question-block-text { font-size: 18px; }
-      .tab-btn {
-        padding: 0 14px;
-        font-size: 11px;
-        letter-spacing: 0.13em;
-        min-height: 52px;
-      }
-      .tab-check { width: 16px; height: 16px; }
-      .tab-check svg { width: 8px; height: 8px; }
+    @media (max-width: 540px) {
+      .panel-inner { padding: 28px 20px 20px; }
+      .nav-wrap { padding: 20px; flex-direction: column; }
+      .continue-btn, .back-btn { width: 100%; justify-content: center; }
+      .session-begin-inner { padding: 20px; }
+      .congratulations-img-wrap img { width: 90%; }
+      .tab-btn { padding: 0 12px; min-width: 120px; font-size: 11px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ══ COMPLETE BANNER ══ -->
-  <div class="complete-banner">
-    <div class="complete-banner-icon">
-      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <!-- ══ TAB BAR — STICKY TOP ══ -->
+  <div class="tab-bar-wrap">
+    <nav class="tab-bar" id="tab-bar" aria-label="Lesson sections">
+      <button class="tab-btn" data-tab="video"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Video</button>
+      <button class="tab-btn" data-tab="overview"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Overview</button>
+      <button class="tab-btn" data-tab="question"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>The Question</button>
+      <button class="tab-btn" data-tab="redflags"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Red Flags</button>
+      <button class="tab-btn" data-tab="session"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Your Session</button>
+      <button class="tab-btn" data-tab="complete"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Complete Lesson</button>
+    </nav>
+    <!-- Left scroll hint — visible when scrolled right -->
+    <div class="tab-scroll-hint-left" id="tab-scroll-hint-left">
+      <div class="tab-scroll-arrow" onclick="scrollTabBarLeft()">
+        <svg viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg>
+      </div>
     </div>
-    <p class="complete-banner-text">
-      Work through each section using the tabs below. When finished, open the
-      <strong>Complete Lesson</strong> tab and click <strong>Mark as Complete</strong> to unlock Lesson 3.
-    </p>
+    <!-- Right scroll hint — visible when more tabs off-screen right -->
+    <div class="tab-scroll-hint" id="tab-scroll-hint">
+      <div class="tab-scroll-arrow" id="tab-scroll-arrow" onclick="scrollTabBar()">
+        <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+      </div>
+    </div>
   </div>
 
-  <!-- ══ MAIN VIDEO ══ -->
-  <div class="video-wrap">
+  <!-- ══ HERO AREA ══ -->
+  <!-- Welcome image — shown on load, hidden when any tab is active -->
+  <div class="hero-welcome" id="hero-welcome">
+    &nbsp;
+  </div>
+
+  <!-- Video — shown only when Video tab is active -->
+  <div class="hero-video" id="hero-video">
     <div class="video-container">
-      <iframe
-        src="https://www.youtube.com/embed/XXXXXXXXXX?rel=0&modestbranding=1"
+      <!-- REPLACE XXXXXXXXXX WITH LESSON 2 MAIN VIDEO YOUTUBE ID -->
+      <iframe src="https://www.youtube.com/embed/XXXXXXXXXX?rel=0&modestbranding=1"
         title="Lesson 2: The Hidden Truth — STRATUM"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-      </iframe>
+        allowfullscreen></iframe>
     </div>
     <div class="transcript">
-      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this)">
+      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-main')">
         <span class="transcript-label">Video Transcript</span>
-        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
-      <div class="transcript-body" id="transcript-body">
-        <!-- PASTE LESSON 2 VIDEO TRANSCRIPT HERE -->
+      <div class="transcript-body" id="transcript-main">
+        <!-- PASTE LESSON 2 MAIN VIDEO TRANSCRIPT HERE -->
         <p>Transcript coming soon.</p>
       </div>
     </div>
   </div>
 
-  <!-- ══ TAB BAR ══ -->
-  <nav class="tab-bar" aria-label="Lesson sections">
-    <button class="tab-btn" data-tab="overview">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Overview
-    </button>
-    <button class="tab-btn" data-tab="question">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      The Question
-    </button>
-    <button class="tab-btn" data-tab="redflags">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Red Flags
-    </button>
-    <button class="tab-btn" data-tab="session">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Your Session
-    </button>
-    <button class="tab-btn" data-tab="complete">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Complete Lesson
-    </button>
-  </nav>
+  <!-- ══ PANELS ══ -->
 
-  <!-- ══ BLANK STATE ══ -->
-  <div id="blank-state" class="blank-state">
-    <div class="blank-rule"></div>
-    <p>Select a section above to begin.</p>
+  <!-- VIDEO PANEL — no content, nav only -->
+  <div class="tab-panel" id="panel-video">
+    <div class="nav-wrap no-back">
+      <button class="continue-btn" data-next="overview">Continue to Overview<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
   </div>
 
-  <!-- ══ PANEL: OVERVIEW ══ -->
+  <!-- OVERVIEW -->
   <div class="tab-panel" id="panel-overview">
     <div class="panel-inner">
       <span class="panel-eyebrow">Lesson 2 · The Excavation Ladder · STRATUM: AI Character Coaching</span>
@@ -767,25 +361,30 @@
           <span class="supp-video-title">The Netflix Effect — Readers Expect Premium. Your Characters Should Deliver.</span>
         </div>
         <div class="supp-video-container">
-          <iframe
-            src="https://www.youtube.com/embed/ZcB6hl6JYa8?rel=0&modestbranding=1"
+          <iframe src="https://www.youtube.com/embed/ZcB6hl6JYa8?rel=0&modestbranding=1"
             title="The Netflix Effect — Readers Expect Premium. Your Characters Should Deliver."
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
+            allowfullscreen></iframe>
+        </div>
+        <div class="supp-transcript">
+          <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-netflix')">
+            <span class="transcript-label">Video Transcript</span>
+            <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="transcript-body" id="transcript-netflix">
+            <!-- PASTE THE NETFLIX EFFECT VIDEO TRANSCRIPT HERE -->
+            <p>Transcript coming soon.</p>
+          </div>
         </div>
         <p class="supp-video-foot">Watch this before your coaching session. Your readers have been trained by hundreds of hours of prestige television to expect character psychology that rivals therapy. This video shows exactly what that expectation looks like — and why the belief system beneath behavior is the difference between a character who feels constructed and one who feels real.</p>
       </div>
     </div>
     <div class="nav-wrap no-back">
-      <button class="continue-btn" data-next="question">
-        Continue to The Question
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="continue-btn" data-next="question">Continue to The Question<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
   </div>
 
-  <!-- ══ PANEL: THE QUESTION ══ -->
+  <!-- THE QUESTION -->
   <div class="tab-panel" id="panel-question">
     <div class="panel-inner">
       <span class="panel-eyebrow">The Methodology</span>
@@ -856,118 +455,91 @@
           <span class="supp-video-title">The Therapist's Question in Action</span>
         </div>
         <div class="supp-video-container">
-          <iframe
-            src="https://www.youtube.com/embed/hr8rFr4R2pc?rel=0&modestbranding=1"
+          <iframe src="https://www.youtube.com/embed/hr8rFr4R2pc?rel=0&modestbranding=1"
             title="The Therapist's Question in Action"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
+            allowfullscreen></iframe>
+        </div>
+        <div class="supp-transcript">
+          <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-therapist')">
+            <span class="transcript-label">Video Transcript</span>
+            <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="transcript-body" id="transcript-therapist">
+            <!-- PASTE THE THERAPIST'S QUESTION IN ACTION VIDEO TRANSCRIPT HERE -->
+            <p>Transcript coming soon.</p>
+          </div>
         </div>
         <p class="supp-video-foot">Watch before your coaching session. This video models the full reverse-engineering process in real time — including how to recognize the conscious justification, how to push past it, and how to apply the causal lock test to verify you've found the genuine hidden truth.</p>
       </div>
     </div>
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="overview">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Overview
-      </button>
-      <button class="continue-btn" data-next="redflags">
-        Continue to Red Flags
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="overview"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Overview</button>
+      <button class="continue-btn" data-next="redflags">Continue to Red Flags<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
   </div>
 
-  <!-- ══ PANEL: RED FLAGS ══ -->
+  <!-- RED FLAGS -->
   <div class="tab-panel" id="panel-redflags">
     <div class="panel-inner">
       <span class="panel-eyebrow">Before Your Coaching Session</span>
       <h2 class="panel-title">Four Signs You Haven't <em>Found It Yet</em></h2>
       <div class="panel-rule"></div>
       <p class="panel-lead">Read these before you start. This session will challenge every answer you give — expect your first instinct to be questioned. These four patterns describe the most common ways the excavation stalls, and how to correct each one in the moment.</p>
-
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 1</span>
-        <p class="redflag-text"><strong>The belief sounds like a virtue.</strong> <em>"She believes in protecting people." "He believes in doing things right."</em> These are too clean. Hidden truths carry an edge of fear, scarcity, or loss. If your character would put the belief on a motivational poster, keep digging.</p>
-      </div>
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 2</span>
-        <p class="redflag-text"><strong>The behavior is only partially explained.</strong> Apply the causal lock across all three instances from Lesson 1. If the belief accounts for some instances but strains on others, the belief isn't deep enough yet. The hidden truth explains all of it — including the times the behavior seems irrational or excessive.</p>
-      </div>
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 3</span>
-        <p class="redflag-text"><strong>Your character would admit to it readily.</strong> If your character would own this belief publicly without discomfort, you're still at the level of conscious justification. Hidden truths carry charge. They're the belief the character has never articulated — and would likely deny if named directly.</p>
-      </div>
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 4</span>
-        <p class="redflag-text"><strong>The behavior stops being inevitable.</strong> Read your causal lock sentence. If you can easily imagine your character choosing differently given the same belief, the connection isn't tight enough. The hidden truth makes the behavior feel like the only logical response — not one reasonable option among several.</p>
-      </div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 1</span><p class="redflag-text"><strong>The belief sounds like a virtue.</strong> <em>"She believes in protecting people." "He believes in doing things right."</em> These are too clean. Hidden truths carry an edge of fear, scarcity, or loss. If your character would put the belief on a motivational poster, keep digging.</p></div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 2</span><p class="redflag-text"><strong>The behavior is only partially explained.</strong> Apply the causal lock across all three instances from Lesson 1. If the belief accounts for some instances but strains on others, the belief isn't deep enough yet. The hidden truth explains all of it — including the times the behavior seems irrational or excessive.</p></div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 3</span><p class="redflag-text"><strong>Your character would admit to it readily.</strong> If your character would own this belief publicly without discomfort, you're still at the level of conscious justification. Hidden truths carry charge. They're the belief the character has never articulated — and would likely deny if named directly.</p></div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 4</span><p class="redflag-text"><strong>The behavior stops being inevitable.</strong> Read your causal lock sentence. If you can easily imagine your character choosing differently given the same belief, the connection isn't tight enough. The hidden truth makes the behavior feel like the only logical response — not one reasonable option among several.</p></div>
     </div>
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="question">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to The Question
-      </button>
-      <button class="continue-btn" data-next="session">
-        Continue to Your Session
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="question"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to The Question</button>
+      <button class="continue-btn" data-next="session">Continue to Your Session<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
   </div>
 
-  <!-- ══ PANEL: YOUR SESSION ══ -->
+  <!-- YOUR SESSION -->
   <div class="tab-panel" id="panel-session">
-    <div class="panel-inner">
-      <span class="panel-eyebrow">Lesson 2 · Coaching Session</span>
-      <h2 class="panel-title">Your <em>Session</em></h2>
-      <div class="panel-rule"></div>
-      <p class="panel-lead">You've done this before — the mechanics are familiar. What's different this time is the cognitive demand. In Lesson 1 your coach asked you to observe and catalog. In this session your coach will challenge every answer you give. That pressure is the methodology working.</p>
+    <div class="session-begin-band">
+      <div class="session-begin-inner">
+        <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
 
-      <div class="instructions-band">
-        <div class="instructions-band-title">Before You Start</div>
+        <!-- COPY PROMPT -->
+        <div class="prompt-wrap">
+          <span class="prompt-label">Your Coaching Prompt</span>
+          <p style="font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(250,244,232,0.75); line-height:1.7; margin-bottom:14px;">Click the button below to copy your coaching prompt. Once you've pasted it into Claude you can read it there — no need to review it here first.</p>
+          <button class="copy-btn" id="copy-prompt-btn" onclick="copyPrompt()">
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy Prompt to Clipboard
+          </button>
+        </div>
+
         <ul class="instructions-list">
-          <li data-n="1">Copy the prompt to clipboard and open Claude at claude.ai in a new tab. Paste the prompt to begin your session.</li>
-          <li data-n="2">Attach the <strong>PDF you printed from your Lesson 1 Reflection Journal</strong>. Your coach reads that work first — it is the foundation everything in this session builds on.</li>
+          <li data-n="1">Copy the prompt above and open Claude at <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> in a new tab. Paste the prompt to begin — you can read it there once it's in Claude.</li>
+          <li data-n="2">After pasting the prompt, attach the <strong>PDF you saved from your Lesson 1 Workspace</strong>. Your coach reads that work first — it is the foundation everything in this session builds on.</li>
           <li data-n="3">Set a timer for <strong>35 minutes</strong>. Do not cut the session short. The most important discovery in this lesson typically happens in the final ten minutes.</li>
-          <li data-n="4">When your session is complete, return here and fill out your <strong>Reflection Journal</strong> below, then print to PDF.</li>
+          <li data-n="4">When your session is complete, return here and fill out your <strong>Lesson 2 Workspace</strong> below. When finished, <strong>print to PDF</strong> — you will attach it to your Lesson 3 coaching session along with your Lesson 1 PDF.</li>
         </ul>
       </div>
-
-      <div class="save-reminder">
-        <div class="save-reminder-icon">
-          <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        </div>
-        <p><strong>Print and save this form as a PDF when complete.</strong> You will attach it to your Lesson 3 coaching session along with your Lesson 1 PDF. Your coach cannot read your accumulated work unless you bring both to the next session.</p>
-      </div>
-
-      <div class="jotform-wrap">
-        <div class="jotform-wrap-head">
-          <span class="jotform-eyebrow">Reflection Journal — Lesson 2</span>
-          <div class="jotform-title">The Hidden <em>Truth</em> · Workspace</div>
-        </div>
-        <div class="jotform-embed">
-          <!-- REPLACE 000000000000000 WITH LESSON 2 WORKSPACE JOTFORM ID -->
-          <script type="text/javascript" src="https://form.jotform.com/jsform/000000000000000"></script>
+    </div>
+    <div class="panel-inner" style="padding:0;">
+      <div class="jotform-section">
+        <div class="jotform-clip-wrap">
+          <div class="jotform-embed">
+            <!-- REPLACE 000000000000000 WITH LESSON 2 WORKSPACE JOTFORM ID -->
+            <script type="text/javascript" src="https://form.jotform.com/jsform/000000000000000"></script>
+          </div>
         </div>
       </div>
     </div>
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="redflags">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Red Flags
-      </button>
-      <button class="continue-btn" data-next="complete">
-        Continue to Complete Lesson
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="redflags"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Red Flags</button>
+      <button class="continue-btn" data-next="complete">Continue to Complete Lesson<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
   </div>
 
-  <!-- ══ PANEL: COMPLETE LESSON ══ -->
+  <!-- COMPLETE LESSON -->
   <div class="tab-panel" id="panel-complete">
     <div class="panel-inner">
-
-      <div class="lesson-complete-img">&nbsp;</div>
 
       <div class="complete-lesson-content">
         <span class="complete-lesson-title">Before You Move On — A Checklist</span>
@@ -983,7 +555,7 @@
           </li>
           <li>
             <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-            <span>Your <strong>Reflection Journal completed and saved as a PDF</strong> — you will attach it, along with your Lesson 1 PDF, to your Lesson 3 coaching session.</span>
+            <span>Your <strong>Lesson 2 Workspace completed and saved as a PDF</strong> — you will attach it, along with your Lesson 1 PDF, to your Lesson 3 coaching session.</span>
           </li>
         </ul>
       </div>
@@ -1008,58 +580,100 @@
         <span class="teds-note-sig">— Ted Baker</span>
       </div>
 
-      <div class="questions-block">
-        <div class="questions-head">
-          <span class="questions-eyebrow">Lesson 2 · Contact Ted</span>
-          <div class="questions-title">Questions &amp; <em>Submission</em></div>
-        </div>
-        <div class="jotform-embed">
-          <!-- REPLACE 000000000000001 WITH LESSON 2 SUBMISSION JOTFORM ID -->
-          <script type="text/javascript" src="https://form.jotform.com/jsform/000000000000001"></script>
-        </div>
-      </div>
+    </div>
 
+    <div class="congratulations-img-wrap">
+      &nbsp;
     </div>
 
     <div class="complete-dark">
       <span class="complete-dark-eyebrow">When You're Ready</span>
       <p class="complete-dark-heading">Move to Lesson 3: The Formative Wound.</p>
       <p class="complete-dark-sub">The excavation finds its origin.</p>
-
       <div class="complete-instruction">
         <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        <p>Make sure you have <strong>printed your Reflection Journal to PDF</strong> from the Your Session tab — you'll need it in Lesson 3. Then click <strong>Mark as Complete</strong> below to record your progress and unlock Lesson 3.</p>
+        <p>Make sure you have <strong>printed your Lesson 2 Workspace to PDF</strong> from the Your Session tab — you'll need it in Lesson 3. Then click <strong>Mark as Complete</strong> below to record your progress and unlock Lesson 3.</p>
       </div>
-
       <div class="complete-rule"></div>
       <p class="complete-quote">"Because I believe _______, I must _______."<br>When that sentence feels inevitable — you've found it.</p>
       <span class="complete-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
+      <!-- REPLACE LESSON-3-LECTURE-URL WITH ACTUAL SYSTEME.IO LESSON 3 URL -->
+      <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/LESSON-3-LECTURE-URL"
+         target="_blank" rel="noopener"
+         class="mark-complete-btn">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark as Complete
+      </a>
+    </div>
 
-      <div style="margin-top: 28px; display: flex; justify-content: center;">
-        <!-- REPLACE LESSON-3-LECTURE-URL WITH ACTUAL SYSTEME.IO LESSON 3 URL -->
-        <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/LESSON-3-LECTURE-URL"
-           target="_blank" rel="noopener"
-           class="mark-complete-btn">
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Mark as Complete
-        </a>
+    <!-- CONTACT TED -->
+    <div class="panel-inner">
+      <div class="jotform-section" style="margin-top:32px;">
+        <div class="jotform-embed">
+          <!-- REPLACE 000000000000001 WITH LESSON 2 CONTACT JOTFORM ID -->
+          <script type="text/javascript" src="https://form.jotform.com/jsform/000000000000001"></script>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    var TAB_ORDER = ['overview', 'question', 'redflags', 'session', 'complete'];
+    /* ── PROMPT ── */
+    var LESSON2_PROMPT = "ROLE\nYour role in this session is to help me uncover the hidden truth operating beneath my character's anchor behavior — the subconscious belief that makes the behavior feel not just understandable, but inevitable. You are a therapist applying disciplined analytical reasoning to evidence I have already documented. Do not suggest beliefs. Do not tell me what my character thinks. Ask questions that help me excavate what I already know.\n\nBOUNDARIES — WHAT TO AVOID\nDo not suggest hidden truths or beliefs for me. Do not accept the first answer I give — it will almost always be the conscious justification. Challenge every answer with: \"How do we know that's the belief driving the behavior, and not what your character would just say out loud?\" Do not allow me to stop at a virtue: beliefs that sound like a motivational poster are not hidden truths. Do not let me proceed until the causal lock test passes cleanly.\n\nTWO REQUIRED DELIVERABLES\n1. One hidden truth — a subconscious belief your character has never consciously articulated that makes their anchor behavior feel inevitable.\n2. One causal lock statement: \"Because I believe [hidden truth], I must [anchor behavior].\"\n\nSESSION STRUCTURE\n\nStage 1: Apply The Therapist's Question (10 minutes)\nRead my Lesson 1 PDF carefully. Then ask me: \"What would your character have to believe — about themselves, about other people, or about how the world works — for this behavior to feel like the only reasonable response?\" Record my first answer. This will almost certainly be the conscious justification. Note it, then ask: \"That's what your character might say out loud. What belief is operating beneath that?\"\n\nStage 2: Push Past the Conscious Layer (10 minutes)\nChallenge every answer I give. Apply these four red flag tests:\n• Does the belief sound like a virtue? Push deeper.\n• Would my character admit to it readily? If yes, push deeper.\n• Does the belief only partially explain the behavior across all three instances? Push deeper.\n• Does the behavior still feel inevitable given this belief? If not, push deeper.\nKeep asking: \"What must they believe for this to feel like the ONLY reasonable response — not a reasonable one among several?\"\n\nStage 3: Test the Causal Lock (10 minutes)\nOnce I have a candidate belief, ask me to complete this sentence: \"Because I believe [X], I must [anchor behavior].\" Read the completed sentence back to me. Ask: Does the behavior feel like an inevitable consequence of that belief? Or does it require more explanation? If it requires explanation, we haven't found the right belief yet. Push me to refine.\n\nStage 4: Confirmation (5 minutes)\nWhen the causal lock reads as \"of course — there's no other logical response,\" help me write the final hidden truth as a single precise sentence. Confirm: Is this what your character has never consciously admitted? Does it carry an edge of fear, scarcity, or loss? If yes, we're done.\n\nADAPTIVE COACHING\nAdjust based on my Lesson 1 PDF:\n— If I'm working on a protagonist: The hidden truth must be strong enough to sustain an entire arc. A belief this foundational should cast a shadow over every major decision they make.\n— If I'm working on a supporting character: Still push for precision, but the hidden truth doesn't need to carry the whole story — it needs to explain what makes this character consistent and memorable.\n— If I gave vague answers in Lesson 1: Go back to the specific instances. Ask: \"Looking at these three instances — what is the one thing your character must believe for ALL of them to make sense?\"\n— If I haven't started writing: Trust what emerges about how they see the world. Your intuition about the character contains the answer.\n— If I'm revising: You've already seen this character in action. What belief explains the patterns you've already written?\n\nCRITICAL REMINDERS\n— I'm the expert on my character. You're the guide helping me access what I already know.\n— The first answer is almost never the hidden truth.\n— The belief must carry emotional weight — fear, loss, scarcity. Virtues don't qualify.\n— The causal lock must feel inevitable, not just plausible.\n— The deliverables are concrete: 1 hidden truth + causal lock with behavior.\n\nBEGIN\nI've attached my completed Lesson 1 Workspace PDF. Please read it first, then begin Stage 1 by stating my character's anchor behavior back to me and applying the Therapist's Question.";
+
+    /* ── COPY ── */
+    function copyPrompt() {
+      var btn = document.getElementById('copy-prompt-btn');
+      var origHTML = btn.innerHTML;
+      var scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+      function showCopied() {
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() { window.scrollTo(0, scrollY); }, 50);
+        setTimeout(function() { btn.innerHTML = origHTML; btn.classList.remove('copied'); }, 2500);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(LESSON2_PROMPT).then(showCopied).catch(function() { fallbackCopy(scrollY, showCopied); });
+      } else { fallbackCopy(scrollY, showCopied); }
+    }
+    function fallbackCopy(scrollY, callback) {
+      var ta = document.createElement('textarea');
+      ta.value = LESSON2_PROMPT;
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); callback(); } catch(e) { alert('Please press Ctrl+C (or Cmd+C) to copy.'); }
+      document.body.removeChild(ta);
+      setTimeout(function() { window.scrollTo(0, scrollY); }, 50);
+    }
+
+    /* ── JOTFORM resize ── */
+    window.handleIFrameMessage = function(e) {
+      if (typeof e.data === 'object') { return; }
+      var args = e.data.split(':');
+      var iframe = null;
+      if (args.length > 2) { iframe = document.getElementById('JotFormIFrame-' + args[args.length - 1]); }
+      if (!iframe) { return; }
+      switch (args[0]) {
+        case 'setHeight': iframe.style.height = args[1] + 'px'; break;
+        case 'collapseErrorPage': if (iframe.clientHeight > Number(args[1])) { iframe.style.height = args[1] + 'px'; } break;
+        case 'reloadPage': window.location.reload(); break;
+      }
+    };
+    if (window.addEventListener) { window.addEventListener('message', window.handleIFrameMessage, false); }
+    else if (window.attachEvent) { window.attachEvent('onmessage', window.handleIFrameMessage); }
+
+    /* ── TABS ── */
+    var TAB_ORDER = ['video','overview','question','redflags','session','complete'];
+    var heroWelcome = document.getElementById('hero-welcome');
+    var heroVideo   = document.getElementById('hero-video');
 
     function activateTab(tabId, markPrev) {
-      document.getElementById('blank-state').style.display = 'none';
       document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
       document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
-
       var btn   = document.querySelector('[data-tab="' + tabId + '"]');
       var panel = document.getElementById('panel-' + tabId);
       if (btn)   btn.classList.add('active');
       if (panel) panel.classList.add('active');
-
       if (markPrev) {
         var prevIdx = TAB_ORDER.indexOf(tabId) - 1;
         if (prevIdx >= 0) {
@@ -1067,35 +681,47 @@
           if (prevBtn) prevBtn.classList.add('done');
         }
       }
+      /* Hero area: hide welcome on tab activation; show video only on Video tab */
+      heroWelcome.style.display = 'none';
+      heroVideo.style.display   = (tabId === 'video') ? 'block' : 'none';
 
-      if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      document.querySelector('.tab-bar').scrollIntoView({ behavior: 'smooth' });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (btn) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+      window.scrollTo({ top:0, behavior:'smooth' });
     }
 
-    /* tab bar clicks */
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-tab'), false);
-      });
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-tab'), false); });
     });
-
-    /* continue buttons — mark previous done */
     document.querySelectorAll('.continue-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-next'), true);
-      });
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-next'), true); });
     });
-
-    /* back buttons */
     document.querySelectorAll('.back-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-prev'), false);
-      });
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-prev'), false); });
     });
 
-    function toggleTranscript(btn) {
-      var body   = document.getElementById('transcript-body');
+    /* ── TAB BAR SCROLL HINT ── */
+    var tabBar        = document.getElementById('tab-bar');
+    var scrollHint    = document.getElementById('tab-scroll-hint');
+    var scrollHintLeft = document.getElementById('tab-scroll-hint-left');
+
+    function updateScrollHint() {
+      if (!tabBar) { return; }
+      var atEnd   = tabBar.scrollLeft + tabBar.clientWidth >= tabBar.scrollWidth - 4;
+      var atStart = tabBar.scrollLeft <= 4;
+      if (scrollHint)     scrollHint.classList.toggle('hidden', atEnd);
+      if (scrollHintLeft) scrollHintLeft.classList.toggle('visible', !atStart);
+    }
+    function scrollTabBar()     { if (!tabBar) { return; } tabBar.scrollBy({ left:  160, behavior:'smooth' }); }
+    function scrollTabBarLeft() { if (!tabBar) { return; } tabBar.scrollBy({ left: -160, behavior:'smooth' }); }
+
+    if (tabBar) {
+      tabBar.addEventListener('scroll', updateScrollHint);
+      window.addEventListener('resize', updateScrollHint);
+      setTimeout(updateScrollHint, 100);
+    }
+
+    function toggleTranscript(btn, bodyId) {
+      var body   = document.getElementById(bodyId);
       var isOpen = body.classList.contains('open');
       body.classList.toggle('open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
