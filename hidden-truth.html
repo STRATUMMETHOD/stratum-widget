@@ -372,24 +372,32 @@
     .redflag-text strong { font-weight: 500; color: var(--brown-mid); }
     .redflag-text em { font-style: italic; }
 
-    /* ══ INSTRUCTIONS ══ */
-    .instructions-band { background: var(--brown); padding: 20px 24px; margin-bottom: 24px; }
-    .instructions-band-title {
+    /* ══ SESSION BEGIN BAND ══ */
+    .session-begin-band { background: var(--brown); width: 100%; padding: 0; margin-bottom: 0; }
+    .session-begin-inner { padding: 28px 32px 24px; max-width: 760px; margin: 0 auto; }
+    .session-begin-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 300; color: var(--cream); margin-bottom: 12px;
+      font-size: 26px; font-weight: 500; letter-spacing: 0.03em;
+      color: var(--cream); margin-bottom: 20px;
+      padding-bottom: 14px; border-bottom: 1px solid rgba(196,168,130,0.25); line-height: 1.2;
     }
-    .instructions-list { list-style: none; }
+    .session-begin-title em { color: var(--tan); font-style: italic; }
+
+    /* ══ INSTRUCTIONS ══ */
+    .instructions-list { list-style: none; margin-top: 4px; }
     .instructions-list li {
-      font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.85);
-      line-height: 1.72; padding: 7px 0; border-bottom: 1px solid rgba(196,168,130,0.12);
-      display: flex; gap: 10px; align-items: flex-start;
+      font-size: var(--body-sm); font-weight: 300;
+      color: rgba(250,244,232,0.85); line-height: 1.72;
+      padding: 9px 0 9px 26px;
+      border-bottom: 1px solid rgba(196,168,130,0.12);
+      display: block; position: relative;
     }
     .instructions-list li:last-child { border-bottom: none; }
     .instructions-list li::before {
       content: attr(data-n);
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); color: var(--tan);
-      flex-shrink: 0; margin-top: 2px; min-width: 14px;
+      position: absolute; left: 0; top: 11px;
     }
     .instructions-list li strong { color: var(--tan); font-weight: 500; }
 
@@ -885,14 +893,9 @@
 
   <!-- ══ PANEL: YOUR SESSION ══ -->
   <div class="tab-panel" id="panel-session">
-    <div class="panel-inner">
-      <span class="panel-eyebrow">The Excavation Ladder · Coaching Session</span>
-      <h2 class="panel-title">Your <em>Session</em></h2>
-      <div class="panel-rule"></div>
-      <p class="panel-lead">You've done this before — the mechanics are familiar. What's different this time is the cognitive demand. In The Surface Patterns your coach asked you to observe and catalog. In this session your coach will challenge every answer you give. That pressure is the methodology working.</p>
-
-      <div class="instructions-band">
-        <div class="instructions-band-title">Before You Start</div>
+    <div class="session-begin-band">
+      <div class="session-begin-inner">
+        <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
         <ul class="instructions-list">
           <li data-n="1">Copy the prompt to clipboard and open Claude at claude.ai in a new tab. Paste the prompt to begin your session.</li>
           <li data-n="2">Attach the <strong>PDF you printed from your Surface Pattern Reflection Journal</strong>. Your coach reads that work first — it is the foundation everything in this session builds on.</li>
@@ -900,14 +903,9 @@
           <li data-n="4">When your session is complete, return here and fill out your <strong>Workspace</strong> below, then print to PDF.</li>
         </ul>
       </div>
+    </div>
 
-      <div class="save-reminder">
-        <div class="save-reminder-icon">
-          <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        </div>
-        <p><strong>Print and save this form as a PDF when complete.</strong> You will attach it to your Lesson 3 coaching session along with your Surface Pattern PDF. Your coach cannot read your accumulated work unless you bring both to the next session.</p>
-      </div>
-
+    <div class="panel-inner" style="padding-top: 28px;">
       <div class="jotform-wrap">
         <div class="jotform-wrap-head">
           <span class="jotform-eyebrow">The Hidden Truth · Workspace</span>
