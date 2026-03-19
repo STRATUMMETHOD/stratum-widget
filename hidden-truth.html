@@ -45,9 +45,17 @@
       border: none; display: block;
     }
 
-    /* ── Welcome image — full-bleed ── */
-    .hero-welcome { display: block; line-height: 0; }
-    .hero-welcome img { width: 100%; display: block; }
+    /* ── Welcome image — full-bleed, override Systeme.io centering ── */
+    html, body { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    .hero-welcome {
+      display: block !important; line-height: 0 !important;
+      width: 100% !important; margin: 0 !important; padding: 0 !important;
+      text-align: left !important;
+    }
+    .hero-welcome img {
+      width: 100% !important; max-width: 100% !important;
+      display: block !important; margin: 0 !important; padding: 0 !important;
+    }
 
     /* ── Transcript ── */
     .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
