@@ -120,6 +120,40 @@
     .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; }
     .video-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
 
+    /* ══ YOUTUBE FACADE — crisp thumbnail, loads iframe on click ══ */
+    .yt-facade {
+      position: relative; width: 100%; padding-bottom: 56.25%;
+      background: #000; cursor: pointer; overflow: hidden;
+    }
+    .yt-facade img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      transition: transform 0.3s ease;
+    }
+    .yt-facade:hover img { transform: scale(1.02); }
+    .yt-facade .yt-play {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 68px; height: 48px;
+      background: #ff0000;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, transform 0.2s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .yt-facade:hover .yt-play { background: #cc0000; transform: translate(-50%, -50%) scale(1.1); }
+    .yt-facade .yt-play svg {
+      width: 24px; height: 24px; fill: #fff;
+      margin-left: 4px;
+    }
+    .yt-facade iframe {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      border: none; display: none;
+    }
+    .yt-facade.playing img,
+    .yt-facade.playing .yt-play { display: none; }
+    .yt-facade.playing iframe { display: block; }
+
     /* Transcript */
     .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
     .transcript-btn { width: 100%; background: transparent; border: none; padding: 13px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; gap: 12px; }
@@ -166,8 +200,7 @@
     .supp-video-head { background: var(--cream-mid); padding: 14px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--tan-light); flex-wrap: wrap; }
     .supp-video-badge { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brown-mid); background: var(--tan-faint); border: 1px solid var(--tan-light); padding: 4px 11px; flex-shrink: 0; }
     .supp-video-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 15px; font-weight: 500; color: var(--brown); line-height: 1.3; }
-    .supp-video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #100a04; }
-    .supp-video-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
+    .supp-video-container { position: relative; width: 100%; overflow: hidden; background: #100a04; }
     .supp-video-foot { padding: 14px 20px; background: var(--cream-dark); font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); border-top: 1px solid var(--tan-light); }
 
     /* ══ REQUIREMENTS ══ */
@@ -286,7 +319,11 @@
   <!-- Video — shown only when Video tab is active -->
   <div class="hero-video" id="hero-video">
     <div class="video-container">
-      <iframe src="https://www.youtube.com/embed/4GEodVaKiKc?rel=0&modestbranding=1" title="Lesson 1: The Surface Pattern — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="yt-facade" onclick="playFacade(this,'4GEodVaKiKc')">
+        <img src="https://i.ytimg.com/vi/4GEodVaKiKc/maxresdefault.jpg" alt="The Surface Pattern — STRATUM" loading="lazy">
+        <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+        <iframe title="Lesson 1: The Surface Pattern — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
     </div>
     <div class="transcript">
       <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-main')">
@@ -354,7 +391,11 @@
           <span class="supp-video-title">Self Doubt — Why You Know More Than You Think</span>
         </div>
         <div class="supp-video-container">
-          <iframe src="https://www.youtube.com/embed/nmmHoMxyZL8?rel=0&modestbranding=1" title="Self Doubt — Why You Know More Than You Think" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <div class="yt-facade" onclick="playFacade(this,'nmmHoMxyZL8')">
+            <img src="https://i.ytimg.com/vi/nmmHoMxyZL8/maxresdefault.jpg" alt="Self Doubt — Why You Know More Than You Think" loading="lazy">
+            <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <iframe title="Self Doubt — Why You Know More Than You Think" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
         </div>
         <div class="supp-transcript">
           <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-self-doubt')">
@@ -402,7 +443,11 @@
           <span class="supp-video-title">Behavior vs. Trait — The Camera Test</span>
         </div>
         <div class="supp-video-container">
-          <iframe src="https://www.youtube.com/embed/rIeMCJZWfMg?rel=0&modestbranding=1" title="Behavior vs. Trait — The Camera Test" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <div class="yt-facade" onclick="playFacade(this,'rIeMCJZWfMg')">
+            <img src="https://i.ytimg.com/vi/rIeMCJZWfMg/maxresdefault.jpg" alt="Behavior vs. Trait — The Camera Test" loading="lazy">
+            <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <iframe title="Behavior vs. Trait — The Camera Test" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
         </div>
         <div class="supp-transcript">
           <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-camera-test')">
@@ -618,6 +663,12 @@
       tabBar.addEventListener('scroll', updateScrollHint);
       window.addEventListener('resize', updateScrollHint);
       setTimeout(updateScrollHint, 100);
+    }
+
+    function playFacade(el, videoId) {
+      var iframe = el.querySelector('iframe');
+      iframe.src = 'https://www.youtube.com/embed/' + videoId + '?rel=0&modestbranding=1&autoplay=1';
+      el.classList.add('playing');
     }
 
     function toggleTranscript(btn, bodyId) {
