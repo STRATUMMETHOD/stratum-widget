@@ -372,6 +372,36 @@
     .redflag-text strong { font-weight: 500; color: var(--brown-mid); }
     .redflag-text em { font-style: italic; }
 
+    /* ══ COACHING PROMPT ══ */
+    .prompt-wrap { margin-bottom: 24px; }
+    .prompt-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px; font-weight: 500; color: var(--cream);
+      display: block; margin-bottom: 8px;
+    }
+    .prompt-instruction {
+      font-size: var(--body-sm); font-weight: 300;
+      color: rgba(250,244,232,0.72); line-height: 1.65; margin-bottom: 14px;
+    }
+    .prompt-text {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: var(--body-sm); font-weight: 300;
+      color: rgba(250,244,232,0.85); line-height: 1.75;
+      background: rgba(0,0,0,0.25); border: 1px solid rgba(196,168,130,0.2);
+      padding: 18px 20px; margin-bottom: 14px; white-space: pre-wrap;
+    }
+    .copy-prompt-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--tan); border: none; padding: 11px 22px;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--brown); cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .copy-prompt-btn:hover { background: var(--cream); color: var(--brown); }
+    .copy-prompt-btn.copied { background: var(--brown-mid); color: var(--tan); }
+
     /* ══ SESSION BEGIN BAND ══ */
     .session-begin-band { background: var(--brown); width: 100%; padding: 0; margin-bottom: 0; }
     .session-begin-inner { padding: 28px 32px 24px; max-width: 760px; margin: 0 auto; }
@@ -896,9 +926,32 @@
     <div class="session-begin-band">
       <div class="session-begin-inner">
         <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
+
+        <div class="prompt-wrap">
+          <span class="prompt-label">Your Coaching Prompt</span>
+          <p class="prompt-instruction">Click the button below to copy your coaching prompt. Once you've pasted it into Claude you can read it there — no need to review it here first.</p>
+          <div class="prompt-text" id="session-prompt">I'm working on uncovering my character's hidden truth using the STRATUM excavation method. I've completed my Surface Pattern work — I've identified my character's anchor behavior and documented at least three recurring instances across different contexts. I'm attaching that work as a PDF. Please read it before we begin.
+
+Today's session is about moving from observer to interpreter. My job is to find the belief beneath the behavior — not the conscious justification my character would give if asked, but the deeper operating assumption that makes the behavior feel not just reasonable, but inevitable.
+
+CRITICAL REMINDERS
+— I'm the expert on my character; you're the guide helping me access what I already know
+— Push past my first answer — it will almost always be the conscious justification
+— Every candidate belief must lock with all three behavioral instances or we keep refining
+— Keep me in interpreter mode — discovering the hidden truth, not rationalizing the surface
+— The deliverables are concrete: one hidden truth + a causal lock statement (Because I believe _______, I must _______)
+
+BEGIN
+I'm ready to uncover my character's hidden truth. Please read the attached PDF first, then begin Stage 1 by asking me the therapist's question: what must my character believe for their anchor behavior to feel like the only reasonable response?</div>
+          <button class="copy-prompt-btn" id="copy-btn" onclick="copyPrompt()">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy Prompt to Clipboard
+          </button>
+        </div>
+
         <ul class="instructions-list">
-          <li data-n="1">Copy the prompt to clipboard and open Claude at claude.ai in a new tab. Paste the prompt to begin your session.</li>
-          <li data-n="2">Attach the <strong>PDF you printed from your Surface Pattern Reflection Journal</strong>. Your coach reads that work first — it is the foundation everything in this session builds on.</li>
+          <li data-n="1">Copy the prompt above and open Claude at claude.ai in a new tab. Paste the prompt to begin — you can read it there once it's in Claude.</li>
+          <li data-n="2">After pasting the prompt, attach the <strong>PDF you printed from your Surface Pattern Workspace</strong>. Your coach reads that work first — it is the foundation everything in this session builds on.</li>
           <li data-n="3">Set a timer for <strong>35 minutes</strong>. Do not cut the session short. The most important discovery in this lesson typically happens in the final ten minutes.</li>
           <li data-n="4">When your session is complete, return here and fill out your <strong>Workspace</strong> below, then print to PDF.</li>
         </ul>
@@ -1057,6 +1110,19 @@
         activateTab(btn.getAttribute('data-prev'), false);
       });
     });
+
+    function copyPrompt() {
+      var text = document.getElementById('session-prompt').textContent.trim();
+      var btn  = document.getElementById('copy-btn');
+      navigator.clipboard.writeText(text).then(function() {
+        btn.classList.add('copied');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied';
+        setTimeout(function() {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy Prompt to Clipboard';
+        }, 2500);
+      });
+    }
 
     function toggleTranscript(btn) {
       var body   = document.getElementById('transcript-body');
