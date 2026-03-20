@@ -389,6 +389,7 @@
       color: rgba(250,244,232,0.85); line-height: 1.75;
       background: rgba(0,0,0,0.25); border: 1px solid rgba(196,168,130,0.2);
       padding: 18px 20px; margin-bottom: 14px; white-space: pre-wrap;
+      display: none;
     }
     .copy-prompt-btn {
       display: inline-flex; align-items: center; gap: 8px;
@@ -547,61 +548,20 @@
       color: var(--brown); display: block; margin-top: 14px;
     }
 
-    /* ── Mark as Complete ── */
-    .complete-dark { background: var(--brown); padding: 36px 32px 32px; text-align: center; }
+    .complete-dark { background: var(--brown); padding: 44px 32px; text-align: center; }
     .complete-dark-eyebrow {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 14px;
+      color: var(--tan); display: block; margin-bottom: 12px;
     }
     .complete-dark-heading {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 24px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.45; margin-bottom: 6px;
+      font-size: 26px; font-weight: 300; color: var(--cream); margin-bottom: 8px; line-height: 1.2;
     }
     .complete-dark-sub {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.65); line-height: 1.55; margin-bottom: 24px;
+      font-size: var(--body-sm); font-weight: 300; font-style: italic;
+      color: rgba(196,168,130,0.7); margin-bottom: 28px;
     }
-    .complete-instruction {
-      max-width: 480px; margin: 0 auto 24px;
-      background: rgba(196,168,130,0.1); border: 1px solid rgba(196,168,130,0.2);
-      padding: 16px 20px; display: flex; align-items: flex-start; gap: 12px; text-align: left;
-    }
-    .complete-instruction svg {
-      width: 16px; height: 16px; stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      flex-shrink: 0; margin-top: 2px;
-    }
-    .complete-instruction p {
-      font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.82); line-height: 1.7;
-    }
-    .complete-instruction p strong { color: var(--tan); font-weight: 500; }
-    .complete-rule { width: 36px; height: 1px; background: rgba(196,168,130,0.25); margin: 0 auto 20px; }
-    .complete-quote {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 17px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.75); line-height: 1.65; margin-bottom: 14px;
-    }
-    .complete-attr {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase;
-      color: rgba(196,168,130,0.55);
-    }
-    .mark-complete-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--tan); border: none; padding: 16px 36px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--brown); text-decoration: none; transition: background 0.2s, color 0.2s;
-    }
-    .mark-complete-btn:hover { background: var(--cream); color: var(--brown); }
-    .mark-complete-btn svg {
-      width: 15px; height: 15px; stroke: var(--brown); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-
     /* ══ RESPONSIVE ══ */
     @media (max-width: 580px) {
       .supp-video-head { flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -985,81 +945,21 @@ I'm ready to uncover my character's hidden truth. Please read the attached PDF f
   <div class="tab-panel" id="panel-complete">
 
     <div class="congratulations-img-wrap">
-      <img src="https://stratummethod.github.io/stratum-widget/congratulations-hidden-truth.png" alt="Congratulations — The Hidden Truth Complete">
-    </div>
-
-    <div class="panel-inner">
-
-      <div class="complete-lesson-content">
-        <span class="complete-lesson-title">Before You Move On — A Checklist</span>
-        <p>The excavation ladder only works if each rung is solid before you step to the next. Make sure you have all three deliverables from this lesson before continuing to Lesson 3.</p>
-        <ul class="complete-lesson-checklist">
-          <li>
-            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-            <span>One clear <strong>hidden truth</strong> — not a surface justification, not a virtue, but the belief your character has never consciously articulated that makes their behavior feel inevitable.</span>
-          </li>
-          <li>
-            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-            <span>A <strong>causal lock statement</strong> that holds: <em>"Because I believe _______, I must _______."</em> The behavior should feel like a logical consequence of the belief — not a coincidence.</span>
-          </li>
-          <li>
-            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-            <span>Your <strong>Workspace completed and saved as a PDF</strong> — you will attach it, along with your Surface Pattern PDF, to your Lesson 3 coaching session.</span>
-          </li>
-        </ul>
-      </div>
-
-      <div class="why-block">
-        <span class="why-block-title">What You've Established</span>
-        <p>In The Surface Patterns you documented what your character does. Today you uncovered why — the belief operating beneath their awareness that makes their behavior feel not just reasonable, but necessary.</p>
-        <p>That belief is now the lens through which every scene you write will gain new precision. You know what your character is protecting. You know what they cannot stop doing. You know the logic that runs underneath the visible surface.</p>
-        <p>In Lesson 3 you will trace this belief back to its origin — the specific experience that made it feel true. Your character believes this. But they weren't born believing it. Something taught them. That is the next question.</p>
-      </div>
-
-      <div class="bridge-block">
-        <span class="bridge-eyebrow">A Question to Carry Into Lesson 3</span>
-        <p class="bridge-question">"Your character believes this. But they weren't born believing it. Something taught them. What was it?"</p>
-        <p class="bridge-note">You don't need an answer right now. This is the exact question that opens Lesson 3: The Formative Wound. Sit with it. Your character's belief had an origin — a specific moment or experience that made the hidden truth feel like the only reasonable conclusion. Your adaptive unconscious is already working on it.</p>
-      </div>
-
-      <div class="teds-note">
-        <span class="teds-note-eyebrow">A Note from Ted</span>
-        <p>The hidden truth you uncovered today is the architecture beneath everything your character does. Every scene they appear in is now more legible to you — because you know what belief is running underneath the behavior.</p>
-        <p>Lesson 3 is where this belief gets an origin. A wound. A specific moment where the world taught your character something that changed how they saw themselves in it. That's where the excavation goes next.</p>
-        <span class="teds-note-sig">— Ted Baker</span>
-      </div>
-
+      <img src="https://stratummethod.github.io/stratum-widget/congratulations-hidden-truth.png" alt="Congratulations — You've Completed The Hidden Truth">
     </div>
 
     <div class="complete-dark">
       <span class="complete-dark-eyebrow">When You're Ready</span>
       <p class="complete-dark-heading">Move to Lesson 3: The Formative Wound.</p>
       <p class="complete-dark-sub">The excavation finds its origin.</p>
-
-      <div class="complete-instruction">
-        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        <p>Make sure you have <strong>printed your Workspace to PDF</strong> from the Your Session tab — you'll need it in Lesson 3. Then click <strong>Mark as Complete</strong> below to record your progress and unlock Lesson 3.</p>
-      </div>
-
-      <div class="complete-rule"></div>
-      <p class="complete-quote">"Because I believe _______, I must _______."<br>When that sentence feels inevitable — you've found it.</p>
-      <span class="complete-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
-
-      <div style="margin-top: 28px; display: flex; justify-content: center;">
-        <!-- REPLACE LESSON-3-LECTURE-URL WITH ACTUAL SYSTEME.IO LESSON 3 URL -->
-        <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/LESSON-3-LECTURE-URL"
-           target="_blank" rel="noopener"
-           class="mark-complete-btn">
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Mark as Complete
-        </a>
-      </div>
     </div>
 
-    <!-- Contact Ted Jotform — L1 Complete tab format -->
-    <div class="panel-inner" style="padding-top: 0;">
-      <div style="margin-top: 32px;">
-        <script type="text/javascript" src="https://form.jotform.com/jsform/260734440316047"></script>
+    <!-- Contact Ted Jotform -->
+    <div class="panel-inner">
+      <div class="jotform-section" style="margin-top: 32px;">
+        <div class="jotform-embed">
+          <script type="text/javascript" src="https://form.jotform.com/jsform/260734440316047"></script>
+        </div>
       </div>
     </div>
 
