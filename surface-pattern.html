@@ -492,9 +492,18 @@
         <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
 
         <div class="prompt-wrap" style="margin-bottom:20px;">
-  <div class="prompt-wrap" style="margin-bottom:20px;">
+ <div class="prompt-wrap" style="margin-bottom:20px;">
+  <h3 style="font-family:'Cinzel',serif;
+             font-size:1rem;
+             font-weight:600;
+             color:#6b4c2e;
+             margin-bottom:12px;">
+    Your Coaching Prompt
+  </h3>
   <button id="copy-prompt-btn" onclick="copyPrompt()"
-    style="display:inline-block;
+    style="display:inline-flex;
+           align-items:center;
+           gap:8px;
            background:#b87333;
            color:#faf4e8;
            font-family:'Cinzel',serif;
@@ -505,9 +514,20 @@
            border:1px solid #b87333;
            cursor:pointer;
            transition:background 0.3s, border-color 0.3s;">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+      <rect x="9" y="9" width="13" height="13" rx="2"/>
+      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+    </svg>
     COPY PROMPT TO CLIPBOARD
   </button>
 </div>
+
+<style>
+  #copy-prompt-btn:hover {
+    background:#6b4c2e;   /* darker brown hover */
+    border-color:#6b4c2e;
+  }
+</style>
 
 
 
