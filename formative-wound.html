@@ -269,16 +269,34 @@
 </head>
 <body>
 
+  <!-- TAB BAR -->
+  <div class="tab-bar-wrap">
+    <nav class="tab-bar" id="tab-bar" aria-label="Lesson sections">
+      <button class="tab-btn" data-tab="video"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Video</button>
+      <button class="tab-btn" data-tab="overview"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Overview</button>
+      <button class="tab-btn" data-tab="discovery"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>The Discovery</button>
+      <button class="tab-btn" data-tab="redflags"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Red Flags</button>
+      <button class="tab-btn" data-tab="session"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Your Session</button>
+      <button class="tab-btn" data-tab="complete"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Complete Lesson</button>
+    </nav>
+    <div class="tab-scroll-hint-left" id="tab-scroll-hint-left">
+      <div class="tab-scroll-arrow" onclick="scrollTabBarLeft()"><svg viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg></div>
+    </div>
+    <div class="tab-scroll-hint" id="tab-scroll-hint">
+      <div class="tab-scroll-arrow" onclick="scrollTabBar()"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+    </div>
+  </div>
+
   <!-- HERO WELCOME -->
   <div class="hero-welcome" id="hero-welcome">
-    <img src="https://stratummethod.github.io/stratum-widget/welcom-surface-patterns.png" alt="Welcome to The Formative Wound — STRATUM">
+    <img src="https://stratummethod.github.io/stratum-widget/welcome-formative-wound.png" alt="Welcome to The Formative Wound — STRATUM">
   </div>
 
   <!-- HERO VIDEO -->
   <div class="hero-video" id="hero-video">
     <div class="video-container">
-      <div class="yt-facade" onclick="playFacade(this,'4GEodVaKiKc')">
-        <img src="https://i.ytimg.com/vi/4GEodVaKiKc/maxresdefault.jpg" alt="The Formative Wound — STRATUM" loading="lazy">
+      <div class="yt-facade" onclick="playFacade(this,'JTnQJTh6v50')">
+        <img src="https://i.ytimg.com/vi/JTnQJTh6v50/maxresdefault.jpg" alt="The Formative Wound — STRATUM" loading="lazy">
         <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
         <iframe title="Lesson 3: The Formative Wound — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
       </div>
@@ -304,24 +322,6 @@
         <p>The coaching session is forty minutes. The wound typically emerges in the second half. Do not cut it short.</p>
         <p>When your session is complete, return here to open your Workspace and record your deliverables. Print and save as a PDF — you will attach it to your Lesson 4 session.</p>
       </div>
-    </div>
-  </div>
-
-  <!-- TAB BAR -->
-  <div class="tab-bar-wrap">
-    <nav class="tab-bar" id="tab-bar" aria-label="Lesson sections">
-      <button class="tab-btn" data-tab="video"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Video</button>
-      <button class="tab-btn" data-tab="overview"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Overview</button>
-      <button class="tab-btn" data-tab="discovery"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>The Discovery</button>
-      <button class="tab-btn" data-tab="redflags"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Red Flags</button>
-      <button class="tab-btn" data-tab="session"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Your Session</button>
-      <button class="tab-btn" data-tab="complete"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Complete Lesson</button>
-    </nav>
-    <div class="tab-scroll-hint-left" id="tab-scroll-hint-left">
-      <div class="tab-scroll-arrow" onclick="scrollTabBarLeft()"><svg viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg></div>
-    </div>
-    <div class="tab-scroll-hint" id="tab-scroll-hint">
-      <div class="tab-scroll-arrow" onclick="scrollTabBar()"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
     </div>
   </div>
 
