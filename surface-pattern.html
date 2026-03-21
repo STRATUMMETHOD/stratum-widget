@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Surface Pattern — STRATUM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -32,56 +32,38 @@
     }
     .tab-bar::-webkit-scrollbar { display: none; }
 
-    /* Scroll indicator wrapper */
     .tab-bar-wrap {
       position: sticky; top: 0; z-index: 50;
     }
 
-    /* Left scroll hint */
     .tab-scroll-hint-left {
-      position: absolute;
-      top: 0; left: 0;
-      height: 100%;
-      width: 52px;
+      position: absolute; top: 0; left: 0;
+      height: 100%; width: 52px;
       background: linear-gradient(to left, transparent, var(--brown) 55%);
       display: flex; align-items: center; justify-content: flex-start;
-      padding-left: 8px;
-      z-index: 52;
-      transition: opacity 0.3s;
-      opacity: 0; pointer-events: none;
+      padding-left: 8px; z-index: 52;
+      transition: opacity 0.3s; opacity: 0; pointer-events: none;
     }
     .tab-scroll-hint-left.visible { opacity: 1; pointer-events: all; }
 
-    /* Right scroll hint */
     .tab-scroll-hint {
-      position: absolute;
-      top: 0; right: 0;
-      height: 100%;
-      width: 52px;
+      position: absolute; top: 0; right: 0;
+      height: 100%; width: 52px;
       background: linear-gradient(to right, transparent, var(--brown) 55%);
       display: flex; align-items: center; justify-content: flex-end;
-      padding-right: 8px;
-      z-index: 52;
+      padding-right: 8px; z-index: 52;
       transition: opacity 0.3s;
     }
     .tab-scroll-hint.hidden { opacity: 0; pointer-events: none; }
 
     .tab-scroll-arrow {
       width: 28px; height: 28px;
-      border: 1.5px solid rgba(196,168,130,0.5);
-      border-radius: 50%;
+      border: 1.5px solid rgba(196,168,130,0.5); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      pointer-events: all;
-      cursor: pointer;
-      background: var(--brown);
-      animation: pulse-arrow 1.5s ease-in-out infinite;
-      flex-shrink: 0;
+      pointer-events: all; cursor: pointer; background: var(--brown);
+      animation: pulse-arrow 1.5s ease-in-out infinite; flex-shrink: 0;
     }
-    .tab-scroll-arrow svg {
-      width: 12px; height: 12px;
-      stroke: var(--tan); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
+    .tab-scroll-arrow svg { width: 12px; height: 12px; stroke: var(--tan); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
     @keyframes pulse-arrow {
       0%, 100% { border-color: rgba(196,168,130,0.4); box-shadow: none; }
       50% { border-color: var(--tan); box-shadow: 0 0 8px rgba(196,168,130,0.4); }
@@ -113,45 +95,25 @@
     .tab-btn.done .tab-check svg { stroke: var(--brown); }
     .tab-btn.done { color: rgba(196,168,130,0.6); }
 
-    /* ══ HERO AREA — welcome image, video ══ */
+    /* ══ HERO AREA ══ */
     .hero-welcome { display: block; }
     .hero-welcome img { width: 100%; display: block; }
     .hero-video { display: none; background: #100a04; }
     .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; }
     .video-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
 
-    /* ══ YOUTUBE FACADE — crisp thumbnail, loads iframe on click ══ */
+    /* ══ YOUTUBE FACADE ══ */
     .yt-facade {
       position: relative; width: 100%; padding-bottom: 56.25%;
       background: #000; cursor: pointer; overflow: hidden;
     }
-    .yt-facade img {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      object-fit: cover; display: block;
-      transition: transform 0.3s ease;
-    }
+    .yt-facade img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s ease; }
     .yt-facade:hover img { transform: scale(1.02); }
-    .yt-facade .yt-play {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 68px; height: 48px;
-      background: #ff0000;
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.2s, transform 0.2s;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
+    .yt-facade .yt-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 68px; height: 48px; background: #ff0000; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: background 0.2s, transform 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
     .yt-facade:hover .yt-play { background: #cc0000; transform: translate(-50%, -50%) scale(1.1); }
-    .yt-facade .yt-play svg {
-      width: 24px; height: 24px; fill: #fff;
-      margin-left: 4px;
-    }
-    .yt-facade iframe {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      border: none; display: none;
-    }
-    .yt-facade.playing img,
-    .yt-facade.playing .yt-play { display: none; }
+    .yt-facade .yt-play svg { width: 24px; height: 24px; fill: #fff; margin-left: 4px; }
+    .yt-facade iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: none; }
+    .yt-facade.playing img, .yt-facade.playing .yt-play { display: none; }
     .yt-facade.playing iframe { display: block; }
 
     /* Transcript */
@@ -222,51 +184,84 @@
     .redflag-text em { font-style: italic; }
 
     /* ══ SESSION ══ */
-    .session-begin-band { background: var(--brown); width: 100%; padding: 0; margin-bottom: 0; text-align: left !important; columns: 1 !important; column-count: 1 !important; }
-    .session-begin-inner { padding: 28px 32px 24px; max-width: 760px; margin: 0 auto; text-align: left !important; columns: 1 !important; column-count: 1 !important; }
+    .session-begin-band { background: var(--brown); width: 100%; padding: 0; margin-bottom: 0; text-align: left !important; }
+    .session-begin-inner { padding: 28px 32px 24px; max-width: 760px; margin: 0 auto; text-align: left !important; }
     .session-begin-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 26px; font-weight: 500; letter-spacing: 0.03em; color: var(--cream); margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid rgba(196,168,130,0.25); line-height: 1.2; }
     .session-begin-title em { color: var(--tan); font-style: italic; }
 
-    /* Prompt dropdown */
-    .prompt-dropdown { margin-bottom: 20px; border: 1px solid rgba(196,168,130,0.2); }
-    .prompt-toggle-btn { width: 100%; background: rgba(255,255,255,0.04); border: none; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: background 0.2s; }
-    .prompt-toggle-btn:hover { background: rgba(196,168,130,0.08); }
-    .prompt-toggle-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
-    .prompt-toggle-label { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.20em; text-transform: uppercase; color: var(--tan); flex-shrink: 0; }
-    .prompt-toggle-hint { font-family:'Spectral',Georgia,serif; font-size: var(--label-xs); font-weight: 300; font-style: italic; color: rgba(196,168,130,0.55); flex: 1; text-align: left; }
-    .prompt-dropdown-body { display: none; padding: 16px 18px 18px; background: rgba(255,255,255,0.03); border-top: 1px solid rgba(196,168,130,0.12); }
-    .prompt-dropdown-body.open { display: block; }
-
-    .prompt-text { font-family:'Spectral',Georgia,serif; font-size: var(--body-sm); font-weight: 300; font-style: italic; color: rgba(250,244,232,0.88); line-height: 1.75; margin-bottom: 12px; white-space: pre-wrap; }
     .copy-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid rgba(196,168,130,0.45); padding: 9px 16px; font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan); cursor: pointer; transition: background 0.2s, border-color 0.2s; }
     .copy-btn:hover { background: rgba(196,168,130,0.1); border-color: var(--tan); }
     .copy-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .copy-btn.copied { background: rgba(196,168,130,0.15); border-color: var(--tan); }
 
-    .instructions-list { list-style: none; margin-top: 4px; text-align: left !important; columns: 1 !important; column-count: 1 !important; }
-    .instructions-list li { font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.85); line-height: 1.72; padding: 9px 0 9px 26px; border-bottom: 1px solid rgba(196,168,130,0.12); display: block !important; text-align: left !important; position: relative; columns: 1 !important; column-count: 1 !important; }
+    .instructions-list { list-style: none; margin-top: 4px; text-align: left !important; }
+    .instructions-list li { font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.85); line-height: 1.72; padding: 9px 0 9px 26px; border-bottom: 1px solid rgba(196,168,130,0.12); display: block !important; text-align: left !important; position: relative; }
     .instructions-list li:last-child { border-bottom: none; }
     .instructions-list li::before { content: attr(data-n); font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); color: var(--tan); position: absolute; left: 0; top: 11px; }
     .instructions-list li strong { color: var(--tan); font-weight: 500; }
     .instructions-list li a { color: var(--tan); text-decoration: underline; text-underline-offset: 2px; opacity: 0.85; }
     .instructions-list li a:hover { opacity: 1; }
 
-    /* Jotform */
-    .jotform-section { margin-bottom: 0; }
-    .jotform-clip-wrap { overflow: hidden; margin: 0; }
-    .jotform-clip-wrap iframe { display: block; width: 100% !important; }
+    /* ══ JOTFORM CTA — replaces embedded script/iframe ══ */
+    .jotform-cta-band {
+      background: var(--cream-dark);
+      border-top: 1px solid var(--tan-light);
+      border-bottom: 1px solid var(--tan-light);
+      padding: 32px;
+    }
+    .jotform-cta-inner {
+      max-width: 760px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .jotform-cta-eyebrow {
+      font-family:'Cormorant Garamond',Georgia,serif;
+      font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--tan-mid); display: block;
+    }
+    .jotform-cta-heading {
+      font-family:'Cormorant Garamond',Georgia,serif;
+      font-size: 22px; font-weight: 300; color: var(--brown);
+      line-height: 1.2;
+    }
+    .jotform-cta-heading em { font-style: italic; color: var(--brown-mid); }
+    .jotform-cta-desc {
+      font-size: var(--body-sm); font-weight: 300; line-height: 1.8;
+      color: var(--brown-mid);
+    }
+    .jotform-open-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--brown); border: none;
+      padding: 15px 30px;
+      font-family:'Cormorant Garamond',Georgia,serif;
+      font-size: 13px; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--tan);
+      cursor: pointer; text-decoration: none;
+      transition: background 0.2s; align-self: flex-start;
+    }
+    .jotform-open-btn:hover { background: var(--brown-mid); color: var(--cream); }
+    .jotform-open-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Session workspace CTA — dark variant (inside session-begin-band) */
+    .jotform-cta-band.dark {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(196,168,130,0.18);
+      border-radius: 0; margin: 0 0 0 0;
+      padding: 24px 32px;
+    }
+    .jotform-cta-band.dark .jotform-cta-eyebrow { color: rgba(196,168,130,0.6); }
+    .jotform-cta-band.dark .jotform-cta-heading { color: var(--cream); }
+    .jotform-cta-band.dark .jotform-cta-heading em { color: var(--tan); }
+    .jotform-cta-band.dark .jotform-cta-desc { color: rgba(250,244,232,0.65); }
+    .jotform-cta-band.dark .jotform-open-btn { background: var(--tan); color: var(--brown); }
+    .jotform-cta-band.dark .jotform-open-btn:hover { background: var(--tan-mid); color: var(--cream); }
 
     /* ══ COMPLETE ══ */
     .congratulations-img-wrap { background: var(--brown); display: flex; justify-content: center; padding: 36px 32px 40px; }
     .congratulations-img-wrap img { width: 65%; max-width: 520px; display: block; box-shadow: 0 0 0 1px rgba(196,168,130,0.35), 0 0 0 5px rgba(46,31,14,0.8), 0 0 0 6px rgba(196,168,130,0.2), 0 8px 40px rgba(0,0,0,0.55); }
-    .complete-dark { background: var(--brown); padding: 44px 32px; text-align: center; }
+    .complete-dark { background: var(--brown); padding: 44px 32px 40px; text-align: center; }
     .complete-dark-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 12px; }
     .complete-dark-heading { font-family:'Cormorant Garamond',Georgia,serif; font-size: 26px; font-weight: 300; color: var(--cream); margin-bottom: 8px; line-height: 1.2; }
     .complete-dark-sub { font-size: var(--body-sm); font-weight: 300; font-style: italic; color: rgba(196,168,130,0.7); margin-bottom: 28px; }
-    .complete-instruction { display: flex; align-items: flex-start; gap: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(196,168,130,0.15); padding: 18px 20px; margin-bottom: 28px; text-align: left; }
-    .complete-instruction svg { width: 20px; height: 20px; stroke: var(--tan); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
-    .complete-instruction p { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: rgba(250,244,232,0.8); }
-    .complete-instruction p strong { color: var(--tan); font-weight: 500; }
     .complete-rule { width: 40px; height: 1px; background: rgba(196,168,130,0.3); margin: 0 auto 24px; }
     .complete-quote { font-family:'Cormorant Garamond',Georgia,serif; font-size: 17px; font-weight: 300; font-style: italic; color: rgba(196,168,130,0.7); line-height: 1.65; margin-bottom: 10px; }
     .complete-attr { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); letter-spacing: 0.14em; text-transform: uppercase; color: rgba(196,168,130,0.4); display: block; margin-bottom: 28px; }
@@ -280,6 +275,9 @@
       .nav-wrap { padding: 20px; flex-direction: column; }
       .continue-btn, .back-btn { width: 100%; justify-content: center; }
       .session-begin-inner { padding: 20px; }
+      .jotform-cta-band { padding: 24px 20px; }
+      .jotform-cta-band.dark { padding: 20px; }
+      .jotform-open-btn { width: 100%; justify-content: center; }
       .congratulations-img-wrap img { width: 90%; }
     }
   </style>
@@ -296,13 +294,11 @@
       <button class="tab-btn" data-tab="session"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Your Session</button>
       <button class="tab-btn" data-tab="complete"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Complete Lesson</button>
     </nav>
-    <!-- Left scroll hint — visible when scrolled right -->
     <div class="tab-scroll-hint-left" id="tab-scroll-hint-left">
       <div class="tab-scroll-arrow" onclick="scrollTabBarLeft()">
         <svg viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg>
       </div>
     </div>
-    <!-- Right scroll hint — visible when more tabs off-screen right -->
     <div class="tab-scroll-hint" id="tab-scroll-hint">
       <div class="tab-scroll-arrow" id="tab-scroll-arrow" onclick="scrollTabBar()">
         <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
@@ -311,12 +307,9 @@
   </div>
 
   <!-- ══ HERO AREA ══ -->
-  <!-- Welcome image — shown on load, hidden when any tab is active -->
   <div class="hero-welcome" id="hero-welcome">
     <img src="https://stratummethod.github.io/stratum-widget/welcom-surface-patterns.png" alt="Welcome to The Surface Pattern — STRATUM">
   </div>
-
-  <!-- Video — shown only when Video tab is active -->
   <div class="hero-video" id="hero-video">
     <div class="video-container">
       <div class="yt-facade" onclick="playFacade(this,'4GEodVaKiKc')">
@@ -364,7 +357,7 @@
 
   <!-- ══ PANELS ══ -->
 
-  <!-- VIDEO PANEL — no content, hero handles it -->
+  <!-- VIDEO PANEL -->
   <div class="tab-panel" id="panel-video">
     <div class="nav-wrap no-back">
       <button class="continue-btn" data-next="overview">Continue to Overview<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
@@ -498,9 +491,7 @@
       <div class="session-begin-inner">
         <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
 
-        <!-- COPY PROMPT — no dropdown, just the button -->
-        <div class="prompt-wrap">
-          <span class="prompt-label">Your Coaching Prompt</span>
+        <div class="prompt-wrap" style="margin-bottom:20px;">
           <p style="font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(250,244,232,0.75); line-height:1.7; margin-bottom:14px;">Click the button below to copy your coaching prompt. Once you've pasted it into Claude you can read it there — no need to review it here first.</p>
           <button class="copy-btn" id="copy-prompt-btn" onclick="copyPrompt()">
             <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
@@ -512,19 +503,24 @@
           <li data-n="1">Copy the prompt above and open Claude at <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> in a new tab. Paste the prompt to begin — you can read it there once it's in Claude.</li>
           <li data-n="2">After pasting the prompt, attach the <strong>PDF you saved from Calibrating Your Coach</strong>. Your coach needs that context to work effectively from the first exchange.</li>
           <li data-n="3">Set a timer for <strong>35 minutes</strong>. Stay in observer mode — what the camera sees, not what it means.</li>
-          <li data-n="4">When your session is complete, return here and fill out your <strong>Reflection Journal</strong> below.</li>
+          <li data-n="4">When your session is complete, return here and open your <strong>Workspace</strong> below to capture your deliverables.</li>
         </ul>
       </div>
     </div>
-    <div class="panel-inner" style="padding:0;">
-      <div class="jotform-section">
-        <div class="jotform-clip-wrap">
-          <div class="jotform-embed">
-            <script type="text/javascript" src="https://form.jotform.com/jsform/260764372735059"></script>
-          </div>
-        </div>
+
+    <!-- JOTFORM WORKSPACE — CTA BUTTON (replaces unreliable script embed) -->
+    <div class="jotform-cta-band">
+      <div class="jotform-cta-inner">
+        <span class="jotform-cta-eyebrow">After Your Session</span>
+        <p class="jotform-cta-heading">Open Your <em>Workspace</em></p>
+        <p class="jotform-cta-desc">Record your anchor behavior and three instances while they're clear. Your workspace opens in a new tab so nothing is lost if you need to scroll back through your session.</p>
+        <a class="jotform-open-btn" href="https://form.jotform.com/260764372735059" target="_blank" rel="noopener">
+          Open Workspace
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+        </a>
       </div>
     </div>
+
     <div class="nav-wrap">
       <button class="back-btn" data-prev="redflags"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Red Flags</button>
       <button class="continue-btn" data-next="complete">Continue to Complete Lesson<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
@@ -540,14 +536,25 @@
       <span class="complete-dark-eyebrow">When You're Ready</span>
       <p class="complete-dark-heading">Move to The Hidden Truth.</p>
       <p class="complete-dark-sub">The excavation goes deeper.</p>
+      <div class="complete-rule"></div>
+      <p class="complete-quote">"The surface behavior is not the story. It is the first sentence of the story."</p>
+      <span class="complete-attr">— STRATUM: AI Character Coaching</span>
+      <a class="mark-complete-btn" href="YOUR_SYSTEME_IO_LECTURE_URL" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark Lesson Complete
+      </a>
     </div>
 
-    <!-- CONTACT TED -->
-    <div class="panel-inner">
-      <div class="jotform-section" style="margin-top:32px;">
-        <div class="jotform-embed">
-          <script type="text/javascript" src="https://form.jotform.com/jsform/260734440316047"></script>
-        </div>
+    <!-- CONTACT TED — CTA BUTTON (replaces unreliable script embed) -->
+    <div class="jotform-cta-band">
+      <div class="jotform-cta-inner">
+        <span class="jotform-cta-eyebrow">Questions or Feedback</span>
+        <p class="jotform-cta-heading">Reach <em>Ted Directly</em></p>
+        <p class="jotform-cta-desc">Something isn't clicking? A question about the methodology? Use the form below to send Ted a note. He reads everything.</p>
+        <a class="jotform-open-btn" href="https://form.jotform.com/260734440316047" target="_blank" rel="noopener">
+          Contact Ted
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+        </a>
       </div>
     </div>
   </div>
@@ -555,8 +562,6 @@
   <script>
     /* ── PROMPT ── */
     var LESSON1_PROMPT = "ROLE\nYour role is to help me identify one anchor behavior — a specific, visible, recurring, and consequential thing my character does — through structured observation. You are a Socratic questioner, not a content generator. Do not suggest behaviors. Do not interpret what behaviors mean. Keep me in pure observer mode throughout this session.\n\nBOUNDARIES — WHAT TO AVOID\nDo not suggest or generate behaviors for me. Do not let me describe traits, personality labels, or adjectives — push for observable actions only. Do not interpret or explain behaviors during this session — that comes in Lesson 2. Do not let me move forward with a behavior that fails the four-criteria test. Do not do most of the talking — I should be observing, you should be questioning.\n\nTWO REQUIRED DELIVERABLES\n1. One anchor behavior stated as a specific, observable action.\n2. Three recurring instances — each with context (situation), who is involved, and exactly what my character does.\n\nSESSION STRUCTURE\n\nStage 1: Discovery — Brainstorm Surface Behaviors (10 minutes)\nAsk me to name 2–3 things my character does repeatedly. Push for observable actions, not traits. If I give you a label like \"she's protective,\" ask: what exactly does she do? What would a camera capture?\n\nStage 2: Testing — Apply the Four Criteria (10 minutes)\nTake the behavior I'm most drawn to and test it against all four criteria:\n• Specific: Is this a concrete action or a vague trait?\n• Visible: Could a camera film it happening?\n• Recurring: Does it show up in multiple situations?\n• Consequential: Does it shape the story, relationships, or arc in a meaningful way?\nIf it fails any criterion, push me to refine it until it passes all four.\n\nStage 3: Validation — Three Recurring Instances (10 minutes)\nOnce the behavior passes the criteria test, ask me to document three specific instances of it occurring. For each instance I need: the situation or context, who else is involved, and exactly what my character does. Push for specificity. \"She protects her sister\" is not enough. \"She steps in front of Prim when the Peacekeepers arrive\" is an instance.\n\nStage 4: Confirmation (5 minutes)\nAsk me: Is this behavior foundational to who your character is — or could it be a plot device? If I have any doubt, push me to reconsider. When I'm confident, help me write the final one-sentence statement of the anchor behavior.\n\nADAPTIVE COACHING BASED ON MY CONTEXT\nAdjust your approach based on the prework PDF:\n- If role = Protagonist: This anchor behavior should be central to their entire arc. Make sure it can sustain an entire story.\n- If role = Supporting Character: We want clear behavior but don't need the same depth as a protagonist. Find one strong pattern that makes them memorable.\n- If haven't started writing: Trust your intuition. What do you see when you picture them in different situations?\n- If revising: You've already written scenes. Pull from what's on the page. What does your character actually do in your manuscript?\n- If stuck on something specific: Reference what they wrote in the pre-work about what feels unclear. Let's see if identifying their core behavior helps clarify that.\n\nCRITICAL REMINDERS\n- I'm the expert on my character — you're the guide helping me access what I already know\n- Every behavior must pass all 4 criteria or we keep refining\n- 3 recurring instances, no exceptions\n- Keep me in observer mode, not interpreter mode\n- The deliverables are concrete: 1 anchor behavior + 3 instances with context/people/action documented\n\nBEGIN\nI've attached my completed Pre-Work PDF. Please read it first, then begin Stage 1 by asking me about my character and what patterns I've noticed.";
-
-
 
     /* ── COPY ── */
     function copyPrompt() {
@@ -583,22 +588,6 @@
       setTimeout(function() { window.scrollTo(0, scrollY); }, 50);
     }
 
-    /* ── JOTFORM resize ── */
-    window.handleIFrameMessage = function(e) {
-      if (typeof e.data === 'object') { return; }
-      var args = e.data.split(':');
-      var iframe = null;
-      if (args.length > 2) { iframe = document.getElementById('JotFormIFrame-' + args[args.length - 1]); }
-      if (!iframe) { return; }
-      switch (args[0]) {
-        case 'setHeight': iframe.style.height = args[1] + 'px'; break;
-        case 'collapseErrorPage': if (iframe.clientHeight > Number(args[1])) { iframe.style.height = args[1] + 'px'; } break;
-        case 'reloadPage': window.location.reload(); break;
-      }
-    };
-    if (window.addEventListener) { window.addEventListener('message', window.handleIFrameMessage, false); }
-    else if (window.attachEvent) { window.attachEvent('onmessage', window.handleIFrameMessage); }
-
     /* ── TABS ── */
     var TAB_ORDER = ['video','overview','requirements','redflags','session','complete'];
     var heroWelcome = document.getElementById('hero-welcome');
@@ -618,7 +607,6 @@
           if (prevBtn) prevBtn.classList.add('done');
         }
       }
-      /* Hero area logic — Option B: only tab content, no persistent hero */
       heroWelcome.style.display = 'none';
       heroVideo.style.display   = (tabId === 'video') ? 'block' : 'none';
 
@@ -643,21 +631,13 @@
 
     function updateScrollHint() {
       if (!tabBar) { return; }
-      var atEnd = tabBar.scrollLeft + tabBar.clientWidth >= tabBar.scrollWidth - 4;
+      var atEnd   = tabBar.scrollLeft + tabBar.clientWidth >= tabBar.scrollWidth - 4;
       var atStart = tabBar.scrollLeft <= 4;
-      if (scrollHint) scrollHint.classList.toggle('hidden', atEnd);
+      if (scrollHint)     scrollHint.classList.toggle('hidden', atEnd);
       if (scrollHintLeft) scrollHintLeft.classList.toggle('visible', !atStart);
     }
-
-    function scrollTabBar() {
-      if (!tabBar) { return; }
-      tabBar.scrollBy({ left: 160, behavior: 'smooth' });
-    }
-
-    function scrollTabBarLeft() {
-      if (!tabBar) { return; }
-      tabBar.scrollBy({ left: -160, behavior: 'smooth' });
-    }
+    function scrollTabBar()     { if (tabBar) tabBar.scrollBy({ left:  160, behavior:'smooth' }); }
+    function scrollTabBarLeft() { if (tabBar) tabBar.scrollBy({ left: -160, behavior:'smooth' }); }
 
     if (tabBar) {
       tabBar.addEventListener('scroll', updateScrollHint);
