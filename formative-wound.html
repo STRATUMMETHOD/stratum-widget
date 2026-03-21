@@ -3,635 +3,292 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lesson 3: The Formative Wound — STRATUM</title>
+  <title>The Formative Wound — STRATUM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --cream:        #faf4e8;
-      --cream-dark:   #f2ead8;
-      --cream-mid:    #ede5d4;
-      --tan:          #c4a882;
-      --tan-mid:      #a8895e;
-      --tan-light:    #ddd0b8;
-      --tan-faint:    #ede5d4;
-      --brown:        #2e1f0e;
-      --brown-mid:    #5c3d1e;
-      --brown-light:  #8b6340;
-
-      --label-xs:  11px;
-      --label-sm:  12px;
-      --label-md:  13px;
-      --body-sm:   14px;
-      --body-md:   15px;
-      --body-lg:   16px;
+      --cream:#faf4e8; --cream-dark:#f2ead8; --cream-mid:#ede5d4;
+      --tan:#c4a882; --tan-mid:#a8895e; --tan-light:#ddd0b8; --tan-faint:#ede5d4;
+      --brown:#2e1f0e; --brown-mid:#5c3d1e; --brown-light:#8b6340;
+      --label-xs:11px; --label-sm:12px; --label-md:13px;
+      --body-sm:14px; --body-md:15px; --body-lg:16px;
     }
-
     html { scroll-behavior: smooth; }
+    body { font-family:'Spectral',Georgia,serif; background:var(--cream); color:var(--brown); line-height:1.6; }
 
-    body {
-      font-family: 'Spectral', Georgia, serif;
-      background: var(--cream);
-      color: var(--brown);
-      line-height: 1.6;
-    }
+    /* TAB BAR */
+    .tab-bar { position:sticky; top:0; z-index:50; display:flex; overflow-x:auto; background:var(--brown); border-top:3px solid var(--tan); border-bottom:1px solid rgba(196,168,130,0.18); box-shadow:0 3px 14px rgba(0,0,0,0.40); -webkit-overflow-scrolling:touch; scrollbar-width:none; scroll-behavior:smooth; }
+    .tab-bar::-webkit-scrollbar { display:none; }
+    .tab-bar-wrap { position:sticky; top:0; z-index:50; }
+    .tab-scroll-hint-left { position:absolute; top:0; left:0; height:100%; width:52px; background:linear-gradient(to left,transparent,var(--brown) 55%); display:flex; align-items:center; justify-content:flex-start; padding-left:8px; z-index:52; transition:opacity 0.3s; opacity:0; pointer-events:none; }
+    .tab-scroll-hint-left.visible { opacity:1; pointer-events:all; }
+    .tab-scroll-hint { position:absolute; top:0; right:0; height:100%; width:52px; background:linear-gradient(to right,transparent,var(--brown) 55%); display:flex; align-items:center; justify-content:flex-end; padding-right:8px; z-index:52; transition:opacity 0.3s; }
+    .tab-scroll-hint.hidden { opacity:0; pointer-events:none; }
+    .tab-scroll-arrow { width:28px; height:28px; border:1.5px solid rgba(196,168,130,0.5); border-radius:50%; display:flex; align-items:center; justify-content:center; pointer-events:all; cursor:pointer; background:var(--brown); animation:pulse-arrow 1.5s ease-in-out infinite; flex-shrink:0; }
+    .tab-scroll-arrow svg { width:12px; height:12px; stroke:var(--tan); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    @keyframes pulse-arrow { 0%,100% { border-color:rgba(196,168,130,0.4); box-shadow:none; } 50% { border-color:var(--tan); box-shadow:0 0 8px rgba(196,168,130,0.4); } }
+    .tab-btn { font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; font-weight:500; letter-spacing:0.15em; text-transform:uppercase; color:rgba(196,168,130,0.55); background:transparent; border:none; border-right:1px solid rgba(196,168,130,0.12); padding:0 16px; min-height:52px; cursor:pointer; white-space:nowrap; flex:0 0 auto; min-width:140px; display:flex; align-items:center; justify-content:center; gap:9px; transition:color 0.2s,background 0.2s; position:relative; }
+    .tab-btn:last-child { border-right:none; }
+    .tab-btn:hover { color:var(--tan); background:rgba(196,168,130,0.08); }
+    .tab-btn.active { color:var(--tan); font-weight:700; font-size:13px; letter-spacing:0.13em; }
+    .tab-btn.active::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:var(--tan); }
+    .tab-check { width:18px; height:18px; border:1.5px solid rgba(196,168,130,0.35); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.25s,border-color 0.25s; }
+    .tab-check svg { width:9px; height:9px; stroke:rgba(196,168,130,0.25); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .tab-btn.active .tab-check { border-color:var(--tan); background:rgba(196,168,130,0.18); }
+    .tab-btn.active .tab-check svg { stroke:var(--tan); }
+    .tab-btn.done .tab-check { background:var(--tan); border-color:var(--tan); }
+    .tab-btn.done .tab-check svg { stroke:var(--brown); }
+    .tab-btn.done { color:rgba(196,168,130,0.6); }
 
-    /* ══ COMPLETE BANNER ══ */
-    .complete-banner {
-      background: var(--brown);
-      border-bottom: 2px solid var(--tan);
-      padding: 18px 28px;
-      display: flex; align-items: center; gap: 16px;
-    }
-    .complete-banner-icon {
-      width: 36px; height: 36px;
-      border: 2px solid var(--tan); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .complete-banner-icon svg {
-      width: 18px; height: 18px;
-      stroke: var(--tan); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .complete-banner-text {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 500;
-      letter-spacing: 0.02em; color: #faf4e8; line-height: 1.55;
-    }
-    .complete-banner-text strong { color: var(--tan); font-weight: 700; }
+    /* HERO */
+    .hero-welcome { display:block; }
+    .hero-welcome img { width:100%; display:block; }
+    .hero-video { display:none; background:#100a04; }
+    .video-container { position:relative; width:100%; padding-bottom:56.25%; height:0; overflow:hidden; }
+    .video-container iframe { position:absolute; inset:0; width:100%; height:100%; border:none; display:block; }
 
-    /* ══ VIDEO ══ */
-    .video-wrap { background: #100a04; }
-    .video-container {
-      position: relative; width: 100%;
-      padding-bottom: 56.25%; height: 0; overflow: hidden;
-    }
-    .video-container iframe {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      border: none; display: block;
-    }
+    /* YOUTUBE FACADE */
+    .yt-facade { position:relative; width:100%; padding-bottom:56.25%; background:#000; cursor:pointer; overflow:hidden; }
+    .yt-facade img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.3s ease; }
+    .yt-facade:hover img { transform:scale(1.02); }
+    .yt-facade .yt-play { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:68px; height:48px; background:#ff0000; border-radius:12px; display:flex; align-items:center; justify-content:center; transition:background 0.2s,transform 0.2s; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+    .yt-facade:hover .yt-play { background:#cc0000; transform:translate(-50%,-50%) scale(1.1); }
+    .yt-facade .yt-play svg { width:24px; height:24px; fill:#fff; margin-left:4px; }
+    .yt-facade iframe { position:absolute; inset:0; width:100%; height:100%; border:none; display:none; }
+    .yt-facade.playing img,.yt-facade.playing .yt-play { display:none; }
+    .yt-facade.playing iframe { display:block; }
 
-    /* ── Transcript ── */
-    .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
-    .transcript-btn {
-      width: 100%; background: transparent; border: none; padding: 11px 24px;
-      display: flex; align-items: center; justify-content: space-between;
-      cursor: pointer; gap: 12px;
-    }
-    .transcript-btn:hover { background: rgba(196,168,130,0.06); }
-    .transcript-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan);
-    }
-    .transcript-chevron {
-      width: 15px; height: 15px; stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      transition: transform 0.3s ease; flex-shrink: 0;
-    }
-    .transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
-    .transcript-body { display: none; padding: 0 28px 20px; }
-    .transcript-body.open { display: block; }
-    .transcript-body p {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.78); line-height: 1.85; margin-bottom: 12px;
-    }
-    .transcript-body p:last-child { margin-bottom: 0; }
-    .transcript-body p.pause {
-      font-style: normal; font-size: var(--label-xs);
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: rgba(196,168,130,0.45); margin-bottom: 6px;
-    }
-    .transcript-body p.section-marker {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-style: normal; font-weight: 500; font-size: var(--label-xs);
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--tan); margin-top: 18px; margin-bottom: 6px;
-    }
+    /* TRANSCRIPT */
+    .transcript { background:var(--brown); border-top:1px solid rgba(196,168,130,0.15); }
+    .transcript-btn { width:100%; background:transparent; border:none; padding:13px 24px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; gap:12px; }
+    .transcript-btn:hover { background:rgba(196,168,130,0.06); }
+    .transcript-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan); }
+    .transcript-chevron { width:16px; height:16px; stroke:var(--tan); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:transform 0.3s ease; flex-shrink:0; }
+    .transcript-btn[aria-expanded="true"] .transcript-chevron { transform:rotate(180deg); }
+    .transcript-body { display:none; padding:0 28px 22px; }
+    .transcript-body.open { display:block; }
+    .transcript-body p { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(250,244,232,0.78); line-height:1.85; margin-bottom:14px; }
+    .transcript-body p:last-child { margin-bottom:0; }
+    .transcript-body .section-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; font-style:normal; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan); margin-top:20px; margin-bottom:8px; display:block; }
+    .supp-transcript { background:var(--brown); border-top:1px solid rgba(196,168,130,0.12); }
+    .supp-transcript .transcript-body { padding:0 20px 18px; }
 
-    /* ══ TAB BAR ══ */
-    .tab-bar {
-      position: sticky; top: 0; z-index: 50;
-      background: var(--brown);
-      border-top: 3px solid var(--tan);
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-      display: flex; align-items: stretch;
-      overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
-      box-shadow: 0 3px 14px rgba(0,0,0,0.40);
-    }
-    .tab-bar::-webkit-scrollbar { display: none; }
+    /* PANELS */
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .panel-inner { padding:44px 32px 32px; max-width:760px; margin:0 auto; }
+    .panel-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:8px; }
+    .panel-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:30px; font-weight:300; color:var(--brown); line-height:1.15; }
+    .panel-title em { font-style:italic; color:var(--brown-mid); }
+    .panel-rule { width:40px; height:1px; background:var(--tan); margin:16px 0 26px; }
+    .panel-lead { font-size:var(--body-lg); font-weight:300; line-height:1.8; color:var(--brown-mid); margin-bottom:32px; }
 
-    .tab-btn {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 12px; font-weight: 600;
-      letter-spacing: 0.17em; text-transform: uppercase;
-      color: rgba(196,168,130,0.72);
-      background: transparent; border: none;
-      border-right: 1px solid rgba(196,168,130,0.1);
-      padding: 0 20px;
-      min-height: 52px;
-      cursor: pointer; white-space: nowrap; flex-shrink: 0;
-      display: flex; align-items: center; gap: 9px;
-      transition: color 0.2s, background 0.2s;
-      position: relative;
-    }
-    .tab-btn:last-child { border-right: none; }
-    .tab-btn:hover { color: var(--tan); background: rgba(196,168,130,0.08); }
+    /* NAV BUTTONS */
+    .nav-wrap { padding:24px 32px 32px; max-width:760px; margin:0 auto; border-top:1px solid var(--tan-light); display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .nav-wrap.no-back { justify-content:flex-end; }
+    .back-btn { display:inline-flex; align-items:center; gap:8px; background:transparent; border:1px solid var(--tan-light); padding:12px 22px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan-mid); cursor:pointer; transition:background 0.2s,color 0.2s,border-color 0.2s; }
+    .back-btn:hover { background:var(--cream-dark); border-color:var(--tan-mid); color:var(--brown); }
+    .back-btn svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .continue-btn { display:inline-flex; align-items:center; gap:10px; background:var(--brown); border:none; padding:14px 28px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; color:var(--tan); cursor:pointer; transition:background 0.2s,color 0.2s; }
+    .continue-btn:hover { background:var(--brown-mid); color:var(--cream); }
+    .continue-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 
-    .tab-btn.active {
-      color: var(--tan);
-      font-weight: 700; font-size: 13px; letter-spacing: 0.13em;
-      background: transparent;
-    }
-    .tab-btn.active::after {
-      content: '';
-      position: absolute; bottom: 0; left: 0; right: 0;
-      height: 3px; background: var(--tan);
-    }
+    /* WHY BLOCK */
+    .why-block { background:var(--cream-dark); border:1px solid var(--tan-light); border-left:3px solid var(--tan-mid); padding:20px 22px; margin-bottom:28px; }
+    .why-block-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:15px; font-weight:600; color:var(--brown); display:block; margin-bottom:10px; }
+    .why-block p { font-size:var(--body-md); font-weight:300; line-height:1.8; color:var(--brown); margin-bottom:10px; }
+    .why-block p:last-child { margin-bottom:0; }
 
-    /* ── Step indicator circles ── */
-    .tab-check {
-      width: 18px; height: 18px;
-      border: 1.5px solid rgba(196,168,130,0.35); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.25s, border-color 0.25s;
-    }
-    .tab-check svg {
-      width: 9px; height: 9px;
-      stroke: rgba(196,168,130,0.25); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .tab-btn.active .tab-check { border-color: var(--tan); background: rgba(196,168,130,0.18); }
-    .tab-btn.active .tab-check svg { stroke: var(--tan); }
-    .tab-btn.done .tab-check { background: var(--tan); border-color: var(--tan); }
-    .tab-btn.done .tab-check svg { stroke: var(--brown); }
-    .tab-btn.done { color: rgba(196,168,130,0.6); }
+    /* SUPPLEMENTAL VIDEO */
+    .supp-video { border:1px solid var(--tan-light); margin-bottom:32px; overflow:hidden; }
+    .supp-video-head { background:var(--cream-mid); padding:14px 20px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--tan-light); flex-wrap:wrap; }
+    .supp-video-badge { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--brown-mid); background:var(--tan-faint); border:1px solid var(--tan-light); padding:4px 11px; flex-shrink:0; }
+    .supp-video-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:15px; font-weight:500; color:var(--brown); line-height:1.3; }
+    .supp-video-container { position:relative; width:100%; overflow:hidden; background:#100a04; }
+    .supp-video-foot { font-size:var(--body-sm); font-weight:300; color:var(--brown-mid); line-height:1.65; padding:14px 20px; border-top:1px solid var(--tan-faint); }
 
-    /* ══ BLANK STATE ══ */
-    .blank-state {
-      padding: 64px 32px 80px; text-align: center;
-      max-width: 520px; margin: 0 auto;
-    }
-    .blank-rule { width: 28px; height: 1px; background: var(--tan-light); margin: 0 auto 24px; }
-    .blank-state p {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 18px; font-weight: 300; font-style: italic;
-      color: var(--tan-mid); line-height: 1.65;
-    }
+    /* RED FLAGS */
+    .redflag-item { display:flex; align-items:flex-start; gap:14px; padding:12px 0; border-bottom:1px solid var(--tan-faint); }
+    .redflag-item:last-child { border-bottom:none; padding-bottom:0; }
+    .redflag-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--tan-mid); flex-shrink:0; margin-top:2px; min-width:64px; }
+    .redflag-text { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown); }
+    .redflag-text strong { font-weight:500; color:var(--brown-mid); }
+    .redflag-text em { font-style:italic; }
 
-    /* ══ TAB PANELS ══ */
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+    /* SESSION */
+    .session-begin-band { background:var(--brown); width:100%; padding:0; margin-bottom:0; text-align:left !important; }
+    .session-begin-inner { padding:28px 32px 24px; max-width:760px; margin:0 auto; text-align:left !important; }
+    .session-begin-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:26px; font-weight:500; letter-spacing:0.03em; color:var(--cream); margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid rgba(196,168,130,0.25); line-height:1.2; }
+    .session-begin-title em { color:var(--tan); font-style:italic; }
+    .prompt-text { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(250,244,232,0.85); line-height:1.75; margin-bottom:20px; white-space:pre-wrap; }
+    .copy-btn { display:inline-flex; align-items:center; gap:9px; background:#c4a882; border:1px solid #c4a882; padding:12px 22px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--brown); cursor:pointer; transition:background 0.2s,border-color 0.2s; margin-bottom:24px; }
+    .copy-btn:hover { background:var(--tan-mid); border-color:var(--tan-mid); }
+    .copy-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .copy-btn.copied { background:var(--tan-mid); border-color:var(--tan-mid); }
+    .instructions-list { list-style:none; margin-top:4px; text-align:left !important; }
+    .instructions-list li { font-size:var(--body-sm); font-weight:300; color:rgba(250,244,232,0.85); line-height:1.72; padding:9px 0 9px 26px; border-bottom:1px solid rgba(196,168,130,0.12); display:block !important; text-align:left !important; position:relative; }
+    .instructions-list li:last-child { border-bottom:none; }
+    .instructions-list li::before { content:attr(data-n); font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); color:var(--tan); position:absolute; left:0; top:11px; }
+    .instructions-list li strong { color:var(--tan); font-weight:500; }
+    .instructions-list li a { color:var(--tan); text-decoration:underline; text-underline-offset:2px; opacity:0.85; }
+    .instructions-list li a:hover { opacity:1; }
 
-    /* ══ PANEL INNER ══ */
-    .panel-inner { padding: 44px 32px 32px; max-width: 760px; margin: 0 auto; }
+    /* WORKSPACE */
+    .workspace-section { padding:32px 32px 28px; max-width:760px; margin:0 auto; border-top:1px solid var(--tan-light); }
+    .workspace-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:8px; }
+    .workspace-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:24px; font-weight:300; color:var(--brown); line-height:1.2; margin-bottom:12px; }
+    .workspace-title em { font-style:italic; color:var(--brown-mid); }
+    .workspace-desc { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown-mid); margin-bottom:20px; }
+    .workspace-btn { display:inline-flex; align-items:center; gap:10px; background:var(--brown); border:none; padding:14px 28px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; color:var(--tan); text-decoration:none; cursor:pointer; transition:background 0.2s,color 0.2s; }
+    .workspace-btn:hover { background:var(--brown-mid); color:var(--cream); }
+    .workspace-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 
-    /* ══ PANEL TYPOGRAPHY ══ */
-    .panel-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 500;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 10px;
-    }
-    .panel-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 36px; font-weight: 300;
-      color: var(--brown); line-height: 1.15; margin-bottom: 6px;
-    }
-    .panel-title em { font-style: italic; color: var(--brown-mid); }
-    .panel-rule { width: 48px; height: 1px; background: var(--tan); margin: 18px 0 28px; }
-    .panel-lead {
-      font-size: var(--body-lg); font-weight: 300; line-height: 1.8;
-      color: var(--brown-mid); margin-bottom: 40px;
-      padding-bottom: 32px; border-bottom: 1px solid var(--tan-light);
-    }
+    /* COMPLETE — checklist, bridge, ted note */
+    .complete-lesson-content { background:var(--cream-dark); border:1px solid var(--tan-light); border-left:3px solid var(--tan-mid); padding:22px 24px; margin-bottom:28px; }
+    .complete-lesson-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:15px; font-weight:600; color:var(--brown); display:block; margin-bottom:10px; }
+    .complete-lesson-content p { font-size:var(--body-md); font-weight:300; line-height:1.8; color:var(--brown); margin-bottom:10px; }
+    .complete-lesson-content p:last-child { margin-bottom:0; }
+    .complete-lesson-checklist { list-style:none; padding:0; margin-bottom:0; }
+    .complete-lesson-checklist li { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown-mid); padding:7px 0; border-bottom:1px solid var(--tan-faint); display:flex; align-items:flex-start; gap:10px; }
+    .complete-lesson-checklist li:last-child { border-bottom:none; }
+    .check-icon { width:16px; height:16px; flex-shrink:0; margin-top:1px; border:1.5px solid var(--tan-mid); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+    .check-icon svg { width:8px; height:8px; stroke:var(--tan-mid); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .bridge-block { background:var(--brown); border:1px solid rgba(196,168,130,0.2); padding:24px 26px; margin-bottom:28px; }
+    .bridge-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:14px; }
+    .bridge-question { font-family:'Cormorant Garamond',Georgia,serif; font-size:20px; font-weight:300; font-style:italic; color:var(--cream); line-height:1.6; margin-bottom:14px; }
+    .bridge-note { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; color:rgba(250,244,232,0.65); line-height:1.72; border-top:1px solid rgba(196,168,130,0.15); padding-top:12px; }
+    .teds-note { background:var(--cream-dark); border:1px solid var(--tan-light); padding:22px 24px; margin-bottom:28px; }
+    .teds-note-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:12px; }
+    .teds-note p { font-family:'Spectral',Georgia,serif; font-size:var(--body-md); font-weight:300; font-style:italic; color:var(--brown-mid); line-height:1.82; margin-bottom:10px; }
+    .teds-note p:last-child { margin-bottom:0; }
+    .teds-note-sig { font-family:'Cormorant Garamond',Georgia,serif; font-size:16px; font-weight:400; font-style:normal; color:var(--brown); display:block; margin-top:14px; }
 
-    /* ══ WHY BLOCK ══ */
-    .why-block {
-      background: var(--cream-dark); border-left: 3px solid var(--tan);
-      padding: 22px 24px; margin-bottom: 28px;
-    }
-    .why-block-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 12px;
-    }
-    .why-block p {
-      font-size: var(--body-md); font-weight: 300; line-height: 1.75;
-      color: var(--brown-mid); margin-bottom: 12px;
-    }
-    .why-block p:last-child { margin-bottom: 0; }
+    /* COMPLETE DARK */
+    .congratulations-img-wrap { background:var(--brown); display:flex; justify-content:center; padding:36px 32px 40px; }
+    .congratulations-img-wrap img { width:65%; max-width:520px; display:block; box-shadow:0 0 0 1px rgba(196,168,130,0.35),0 0 0 5px rgba(46,31,14,0.8),0 0 0 6px rgba(196,168,130,0.2),0 8px 40px rgba(0,0,0,0.55); }
+    .complete-dark { background:var(--brown); padding:44px 32px 40px; text-align:center; }
+    .complete-dark-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:12px; }
+    .complete-dark-heading { font-family:'Cormorant Garamond',Georgia,serif; font-size:26px; font-weight:300; color:var(--cream); margin-bottom:8px; line-height:1.2; }
+    .complete-dark-sub { font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(196,168,130,0.7); margin-bottom:28px; }
+    .complete-rule { width:40px; height:1px; background:rgba(196,168,130,0.3); margin:0 auto 24px; }
+    .complete-quote { font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; font-weight:300; font-style:italic; color:rgba(196,168,130,0.7); line-height:1.65; margin-bottom:10px; }
+    .complete-attr { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); letter-spacing:0.14em; text-transform:uppercase; color:rgba(196,168,130,0.4); display:block; margin-bottom:28px; }
+    .mark-complete-btn { display:inline-flex; align-items:center; gap:10px; background:var(--tan); color:var(--brown); border:none; padding:15px 32px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer; text-decoration:none; transition:background 0.2s; }
+    .mark-complete-btn:hover { background:var(--tan-mid); }
+    .mark-complete-btn svg { width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
 
-    /* ══ CAUSAL CHAIN ══ */
-    .chain-block {
-      background: var(--brown); border: 1px solid rgba(196,168,130,0.25);
-      padding: 28px 28px 24px; margin-bottom: 32px;
-    }
-    .chain-block-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 20px;
-    }
-    .chain-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0; }
-    .chain-node {
-      flex: 1; min-width: 160px; text-align: center;
-      padding: 16px 12px; border: 1px solid rgba(196,168,130,0.22);
-    }
-    .chain-node-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 500;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 6px;
-    }
-    .chain-node-lesson {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 400;
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: rgba(196,168,130,0.45); display: block; margin-bottom: 8px;
-    }
-    .chain-node-text {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.82); line-height: 1.55;
-    }
-    .chain-node.highlight { background: rgba(196,168,130,0.08); border-color: var(--tan); }
-    .chain-arrow { color: rgba(196,168,130,0.45); font-size: 18px; padding: 0 6px; flex-shrink: 0; }
-    .chain-note {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(196,168,130,0.55); margin-top: 16px;
-      text-align: center; line-height: 1.65;
-    }
+    /* CONTACT TED */
+    .contact-ted-section { padding:32px 0 0; }
+    .contact-ted-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:24px; font-weight:300; color:var(--brown); line-height:1.2; margin-bottom:12px; }
+    .contact-ted-title em { font-style:italic; color:var(--brown-mid); }
+    .contact-ted-desc { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown-mid); margin-bottom:20px; }
 
-    /* ══ SUPPLEMENTAL VIDEO ══ */
-    .supp-video { border: 1px solid var(--tan-light); margin-bottom: 28px; }
-    .supp-video-head {
-      background: var(--brown); padding: 16px 20px 14px;
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-      display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;
-    }
-    .supp-video-badge {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 5px;
-    }
-    .supp-video-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 17px; font-weight: 300; color: var(--cream); line-height: 1.3;
-    }
-    .supp-video-head-text { flex: 1; }
-    .supp-video-container {
-      position: relative; width: 100%;
-      padding-bottom: 56.25%; height: 0; overflow: hidden;
-    }
-    .supp-video-container iframe {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      border: none; display: block;
-    }
-    .supp-video-foot {
-      font-size: var(--body-sm); font-weight: 300; color: var(--brown-mid);
-      line-height: 1.65; padding: 14px 20px; border-top: 1px solid var(--tan-faint);
-    }
+    /* ── L3-SPECIFIC ── */
 
-    /* ══ METHODOLOGY STEPS ══ */
-    .method-steps { margin-bottom: 32px; }
-    .method-step { display: flex; gap: 20px; padding: 22px 0; border-bottom: 1px solid var(--tan-faint); }
-    .method-step:last-child { border-bottom: none; }
-    .method-num {
-      width: 36px; height: 36px; border: 1px solid var(--tan-light); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 600; color: var(--tan-mid);
-    }
-    .method-content { flex: 1; }
-    .method-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 18px; font-weight: 500; color: var(--brown);
-      display: block; margin-bottom: 8px; line-height: 1.3;
-    }
-    .method-body {
-      font-size: var(--body-md); font-weight: 300; line-height: 1.75;
-      color: var(--brown-mid); margin-bottom: 10px;
-    }
-    .method-body:last-child { margin-bottom: 0; }
-    .method-example {
-      background: var(--cream-dark); border-left: 2px solid var(--tan-light);
-      padding: 12px 16px; margin-top: 12px;
-    }
-    .method-example-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 7px;
-    }
-    .method-example p {
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: var(--brown-mid); line-height: 1.7;
-    }
+    /* CAUSAL CHAIN */
+    .chain-block { background:var(--brown); border:1px solid rgba(196,168,130,0.25); padding:28px 28px 24px; margin-bottom:32px; }
+    .chain-block-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:20px; }
+    .chain-row { display:flex; align-items:stretch; flex-wrap:wrap; gap:0; }
+    .chain-node { flex:1; min-width:160px; text-align:center; padding:16px 12px; border:1px solid rgba(196,168,130,0.22); }
+    .chain-node.highlight { background:rgba(196,168,130,0.08); border-color:var(--tan); }
+    .chain-node-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:500; letter-spacing:0.2em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:6px; }
+    .chain-node-lesson { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:400; letter-spacing:0.14em; text-transform:uppercase; color:rgba(196,168,130,0.45); display:block; margin-bottom:8px; }
+    .chain-node-text { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(250,244,232,0.82); line-height:1.55; }
+    .chain-arrow { color:rgba(196,168,130,0.45); font-size:18px; padding:0 6px; flex-shrink:0; display:flex; align-items:center; }
+    .chain-note { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(196,168,130,0.55); margin-top:16px; text-align:center; line-height:1.65; }
 
-    /* ══ RED FLAGS ══ */
-    .redflag-item { padding: 20px 0; border-bottom: 1px solid var(--tan-faint); }
-    .redflag-item:last-child { border-bottom: none; }
-    .redflag-marker {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 8px;
-    }
-    .redflag-text { font-size: var(--body-md); font-weight: 300; line-height: 1.75; color: var(--brown-mid); }
-    .redflag-text strong { font-weight: 600; color: var(--brown); }
+    /* METHODOLOGY STEPS */
+    .method-steps { margin-bottom:32px; }
+    .method-step { display:flex; gap:20px; padding:22px 0; border-bottom:1px solid var(--tan-faint); }
+    .method-step:last-child { border-bottom:none; }
+    .method-num { width:36px; height:36px; border:1px solid var(--tan-light); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:'Cormorant Garamond',Georgia,serif; font-size:15px; font-weight:600; color:var(--tan-mid); }
+    .method-content { flex:1; }
+    .method-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:18px; font-weight:500; color:var(--brown); display:block; margin-bottom:8px; line-height:1.3; }
+    .method-body { font-size:var(--body-md); font-weight:300; line-height:1.75; color:var(--brown-mid); margin-bottom:10px; }
+    .method-body:last-child { margin-bottom:0; }
+    .method-example { background:var(--cream-dark); border-left:2px solid var(--tan-light); padding:12px 16px; margin-top:12px; }
+    .method-example-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:7px; }
+    .method-example p { font-size:var(--body-sm); font-weight:300; font-style:italic; color:var(--brown-mid); line-height:1.7; }
 
-    /* ══ PROPORTIONALITY CONTRAST ══ */
-    .prop-contrast {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 1px; background: var(--tan-faint);
-      border: 1px solid var(--tan-faint); margin-bottom: 32px;
-    }
-    .prop-col { background: var(--cream); padding: 20px; }
-    .prop-head {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      display: block; margin-bottom: 12px;
-      padding-bottom: 8px; border-bottom: 1px solid var(--tan-faint);
-    }
-    .prop-head.wrong { color: #8b3a2a; }
-    .prop-head.right { color: #2a5c2a; }
-    .prop-col p { font-size: var(--body-sm); font-weight: 300; line-height: 1.7; color: var(--brown-mid); }
+    /* PROPORTIONALITY CONTRAST */
+    .prop-contrast { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--tan-faint); border:1px solid var(--tan-faint); margin-bottom:32px; }
+    .prop-col { background:var(--cream); padding:20px; }
+    .prop-head { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.2em; text-transform:uppercase; display:block; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--tan-faint); }
+    .prop-head.wrong { color:#8b3a2a; }
+    .prop-head.right { color:#2a5c2a; }
+    .prop-col p { font-size:var(--body-sm); font-weight:300; line-height:1.7; color:var(--brown-mid); }
 
-    /* ══ SESSION PANEL ══ */
-    .session-section-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.24em; text-transform: uppercase;
-      color: var(--tan-mid); display: block;
-      margin-bottom: 14px; margin-top: 36px;
-      padding-bottom: 8px; border-bottom: 1px solid var(--tan-faint);
-    }
-    .session-section-label:first-child { margin-top: 0; }
+    /* PRE-WORK */
+    .prework-note { background:var(--cream-dark); border:1px solid var(--tan-light); padding:18px 22px; margin-bottom:24px; }
+    .prework-note p { font-size:var(--body-md); font-weight:300; line-height:1.75; color:var(--brown-mid); margin-bottom:10px; }
+    .prework-note p:last-child { margin-bottom:0; }
+    .prework-note p strong { font-weight:600; color:var(--brown); }
+    .prework-fields { margin-bottom:28px; }
+    .prework-field { padding:16px 0; border-bottom:1px solid var(--tan-faint); }
+    .prework-field:last-child { border-bottom:none; }
+    .prework-field-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:6px; }
+    .prework-field-q { font-size:var(--body-md); font-weight:300; color:var(--brown); line-height:1.65; margin-bottom:4px; }
+    .prework-field-note { font-size:var(--body-sm); font-weight:300; font-style:italic; color:var(--brown-light); line-height:1.6; }
+    .section-divider { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.24em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-top:36px; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--tan-faint); }
 
-    .prework-note {
-      background: var(--cream-dark); border: 1px solid var(--tan-light);
-      padding: 18px 22px; margin-bottom: 24px;
-    }
-    .prework-note p {
-      font-size: var(--body-md); font-weight: 300; line-height: 1.75; color: var(--brown-mid);
-      margin-bottom: 10px;
-    }
-    .prework-note p:last-child { margin-bottom: 0; }
-    .prework-note p strong { font-weight: 600; color: var(--brown); }
+    /* ATTACH NOTE */
+    .attach-note { background:var(--brown); border:1px solid rgba(196,168,130,0.25); padding:18px 22px; margin-bottom:24px; display:flex; align-items:flex-start; gap:16px; }
+    .attach-note-icon { width:32px; height:32px; flex-shrink:0; border:1px solid rgba(196,168,130,0.4); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+    .attach-note-icon svg { width:14px; height:14px; stroke:var(--tan); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .attach-note p { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; color:rgba(250,244,232,0.82); line-height:1.7; }
+    .attach-note p strong { color:var(--tan); font-weight:500; }
 
-    .prework-fields { margin-bottom: 28px; }
-    .prework-field { padding: 16px 0; border-bottom: 1px solid var(--tan-faint); }
-    .prework-field:last-child { border-bottom: none; }
-    .prework-field-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 6px;
-    }
-    .prework-field-q { font-size: var(--body-md); font-weight: 300; color: var(--brown); line-height: 1.65; margin-bottom: 4px; }
-    .prework-field-note { font-size: var(--body-sm); font-weight: 300; font-style: italic; color: var(--brown-light); line-height: 1.6; }
+    /* TIMER NOTE */
+    .timer-note { display:flex; align-items:center; gap:10px; padding:13px 16px; border:1px solid var(--tan-faint); margin-bottom:22px; }
+    .timer-note svg { width:16px; height:16px; flex-shrink:0; stroke:var(--tan-mid); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .timer-note p { font-size:var(--body-sm); font-weight:300; color:var(--brown-mid); line-height:1.6; }
+    .timer-note p strong { font-weight:600; color:var(--brown); }
 
-    .attach-note {
-      background: var(--brown); border: 1px solid rgba(196,168,130,0.25);
-      padding: 18px 22px; margin-bottom: 24px;
-      display: flex; align-items: flex-start; gap: 16px;
-    }
-    .attach-note-icon {
-      width: 32px; height: 32px; flex-shrink: 0;
-      border: 1px solid rgba(196,168,130,0.4); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .attach-note-icon svg {
-      width: 14px; height: 14px; stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .attach-note p { font-family: 'Spectral', Georgia, serif; font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.82); line-height: 1.7; }
-    .attach-note p strong { color: var(--tan); font-weight: 500; }
+    /* SAVE BLOCK */
+    .save-block { background:var(--cream-dark); border:1px solid var(--tan-light); border-left:3px solid var(--tan); padding:18px 22px; margin-bottom:32px; display:flex; align-items:flex-start; gap:16px; }
+    .save-block-icon { width:32px; height:32px; flex-shrink:0; border:1px solid var(--tan-light); display:flex; align-items:center; justify-content:center; }
+    .save-block-icon svg { width:16px; height:16px; stroke:var(--tan-mid); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .save-block p { font-size:var(--body-md); font-weight:300; color:var(--brown-mid); line-height:1.7; }
+    .save-block p strong { font-weight:600; color:var(--brown); }
 
-    .timer-note {
-      display: flex; align-items: center; gap: 10px;
-      padding: 13px 16px; border: 1px solid var(--tan-faint); margin-bottom: 22px;
-    }
-    .timer-note svg { width: 16px; height: 16px; flex-shrink: 0; stroke: var(--tan-mid); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .timer-note p { font-size: var(--body-sm); font-weight: 300; color: var(--brown-mid); line-height: 1.6; }
-    .timer-note p strong { font-weight: 600; color: var(--brown); }
-
-    /* Prompt block */
-    .prompt-block { background: var(--brown); border: 1px solid rgba(196,168,130,0.2); margin-bottom: 28px; }
-    .prompt-block-head {
-      padding: 14px 20px 12px; border-bottom: 1px solid rgba(196,168,130,0.15);
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    }
-    .prompt-block-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.2em; text-transform: uppercase; color: var(--tan);
-    }
-    .copy-btn {
-      background: rgba(196,168,130,0.12); border: 1px solid rgba(196,168,130,0.3);
-      padding: 7px 14px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--tan); cursor: pointer;
-      display: flex; align-items: center; gap: 6px;
-      transition: background 0.2s, border-color 0.2s;
-    }
-    .copy-btn:hover { background: rgba(196,168,130,0.2); border-color: var(--tan); }
-    .copy-btn.copied { background: rgba(42,92,42,0.2); border-color: #6aaa6a; color: #9dd49d; }
-    .copy-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .prompt-text {
-      padding: 20px;
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.78); line-height: 1.85; white-space: pre-wrap;
-    }
-
-    /* ══ COMPLETE PANEL ══ */
-    .complete-checklist { margin-bottom: 32px; }
-    .complete-checklist-head {
-      background: var(--brown); padding: 16px 20px;
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-    }
-    .complete-checklist-head-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 16px; font-weight: 400; color: var(--cream); }
-    .complete-checklist-head-sub {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); letter-spacing: 0.14em; text-transform: uppercase;
-      color: rgba(196,168,130,0.6); margin-top: 4px; display: block;
-    }
-    .complete-checklist-body { border: 1px solid var(--tan-faint); border-top: none; }
-    .complete-check-item { display: flex; align-items: flex-start; gap: 16px; padding: 16px 20px; border-bottom: 1px solid var(--tan-faint); }
-    .complete-check-item:last-child { border-bottom: none; }
-    .complete-check-icon { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; }
-    .complete-check-icon svg { width: 20px; height: 20px; stroke: var(--tan-light); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .complete-check-text { font-size: var(--body-md); font-weight: 300; color: var(--brown-mid); line-height: 1.65; }
-    .complete-check-text strong { font-weight: 600; color: var(--brown); }
-
-    /* Complete dark section */
-    .complete-dark {
-      background: var(--brown); padding: 48px 32px 44px;
-      text-align: center; margin-top: 32px;
-    }
-    .complete-rule { width: 36px; height: 1px; background: rgba(196,168,130,0.25); margin: 0 auto 20px; }
-    .complete-quote {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 17px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.75); line-height: 1.65; margin-bottom: 14px;
-    }
-    .complete-attr {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 400;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: rgba(196,168,130,0.55);
-    }
-    .mark-complete-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--tan); border: none; padding: 16px 36px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--brown); text-decoration: none;
-      transition: background 0.2s, color 0.2s;
-    }
-    .mark-complete-btn:hover { background: var(--cream); color: var(--brown); }
-    .mark-complete-btn svg { width: 15px; height: 15px; stroke: var(--brown); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-
-    /* ══ BRIDGE BLOCK ══ */
-    .bridge-block { background: var(--brown); padding: 28px; margin-bottom: 32px; }
-    .bridge-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 14px;
-    }
-    .bridge-question {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 22px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.45; margin-bottom: 14px;
-    }
-    .bridge-note { font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.6); line-height: 1.7; }
-
-    /* ══ TED'S NOTE ══ */
-    .teds-note { border: 1px solid var(--tan-light); padding: 22px 24px; margin-bottom: 32px; }
-    .teds-note-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 12px;
-    }
-    .teds-note p { font-size: var(--body-md); font-weight: 300; line-height: 1.75; color: var(--brown-mid); margin-bottom: 10px; }
-    .teds-note p:last-child { margin-bottom: 0; }
-
-    .save-block {
-      background: var(--cream-dark); border: 1px solid var(--tan-light); border-left: 3px solid var(--tan);
-      padding: 18px 22px; margin-bottom: 32px;
-      display: flex; align-items: flex-start; gap: 16px;
-    }
-    .save-block-icon { width: 32px; height: 32px; flex-shrink: 0; border: 1px solid var(--tan-light); display: flex; align-items: center; justify-content: center; }
-    .save-block-icon svg { width: 16px; height: 16px; stroke: var(--tan-mid); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .save-block p { font-size: var(--body-md); font-weight: 300; color: var(--brown-mid); line-height: 1.7; }
-    .save-block p strong { font-weight: 600; color: var(--brown); }
-
-    /* ══ NAV WRAP ══ */
-    .nav-wrap {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 24px 32px; margin-top: 16px;
-      border-top: 1px solid var(--tan-faint);
-    }
-    .back-btn, .continue-btn {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 500;
-      letter-spacing: 0.16em; text-transform: uppercase;
-      background: transparent; border: 1px solid var(--tan-light);
-      padding: 10px 18px; cursor: pointer; color: var(--tan-mid);
-      display: flex; align-items: center; gap: 8px;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    .back-btn:hover { border-color: var(--tan); color: var(--brown); }
-    .back-btn svg, .continue-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .continue-btn { background: var(--brown); border-color: var(--brown); color: var(--tan); }
-    .continue-btn:hover { background: var(--brown-mid); border-color: var(--brown-mid); color: var(--cream); }
-
-    /* ══ CLOSING ══ */
-    .closing {
-      background: var(--brown); padding: 36px 32px 40px;
-      text-align: center; border-top: 2px solid var(--tan);
-    }
-    .closing-quote {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 18px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.85); line-height: 1.6; margin-bottom: 14px;
-    }
-    .closing-attr {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 500;
-      letter-spacing: 0.2em; text-transform: uppercase; color: var(--tan);
-    }
-
-    /* ══ RESPONSIVE ══ */
-    @media (max-width: 580px) {
-      .supp-video-head { flex-direction: column; align-items: flex-start; gap: 8px; }
-      .nav-wrap { flex-direction: column; align-items: stretch; }
-      .back-btn, .continue-btn { justify-content: center; }
-      .prop-contrast { grid-template-columns: 1fr; }
-      .chain-row { flex-direction: column; }
-    }
-    @media (max-width: 560px) {
-      .panel-inner { padding: 28px 20px 24px; }
-      .nav-wrap { padding: 20px; }
-      .panel-title { font-size: 24px; }
-      .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .complete-dark { padding: 40px 24px 36px; }
-      .tab-btn { padding: 0 14px; font-size: 11px; letter-spacing: 0.13em; min-height: 52px; }
-      .tab-check { width: 16px; height: 16px; }
-      .tab-check svg { width: 8px; height: 8px; }
-    }
-
-    @media print {
-      .complete-banner, .video-wrap, .tab-bar, .blank-state,
-      .tab-panel:not(.active), .nav-wrap, .closing { display: none !important; }
+    @media (max-width:540px) {
+      .prop-contrast { grid-template-columns:1fr; }
+      .chain-row { flex-direction:column; }
+      .chain-arrow { transform:rotate(90deg); padding:4px 0; justify-content:center; }
+      .panel-inner { padding:28px 20px 20px; }
+      .nav-wrap { padding:20px; flex-direction:column; }
+      .continue-btn,.back-btn { width:100%; justify-content:center; }
+      .session-begin-inner { padding:20px; }
+      .workspace-section { padding:24px 20px; }
+      .congratulations-img-wrap img { width:90%; }
+      .complete-dark { padding:36px 20px 32px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ══ COMPLETE BANNER ══ -->
-  <div class="complete-banner">
-    <div class="complete-banner-icon">
-      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-    </div>
-    <p class="complete-banner-text">
-      Work through each section using the tabs below. When finished, open the
-      <strong>Complete Lesson</strong> tab and click <strong>Mark as Complete</strong> to unlock Lesson 4.
-    </p>
+  <!-- HERO WELCOME -->
+  <div class="hero-welcome" id="hero-welcome">
+    <img src="https://stratummethod.github.io/stratum-widget/welcom-surface-patterns.png" alt="Welcome to The Formative Wound — STRATUM">
   </div>
 
-  <!-- ══ MAIN VIDEO ══ -->
-  <div class="video-wrap">
+  <!-- HERO VIDEO -->
+  <div class="hero-video" id="hero-video">
     <div class="video-container">
-      <iframe
-        src="https://www.youtube.com/embed/XXXXXXXXXX?rel=0&modestbranding=1"
-        title="Lesson 3: The Formative Wound — STRATUM"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-      </iframe>
+      <div class="yt-facade" onclick="playFacade(this,'4GEodVaKiKc')">
+        <img src="https://i.ytimg.com/vi/4GEodVaKiKc/maxresdefault.jpg" alt="The Formative Wound — STRATUM" loading="lazy">
+        <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+        <iframe title="Lesson 3: The Formative Wound — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
     </div>
     <div class="transcript">
-      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this)">
+      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-main')">
         <span class="transcript-label">Video Transcript</span>
-        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
-      <div class="transcript-body" id="transcript-body">
+      <div class="transcript-body" id="transcript-main">
         <p>In Lesson 1, I asked you to be a documentary filmmaker. In Lesson 2, you became a therapist — you applied the therapist's question and found the belief operating beneath your character's behavior. The hidden truth that makes their actions feel not just understandable, but inevitable.</p>
         <p>Today, you go one layer deeper.</p>
         <p>Your character wasn't born with that belief. Something taught them. A specific experience — or a specific accumulation of moments — that made this belief feel like the only reasonable conclusion.</p>
@@ -645,44 +302,37 @@
         <p class="section-marker">The Causal Chain</p>
         <p>By the end of this session, you will have something you didn't have before: a complete causal chain. Wound leads to belief. Belief drives behavior. Three layers, causally locked. That chain is the foundation of everything that follows in this course — and the foundation of every scene your character inhabits.</p>
         <p>The coaching session is forty minutes. The wound typically emerges in the second half. Do not cut it short.</p>
-        <p>When your session is complete, return here to complete your Reflection Journal. Be sure to print it and save it as a PDF — you will attach it to Lesson 4.</p>
+        <p>When your session is complete, return here to open your Workspace and record your deliverables. Print and save as a PDF — you will attach it to your Lesson 4 session.</p>
       </div>
     </div>
   </div>
 
-  <!-- ══ TAB BAR ══ -->
-  <nav class="tab-bar" aria-label="Lesson sections">
-    <button class="tab-btn" data-tab="overview">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Overview
-    </button>
-    <button class="tab-btn" data-tab="discovery">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      The Discovery
-    </button>
-    <button class="tab-btn" data-tab="redflags">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Red Flags
-    </button>
-    <button class="tab-btn" data-tab="session">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Your Session
-    </button>
-    <button class="tab-btn" data-tab="complete">
-      <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
-      Complete Lesson
-    </button>
-  </nav>
-
-  <!-- ══ BLANK STATE ══ -->
-  <div id="blank-state" class="blank-state">
-    <div class="blank-rule"></div>
-    <p>Select a section above to begin.</p>
+  <!-- TAB BAR -->
+  <div class="tab-bar-wrap">
+    <nav class="tab-bar" id="tab-bar" aria-label="Lesson sections">
+      <button class="tab-btn" data-tab="video"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Video</button>
+      <button class="tab-btn" data-tab="overview"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Overview</button>
+      <button class="tab-btn" data-tab="discovery"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>The Discovery</button>
+      <button class="tab-btn" data-tab="redflags"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Red Flags</button>
+      <button class="tab-btn" data-tab="session"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Your Session</button>
+      <button class="tab-btn" data-tab="complete"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Complete Lesson</button>
+    </nav>
+    <div class="tab-scroll-hint-left" id="tab-scroll-hint-left">
+      <div class="tab-scroll-arrow" onclick="scrollTabBarLeft()"><svg viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg></div>
+    </div>
+    <div class="tab-scroll-hint" id="tab-scroll-hint">
+      <div class="tab-scroll-arrow" onclick="scrollTabBar()"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+    </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       PANEL: OVERVIEW
-  ══════════════════════════════════════════════════════ -->
+  <!-- VIDEO PANEL -->
+  <div class="tab-panel" id="panel-video">
+    <div class="nav-wrap no-back">
+      <button class="continue-btn" data-next="overview">Continue to Overview<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
   <div class="tab-panel" id="panel-overview">
     <div class="panel-inner">
       <span class="panel-eyebrow">Lesson 3 · The Excavation Ladder · STRATUM: AI Character Coaching</span>
@@ -702,7 +352,7 @@
         <p>The Lesson 1 and Lesson 2 work you printed and saved are your data set. The wound you are looking for must directly explain the hidden truth from Lesson 2. If the connection isn't immediate, keep excavating.</p>
       </div>
 
-      <!-- Causal Chain -->
+      <!-- CAUSAL CHAIN -->
       <div class="chain-block">
         <span class="chain-block-eyebrow">The Chain You Are Building</span>
         <div class="chain-row">
@@ -727,57 +377,63 @@
         <p class="chain-note">By the end of today's session: Because of [wound], my character believes [hidden truth], which drives them to [anchor behavior].</p>
       </div>
 
-      <!-- Supplemental Video 1 -->
+      <!-- SUPPLEMENTAL VIDEO 1 -->
       <div class="supp-video">
         <div class="supp-video-head">
-          <div class="supp-video-head-text">
-            <span class="supp-video-badge">Supplemental · Writing Psychology</span>
-            <span class="supp-video-title">The Wound That Doesn't Look Like a Wound</span>
-          </div>
+          <span class="supp-video-badge">Supplemental · Writing Psychology</span>
+          <span class="supp-video-title">The Wound That Doesn't Look Like a Wound</span>
         </div>
         <div class="supp-video-container">
-          <iframe
-            src="https://www.youtube.com/embed/XXXXXXXXXX?rel=0&modestbranding=1"
-            title="The Wound That Doesn't Look Like a Wound"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
+          <div class="yt-facade" onclick="playFacade(this,'4GEodVaKiKc')">
+            <img src="https://i.ytimg.com/vi/4GEodVaKiKc/maxresdefault.jpg" alt="The Wound That Doesn't Look Like a Wound" loading="lazy">
+            <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <iframe title="The Wound That Doesn't Look Like a Wound" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
         </div>
         <p class="supp-video-foot">Watch before your coaching session. The most psychologically powerful wounds in fiction are almost never catastrophic — they're specific and quiet. This video makes the distinction concrete before you search for your character's.</p>
-      </div>
-
-      <!-- Supplemental Video 2 -->
-      <div class="supp-video">
-        <div class="supp-video-head">
-          <div class="supp-video-head-text">
-            <span class="supp-video-badge">Supplemental · The Methodology</span>
-            <span class="supp-video-title">Discovery vs. Invention: How Writers Know the Difference</span>
+        <div class="supp-transcript">
+          <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-wound')">
+            <span class="transcript-label">Video Transcript</span>
+            <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="transcript-body" id="transcript-wound">
+            <!-- Transcript coming -->
           </div>
         </div>
+      </div>
+
+      <!-- SUPPLEMENTAL VIDEO 2 -->
+      <div class="supp-video">
+        <div class="supp-video-head">
+          <span class="supp-video-badge">Supplemental · The Methodology</span>
+          <span class="supp-video-title">Discovery vs. Invention: How Writers Know the Difference</span>
+        </div>
         <div class="supp-video-container">
-          <iframe
-            src="https://www.youtube.com/embed/XXXXXXXXXX?rel=0&modestbranding=1"
-            title="Discovery vs. Invention: How Writers Know the Difference"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
+          <div class="yt-facade" onclick="playFacade(this,'4GEodVaKiKc')">
+            <img src="https://i.ytimg.com/vi/4GEodVaKiKc/maxresdefault.jpg" alt="Discovery vs. Invention: How Writers Know the Difference" loading="lazy">
+            <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <iframe title="Discovery vs. Invention: How Writers Know the Difference" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
         </div>
         <p class="supp-video-foot">The single most important distinction in this lesson — and in this course. Invented wounds produce predictable characters. Discovered wounds produce surprising ones. Watch this before your session.</p>
+        <div class="supp-transcript">
+          <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-discovery-inv')">
+            <span class="transcript-label">Video Transcript</span>
+            <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="transcript-body" id="transcript-discovery-inv">
+            <!-- Transcript coming -->
+          </div>
+        </div>
       </div>
 
     </div>
-    <div class="nav-wrap">
-      <span></span>
-      <button class="continue-btn" data-next="discovery">
-        Continue to The Discovery
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+    <div class="nav-wrap no-back">
+      <button class="continue-btn" data-next="discovery">Continue to The Discovery<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       PANEL: THE DISCOVERY
-  ══════════════════════════════════════════════════════ -->
+  <!-- THE DISCOVERY -->
   <div class="tab-panel" id="panel-discovery">
     <div class="panel-inner">
       <span class="panel-eyebrow">Before Your Coaching Session</span>
@@ -788,7 +444,7 @@
       <div class="method-steps">
 
         <div class="method-step">
-          <div class="method-num"><span>1</span></div>
+          <div class="method-num">1</div>
           <div class="method-content">
             <span class="method-title">Deductive Reasoning</span>
             <p class="method-body">Work backward from your hidden truth. Ask: what kind of experience would produce this specific belief? Not what caused suffering in general — what specific situation would make this conclusion feel like the only available one?</p>
@@ -801,7 +457,7 @@
         </div>
 
         <div class="method-step">
-          <div class="method-num"><span>2</span></div>
+          <div class="method-num">2</div>
           <div class="method-content">
             <span class="method-title">Intuitive Visualization</span>
             <p class="method-body">Stop reasoning. Ask instead: when you close your eyes and imagine your character's past, what surfaces? What image, what room, what face, what moment? Do not evaluate it. Do not ask if it's dramatic enough or significant enough. Just notice what arrives.</p>
@@ -814,7 +470,7 @@
         </div>
 
         <div class="method-step">
-          <div class="method-num"><span>3</span></div>
+          <div class="method-num">3</div>
           <div class="method-content">
             <span class="method-title">Socratic Questioning</span>
             <p class="method-body">Your coach will challenge every answer you give. This is the methodology working, not the session going sideways. The goal is to pressure-test each candidate wound until the real one emerges — not the plausible version, not the defensible version, but the specific one.</p>
@@ -826,7 +482,7 @@
           </div>
         </div>
 
-      </div><!-- /method-steps -->
+      </div>
 
       <div class="why-block">
         <span class="why-block-title">Wound Proportionality</span>
@@ -847,20 +503,12 @@
 
     </div>
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="overview">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Overview
-      </button>
-      <button class="continue-btn" data-next="redflags">
-        Continue to Red Flags
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="overview"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Overview</button>
+      <button class="continue-btn" data-next="redflags">Continue to Red Flags<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       PANEL: RED FLAGS
-  ══════════════════════════════════════════════════════ -->
+  <!-- RED FLAGS -->
   <div class="tab-panel" id="panel-redflags">
     <div class="panel-inner">
       <span class="panel-eyebrow">Before Your Coaching Session</span>
@@ -885,49 +533,43 @@
 
       <div class="redflag-item">
         <span class="redflag-marker">Red Flag 4</span>
-        <p class="redflag-text"><strong>The wound doesn't directly explain the Lesson 2 belief.</strong> This is the lock test for this session. State it plainly: because of this wound, my character concluded [Lesson 2 hidden truth]. If the causal connection requires explanation — if you have to argue for the link rather than simply see it — the wound may be adjacent to the real one, not the origin of it. A true wound produces its belief the way a cause produces an effect: immediately and inevitably.</p>
+        <p class="redflag-text"><strong>The wound doesn't directly explain the Lesson 2 belief.</strong> This is the lock test for this session. State it plainly: because of this wound, my character concluded [Lesson 2 hidden truth]. If the causal connection requires explanation — if you have to argue for the link rather than simply see it — the wound may be adjacent to the real one. A true wound produces its belief the way a cause produces an effect: immediately and inevitably.</p>
       </div>
 
     </div>
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="discovery">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to The Discovery
-      </button>
-      <button class="continue-btn" data-next="session">
-        Continue to Your Session
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="discovery"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to The Discovery</button>
+      <button class="continue-btn" data-next="session">Continue to Your Session<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       PANEL: YOUR SESSION
-  ══════════════════════════════════════════════════════ -->
+  <!-- YOUR SESSION -->
   <div class="tab-panel" id="panel-session">
+
+    <!-- PRE-WORK -->
     <div class="panel-inner">
       <span class="panel-eyebrow">AI Coaching Session</span>
       <h2 class="panel-title">Your <em>Session</em></h2>
       <div class="panel-rule"></div>
-      <p class="panel-lead">Complete the pre-work below, then copy the prompt to begin your coaching session. Return here when the session is complete to fill out your Reflection Journal.</p>
+      <p class="panel-lead">Work through the pre-work below before opening your session. These aren't warm-up exercises — they are the analytical foundation that determines how quickly your coach can take you somewhere real.</p>
 
-      <span class="session-section-label">Pre-Work — Complete Before Your Session</span>
+      <span class="section-divider">Pre-Work — Complete Before Your Session</span>
 
       <div class="prework-note">
         <p>You've done this before, so the mechanics are familiar. What's different this time is the depth. In Lesson 1 your coach asked you to observe. In Lesson 2 your coach challenged your interpretations. In this session your coach will push you past categories to scenes — and past plausible wounds to true ones.</p>
-        <p><strong>Work through the fields below before opening your session.</strong> These are not warm-up exercises — they are the analytical pre-work that determines how quickly your coach can take you somewhere real.</p>
+        <p><strong>Think through each field below before you copy the prompt.</strong> The more clearly you've worked through these questions in your own mind, the faster the session moves from reasoning to discovery.</p>
       </div>
 
       <div class="prework-fields">
         <div class="prework-field">
           <span class="prework-field-label">Your Character Status</span>
-          <p class="prework-field-q">Which best describes where you are?</p>
+          <p class="prework-field-q">Which best describes where you are with your character?</p>
           <p class="prework-field-note">If protagonist: look for the wound most central to the story's emotional core — the one that, if cracked open, changes everything. If supporting character: one strong formative moment that makes them memorable. If you haven't started writing: trust what emerges when you visualize. You know more than you think. If revising: you may have already written hints of this wound. What does your manuscript suggest?</p>
         </div>
         <div class="prework-field">
           <span class="prework-field-label">Deductive Starting Point</span>
-          <p class="prework-field-q">Based on your Lesson 2 hidden truth, what type of formative experience would have made that belief feel true? Be specific about what your character would have had to witness, lose, or conclude.</p>
-          <p class="prework-field-note">State it as an experience type, not a wound yet — your coach will help you move from the category to the scene.</p>
+          <p class="prework-field-q">Based on your Lesson 2 hidden truth, what type of formative experience would have made that belief feel true?</p>
+          <p class="prework-field-note">Be specific about what your character would have had to witness, lose, or conclude. State it as an experience type, not a wound yet — your coach will help you move from the category to the scene.</p>
         </div>
         <div class="prework-field">
           <span class="prework-field-label">Age of Formation</span>
@@ -937,7 +579,7 @@
         <div class="prework-field">
           <span class="prework-field-label">Intuitive Sense</span>
           <p class="prework-field-q">What do you already sense about this wound — even if you can't fully articulate it yet?</p>
-          <p class="prework-field-note">Don't filter this. The half-formed image, the specific but unexplained detail, the thing that keeps surfacing — write it down. This is the intuitive visualization stage beginning before the session does.</p>
+          <p class="prework-field-note">Don't filter this. The half-formed image, the specific but unexplained detail, the thing that keeps surfacing — sit with it. This is the intuitive visualization stage beginning before the session does.</p>
         </div>
       </div>
 
@@ -953,148 +595,78 @@
         <p><strong>Set a 40-minute timer.</strong> Do not cut the session short — the wound typically emerges in the second half. The first half is deduction. The second half is discovery.</p>
       </div>
 
-      <span class="session-section-label">Your Coaching Prompt</span>
-
-      <div class="prompt-block">
-        <div class="prompt-block-head">
-          <span class="prompt-block-label">AI Prompt — Copy to Clipboard</span>
-          <button class="copy-btn" id="copy-btn" onclick="copyPrompt()">
-            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-            Copy Prompt
-          </button>
-        </div>
-        <div class="prompt-text" id="prompt-text">You are my STRATUM character excavation coach for Lesson 3: The Formative Wound.
-
-YOUR ROLE: You are a skilled diagnostician helping me trace my character's hidden truth back to its origin — the specific experience that made it the only reasonable conclusion. You do not invent wounds. You help me discover the one that is already there.
-
-THREE-PART METHODOLOGY (use in sequence):
-Stage 1 — Deductive Reasoning: work backward from my Lesson 2 hidden truth. Ask what type of experience would produce this specific belief.
-Stage 2 — Intuitive Visualization: ask me to describe images, moments, or scenes that surface when I stop reasoning and simply look.
-Stage 3 — Socratic Questioning: challenge each candidate wound until the real one emerges — not the plausible one, the true one.
-
-WOUND CRITERIA — the wound must:
-- Be a specific scene, not a category (abandonment, betrayal are labels — not wounds)
-- Directly explain the Lesson 2 hidden truth with no argument required
-- Be proportional to the belief, not dramatized beyond what the belief requires
-- Feel discovered, not constructed — I should experience recognition, not satisfaction
-
-WHAT TO WATCH FOR:
-- First answers are almost always the conscious, defensible version — push past them
-- If the wound is too dramatic: ask what quieter version would have been sufficient
-- If the wound is a category: ask me to describe the specific scene — what the camera would show
-- If the causal link to Lesson 2 requires explanation: we haven't found the real wound yet
-
-CHARACTER TYPE ADJUSTMENTS:
-If protagonist: look for the wound most central to the story's emotional core.
-If supporting character: one strong formative moment that makes them memorable.
-If not yet written: trust what emerges in visualization.
-If revising: look for what the manuscript already suggests.
-
-CRITICAL REMINDERS:
-- I am the expert on my character — you are the guide helping me access what I already know
-- ONE wound only — the most emotionally charged, causally tight moment
-- Every wound must directly explain the Lesson 2 belief or we keep refining
-- Discovery, not invention — if every answer arrives without resistance, apply skepticism
-
-BEGIN
-I'm ready to discover my character's formative wound. Please read the attached Lesson 1 and Lesson 2 PDFs first, then begin Stage 1 by asking me to state my hidden truth from Lesson 2, and help me work backward from it to identify what kind of experience would create it.</div>
-      </div>
-
-      <span class="session-section-label">Reflection Journal — Complete After Your Session</span>
-
-      <div class="prework-note">
-        <p>When your coaching session is complete, return here to fill out your Reflection Journal in the workspace form below. These questions are the final stage of the excavation, completed in your own voice after the session has ended.</p>
-      </div>
-
-      <div class="prework-fields">
-        <div class="prework-field">
-          <span class="prework-field-label">The Formative Wound</span>
-          <p class="prework-field-q">When did it happen? What happened? Who was involved? What was the emotional impact?</p>
-          <p class="prework-field-note">Four fields — answer each specifically. This is the scene, not the category.</p>
-        </div>
-        <div class="prework-field">
-          <span class="prework-field-label">The Origin Statement</span>
-          <p class="prework-field-q">Because [wound], my character concluded [Lesson 2 hidden truth].</p>
-          <p class="prework-field-note">This single sentence is the causal lock for Lesson 3. If it reads with the same inevitability as the Lesson 2 lock, you've found the real wound.</p>
-        </div>
-        <div class="prework-field">
-          <span class="prework-field-label">The Complete Causal Chain</span>
-          <p class="prework-field-q">Because of [wound], my character believes [hidden truth], which drives them to [anchor behavior].</p>
-          <p class="prework-field-note">All three lessons in one sentence. This is the foundation of your character's psychological architecture.</p>
-        </div>
-        <div class="prework-field">
-          <span class="prework-field-label">The Scene</span>
-          <p class="prework-field-q">If you had to write this wound as a scene, what would the camera show in the moment the belief formed?</p>
-          <p class="prework-field-note">Not the emotion — the observable moment. What is visible?</p>
-        </div>
-        <div class="prework-field">
-          <span class="prework-field-label">The Absence</span>
-          <p class="prework-field-q">What did your character need in that moment that they didn't get? How does that absence still drive them?</p>
-          <p class="prework-field-note">This is preparing you for Lesson 5: Want and Need.</p>
-        </div>
-        <div class="prework-field">
-          <span class="prework-field-label">The Trap You Avoided</span>
-          <p class="prework-field-q">Most writers make wounds too dramatic or too neat. Which trap did you almost fall into — and what did you find instead?</p>
-          <p class="prework-field-note">Be honest about where your instincts wanted to go and what stopped you.</p>
-        </div>
-        <div class="prework-field">
-          <span class="prework-field-label">Story Implications</span>
-          <p class="prework-field-q">How does knowing this wound change what has to happen in your story? Name at least one specific scene, arc, or turning point this wound illuminates or complicates.</p>
-          <p class="prework-field-note">The wound is not backstory. It is the engine of everything that follows.</p>
-        </div>
-      </div>
-
-      <!-- JOTFORM EMBED -->
-      <div style="margin-bottom: 32px;">
-        <script type="text/javascript" src="https://form.jotform.com/jsform/XXXXXXXXXX"></script>
-      </div>
-
     </div>
+
+    <!-- SESSION LAUNCH -->
+    <div class="session-begin-band">
+      <div class="session-begin-inner">
+        <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
+        <button class="copy-btn" id="copy-prompt-btn" onclick="copyPrompt()">
+          <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Prompt to Clipboard
+        </button>
+        <ul class="instructions-list">
+          <li data-n="1">Copy the prompt above and open Claude at <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> in a new tab. Paste the prompt to begin — you can read it there once it's in Claude.</li>
+          <li data-n="2">After pasting the prompt, attach the <strong>PDFs you saved from Lessons 1 and 2</strong>. Your coach needs both documents to work from the first exchange.</li>
+          <li data-n="3">Set a timer for <strong>40 minutes</strong>. The wound typically surfaces in the second half — do not cut it short.</li>
+          <li data-n="4">When your session is complete, return here and open your <strong>Workspace</strong> below to record your deliverables.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- WORKSPACE -->
+    <div class="workspace-section">
+      <span class="workspace-eyebrow">After Your Session</span>
+      <h3 class="workspace-title">Open Your <em>Workspace</em></h3>
+      <p class="workspace-desc">Record your formative wound, origin statement, and complete causal chain while they're clear. Your workspace opens in a new tab so nothing is lost if you need to scroll back through your session. Print and save as a PDF — you will attach it to your Lesson 4 coaching session.</p>
+      <a href="https://form.jotform.com/260764372735059" target="_blank" rel="noopener" class="workspace-btn">
+        Open Workspace
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+    </div>
+
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="redflags">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Red Flags
-      </button>
-      <button class="continue-btn" data-next="complete">
-        Continue to Complete Lesson
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="redflags"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Red Flags</button>
+      <button class="continue-btn" data-next="complete">Continue to Complete Lesson<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
+
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       PANEL: COMPLETE LESSON
-  ══════════════════════════════════════════════════════ -->
+  <!-- COMPLETE LESSON -->
   <div class="tab-panel" id="panel-complete">
+
+    <div class="congratulations-img-wrap">
+      <img src="https://stratummethod.github.io/stratum-widget/congratulations-surface-patterns.png" alt="Congratulations — You've Completed The Formative Wound">
+    </div>
+
     <div class="panel-inner">
+
       <span class="panel-eyebrow">Lesson 3 Complete</span>
       <h2 class="panel-title">The Chain <em>Is Built</em></h2>
       <div class="panel-rule"></div>
       <p class="panel-lead">In Lesson 1 you identified what your character does. In Lesson 2 you uncovered why — the belief that makes their behavior feel necessary. Today you found where it started. You now have a complete causal chain: wound → belief → behavior.</p>
 
-      <div class="complete-checklist">
-        <div class="complete-checklist-head">
-          <div class="complete-checklist-head-title">Make sure you have all deliverables before continuing to Lesson 4</div>
-          <span class="complete-checklist-head-sub">Each must be specific, causally locked, and discovered — not plausible, not constructed</span>
-        </div>
-        <div class="complete-checklist-body">
-          <div class="complete-check-item">
-            <div class="complete-check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-            <div class="complete-check-text">One <strong>formative wound</strong> — stated as a specific scene, not a category. The moment the belief was born, described as what a camera would show.</div>
-          </div>
-          <div class="complete-check-item">
-            <div class="complete-check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-            <div class="complete-check-text">One <strong>origin statement</strong> — Because [wound], my character concluded [hidden truth] — with the same causal tightness as the Lesson 2 lock.</div>
-          </div>
-          <div class="complete-check-item">
-            <div class="complete-check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-            <div class="complete-check-text">The <strong>complete causal chain</strong> — Because of [wound], my character believes [hidden truth], which drives them to [anchor behavior] — all three lessons in one sentence.</div>
-          </div>
-          <div class="complete-check-item">
-            <div class="complete-check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-            <div class="complete-check-text">Your <strong>Reflection Journal completed and saved as a PDF</strong> — you will attach it to your Lesson 4 coaching session.</div>
-          </div>
-        </div>
+      <div class="complete-lesson-content">
+        <span class="complete-lesson-title">Make sure you have all four deliverables before continuing to Lesson 4</span>
+        <p>Each must be specific, causally locked, and discovered — not plausible, not constructed. If any of the four feel invented rather than found, return to your session before moving on.</p>
+        <ul class="complete-lesson-checklist">
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
+            One <strong>formative wound</strong> — stated as a specific scene, not a category. The moment the belief was born, described as what a camera would show.
+          </li>
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
+            One <strong>origin statement</strong> — Because [wound], my character concluded [hidden truth] — with the same causal tightness as the Lesson 2 lock.
+          </li>
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
+            The <strong>complete causal chain</strong> — Because of [wound], my character believes [hidden truth], which drives them to [anchor behavior] — all three lessons in one sentence.
+          </li>
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
+            Your <strong>Workspace saved as a PDF</strong> — you will attach Lessons 1, 2, and 3 together to your Lesson 4 coaching session.
+          </li>
+        </ul>
       </div>
 
       <div class="save-block">
@@ -1114,56 +686,82 @@ I'm ready to discover my character's formative wound. Please read the attached L
         <span class="teds-note-eyebrow">A Note from Ted</span>
         <p>The wound you found today is the origin of everything. Not just the belief — the whole psychology. Every choice your character makes, every relationship they build or destroy, every moment of resistance and every moment of collapse — it all traces back to what you found in that session.</p>
         <p>Keep that wound close. And carry it carefully into Lesson 4 — where you'll discover how a rational conclusion became a distortion, and how that distortion became the lie your character's story must eventually crack open.</p>
-        <p>— Ted</p>
+        <span class="teds-note-sig">— Ted</span>
+      </div>
+
+      <!-- CONTACT TED -->
+      <div class="contact-ted-section">
+        <span class="panel-eyebrow">Questions or Feedback</span>
+        <h3 class="contact-ted-title">Reach <em>Ted Directly</em></h3>
+        <p class="contact-ted-desc">Something isn't clicking? A question about the methodology? Use the form below to send Ted a note. He reads everything.</p>
+        <a href="https://form.jotform.com/260734440316047" target="_blank" rel="noopener" class="workspace-btn">
+          Contact Ted
+          <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
       </div>
 
     </div>
 
-    <!-- Complete dark section -->
+    <!-- COMPLETE DARK -->
     <div class="complete-dark">
+      <span class="complete-dark-eyebrow">Lesson 3 Complete · STRATUM: AI Character Coaching</span>
+      <h2 class="complete-dark-heading">The Chain Is Built</h2>
+      <p class="complete-dark-sub">Wound → Belief → Behavior — three layers, causally locked</p>
       <div class="complete-rule"></div>
-      <p class="complete-quote">"Because of [wound], my character believes [hidden truth], which drives them to [anchor behavior]."<br>When that sentence feels inevitable — all three layers locked — you're ready for Lesson 4.</p>
+      <p class="complete-quote">"The wound doesn't need to be dramatic. It needs to be specific — specific enough that only this character could have drawn this conclusion from it."</p>
       <span class="complete-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
-
-      <div style="margin-top: 28px; display: flex; justify-content: center;">
-        <!-- REPLACE LESSON-4-LECTURE-URL WITH ACTUAL SYSTEME.IO LESSON 4 URL -->
-        <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/LESSON-4-LECTURE-URL"
-           target="_blank" rel="noopener"
-           class="mark-complete-btn">
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Mark as Complete
-        </a>
-      </div>
+      <!-- REPLACE LESSON-4-LECTURE-URL WITH ACTUAL SYSTEME.IO LESSON 4 URL -->
+      <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/LESSON-4-LECTURE-URL" target="_blank" rel="noopener" class="mark-complete-btn">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark as Complete
+      </a>
     </div>
 
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="session">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Your Session
-      </button>
+      <button class="back-btn" data-prev="session"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Your Session</button>
       <span></span>
     </div>
-  </div>
 
-  <!-- ══ CLOSING ══ -->
-  <div class="closing">
-    <p class="closing-quote">The wound doesn't need to be dramatic. It needs to be specific.<br>Specific enough that only this character could have drawn this conclusion from it.</p>
-    <span class="closing-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
   </div>
 
   <script>
-    var TAB_ORDER = ['overview', 'discovery', 'redflags', 'session', 'complete'];
+    var LESSON3_PROMPT = "You are my STRATUM character excavation coach for Lesson 3: The Formative Wound.\n\nYOUR ROLE: You are a skilled diagnostician helping me trace my character\u2019s hidden truth back to its origin \u2014 the specific experience that made it the only reasonable conclusion. You do not invent wounds. You help me discover the one that is already there.\n\nTHREE-PART METHODOLOGY (use in sequence):\nStage 1 \u2014 Deductive Reasoning: work backward from my Lesson 2 hidden truth. Ask what type of experience would produce this specific belief.\nStage 2 \u2014 Intuitive Visualization: ask me to describe images, moments, or scenes that surface when I stop reasoning and simply look.\nStage 3 \u2014 Socratic Questioning: challenge each candidate wound until the real one emerges \u2014 not the plausible one, the true one.\n\nWOUND CRITERIA \u2014 the wound must:\n- Be a specific scene, not a category (abandonment, betrayal are labels \u2014 not wounds)\n- Directly explain the Lesson 2 hidden truth with no argument required\n- Be proportional to the belief, not dramatized beyond what the belief requires\n- Feel discovered, not constructed \u2014 I should experience recognition, not satisfaction\n\nWHAT TO WATCH FOR:\n- First answers are almost always the conscious, defensible version \u2014 push past them\n- If the wound is too dramatic: ask what quieter version would have been sufficient\n- If the wound is a category: ask me to describe the specific scene \u2014 what the camera would show\n- If the causal link to Lesson 2 requires explanation: we haven\u2019t found the real wound yet\n\nCHARACTER TYPE ADJUSTMENTS:\nIf protagonist: look for the wound most central to the story\u2019s emotional core.\nIf supporting character: one strong formative moment that makes them memorable.\nIf not yet written: trust what emerges in visualization.\nIf revising: look for what the manuscript already suggests.\n\nCRITICAL REMINDERS:\n- I am the expert on my character \u2014 you are the guide helping me access what I already know\n- ONE wound only \u2014 the most emotionally charged, causally tight moment\n- Every wound must directly explain the Lesson 2 belief or we keep refining\n- Discovery, not invention \u2014 if every answer arrives without resistance, apply skepticism\n\nBEGIN\nI\u2019m ready to discover my character\u2019s formative wound. Please read the attached Lesson 1 and Lesson 2 PDFs first, then begin Stage 1 by asking me to state my hidden truth from Lesson 2, and help me work backward from it to identify what kind of experience would create it.";
+
+    function copyPrompt() {
+      var btn = document.getElementById('copy-prompt-btn');
+      var origHTML = btn.innerHTML;
+      var scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+      function showCopied() {
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() { window.scrollTo(0, scrollY); }, 50);
+        setTimeout(function() { btn.innerHTML = origHTML; btn.classList.remove('copied'); }, 2500);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(LESSON3_PROMPT).then(showCopied).catch(function() { fallbackCopy(scrollY, showCopied); });
+      } else { fallbackCopy(scrollY, showCopied); }
+    }
+    function fallbackCopy(scrollY, callback) {
+      var ta = document.createElement('textarea');
+      ta.value = LESSON3_PROMPT;
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); callback(); } catch(e) { alert('Please press Ctrl+C (or Cmd+C) to copy.'); }
+      document.body.removeChild(ta);
+      setTimeout(function() { window.scrollTo(0, scrollY); }, 50);
+    }
+
+    var TAB_ORDER = ['video','overview','discovery','redflags','session','complete'];
+    var heroWelcome = document.getElementById('hero-welcome');
+    var heroVideo   = document.getElementById('hero-video');
 
     function activateTab(tabId, markPrev) {
-      document.getElementById('blank-state').style.display = 'none';
       document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
       document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
-
       var btn   = document.querySelector('[data-tab="' + tabId + '"]');
       var panel = document.getElementById('panel-' + tabId);
       if (btn)   btn.classList.add('active');
       if (panel) panel.classList.add('active');
-
       if (markPrev) {
         var prevIdx = TAB_ORDER.indexOf(tabId) - 1;
         if (prevIdx >= 0) {
@@ -1171,51 +769,54 @@ I'm ready to discover my character's formative wound. Please read the attached L
           if (prevBtn) prevBtn.classList.add('done');
         }
       }
-
-      if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      document.querySelector('.tab-bar').scrollIntoView({ behavior: 'smooth' });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      heroWelcome.style.display = 'none';
+      heroVideo.style.display   = (tabId === 'video') ? 'block' : 'none';
+      if (btn) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+      document.querySelector('.tab-bar').scrollIntoView({ behavior:'smooth' });
+      window.scrollTo({ top:0, behavior:'smooth' });
     }
 
-    /* tab bar clicks */
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-tab'), false);
-      });
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-tab'), false); });
     });
-
-    /* continue buttons — mark previous done */
     document.querySelectorAll('.continue-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-next'), true);
-      });
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-next'), true); });
     });
-
-    /* back buttons */
     document.querySelectorAll('.back-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-prev'), false);
-      });
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-prev'), false); });
     });
 
-    function toggleTranscript(btn) {
-      var body   = document.getElementById('transcript-body');
+    var tabBar = document.getElementById('tab-bar');
+    var scrollHint = document.getElementById('tab-scroll-hint');
+    var scrollHintLeft = document.getElementById('tab-scroll-hint-left');
+
+    function updateScrollHint() {
+      if (!tabBar) { return; }
+      var atEnd   = tabBar.scrollLeft + tabBar.clientWidth >= tabBar.scrollWidth - 4;
+      var atStart = tabBar.scrollLeft <= 4;
+      if (scrollHint)     scrollHint.classList.toggle('hidden', atEnd);
+      if (scrollHintLeft) scrollHintLeft.classList.toggle('visible', !atStart);
+    }
+    function scrollTabBar()     { if (tabBar) tabBar.scrollBy({ left:  160, behavior:'smooth' }); }
+    function scrollTabBarLeft() { if (tabBar) tabBar.scrollBy({ left: -160, behavior:'smooth' }); }
+
+    if (tabBar) {
+      tabBar.addEventListener('scroll', updateScrollHint);
+      window.addEventListener('resize', updateScrollHint);
+      setTimeout(updateScrollHint, 100);
+    }
+
+    function playFacade(el, videoId) {
+      var iframe = el.querySelector('iframe');
+      iframe.src = 'https://www.youtube.com/embed/' + videoId + '?rel=0&modestbranding=1&autoplay=1';
+      el.classList.add('playing');
+    }
+
+    function toggleTranscript(btn, bodyId) {
+      var body   = document.getElementById(bodyId);
       var isOpen = body.classList.contains('open');
       body.classList.toggle('open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
-    }
-
-    function copyPrompt() {
-      var text = document.getElementById('prompt-text').textContent.trim();
-      var btn  = document.getElementById('copy-btn');
-      navigator.clipboard.writeText(text).then(function() {
-        btn.classList.add('copied');
-        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied';
-        setTimeout(function() {
-          btn.classList.remove('copied');
-          btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy Prompt';
-        }, 2500);
-      });
     }
   </script>
 
