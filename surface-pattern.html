@@ -9,14 +9,14 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --cream: #faf4e8; --cream-dark: #f2ead8; --cream-mid: #ede5d4;
-      --tan: #c4a882; --tan-mid: #a8895e; --tan-light: #ddd0b8; --tan-faint: #ede5d4;
-      --brown: #2e1f0e; --brown-mid: #5c3d1e; --brown-light: #8b6340;
-      --label-xs: 11px; --label-sm: 12px; --label-md: 13px;
-      --body-sm: 14px; --body-md: 15px; --body-lg: 16px;
+      --cream:#faf4e8; --cream-dark:#f2ead8; --cream-mid:#ede5d4;
+      --tan:#c4a882; --tan-mid:#a8895e; --tan-light:#ddd0b8; --tan-faint:#ede5d4;
+      --brown:#2e1f0e; --brown-mid:#5c3d1e; --brown-light:#8b6340;
+      --label-xs:11px; --label-sm:12px; --label-md:13px;
+      --body-sm:14px; --body-md:15px; --body-lg:16px;
     }
     html { scroll-behavior: smooth; }
-    body { font-family: 'Spectral', Georgia, serif; background: var(--cream); color: var(--brown); line-height: 1.6; }
+    body { font-family:'Spectral',Georgia,serif; background:var(--cream); color:var(--brown); line-height:1.6; }
 
     /* ══ TAB BAR — TOP, STICKY ══ */
     .tab-bar {
@@ -32,20 +32,23 @@
     }
     .tab-bar::-webkit-scrollbar { display: none; }
 
-    .tab-bar-wrap { position: sticky; top: 0; z-index: 50; }
+    .tab-bar-wrap {
+      position: sticky; top: 0; z-index: 50;
+    }
 
     .tab-scroll-hint-left {
-      position: absolute; top: 0; left: 0; height: 100%; width: 52px;
+      position: absolute; top: 0; left: 0;
+      height: 100%; width: 52px;
       background: linear-gradient(to left, transparent, var(--brown) 55%);
       display: flex; align-items: center; justify-content: flex-start;
       padding-left: 8px; z-index: 52;
-      transition: opacity 0.3s;
-      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s; opacity: 0; pointer-events: none;
     }
     .tab-scroll-hint-left.visible { opacity: 1; pointer-events: all; }
 
     .tab-scroll-hint {
-      position: absolute; top: 0; right: 0; height: 100%; width: 52px;
+      position: absolute; top: 0; right: 0;
+      height: 100%; width: 52px;
       background: linear-gradient(to right, transparent, var(--brown) 55%);
       display: flex; align-items: center; justify-content: flex-end;
       padding-right: 8px; z-index: 52;
@@ -57,23 +60,17 @@
       width: 28px; height: 28px;
       border: 1.5px solid rgba(196,168,130,0.5); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      pointer-events: all; cursor: pointer;
-      background: var(--brown);
-      animation: pulse-arrow 1.5s ease-in-out infinite;
-      flex-shrink: 0;
+      pointer-events: all; cursor: pointer; background: var(--brown);
+      animation: pulse-arrow 1.5s ease-in-out infinite; flex-shrink: 0;
     }
-    .tab-scroll-arrow svg {
-      width: 12px; height: 12px;
-      stroke: var(--tan); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
+    .tab-scroll-arrow svg { width: 12px; height: 12px; stroke: var(--tan); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
     @keyframes pulse-arrow {
       0%, 100% { border-color: rgba(196,168,130,0.4); box-shadow: none; }
       50% { border-color: var(--tan); box-shadow: 0 0 8px rgba(196,168,130,0.4); }
     }
 
     .tab-btn {
-      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-family:'Cormorant Garamond',Georgia,serif;
       font-size: 12px; font-weight: 500;
       letter-spacing: 0.15em; text-transform: uppercase;
       color: rgba(196,168,130,0.55);
@@ -105,18 +102,32 @@
     .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; }
     .video-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
 
+    /* ══ YOUTUBE FACADE ══ */
+    .yt-facade {
+      position: relative; width: 100%; padding-bottom: 56.25%;
+      background: #000; cursor: pointer; overflow: hidden;
+    }
+    .yt-facade img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s ease; }
+    .yt-facade:hover img { transform: scale(1.02); }
+    .yt-facade .yt-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 68px; height: 48px; background: #ff0000; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: background 0.2s, transform 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .yt-facade:hover .yt-play { background: #cc0000; transform: translate(-50%, -50%) scale(1.1); }
+    .yt-facade .yt-play svg { width: 24px; height: 24px; fill: #fff; margin-left: 4px; }
+    .yt-facade iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: none; }
+    .yt-facade.playing img, .yt-facade.playing .yt-play { display: none; }
+    .yt-facade.playing iframe { display: block; }
+
     /* Transcript */
     .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
     .transcript-btn { width: 100%; background: transparent; border: none; padding: 13px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; gap: 12px; }
     .transcript-btn:hover { background: rgba(196,168,130,0.06); }
-    .transcript-label { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan); }
+    .transcript-label { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan); }
     .transcript-chevron { width: 16px; height: 16px; stroke: var(--tan); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.3s ease; flex-shrink: 0; }
     .transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
     .transcript-body { display: none; padding: 0 28px 22px; }
     .transcript-body.open { display: block; }
-    .transcript-body p { font-family: 'Spectral', Georgia, serif; font-size: var(--body-sm); font-weight: 300; font-style: italic; color: rgba(250,244,232,0.78); line-height: 1.85; margin-bottom: 14px; }
+    .transcript-body p { font-family:'Spectral',Georgia,serif; font-size: var(--body-sm); font-weight: 300; font-style: italic; color: rgba(250,244,232,0.78); line-height: 1.85; margin-bottom: 14px; }
     .transcript-body p:last-child { margin-bottom: 0; }
-    .transcript-body .section-marker { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); font-weight: 600; font-style: normal; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan); margin-top: 20px; margin-bottom: 8px; display: block; }
+    .transcript-body .section-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; font-style: normal; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan); margin-top: 20px; margin-bottom: 8px; display: block; }
     .supp-transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.12); }
     .supp-transcript .transcript-body { padding: 0 20px 18px; }
 
@@ -124,8 +135,8 @@
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
     .panel-inner { padding: 44px 32px 32px; max-width: 760px; margin: 0 auto; }
-    .panel-eyebrow { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 8px; }
-    .panel-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; font-weight: 300; color: var(--brown); line-height: 1.15; }
+    .panel-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 8px; }
+    .panel-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 30px; font-weight: 300; color: var(--brown); line-height: 1.15; }
     .panel-title em { font-style: italic; color: var(--brown-mid); }
     .panel-rule { width: 40px; height: 1px; background: var(--tan); margin: 16px 0 26px; }
     .panel-lead { font-size: var(--body-lg); font-weight: 300; line-height: 1.8; color: var(--brown-mid); margin-bottom: 32px; }
@@ -133,34 +144,33 @@
     /* ══ NAV BUTTONS ══ */
     .nav-wrap { padding: 24px 32px 32px; max-width: 760px; margin: 0 auto; border-top: 1px solid var(--tan-light); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
     .nav-wrap.no-back { justify-content: flex-end; }
-    .back-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid var(--tan-light); padding: 12px 22px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 13px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan-mid); cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid var(--tan-light); padding: 12px 22px; font-family:'Cormorant Garamond',Georgia,serif; font-size: 13px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan-mid); cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; }
     .back-btn:hover { background: var(--cream-dark); border-color: var(--tan-mid); color: var(--brown); }
     .back-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .continue-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--brown); border: none; padding: 14px 28px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tan); cursor: pointer; transition: background 0.2s, color 0.2s; }
+    .continue-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--brown); border: none; padding: 14px 28px; font-family:'Cormorant Garamond',Georgia,serif; font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tan); cursor: pointer; transition: background 0.2s, color 0.2s; }
     .continue-btn:hover { background: var(--brown-mid); color: var(--cream); }
     .continue-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
     /* ══ WHY BLOCK ══ */
     .why-block { background: var(--cream-dark); border: 1px solid var(--tan-light); border-left: 3px solid var(--tan-mid); padding: 20px 22px; margin-bottom: 28px; }
-    .why-block-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 15px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 10px; }
+    .why-block-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 15px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 10px; }
     .why-block p { font-size: var(--body-md); font-weight: 300; line-height: 1.8; color: var(--brown); margin-bottom: 10px; }
     .why-block p:last-child { margin-bottom: 0; }
 
     /* ══ SUPPLEMENTAL VIDEO ══ */
     .supp-video { border: 1px solid var(--tan-light); margin-bottom: 32px; overflow: hidden; }
     .supp-video-head { background: var(--cream-mid); padding: 14px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--tan-light); flex-wrap: wrap; }
-    .supp-video-badge { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brown-mid); background: var(--tan-faint); border: 1px solid var(--tan-light); padding: 4px 11px; flex-shrink: 0; }
-    .supp-video-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 15px; font-weight: 500; color: var(--brown); line-height: 1.3; }
-    .supp-video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #100a04; }
-    .supp-video-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
+    .supp-video-badge { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brown-mid); background: var(--tan-faint); border: 1px solid var(--tan-light); padding: 4px 11px; flex-shrink: 0; }
+    .supp-video-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 15px; font-weight: 500; color: var(--brown); line-height: 1.3; }
+    .supp-video-container { position: relative; width: 100%; overflow: hidden; background: #100a04; }
     .supp-video-foot { padding: 14px 20px; background: var(--cream-dark); font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); border-top: 1px solid var(--tan-light); }
 
     /* ══ REQUIREMENTS ══ */
-    .requirements-label { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 14px; }
+    .requirements-label { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 14px; }
     .requirements-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--tan-light); border: 1px solid var(--tan-light); margin-bottom: 32px; }
     .req-card { background: var(--cream); padding: 20px 22px; }
-    .req-card-number { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; font-weight: 300; font-style: italic; color: var(--tan); line-height: 1; margin-bottom: 6px; display: block; }
-    .req-card-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 8px; }
+    .req-card-number { font-family:'Cormorant Garamond',Georgia,serif; font-size: 28px; font-weight: 300; font-style: italic; color: var(--tan); line-height: 1; margin-bottom: 6px; display: block; }
+    .req-card-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 17px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 8px; }
     .req-card-desc { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); margin-bottom: 10px; }
     .req-card-example { font-size: 13px; font-weight: 300; font-style: italic; color: var(--brown-light); line-height: 1.65; padding-top: 8px; border-top: 1px solid var(--tan-faint); }
     .req-card-example strong { font-style: normal; font-weight: 500; color: var(--tan-mid); }
@@ -168,103 +178,96 @@
     /* ══ RED FLAGS ══ */
     .redflag-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--tan-faint); }
     .redflag-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .redflag-marker { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan-mid); flex-shrink: 0; margin-top: 2px; min-width: 64px; }
+    .redflag-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan-mid); flex-shrink: 0; margin-top: 2px; min-width: 64px; }
     .redflag-text { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown); }
     .redflag-text strong { font-weight: 500; color: var(--brown-mid); }
     .redflag-text em { font-style: italic; }
 
     /* ══ SESSION ══ */
-    .session-begin-band { background: var(--brown); width: 100%; padding: 0; margin-bottom: 0; text-align: left !important; columns: 1 !important; column-count: 1 !important; }
-    .session-begin-inner { padding: 28px 32px 28px; max-width: 760px; margin: 0 auto; text-align: left !important; columns: 1 !important; column-count: 1 !important; }
-    .session-begin-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 500; letter-spacing: 0.03em; color: var(--cream); margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid rgba(196,168,130,0.25); line-height: 1.2; }
+    .session-begin-band { background: var(--brown); width: 100%; padding: 0; margin-bottom: 0; text-align: left !important; }
+    .session-begin-inner { padding: 28px 32px 24px; max-width: 760px; margin: 0 auto; text-align: left !important; }
+    .session-begin-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 26px; font-weight: 500; letter-spacing: 0.03em; color: var(--cream); margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid rgba(196,168,130,0.25); line-height: 1.2; }
     .session-begin-title em { color: var(--tan); font-style: italic; }
 
-    /* Prompt text — visible block matching Hidden Truth pattern */
-    .prompt-text {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.85); line-height: 1.75;
-      margin-bottom: 20px;
-      white-space: pre-wrap;
-    }
-
-    /* Copy button — styled to match Hidden Truth */
-    .copy-btn {
-      display: inline-flex; align-items: center; gap: 9px;
-      background: transparent;
-      border: 1px solid rgba(196,168,130,0.50);
-      padding: 12px 22px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan); cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-      margin-bottom: 24px;
-    }
-    .copy-btn:hover { background: rgba(196,168,130,0.10); border-color: var(--tan); }
-    .copy-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .copy-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid rgba(196,168,130,0.45); padding: 9px 16px; font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan); cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+    .copy-btn:hover { background: rgba(196,168,130,0.1); border-color: var(--tan); }
+    .copy-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .copy-btn.copied { background: rgba(196,168,130,0.15); border-color: var(--tan); }
 
-    .instructions-list { list-style: none; margin-top: 4px; text-align: left !important; columns: 1 !important; column-count: 1 !important; }
-    .instructions-list li { font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.85); line-height: 1.72; padding: 9px 0 9px 26px; border-bottom: 1px solid rgba(196,168,130,0.12); display: block !important; text-align: left !important; position: relative; columns: 1 !important; column-count: 1 !important; }
+    .instructions-list { list-style: none; margin-top: 4px; text-align: left !important; }
+    .instructions-list li { font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.85); line-height: 1.72; padding: 9px 0 9px 26px; border-bottom: 1px solid rgba(196,168,130,0.12); display: block !important; text-align: left !important; position: relative; }
     .instructions-list li:last-child { border-bottom: none; }
-    .instructions-list li::before { content: attr(data-n); font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); color: var(--tan); position: absolute; left: 0; top: 11px; }
+    .instructions-list li::before { content: attr(data-n); font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); color: var(--tan); position: absolute; left: 0; top: 11px; }
     .instructions-list li strong { color: var(--tan); font-weight: 500; }
     .instructions-list li a { color: var(--tan); text-decoration: underline; text-underline-offset: 2px; opacity: 0.85; }
     .instructions-list li a:hover { opacity: 1; }
 
-    /* ══ WORKSPACE SECTION ══ */
-    .workspace-section {
-      padding: 32px 32px 28px;
-      max-width: 760px; margin: 0 auto;
+    /* ══ JOTFORM CTA — replaces embedded script/iframe ══ */
+    .jotform-cta-band {
+      background: var(--cream-dark);
       border-top: 1px solid var(--tan-light);
+      border-bottom: 1px solid var(--tan-light);
+      padding: 32px;
     }
-    .workspace-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 8px;
+    .jotform-cta-inner {
+      max-width: 760px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 16px;
     }
-    .workspace-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 24px; font-weight: 300; color: var(--brown); line-height: 1.2; margin-bottom: 12px;
+    .jotform-cta-eyebrow {
+      font-family:'Cormorant Garamond',Georgia,serif;
+      font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--tan-mid); display: block;
     }
-    .workspace-title em { font-style: italic; color: var(--brown-mid); }
-    .workspace-desc {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown-mid); margin-bottom: 20px;
+    .jotform-cta-heading {
+      font-family:'Cormorant Garamond',Georgia,serif;
+      font-size: 22px; font-weight: 300; color: var(--brown);
+      line-height: 1.2;
     }
-    .workspace-btn {
+    .jotform-cta-heading em { font-style: italic; color: var(--brown-mid); }
+    .jotform-cta-desc {
+      font-size: var(--body-sm); font-weight: 300; line-height: 1.8;
+      color: var(--brown-mid);
+    }
+    .jotform-open-btn {
       display: inline-flex; align-items: center; gap: 10px;
-      background: var(--brown); border: none; padding: 14px 28px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 500;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--tan); text-decoration: none; cursor: pointer;
-      transition: background 0.2s, color 0.2s;
+      background: var(--brown); border: none;
+      padding: 15px 30px;
+      font-family:'Cormorant Garamond',Georgia,serif;
+      font-size: 13px; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--tan);
+      cursor: pointer; text-decoration: none;
+      transition: background 0.2s; align-self: flex-start;
     }
-    .workspace-btn:hover { background: var(--brown-mid); color: var(--cream); }
-    .workspace-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .jotform-open-btn:hover { background: var(--brown-mid); color: var(--cream); }
+    .jotform-open-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Session workspace CTA — dark variant (inside session-begin-band) */
+    .jotform-cta-band.dark {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(196,168,130,0.18);
+      border-radius: 0; margin: 0 0 0 0;
+      padding: 24px 32px;
+    }
+    .jotform-cta-band.dark .jotform-cta-eyebrow { color: rgba(196,168,130,0.6); }
+    .jotform-cta-band.dark .jotform-cta-heading { color: var(--cream); }
+    .jotform-cta-band.dark .jotform-cta-heading em { color: var(--tan); }
+    .jotform-cta-band.dark .jotform-cta-desc { color: rgba(250,244,232,0.65); }
+    .jotform-cta-band.dark .jotform-open-btn { background: var(--tan); color: var(--brown); }
+    .jotform-cta-band.dark .jotform-open-btn:hover { background: var(--tan-mid); color: var(--cream); }
 
     /* ══ COMPLETE ══ */
     .congratulations-img-wrap { background: var(--brown); display: flex; justify-content: center; padding: 36px 32px 40px; }
     .congratulations-img-wrap img { width: 65%; max-width: 520px; display: block; box-shadow: 0 0 0 1px rgba(196,168,130,0.35), 0 0 0 5px rgba(46,31,14,0.8), 0 0 0 6px rgba(196,168,130,0.2), 0 8px 40px rgba(0,0,0,0.55); }
-    .complete-dark { background: var(--brown); padding: 44px 32px; text-align: center; }
-    .complete-dark-eyebrow { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 12px; }
-    .complete-dark-heading { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 300; color: var(--cream); margin-bottom: 8px; line-height: 1.2; }
+    .complete-dark { background: var(--brown); padding: 44px 32px 40px; text-align: center; }
+    .complete-dark-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 12px; }
+    .complete-dark-heading { font-family:'Cormorant Garamond',Georgia,serif; font-size: 26px; font-weight: 300; color: var(--cream); margin-bottom: 8px; line-height: 1.2; }
     .complete-dark-sub { font-size: var(--body-sm); font-weight: 300; font-style: italic; color: rgba(196,168,130,0.7); margin-bottom: 28px; }
     .complete-rule { width: 40px; height: 1px; background: rgba(196,168,130,0.3); margin: 0 auto 24px; }
-    .complete-quote { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; font-weight: 300; font-style: italic; color: rgba(196,168,130,0.7); line-height: 1.65; margin-bottom: 10px; }
-    .complete-attr { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); letter-spacing: 0.14em; text-transform: uppercase; color: rgba(196,168,130,0.4); display: block; margin-bottom: 28px; }
-    .mark-complete-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--tan); color: var(--brown); border: none; padding: 15px 32px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 13px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+    .complete-quote { font-family:'Cormorant Garamond',Georgia,serif; font-size: 17px; font-weight: 300; font-style: italic; color: rgba(196,168,130,0.7); line-height: 1.65; margin-bottom: 10px; }
+    .complete-attr { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); letter-spacing: 0.14em; text-transform: uppercase; color: rgba(196,168,130,0.4); display: block; margin-bottom: 28px; }
+    .mark-complete-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--tan); color: var(--brown); border: none; padding: 15px 32px; font-family:'Cormorant Garamond',Georgia,serif; font-size: 13px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; text-decoration: none; transition: background 0.2s; }
     .mark-complete-btn:hover { background: var(--tan-mid); }
     .mark-complete-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-
-    /* Contact Ted */
-    .contact-ted-section { padding: 32px 0 0; }
-    .contact-ted-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 300; color: var(--brown); line-height: 1.2; margin-bottom: 12px; }
-    .contact-ted-title em { font-style: italic; color: var(--brown-mid); }
-    .contact-ted-desc { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); margin-bottom: 20px; }
 
     @media (max-width: 540px) {
       .requirements-grid { grid-template-columns: 1fr; }
@@ -272,7 +275,9 @@
       .nav-wrap { padding: 20px; flex-direction: column; }
       .continue-btn, .back-btn { width: 100%; justify-content: center; }
       .session-begin-inner { padding: 20px; }
-      .workspace-section { padding: 24px 20px; }
+      .jotform-cta-band { padding: 24px 20px; }
+      .jotform-cta-band.dark { padding: 20px; }
+      .jotform-open-btn { width: 100%; justify-content: center; }
       .congratulations-img-wrap img { width: 90%; }
     }
   </style>
@@ -289,13 +294,11 @@
       <button class="tab-btn" data-tab="session"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Your Session</button>
       <button class="tab-btn" data-tab="complete"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Complete Lesson</button>
     </nav>
-    <!-- Left scroll hint — visible when scrolled right -->
     <div class="tab-scroll-hint-left" id="tab-scroll-hint-left">
       <div class="tab-scroll-arrow" onclick="scrollTabBarLeft()">
         <svg viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg>
       </div>
     </div>
-    <!-- Right scroll hint — visible when more tabs off-screen right -->
     <div class="tab-scroll-hint" id="tab-scroll-hint">
       <div class="tab-scroll-arrow" id="tab-scroll-arrow" onclick="scrollTabBar()">
         <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
@@ -304,15 +307,16 @@
   </div>
 
   <!-- ══ HERO AREA ══ -->
-  <!-- Welcome image — shown on load, hidden when any tab is active -->
   <div class="hero-welcome" id="hero-welcome">
     <img src="https://stratummethod.github.io/stratum-widget/welcom-surface-patterns.png" alt="Welcome to The Surface Pattern — STRATUM">
   </div>
-
-  <!-- Video — shown only when Video tab is active -->
   <div class="hero-video" id="hero-video">
     <div class="video-container">
-      <iframe src="https://www.youtube.com/embed/4GEodVaKiKc?rel=0&modestbranding=1" title="Lesson 1: The Surface Pattern — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="yt-facade" onclick="playFacade(this,'4GEodVaKiKc')">
+        <img src="https://i.ytimg.com/vi/4GEodVaKiKc/maxresdefault.jpg" alt="The Surface Pattern — STRATUM" loading="lazy">
+        <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+        <iframe title="Lesson 1: The Surface Pattern — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
     </div>
     <div class="transcript">
       <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-main')">
@@ -353,7 +357,7 @@
 
   <!-- ══ PANELS ══ -->
 
-  <!-- VIDEO PANEL — no content, hero handles it -->
+  <!-- VIDEO PANEL -->
   <div class="tab-panel" id="panel-video">
     <div class="nav-wrap no-back">
       <button class="continue-btn" data-next="overview">Continue to Overview<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
@@ -380,7 +384,11 @@
           <span class="supp-video-title">Self Doubt — Why You Know More Than You Think</span>
         </div>
         <div class="supp-video-container">
-          <iframe src="https://www.youtube.com/embed/nmmHoMxyZL8?rel=0&modestbranding=1" title="Self Doubt — Why You Know More Than You Think" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <div class="yt-facade" onclick="playFacade(this,'nmmHoMxyZL8')">
+            <img src="https://i.ytimg.com/vi/nmmHoMxyZL8/maxresdefault.jpg" alt="Self Doubt — Why You Know More Than You Think" loading="lazy">
+            <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <iframe title="Self Doubt — Why You Know More Than You Think" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
         </div>
         <div class="supp-transcript">
           <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-self-doubt')">
@@ -428,7 +436,11 @@
           <span class="supp-video-title">Behavior vs. Trait — The Camera Test</span>
         </div>
         <div class="supp-video-container">
-          <iframe src="https://www.youtube.com/embed/rIeMCJZWfMg?rel=0&modestbranding=1" title="Behavior vs. Trait — The Camera Test" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <div class="yt-facade" onclick="playFacade(this,'rIeMCJZWfMg')">
+            <img src="https://i.ytimg.com/vi/rIeMCJZWfMg/maxresdefault.jpg" alt="Behavior vs. Trait — The Camera Test" loading="lazy">
+            <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <iframe title="Behavior vs. Trait — The Camera Test" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
         </div>
         <div class="supp-transcript">
           <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-camera-test')">
@@ -479,51 +491,64 @@
       <div class="session-begin-inner">
         <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
 
-        <!-- PROMPT TEXT — visible, matching Hidden Truth pattern -->
-        <p class="prompt-text">ROLE
-Your role is to help me identify one anchor behavior — a specific, visible, recurring, and consequential thing my character does — through structured observation. You are a Socratic questioner, not a content generator. Do not suggest behaviors. Do not interpret what behaviors mean. Keep me in pure observer mode throughout this session.
+        <div class="prompt-wrap" style="margin-bottom:20px;">
+ <div class="prompt-wrap" style="margin-bottom:20px;">
+  <!-- Coaching Prompt Section -->
+<div class="prompt-wrap" style="margin-bottom:20px;">
+  <!-- Coaching Prompt Section -->
+<div class="prompt-wrap" style="margin-bottom:20px;">
+  <h3 style="font-family:'Cinzel',serif;
+             font-size:1rem;
+             font-weight:600;
+             color:#6b4c2e;
+             margin-bottom:12px;">
+    Your Coaching Prompt
+  </h3>
+  <button id="copy-prompt-btn" onclick="copyPrompt()"
+    style="display:inline-flex;
+           align-items:center;
+           gap:8px;
+           background:#b87333;
+           color:#faf4e8;
+           font-family:'Cinzel',serif;
+           font-size:0.72rem;
+           letter-spacing:0.25em;
+           text-transform:uppercase;
+           padding:14px 36px;
+           border:1px solid #b87333;
+           cursor:pointer;
+           transition:background 0.3s, border-color 0.3s;">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+      <rect x="9" y="9" width="13" height="13" rx="2"/>
+      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+    </svg>
+    COPY PROMPT TO CLIPBOARD
+  </button>
+</div>
 
-BOUNDARIES — WHAT TO AVOID
-Do not suggest or generate behaviors for me. Do not let me describe traits, personality labels, or adjectives — push for observable actions only. Do not interpret or explain behaviors during this session — that comes in Lesson 2. Do not let me move forward with a behavior that fails the four-criteria test. Do not do most of the talking — I should be observing, you should be questioning.
+<style>
+  #copy-prompt-btn:hover {
+    background:#6b4c2e;   /* darker brown hover */
+    border-color:#6b4c2e;
+  }
+</style>
 
-TWO REQUIRED DELIVERABLES
-1. One anchor behavior stated as a specific, observable action.
-2. Three recurring instances — each with context (situation), who is involved, and exactly what my character does.
+<script>
+  function copyPrompt() {
+    var text = document.getElementById('session-prompt').textContent.trim();
+    var btn  = document.getElementById('copy-prompt-btn');
+    navigator.clipboard.writeText(text).then(function() {
+      btn.classList.add('copied');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg> COPIED';
+      setTimeout(function() {
+        btn.classList.remove('copied');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> COPY PROMPT TO CLIPBOARD';
+      }, 2500);
+    });
+  }
+</script>
 
-SESSION STRUCTURE
 
-Stage 1: Discovery — Brainstorm Surface Behaviors (10 minutes)
-Ask me to name 2–3 things my character does repeatedly. Push for observable actions, not traits. If I give you a label like "she's protective," ask: what exactly does she do? What would a camera capture?
-
-Stage 2: Testing — Apply the Four Criteria (10 minutes)
-Take the behavior I'm most drawn to and test it against all four criteria:
-• Specific: Is this a concrete action or a vague trait?
-• Visible: Could a camera film it happening?
-• Recurring: Does it show up in multiple situations?
-• Consequential: Does it shape the story, relationships, or arc in a meaningful way?
-If it fails any criterion, push me to refine it until it passes all four.
-
-Stage 3: Validation — Three Recurring Instances (10 minutes)
-Once the behavior passes the criteria test, ask me to document three specific instances of it occurring. For each instance I need: the situation or context, who else is involved, and exactly what my character does. Push for specificity. "She protects her sister" is not enough. "She steps in front of Prim when the Peacekeepers arrive" is an instance.
-
-Stage 4: Confirmation (5 minutes)
-Ask me: Is this behavior foundational to who your character is — or could it be a plot device? If I have any doubt, push me to reconsider. When I'm confident, help me write the final one-sentence statement of the anchor behavior.
-
-CRITICAL REMINDERS
-— I'm the expert on my character; you're the guide helping me access what I already know
-— Every behavior must pass all 4 criteria or we keep refining
-— 3 recurring instances, no exceptions
-— Keep me in observer mode, not interpreter mode
-— The deliverables are concrete: 1 anchor behavior + 3 instances with context/people/action documented
-
-BEGIN
-I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 1 by asking me about my character and what patterns I've noticed.</p>
-
-        <!-- COPY BUTTON — styled to match Hidden Truth -->
-        <button class="copy-btn" id="copy-prompt-btn" onclick="copyPrompt()">
-          <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          Copy Prompt to Clipboard
-        </button>
 
         <ul class="instructions-list">
           <li data-n="1">Copy the prompt above and open Claude at <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> in a new tab. Paste the prompt to begin — you can read it there once it's in Claude.</li>
@@ -534,15 +559,17 @@ I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 
       </div>
     </div>
 
-    <!-- WORKSPACE SECTION -->
-    <div class="workspace-section">
-      <span class="workspace-eyebrow">After Your Session</span>
-      <h3 class="workspace-title">Open Your <em>Workspace</em></h3>
-      <p class="workspace-desc">Record your anchor behavior and three instances while they're clear. Your workspace opens in a new tab so nothing is lost if you need to scroll back through your session.</p>
-      <a href="https://form.jotform.com/260764372735059" target="_blank" rel="noopener" class="workspace-btn">
-        Open Workspace
-        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      </a>
+    <!-- JOTFORM WORKSPACE — CTA BUTTON (replaces unreliable script embed) -->
+    <div class="jotform-cta-band">
+      <div class="jotform-cta-inner">
+        <span class="jotform-cta-eyebrow">After Your Session</span>
+        <p class="jotform-cta-heading">Open Your <em>Workspace</em></p>
+        <p class="jotform-cta-desc">Record your anchor behavior and three instances while they're clear. Your workspace opens in a new tab so nothing is lost if you need to scroll back through your session.</p>
+        <a class="jotform-open-btn" href="https://form.jotform.com/260764372735059" target="_blank" rel="noopener">
+          Open Workspace
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+        </a>
+      </div>
     </div>
 
     <div class="nav-wrap">
@@ -563,24 +590,21 @@ I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 
       <div class="complete-rule"></div>
       <p class="complete-quote">"The surface behavior is not the story. It is the first sentence of the story."</p>
       <span class="complete-attr">— STRATUM: AI Character Coaching</span>
-      <div style="margin-top: 28px; display: flex; justify-content: center;">
-        <!-- REPLACE YOUR_SYSTEME_IO_LECTURE_URL WITH ACTUAL SYSTEME.IO LESSON 2 URL -->
-        <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/YOUR_SYSTEME_IO_LECTURE_URL" target="_blank" rel="noopener" class="mark-complete-btn">
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Mark Lesson Complete
-        </a>
-      </div>
+      <a class="mark-complete-btn" href="YOUR_SYSTEME_IO_LECTURE_URL" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark Lesson Complete
+      </a>
     </div>
 
-    <!-- CONTACT TED -->
-    <div class="panel-inner">
-      <div class="contact-ted-section">
-        <span class="panel-eyebrow">Questions or Feedback</span>
-        <h3 class="contact-ted-title">Reach <em>Ted Directly</em></h3>
-        <p class="contact-ted-desc">Something isn't clicking? A question about the methodology? Use the form below to send Ted a note. He reads everything.</p>
-        <a href="https://form.jotform.com/260734440316047" target="_blank" rel="noopener" class="workspace-btn">
+    <!-- CONTACT TED — CTA BUTTON (replaces unreliable script embed) -->
+    <div class="jotform-cta-band">
+      <div class="jotform-cta-inner">
+        <span class="jotform-cta-eyebrow">Questions or Feedback</span>
+        <p class="jotform-cta-heading">Reach <em>Ted Directly</em></p>
+        <p class="jotform-cta-desc">Something isn't clicking? A question about the methodology? Use the form below to send Ted a note. He reads everything.</p>
+        <a class="jotform-open-btn" href="https://form.jotform.com/260734440316047" target="_blank" rel="noopener">
           Contact Ted
-          <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
         </a>
       </div>
     </div>
@@ -588,7 +612,7 @@ I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 
 
   <script>
     /* ── PROMPT ── */
-    var LESSON1_PROMPT = "ROLE\nYour role is to help me identify one anchor behavior — a specific, visible, recurring, and consequential thing my character does — through structured observation. You are a Socratic questioner, not a content generator. Do not suggest behaviors. Do not interpret what behaviors mean. Keep me in pure observer mode throughout this session.\n\nBOUNDARIES — WHAT TO AVOID\nDo not suggest or generate behaviors for me. Do not let me describe traits, personality labels, or adjectives — push for observable actions only. Do not interpret or explain behaviors during this session — that comes in Lesson 2. Do not let me move forward with a behavior that fails the four-criteria test. Do not do most of the talking — I should be observing, you should be questioning.\n\nTWO REQUIRED DELIVERABLES\n1. One anchor behavior stated as a specific, observable action.\n2. Three recurring instances — each with context (situation), who is involved, and exactly what my character does.\n\nSESSION STRUCTURE\n\nStage 1: Discovery — Brainstorm Surface Behaviors (10 minutes)\nAsk me to name 2–3 things my character does repeatedly. Push for observable actions, not traits. If I give you a label like \"she's protective,\" ask: what exactly does she do? What would a camera capture?\n\nStage 2: Testing — Apply the Four Criteria (10 minutes)\nTake the behavior I'm most drawn to and test it against all four criteria:\n• Specific: Is this a concrete action or a vague trait?\n• Visible: Could a camera film it happening?\n• Recurring: Does it show up in multiple situations?\n• Consequential: Does it shape the story, relationships, or arc in a meaningful way?\nIf it fails any criterion, push me to refine it until it passes all four.\n\nStage 3: Validation — Three Recurring Instances (10 minutes)\nOnce the behavior passes the criteria test, ask me to document three specific instances of it occurring. For each instance I need: the situation or context, who else is involved, and exactly what my character does. Push for specificity. \"She protects her sister\" is not enough. \"She steps in front of Prim when the Peacekeepers arrive\" is an instance.\n\nStage 4: Confirmation (5 minutes)\nAsk me: Is this behavior foundational to who your character is — or could it be a plot device? If I have any doubt, push me to reconsider. When I'm confident, help me write the final one-sentence statement of the anchor behavior.\n\nCRITICAL REMINDERS\n— I'm the expert on my character; you're the guide helping me access what I already know\n— Every behavior must pass all 4 criteria or we keep refining\n— 3 recurring instances, no exceptions\n— Keep me in observer mode, not interpreter mode\n— The deliverables are concrete: 1 anchor behavior + 3 instances with context/people/action documented\n\nBEGIN\nI've attached my completed Pre-Work PDF. Please read it first, then begin Stage 1 by asking me about my character and what patterns I've noticed.";
+    var LESSON1_PROMPT = "ROLE\nYour role is to help me identify one anchor behavior — a specific, visible, recurring, and consequential thing my character does — through structured observation. You are a Socratic questioner, not a content generator. Do not suggest behaviors. Do not interpret what behaviors mean. Keep me in pure observer mode throughout this session.\n\nBOUNDARIES — WHAT TO AVOID\nDo not suggest or generate behaviors for me. Do not let me describe traits, personality labels, or adjectives — push for observable actions only. Do not interpret or explain behaviors during this session — that comes in Lesson 2. Do not let me move forward with a behavior that fails the four-criteria test. Do not do most of the talking — I should be observing, you should be questioning.\n\nTWO REQUIRED DELIVERABLES\n1. One anchor behavior stated as a specific, observable action.\n2. Three recurring instances — each with context (situation), who is involved, and exactly what my character does.\n\nSESSION STRUCTURE\n\nStage 1: Discovery — Brainstorm Surface Behaviors (10 minutes)\nAsk me to name 2–3 things my character does repeatedly. Push for observable actions, not traits. If I give you a label like \"she's protective,\" ask: what exactly does she do? What would a camera capture?\n\nStage 2: Testing — Apply the Four Criteria (10 minutes)\nTake the behavior I'm most drawn to and test it against all four criteria:\n• Specific: Is this a concrete action or a vague trait?\n• Visible: Could a camera film it happening?\n• Recurring: Does it show up in multiple situations?\n• Consequential: Does it shape the story, relationships, or arc in a meaningful way?\nIf it fails any criterion, push me to refine it until it passes all four.\n\nStage 3: Validation — Three Recurring Instances (10 minutes)\nOnce the behavior passes the criteria test, ask me to document three specific instances of it occurring. For each instance I need: the situation or context, who else is involved, and exactly what my character does. Push for specificity. \"She protects her sister\" is not enough. \"She steps in front of Prim when the Peacekeepers arrive\" is an instance.\n\nStage 4: Confirmation (5 minutes)\nAsk me: Is this behavior foundational to who your character is — or could it be a plot device? If I have any doubt, push me to reconsider. When I'm confident, help me write the final one-sentence statement of the anchor behavior.\n\nADAPTIVE COACHING BASED ON MY CONTEXT\nAdjust your approach based on the prework PDF:\n- If role = Protagonist: This anchor behavior should be central to their entire arc. Make sure it can sustain an entire story.\n- If role = Supporting Character: We want clear behavior but don't need the same depth as a protagonist. Find one strong pattern that makes them memorable.\n- If haven't started writing: Trust your intuition. What do you see when you picture them in different situations?\n- If revising: You've already written scenes. Pull from what's on the page. What does your character actually do in your manuscript?\n- If stuck on something specific: Reference what they wrote in the pre-work about what feels unclear. Let's see if identifying their core behavior helps clarify that.\n\nCRITICAL REMINDERS\n- I'm the expert on my character — you're the guide helping me access what I already know\n- Every behavior must pass all 4 criteria or we keep refining\n- 3 recurring instances, no exceptions\n- Keep me in observer mode, not interpreter mode\n- The deliverables are concrete: 1 anchor behavior + 3 instances with context/people/action documented\n\nBEGIN\nI've attached my completed Pre-Work PDF. Please read it first, then begin Stage 1 by asking me about my character and what patterns I've noticed.";
 
     /* ── COPY ── */
     function copyPrompt() {
@@ -596,7 +620,7 @@ I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 
       var origHTML = btn.innerHTML;
       var scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
       function showCopied() {
-        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
         btn.classList.add('copied');
         setTimeout(function() { window.scrollTo(0, scrollY); }, 50);
         setTimeout(function() { btn.innerHTML = origHTML; btn.classList.remove('copied'); }, 2500);
@@ -637,9 +661,8 @@ I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 
       heroWelcome.style.display = 'none';
       heroVideo.style.display   = (tabId === 'video') ? 'block' : 'none';
 
-      if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      document.querySelector('.tab-bar').scrollIntoView({ behavior: 'smooth' });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (btn) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+      window.scrollTo({ top:0, behavior:'smooth' });
     }
 
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
@@ -653,8 +676,8 @@ I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 
     });
 
     /* ── TAB BAR SCROLL HINT ── */
-    var tabBar        = document.getElementById('tab-bar');
-    var scrollHint    = document.getElementById('tab-scroll-hint');
+    var tabBar = document.getElementById('tab-bar');
+    var scrollHint = document.getElementById('tab-scroll-hint');
     var scrollHintLeft = document.getElementById('tab-scroll-hint-left');
 
     function updateScrollHint() {
@@ -664,22 +687,23 @@ I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 
       if (scrollHint)     scrollHint.classList.toggle('hidden', atEnd);
       if (scrollHintLeft) scrollHintLeft.classList.toggle('visible', !atStart);
     }
-    function scrollTabBar() {
-      if (!tabBar) { return; }
-      tabBar.scrollBy({ left: 160, behavior: 'smooth' });
-    }
-    function scrollTabBarLeft() {
-      if (!tabBar) { return; }
-      tabBar.scrollBy({ left: -160, behavior: 'smooth' });
-    }
+    function scrollTabBar()     { if (tabBar) tabBar.scrollBy({ left:  160, behavior:'smooth' }); }
+    function scrollTabBarLeft() { if (tabBar) tabBar.scrollBy({ left: -160, behavior:'smooth' }); }
+
     if (tabBar) {
       tabBar.addEventListener('scroll', updateScrollHint);
       window.addEventListener('resize', updateScrollHint);
       setTimeout(updateScrollHint, 100);
     }
 
+    function playFacade(el, videoId) {
+      var iframe = el.querySelector('iframe');
+      iframe.src = 'https://www.youtube.com/embed/' + videoId + '?rel=0&modestbranding=1&autoplay=1';
+      el.classList.add('playing');
+    }
+
     function toggleTranscript(btn, bodyId) {
-      var body   = document.getElementById(bodyId);
+      var body = document.getElementById(bodyId);
       var isOpen = body.classList.contains('open');
       body.classList.toggle('open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
@@ -688,3 +712,4 @@ I've attached my completed Pre-Work PDF. Please read it first, then begin Stage 
 
 </body>
 </html>
+
