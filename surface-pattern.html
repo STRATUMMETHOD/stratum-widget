@@ -132,10 +132,10 @@
     .session-begin-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:26px; font-weight:500; letter-spacing:0.03em; color:var(--cream); margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid rgba(196,168,130,0.25); line-height:1.2; }
     .session-begin-title em { color:var(--tan); font-style:italic; }
     .prompt-text { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(250,244,232,0.85); line-height:1.75; margin-bottom:20px; white-space:pre-wrap; }
-    .copy-btn { display:inline-flex; align-items:center; gap:9px; background:transparent; border:1px solid rgba(196,168,130,0.50); padding:12px 22px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan); cursor:pointer; transition:background 0.2s,border-color 0.2s; margin-bottom:24px; }
-    .copy-btn:hover { background:rgba(196,168,130,0.10); border-color:var(--tan); }
+    .copy-btn { display:inline-flex; align-items:center; gap:9px; background:#c4a882; border:1px solid #c4a882; padding:12px 22px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--brown); cursor:pointer; transition:background 0.2s,border-color 0.2s; margin-bottom:24px; }
+    .copy-btn:hover { background:var(--tan-mid); border-color:var(--tan-mid); }
     .copy-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-    .copy-btn.copied { background:rgba(196,168,130,0.15); border-color:var(--tan); }
+    .copy-btn.copied { background:var(--tan-mid); border-color:var(--tan-mid); }
     .instructions-list { list-style:none; margin-top:4px; text-align:left !important; }
     .instructions-list li { font-size:var(--body-sm); font-weight:300; color:rgba(250,244,232,0.85); line-height:1.72; padding:9px 0 9px 26px; border-bottom:1px solid rgba(196,168,130,0.12); display:block !important; text-align:left !important; position:relative; }
     .instructions-list li:last-child { border-bottom:none; }
@@ -412,44 +412,6 @@
     <div class="session-begin-band">
       <div class="session-begin-inner">
         <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
-        <p class="prompt-text">ROLE
-Your role is to help me identify one anchor behavior — a specific, visible, recurring, and consequential thing my character does — through structured observation. You are a Socratic questioner, not a content generator. Do not suggest behaviors. Do not interpret what behaviors mean. Keep me in pure observer mode throughout this session.
-
-BOUNDARIES — WHAT TO AVOID
-Do not suggest or generate behaviors for me. Do not let me describe traits, personality labels, or adjectives — push for observable actions only. Do not interpret or explain behaviors during this session — that comes in Lesson 2. Do not let me move forward with a behavior that fails the four-criteria test. Do not do most of the talking — I should be observing, you should be questioning.
-
-TWO REQUIRED DELIVERABLES
-1. One anchor behavior stated as a specific, observable action.
-2. Three recurring instances — each with context (situation), who is involved, and exactly what my character does.
-
-SESSION STRUCTURE
-
-Stage 1: Discovery — Brainstorm Surface Behaviors (10 minutes)
-Ask me to name 2–3 things my character does repeatedly. Push for observable actions, not traits. If I give you a label like “she’s protective,” ask: what exactly does she do? What would a camera capture?
-
-Stage 2: Testing — Apply the Four Criteria (10 minutes)
-Take the behavior I’m most drawn to and test it against all four criteria:
-• Specific: Is this a concrete action or a vague trait?
-• Visible: Could a camera film it happening?
-• Recurring: Does it show up in multiple situations?
-• Consequential: Does it shape the story, relationships, or arc in a meaningful way?
-If it fails any criterion, push me to refine it until it passes all four.
-
-Stage 3: Validation — Three Recurring Instances (10 minutes)
-Once the behavior passes the criteria test, ask me to document three specific instances of it occurring. For each instance I need: the situation or context, who else is involved, and exactly what my character does. Push for specificity. “She protects her sister” is not enough. “She steps in front of Prim when the Peacekeepers arrive” is an instance.
-
-Stage 4: Confirmation (5 minutes)
-Ask me: Is this behavior foundational to who your character is — or could it be a plot device? If I have any doubt, push me to reconsider. When I’m confident, help me write the final one-sentence statement of the anchor behavior.
-
-CRITICAL REMINDERS
-— I’m the expert on my character; you’re the guide helping me access what I already know
-— Every behavior must pass all 4 criteria or we keep refining
-— 3 recurring instances, no exceptions
-— Keep me in observer mode, not interpreter mode
-— The deliverables are concrete: 1 anchor behavior + 3 instances with context/people/action documented
-
-BEGIN
-I’ve attached my completed Pre-Work PDF. Please read it first, then begin Stage 1 by asking me about my character and what patterns I’ve noticed.</p>
         <button class="copy-btn" id="copy-prompt-btn" onclick="copyPrompt()">
           <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
           Copy Prompt to Clipboard
@@ -485,7 +447,68 @@ I’ve attached my completed Pre-Work PDF. Please read it first, then begin Stag
 
     <div class="panel-inner">
 
-       <!-- CONTACT TED -->
+      <div class="complete-lesson-content">
+        <span class="complete-lesson-title">Before You Move On — A Checklist</span>
+        <p>The excavation ladder only works if each rung is solid before you step to the next. Make sure you have both deliverables from this lesson before continuing to Lesson 2.</p>
+        <ul class="complete-lesson-checklist">
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>One clear <strong>anchor behavior</strong> — not a label, not a trait, but a specific, observable action that a camera would capture.</span>
+          </li>
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span><strong>Three recurring instances</strong> — each with context (the situation), who is involved, and exactly what your character does. All four criteria met: specific, visible, recurring, consequential.</span>
+          </li>
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>Your <strong>Workspace completed and saved as a PDF</strong> — you will attach it to your Lesson 2 coaching session.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="why-block">
+        <span class="why-block-title">What You’ve Established</span>
+        <p>You’ve done something most writers never do deliberately: you separated observation from interpretation. You know what your character does — not as a label, not as a trait, but as a specific, recurring, filmable action that shows up across different relationships and different situations.</p>
+        <p>That behavior is the foundation. Every layer of the excavation ladder builds directly on what you documented today. The belief, the wound, the lie they drew from it — all of it traces back to the pattern you’ve just confirmed.</p>
+        <p>In Lesson 2 you will make the first interpretive move: from what your character does, to what they must believe for that behavior to feel like the only reasonable response.</p>
+      </div>
+
+      <div class="bridge-block">
+        <span class="bridge-eyebrow">A Question to Carry Into Lesson 2</span>
+        <p class="bridge-question">“What would your character have to believe — about themselves, about other people, or about how the world works — for this behavior to feel like the only reasonable response?”</p>
+        <p class="bridge-note">You don’t need an answer yet. That is the exact question that opens Lesson 2: The Hidden Truth. Let it sit. Your adaptive unconscious is already working on it.</p>
+      </div>
+
+      <div class="teds-note">
+        <span class="teds-note-eyebrow">A Note from Ted</span>
+        <p>What you’ve built today is the most underestimated layer of character psychology. Most writers skip observation entirely — they construct a backstory and work forward. You went the other direction. You watched first.</p>
+        <p>What you’re holding now is not a character trait. It is a documented pattern of behavior. That distinction will matter in every lesson that follows. The excavation goes deeper from here — but it goes deeper from something real.</p>
+        <span class="teds-note-sig">— Ted Baker</span>
+      </div>
+
+    </div>
+
+    <div class="complete-dark">
+      <span class="complete-dark-eyebrow">When You’re Ready</span>
+      <p class="complete-dark-heading">Move to The Hidden Truth.</p>
+      <p class="complete-dark-sub">The excavation goes deeper.</p>
+      <div class="complete-instruction">
+        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <p>Make sure you have <strong>saved your Workspace as a PDF</strong> from the Your Session tab — you’ll need it in Lesson 2. Then click <strong>Mark Lesson Complete</strong> below to record your progress and unlock Lesson 2.</p>
+      </div>
+      <div class="complete-rule"></div>
+      <p class="complete-quote">“The surface behavior is not the story. It is the first sentence of the story.”</p>
+      <span class="complete-attr">— STRATUM: AI Character Coaching</span>
+      <div style="margin-top:28px;display:flex;justify-content:center;">
+        <!-- REPLACE YOUR_SYSTEME_IO_LECTURE_URL WITH ACTUAL SYSTEME.IO LESSON 2 URL -->
+        <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/YOUR_SYSTEME_IO_LECTURE_URL" target="_blank" rel="noopener" class="mark-complete-btn">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Mark Lesson Complete
+        </a>
+      </div>
+    </div>
+
+    <!-- CONTACT TED -->
     <div class="panel-inner">
       <div class="contact-ted-section">
         <span class="panel-eyebrow">Questions or Feedback</span>
