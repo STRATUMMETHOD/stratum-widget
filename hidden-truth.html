@@ -45,6 +45,20 @@
       border: none; display: block;
     }
 
+    /* ══ YOUTUBE FACADE ══ */
+    .yt-facade {
+      position: relative; width: 100%; padding-bottom: 56.25%;
+      background: #000; cursor: pointer; overflow: hidden;
+    }
+    .yt-facade img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s ease; }
+    .yt-facade:hover img { transform: scale(1.02); }
+    .yt-facade .yt-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 68px; height: 48px; background: #ff0000; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: background 0.2s, transform 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .yt-facade:hover .yt-play { background: #cc0000; transform: translate(-50%, -50%) scale(1.1); }
+    .yt-facade .yt-play svg { width: 24px; height: 24px; fill: #fff; margin-left: 4px; }
+    .yt-facade iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: none; }
+    .yt-facade.playing img, .yt-facade.playing .yt-play { display: none; }
+    .yt-facade.playing iframe { display: block; }
+
     /* ══ HERO AREA — welcome image, video ══ */
     .hero-welcome { display: block; }
     .hero-welcome img { width: 100%; display: block; }
@@ -84,6 +98,7 @@
       color: var(--tan); margin-top: 18px; margin-bottom: 6px;
     }
 
+    /* ══ TAB BAR WRAP + SCROLL HINTS ══ */
     .tab-bar-wrap { position: sticky; top: 0; z-index: 50; }
     .tab-scroll-hint-left {
       position: absolute; top: 0; left: 0; height: 100%; width: 52px;
@@ -432,22 +447,6 @@
     }
     .instructions-list li strong { color: var(--tan); font-weight: 500; }
 
-    /* ══ SAVE REMINDER ══ */
-    .save-reminder {
-      background: var(--brown-mid); border: 1px solid rgba(196,168,130,0.25);
-      padding: 16px 22px; margin-bottom: 28px; display: flex; align-items: flex-start; gap: 14px;
-    }
-    .save-reminder-icon { flex-shrink: 0; margin-top: 2px; }
-    .save-reminder-icon svg {
-      width: 18px; height: 18px; stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .save-reminder p {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 500; color: var(--cream); line-height: 1.65;
-    }
-    .save-reminder p strong { color: var(--tan); }
-
     /* ══ JOTFORM WRAP ══ */
     .jotform-wrap { border: 1px solid var(--tan-light); margin-bottom: 28px; overflow: hidden; }
     .jotform-wrap-head {
@@ -465,7 +464,7 @@
     .jotform-title em { font-style: italic; color: var(--tan); }
     .jotform-embed { background: var(--cream-dark); }
 
-    /* ══ COMPLETE LESSON — CONGRATULATIONS IMAGE ══ */
+    /* ══ COMPLETE ══ */
     .congratulations-img-wrap {
       background: var(--brown); display: flex; justify-content: center; padding: 36px 32px 40px;
     }
@@ -476,61 +475,23 @@
                   0 0 0 6px rgba(196,168,130,0.2),
                   0 8px 40px rgba(0,0,0,0.55);
     }
-    .complete-lesson-content {
-      background: var(--cream-dark); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan-mid); padding: 22px 24px; margin-bottom: 28px;
-    }
-    .complete-lesson-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 10px;
-    }
-    .complete-lesson-content p {
-      font-size: var(--body-md); font-weight: 300; line-height: 1.8; color: var(--brown); margin-bottom: 10px;
-    }
-    .complete-lesson-content p:last-child { margin-bottom: 0; }
-    .complete-lesson-checklist { list-style: none; padding: 0; margin-bottom: 0; }
-    .complete-lesson-checklist li {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid);
-      padding: 7px 0; border-bottom: 1px solid var(--tan-faint);
-      display: flex; align-items: flex-start; gap: 10px;
-    }
-    .complete-lesson-checklist li:last-child { border-bottom: none; }
-    .check-icon {
-      width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px;
-      border: 1.5px solid var(--tan-mid); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .check-icon svg {
-      width: 8px; height: 8px; stroke: var(--tan-mid); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-
-    /* ── Bridge Question ── */
-    .bridge-block {
-      background: var(--brown); border: 1px solid rgba(196,168,130,0.2);
-      padding: 24px 26px; margin-bottom: 28px;
-    }
-    .bridge-eyebrow {
+    .complete-dark { background: var(--brown); padding: 44px 32px 40px; text-align: center; }
+    .complete-dark-eyebrow {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 14px;
+      color: var(--tan); display: block; margin-bottom: 12px;
     }
-    .bridge-question {
+    .complete-dark-heading {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.6; margin-bottom: 14px;
+      font-size: 26px; font-weight: 300; color: var(--cream); margin-bottom: 8px; line-height: 1.2;
     }
-    .bridge-note {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.65); line-height: 1.72;
-      border-top: 1px solid rgba(196,168,130,0.15); padding-top: 12px;
+    .complete-dark-sub {
+      font-size: var(--body-sm); font-weight: 300; font-style: italic;
+      color: rgba(196,168,130,0.7); margin-bottom: 28px;
     }
 
-    /* ── Ted's Note ── */
-    .teds-note {
-      background: var(--cream-dark); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan); padding: 22px 24px; margin-bottom: 28px;
-    }
+    /* ══ TED'S NOTE ══ */
+    .teds-note { background: var(--cream-dark); border: 1px solid var(--tan-light); padding: 22px 24px; margin-bottom: 28px; }
     .teds-note-eyebrow {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
@@ -548,20 +509,6 @@
       color: var(--brown); display: block; margin-top: 14px;
     }
 
-    .complete-dark { background: var(--brown); padding: 44px 32px; text-align: center; }
-    .complete-dark-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 12px;
-    }
-    .complete-dark-heading {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 26px; font-weight: 300; color: var(--cream); margin-bottom: 8px; line-height: 1.2;
-    }
-    .complete-dark-sub {
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(196,168,130,0.7); margin-bottom: 28px;
-    }
     /* ══ RESPONSIVE ══ */
     @media (max-width: 580px) {
       .supp-video-head { flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -587,27 +534,27 @@
   <div class="tab-bar-wrap">
     <div class="tab-bar" id="tab-bar">
       <button class="tab-btn" data-tab="video">
-        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
+        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
         Video
       </button>
       <button class="tab-btn" data-tab="overview">
-        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
+        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
         Overview
       </button>
       <button class="tab-btn" data-tab="question">
-        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
+        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
         The Question
       </button>
       <button class="tab-btn" data-tab="redflags">
-        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
+        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
         Red Flags
       </button>
       <button class="tab-btn" data-tab="session">
-        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
+        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
         Your Session
       </button>
       <button class="tab-btn" data-tab="complete">
-        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"></polyline></svg></span>
+        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
         Complete Lesson
       </button>
     </div>
@@ -633,61 +580,35 @@
   <!-- ══ VIDEO — shown only when Video tab is active ══ -->
   <div class="hero-video" id="hero-video">
     <div class="video-container">
-      <iframe
-        src="https://www.youtube.com/embed/RNpquqxdjMg?rel=0&modestbranding=1"
-        title="The Hidden Truth — STRATUM"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-      </iframe>
+      <div class="yt-facade" onclick="playFacade(this,'RNpquqxdjMg')">
+        <img src="https://i.ytimg.com/vi/RNpquqxdjMg/maxresdefault.jpg" alt="The Hidden Truth — STRATUM" loading="lazy">
+        <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+        <iframe title="The Hidden Truth — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
     </div>
     <div class="transcript">
-      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this)">
+      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-body')">
         <span class="transcript-label">Video Transcript</span>
-        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       <div class="transcript-body" id="transcript-body">
         <p>Think about someone you know who keeps doing something that makes no sense to you.</p>
         <p>Maybe they apologize constantly — even when they've done nothing wrong. Maybe they push people away right when a relationship is going well. Maybe they volunteer for the hardest assignments even when they're already stretched thin and exhausted.</p>
-        <p>You've asked them why. They've given you an explanation. And something about that explanation felt incomplete. Like it was true — but not the whole truth.</p>
-        <p>That gap — between the explanation someone gives for their behavior and what's actually driving it — is what we're going to explore today. Because that gap is one of the most important things you can understand as a writer. And once you know how to find it, you'll see it everywhere.</p>
-        <p class="section-marker">The Two Levels</p>
-        <p>Every person who has a recurring behavior — something they do again and again, across different situations, with different people — has two answers for why they do it.</p>
-        <p>The first answer is the one they'd give you if you asked. It's articulate. It's defensible. It might even be partially true. Psychologists sometimes call this the conscious justification — the rationalized, socially acceptable version of what's driving the behavior.</p>
-        <p>The second answer is the one they've never said out loud. Maybe never even consciously thought. It's the belief operating so far beneath their awareness that it doesn't feel like a belief at all. It feels like reality. Like just the way things are.</p>
-        <p>That second answer is what I call the hidden truth. And the difference between those two answers — between what someone says and what's actually running underneath — is the difference between a character who feels explained and a character who feels real.</p>
-        <p class="section-marker">The Therapist's Framework</p>
-        <p>In cognitive behavioral therapy, practitioners operate from a foundational premise: no behavior is random. Every recurring pattern — no matter how self-defeating or irrational it looks from the outside — makes perfect sense from inside the belief system that produced it. The therapist's job isn't to judge the behavior. It's to reverse-engineer the belief that makes it feel necessary.</p>
-        <p>That's the tool I want to give you today. It's a single question. The phrasing matters, so I'll say it slowly: What would this person have to believe — about themselves, about other people, or about how the world works — for this behavior to feel like the only reasonable response?</p>
-        <p>Not what caused the behavior. Not what they feel. What they must believe for the behavior to be not just understandable — but inevitable. That's a precision instrument. And I want to show you exactly how to use it.</p>
-        <p class="section-marker">The Conscious Justification Trap</p>
-        <p>Your first answer to the question will almost always be the conscious justification. It will sound like this: "She protects people because she loves them." "He stays in control because he cares about quality." "She keeps her distance because she's been hurt before."</p>
-        <p>These answers are not wrong. But they're the mask over the thing you're actually looking for. And the mask looks convincing because the person themselves believes it. They're not lying to you. They're telling you what they tell themselves.</p>
-        <p>The hidden truth operates beneath that layer entirely. It's the belief that — if you named it out loud to them — they might initially deny. And then quietly recognize. Here's how you know you've broken through: the hidden truth usually has a quality of vulnerability to it. It's not a philosophy. It has an edge of fear, or scarcity, or loss embedded in it.</p>
-        <p class="section-marker">Katniss — The Method in Action</p>
-        <p>Let me model the process with a character most people know. Katniss Everdeen, from The Hunger Games.</p>
-        <p>Her surface behavior is consistent and specific: she repeatedly steps between danger and the people she loves. She volunteers at the Reaping when her sister's name is called. She shields Rue. She keeps Peeta alive. Different situations, different relationships, different stakes — the same compulsive pattern.</p>
-        <p>Now apply the question. What would Katniss have to believe for that behavior to feel like the only reasonable response?</p>
-        <p>First answer: "She loves the people she protects." True. Also the conscious justification. It doesn't explain the compulsion. Push deeper.</p>
-        <p>"I'm the only one who can keep them safe." Getting closer. But why does it have to be her? Keep going.</p>
-        <p>"If I don't protect them, no one will. And they will be destroyed." Now we're somewhere. Because that belief — if no one steps up, the people I love will be destroyed — doesn't just explain that she protects. It explains that she can't stop. The belief makes the behavior not just understandable — but compulsory. She doesn't feel like a hero stepping forward. She feels like the last line of defense. That's the hidden truth.</p>
-        <p class="section-marker">The Causal Lock</p>
-        <p>Here's how you verify you've found the real thing. Take the belief you've identified and complete this sentence: "Because I believe _________, I must _________."</p>
-        <p>With Katniss: Because I believe no one will protect the people I love if I don't, I must position myself between them and whatever threatens them — every time, regardless of the cost to me.</p>
-        <p>That sentence should feel airtight. The behavior should feel inevitable given the belief. If you read it and think "well, maybe" — keep going. You're still at the level of conscious justification. The lock works when you can't imagine the character doing anything else.</p>
-        <p class="section-marker">Why This Changes Everything</p>
-        <p>When you find the hidden truth beneath a recurring behavior, the behavior stops being a character flaw and starts being a survival strategy. It stops looking irrational and starts looking logical. Because from inside the belief system that produced it — it is logical.</p>
-        <p>That shift in perspective is what separates characters who feel constructed from characters who feel real. Real people aren't doing what they do because a writer decided they have trust issues. They're doing it because at some point, the world taught them something — and they drew a conclusion that shaped everything that followed.</p>
-        <p>The behavior is always the evidence. The question is what it's evidence of.</p>
-        <p class="section-marker">Closing</p>
-        <p>The therapist's question is simple. The answer is almost never the first thing you say. Push past the conscious justification. Find the belief that makes the behavior feel not just reasonable — but necessary. Test it with the causal lock. And when that sentence clicks — when the behavior becomes an inevitable consequence of the belief — you'll know you've found it.</p>
-        <p>That understanding is what makes writing feel less like invention and more like excavation. If this way of approaching character resonates with you, this is exactly the kind of thinking we work through in STRATUM — my AI character coaching course for fiction writers. You can learn more at myaiwritingcoach.com.</p>
+        <p>You've asked them why. They've given you an explanation. And something about that explanation felt incomplete.</p>
+        <p>That's because it was. What they gave you was the conscious justification — the reason that feels true on the surface. What they didn't give you, what they probably couldn't give you, is the belief operating beneath it. The assumption so embedded in how they move through the world that they've never had to articulate it. Because they've never had to question it.</p>
+        <p>That belief — the one beneath the justification — is what we call the hidden truth.</p>
+        <p>And finding it is what today's lesson is about.</p>
+        <p>In Lesson 1, you documented what your character does. You built the evidence base — the specific, recurring behavior that shows up across different relationships, different situations, different kinds of pressure. That was the observer's task. Disciplined. Concrete. No interpretation.</p>
+        <p>Today the frame shifts entirely. You become the interpreter. And the question changes from: what does my character do — to: what must they believe for this behavior to feel like the only reasonable response?</p>
+        <p>That shift is what takes a character from observed to understood. From surface to psychology. From what they do to who they are.</p>
+        <p>Let's go find it.</p>
       </div>
     </div>
   </div>
 
   <!-- ══ PANELS ══ -->
 
-  <!-- VIDEO PANEL — no content, hero handles it ══ -->
+  <!-- VIDEO PANEL — no content, hero handles it -->
   <div class="tab-panel" id="panel-video">
     <div class="nav-wrap no-back">
       <button class="continue-btn" data-next="overview">Continue to Overview<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
@@ -725,47 +646,35 @@
         <div class="transcript">
           <button class="transcript-btn" aria-expanded="false" onclick="toggleOverviewTranscript(this)">
             <span class="transcript-label">Video Transcript</span>
-            <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="transcript-body" id="overview-transcript-body">
             <p>There's a moment in every serious character development process where the work changes. Not just gets harder — actually changes in kind.</p>
             <p>You've been watching your character. Documenting what they do. Building the evidence base — the specific, recurring behaviors that show up again and again, with different people, in different situations, under different kinds of pressure. That work was deliberate. It had rules. Interpretation was off-limits. You were a documentary filmmaker, not a therapist.</p>
             <p>That phase is over. And today I want to talk about what happens next. Because the shift from observer to interpreter is not just a change of perspective. It's a change in the entire question you're asking. And if you don't make it cleanly, you'll stay stuck at the surface of a character forever.</p>
             <p class="section-marker">The Two Questions</p>
-            <p>When you observe behavior, you're asking: what does this person do? That's a concrete, answerable question. You can film it. You can count instances. You can describe it to someone who's never met the character and they'll know exactly what you mean.</p>
-            <p>When you interpret behavior, you're asking something harder. You're asking: what must this person believe for this behavior to feel necessary? Not logical. Not understandable. Necessary. Inevitable. Like the only reasonable response.</p>
-            <p>That word — necessary — is doing a lot of work. And it's worth sitting with.</p>
-            <p>Think about someone in your own life who does something that puzzles you. Maybe they apologize constantly, even when they've done nothing wrong. Or they sabotage a relationship right when it's going well. Or they volunteer for the hardest assignment in the room even when they're already running on empty.</p>
-            <p>You can observe that behavior clearly. You could describe it. You might even recognize the pattern. But explaining it — really explaining it, from the inside — requires something different. It requires you to understand what that person must believe about themselves or the world for that behavior to feel not like a choice, but like the only option available to them.</p>
-            <p>That's the interpreter's task.</p>
-            <p class="section-marker">What CBT Teaches Us</p>
-            <p>Here's where cognitive behavioral therapy gives us something genuinely useful. One of CBT's foundational insights — developed by Aaron Beck in the 1960s and refined over decades of clinical practice — is that behavior is not produced by events. It's produced by beliefs. Specifically, it's produced by what Beck called core beliefs and intermediate beliefs: the deep operating assumptions about self, others, and the world that filter every experience before consciousness even processes it.</p>
-            <p>These beliefs aren't abstract. They're not philosophy. They're functional. They function like rules. And the behaviors that follow from them feel like compliance — like there's no alternative, because inside the logic of that belief system, there isn't.</p>
-            <p>A person who believes, at a foundational level, that they are responsible for other people's wellbeing will not experience stepping into danger to protect someone as heroism. They'll experience it as obligation. As the only available response. The belief makes the behavior feel necessary.</p>
-            <p>A person who believes that vulnerability leads to abandonment will not experience emotional withdrawal as self-protection. They'll experience it as basic survival. The belief makes the behavior feel necessary.</p>
-            <p>That's what you're looking for. Not the behavior, which you already have. The belief that makes that behavior feel like the only reasonable thing to do.</p>
-            <p class="section-marker">The Complication</p>
-            <p>When you ask the question — what must this person believe for this behavior to feel necessary — you will almost always get an answer immediately. And that first answer will be wrong. Not false, exactly. But incomplete. Shallow. It will be what psychologists call the conscious justification: the articulate, defensible, socially acceptable version of what's driving the behavior.</p>
-            <p>It sounds like this: she loves the people she protects. He values quality. She's been hurt before. These are true. They're also the surface layer. They're what the person would tell you if you asked them directly. They're the story the character tells themselves.</p>
-            <p>The hidden truth operates beneath that layer. It's the belief the person has never consciously articulated. The assumption so fundamental it doesn't feel like a belief at all — it feels like reality. Like just the way things are.</p>
-            <p>And it almost always has an edge to it. An edge of fear, or scarcity, or loss. The hidden truth isn't a virtue. It isn't something the character would put on a motivational poster. It's something that, if you named it out loud, they might initially deny — and then quietly recognize.</p>
-            <p class="section-marker">The Process: Katniss</p>
-            <p>Let me show you the process with Katniss Everdeen, because she's a character enough people know well enough to work through quickly.</p>
-            <p>Surface behavior: she repeatedly positions herself between danger and the people she loves. Different contexts, different relationships, same compulsive pattern.</p>
-            <p>First answer: she loves them. True. Not the hidden truth. People love others without repeatedly risking their lives. Push deeper.</p>
-            <p>Second answer: she believes she's the only one who can protect them. Closer. But why does it have to be her? What's the belief underneath that?</p>
-            <p>Hidden truth: if she doesn't protect them, no one will — and they will be destroyed. That's the belief. And now apply the test. Because I believe no one will protect the people I love if I don't, I must position myself between them and whatever threatens them, every time, regardless of cost.</p>
-            <p>Read that sentence. The behavior becomes a logical consequence of the belief. You can no longer imagine the character doing anything else. She doesn't experience herself as brave. She experiences herself as the last line of defense. That's the hidden truth.</p>
-            <p>Notice what happened in that process. We moved from a virtue — love — to a scarcity belief — if I don't, no one will — to a compulsion — I must. That progression is the interpreter's work. And each step required pushing past a comfortable answer to find the more uncomfortable one underneath.</p>
-            <p class="section-marker">Excavation vs. Invention</p>
-            <p>This is why the observer phase matters so much. Without three or more documented instances of the behavior, you don't have enough evidence to do this work rigorously. You're guessing. With the pattern documented, you're reasoning from data. You're applying disciplined analytical thinking to actual evidence. That's what distinguishes excavation from invention.</p>
-            <p>Invented psychology feels constructed. You can sense it on the page. The character does what they do because the writer decided they have certain traits, and the traits are moving the plot forward. Readers feel the construction underneath.</p>
-            <p>Excavated psychology feels inevitable. The character does what they do because a belief is running underneath them that makes any other response unthinkable. The reader may not be able to articulate what that belief is. But they feel its presence. They feel the compulsion behind the behavior. They feel that this person couldn't stop even if they wanted to.</p>
-            <p>That feeling — of inevitability, of a person trapped in their own logic — is what the interpreter's frame makes possible.</p>
-            <p class="section-marker">Closing</p>
-            <p>You have the behavior. You have the pattern. You have the data. Now sit with it. And ask the question — slowly, precisely — what would this person have to believe about themselves, about other people, or about how the world works, for this behavior to feel like the only reasonable response?</p>
+            <p>When you observe behavior, you're asking: what does this person do? That's a concrete, answerable question. You can film it. You can count instances. You can validate it across contexts.</p>
+            <p>When you interpret behavior, you're asking something different: what must this person believe for this behavior to feel like the only reasonable response? Not what they feel. What they must believe for the behavior to be not just understandable — but inevitable. That's a precision instrument. And I want to show you exactly how to use it.</p>
+            <p class="section-marker">The Conscious Justification Trap</p>
+            <p>Your first answer to the question will almost always be the conscious justification. It will sound like this: "She protects people because she loves them." "He stays in control because he cares about quality." "She keeps her distance because she's been hurt before."</p>
+            <p>These answers are not wrong. But they're the mask over the thing you're actually looking for. And the mask looks convincing because the person themselves believes it. They're not lying to you. They're telling you what they tell themselves.</p>
+            <p>The hidden truth operates beneath that layer entirely. It's the belief that — if you named it out loud to them — they might initially deny. And then quietly recognize. Here's how you know you've broken through: the hidden truth usually has a quality of vulnerability to it. It's not a philosophy. It has an edge of fear, or scarcity, or loss embedded in it.</p>
+            <p class="section-marker">Katniss — The Method in Action</p>
+            <p>Let me model the process with a character most people know. Katniss Everdeen, from The Hunger Games.</p>
+            <p>Her surface behavior is consistent and specific: she repeatedly steps between danger and the people she loves. She volunteers at the Reaping when her sister's name is called. She shields Rue. She keeps Peeta alive. Different situations, different relationships, different stakes — the same compulsive pattern.</p>
+            <p>Now apply the question. What would Katniss have to believe for that behavior to feel like the only reasonable response?</p>
+            <p>First answer: "She loves the people she protects." True. Also the conscious justification. It doesn't explain the compulsion. Push deeper.</p>
+            <p>"I'm the only one who can keep them safe." Getting closer. But why does it have to be her? Keep going.</p>
+            <p>"If I don't protect them, no one will. And they will be destroyed." Now we're somewhere. Because that belief — if no one steps up, the people I love will be destroyed — doesn't just explain that she protects. It explains that she can't stop. The belief makes the behavior not just understandable — but compulsory. She doesn't feel like a hero stepping forward. She feels like the last line of defense. That's the hidden truth.</p>
+            <p class="section-marker">The Causal Lock</p>
+            <p>Here's how you verify you've found the real thing. Take the belief you've identified and complete this sentence: "Because I believe _________, I must _________."</p>
+            <p>With Katniss: Because I believe no one will protect the people I love if I don't, I must position myself between them and whatever threatens them — every time, regardless of the cost to me.</p>
+            <p>That sentence should feel airtight. The behavior should feel inevitable given the belief. If you read it and think "well, maybe" — keep going. You're still at the level of conscious justification. The lock works when you can't imagine the character doing anything else.</p>
+            <p>You have the pattern. You have the data. Now sit with it. And ask the question — slowly, precisely — what would this person have to believe about themselves, about other people, or about how the world works, for this behavior to feel like the only reasonable response?</p>
             <p>Expect your first answer to be too clean. Push past it. Expect the real answer to carry an edge. Lean into that. And when the behavior becomes an inevitable consequence of the belief — when the causal lock clicks and you can't imagine any other response — you'll know you've arrived.</p>
             <p>The surface told you what your character does. The hidden truth tells you who they are.</p>
+            <p>Push past the conscious justification. Find the belief that makes the behavior feel not just reasonable — but necessary. Test it with the causal lock. And when that sentence clicks — when the behavior becomes an inevitable consequence of the belief — you'll know you've found it.</p>
+            <p>That understanding is what makes writing feel less like invention and more like excavation. If this way of approaching character resonates with you, this is exactly the kind of thinking we work through in STRATUM — my AI character coaching course for fiction writers. You can learn more at myaiwritingcoach.com.</p>
           </div>
         </div>
       </div>
@@ -899,10 +808,7 @@ CRITICAL REMINDERS
 — Push past my first answer — it will almost always be the conscious justification
 — Every candidate belief must lock with all three behavioral instances or we keep refining
 — Keep me in interpreter mode — discovering the hidden truth, not rationalizing the surface
-— The deliverables are concrete: one hidden truth + a causal lock statement (Because I believe _______, I must _______)
-
-BEGIN
-I'm ready to uncover my character's hidden truth. Please read the attached PDF first, then begin Stage 1 by asking me the therapist's question: what must my character believe for their anchor behavior to feel like the only reasonable response?</div>
+— The deliverables are concrete: one hidden truth + a causal lock statement (Because I believe _______, I must _______)</div>
           <button class="copy-prompt-btn" id="copy-btn" onclick="copyPrompt()">
             <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
             Copy Prompt to Clipboard
@@ -991,6 +897,7 @@ I'm ready to uncover my character's hidden truth. Please read the attached PDF f
       if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
         activateTab(btn.getAttribute('data-tab'), false);
@@ -1024,8 +931,14 @@ I'm ready to uncover my character's hidden truth. Please read the attached PDF f
       });
     }
 
-    function toggleTranscript(btn) {
-      var body   = document.getElementById('transcript-body');
+    function playFacade(el, videoId) {
+      var iframe = el.querySelector('iframe');
+      iframe.src = 'https://www.youtube.com/embed/' + videoId + '?rel=0&modestbranding=1&autoplay=1';
+      el.classList.add('playing');
+    }
+
+    function toggleTranscript(btn, bodyId) {
+      var body   = document.getElementById(bodyId);
       var isOpen = body.classList.contains('open');
       body.classList.toggle('open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
@@ -1038,11 +951,9 @@ I'm ready to uncover my character's hidden truth. Please read the attached PDF f
       btn.setAttribute('aria-expanded', String(!isOpen));
     }
 
-    /* Welcome image is visible on load; hides when any tab is first clicked */
-
     /* Tab bar scroll arrows */
-    var tabBar = document.getElementById('tab-bar');
-    var scrollHint = document.getElementById('tab-scroll-hint');
+    var tabBar      = document.getElementById('tab-bar');
+    var scrollHint  = document.getElementById('tab-scroll-hint');
     var scrollHintLeft = document.getElementById('tab-scroll-hint-left');
 
     function updateScrollHint() {
