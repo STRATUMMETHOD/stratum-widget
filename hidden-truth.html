@@ -8,71 +8,109 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --cream:        #faf4e8;
-      --cream-dark:   #f2ead8;
-      --cream-mid:    #ede5d4;
-      --tan:          #c4a882;
-      --tan-mid:      #a8895e;
-      --tan-light:    #ddd0b8;
-      --tan-faint:    #ede5d4;
-      --brown:        #2e1f0e;
-      --brown-mid:    #5c3d1e;
-      --brown-light:  #8b6340;
-      --label-xs:     11px;
-      --body-sm:      14px;
-      --body-md:      15px;
-      --body-lg:      16px;
+      --cream:#faf4e8; --cream-dark:#f2ead8; --cream-mid:#ede5d4;
+      --tan:#c4a882; --tan-mid:#a8895e; --tan-light:#ddd0b8; --tan-faint:#ede5d4;
+      --brown:#2e1f0e; --brown-mid:#5c3d1e; --brown-light:#8b6340;
+      --label-xs:11px; --label-sm:12px; --label-md:13px;
+      --body-sm:14px; --body-md:15px; --body-lg:16px;
     }
-
     html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Spectral', Georgia, serif;
-      background: var(--cream);
-      color: var(--brown);
-      line-height: 1.6;
-    }
+    body { font-family:'Spectral',Georgia,serif; background:var(--cream); color:var(--brown); line-height:1.6; }
 
-    /* ══ COMPLETE BANNER ══ */
+    /* ══ COMPLETE BANNER — L2 unique ══ */
     .complete-banner {
-      background: var(--brown);
-      border-bottom: 2px solid var(--tan);
-      padding: 14px 28px;
-      display: flex; align-items: center; gap: 14px;
+      background: var(--brown); border-bottom: 2px solid var(--tan);
+      padding: 14px 28px; display: flex; align-items: center; gap: 14px;
     }
     .complete-banner-icon {
-      width: 30px; height: 30px;
-      border: 2px solid var(--tan); border-radius: 50%;
+      width: 30px; height: 30px; border: 2px solid var(--tan); border-radius: 50%;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .complete-banner-icon svg {
-      width: 15px; height: 15px; stroke: var(--tan); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .complete-banner-text {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 14px; font-weight: 500; letter-spacing: 0.02em;
-      color: rgba(250,244,232,0.85); line-height: 1.5;
-    }
+    .complete-banner-icon svg { width: 15px; height: 15px; stroke: var(--tan); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .complete-banner-text { font-family:'Cormorant Garamond',Georgia,serif; font-size: 14px; font-weight: 500; letter-spacing: 0.02em; color: rgba(250,244,232,0.85); line-height: 1.5; }
     .complete-banner-text strong { color: var(--tan); font-weight: 700; }
 
-    /* ══ VIDEO ══ */
-    .video-wrap { background: #100a04; }
-    .video-container {
-      position: relative; width: 100%;
-      padding-bottom: 56.25%; height: 0; overflow: hidden;
+    /* ══ TAB BAR — TOP, STICKY ══ */
+    .tab-bar {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; overflow-x: auto;
+      background: var(--brown);
+      border-top: 3px solid var(--tan);
+      border-bottom: 1px solid rgba(196,168,130,0.18);
+      box-shadow: 0 3px 14px rgba(0,0,0,0.40);
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      scroll-behavior: smooth;
     }
-    .video-container iframe {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      border: none; display: block;
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-bar-wrap { position: sticky; top: 0; z-index: 50; }
+
+    .tab-scroll-hint-left {
+      position: absolute; top: 0; left: 0; height: 100%; width: 52px;
+      background: linear-gradient(to left, transparent, var(--brown) 55%);
+      display: flex; align-items: center; justify-content: flex-start;
+      padding-left: 8px; z-index: 52;
+      transition: opacity 0.3s; opacity: 0; pointer-events: none;
+    }
+    .tab-scroll-hint-left.visible { opacity: 1; pointer-events: all; }
+
+    .tab-scroll-hint {
+      position: absolute; top: 0; right: 0; height: 100%; width: 52px;
+      background: linear-gradient(to right, transparent, var(--brown) 55%);
+      display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 8px; z-index: 52; transition: opacity 0.3s;
+    }
+    .tab-scroll-hint.hidden { opacity: 0; pointer-events: none; }
+
+    .tab-scroll-arrow {
+      width: 28px; height: 28px;
+      border: 1.5px solid rgba(196,168,130,0.5); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: all; cursor: pointer; background: var(--brown);
+      animation: pulse-arrow 1.5s ease-in-out infinite; flex-shrink: 0;
+    }
+    .tab-scroll-arrow svg { width: 12px; height: 12px; stroke: var(--tan); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    @keyframes pulse-arrow {
+      0%, 100% { border-color: rgba(196,168,130,0.4); box-shadow: none; }
+      50% { border-color: var(--tan); box-shadow: 0 0 8px rgba(196,168,130,0.4); }
     }
 
-    /* ══ YOUTUBE FACADE ══ */
-    .yt-facade {
-      position: relative; width: 100%; padding-bottom: 56.25%;
-      background: #000; cursor: pointer; overflow: hidden;
+    .tab-btn {
+      font-family:'Cormorant Garamond',Georgia,serif;
+      font-size: 12px; font-weight: 500;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: rgba(196,168,130,0.55);
+      background: transparent; border: none;
+      border-right: 1px solid rgba(196,168,130,0.12);
+      padding: 0 16px; min-height: 52px;
+      cursor: pointer; white-space: nowrap;
+      flex: 0 0 auto; min-width: 140px;
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      transition: color 0.2s, background 0.2s;
+      position: relative;
     }
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn:hover { color: var(--tan); background: rgba(196,168,130,0.08); }
+    .tab-btn.active { color: var(--tan); font-weight: 700; font-size: 13px; letter-spacing: 0.13em; }
+    .tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--tan); }
+    .tab-check { width: 18px; height: 18px; border: 1.5px solid rgba(196,168,130,0.35); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.25s, border-color 0.25s; }
+    .tab-check svg { width: 9px; height: 9px; stroke: rgba(196,168,130,0.25); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .tab-btn.active .tab-check { border-color: var(--tan); background: rgba(196,168,130,0.18); }
+    .tab-btn.active .tab-check svg { stroke: var(--tan); }
+    .tab-btn.done .tab-check { background: var(--tan); border-color: var(--tan); }
+    .tab-btn.done .tab-check svg { stroke: var(--brown); }
+    .tab-btn.done { color: rgba(196,168,130,0.6); }
+
+    /* ══ HERO AREA ══ */
+    .hero-welcome { display: block; }
+    .hero-welcome img { width: 100%; display: block; }
+    .hero-video { display: none; background: #100a04; }
+    .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+    .video-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
+
+    /* ══ YOUTUBE FACADE ══ */
+    .yt-facade { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; cursor: pointer; overflow: hidden; }
     .yt-facade img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s ease; }
     .yt-facade:hover img { transform: scale(1.02); }
     .yt-facade .yt-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 68px; height: 48px; background: #ff0000; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: background 0.2s, transform 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
@@ -82,639 +120,190 @@
     .yt-facade.playing img, .yt-facade.playing .yt-play { display: none; }
     .yt-facade.playing iframe { display: block; }
 
-    /* ══ HERO AREA ══ */
-    .hero-welcome { display: block; }
-    .hero-welcome img { width: 100%; display: block; }
-    .hero-video { display: none; background: #100a04; }
-
-    /* ── Transcript ── */
+    /* Transcript */
     .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
-    .transcript-btn {
-      width: 100%; background: transparent; border: none; padding: 13px 24px;
-      display: flex; align-items: center; justify-content: space-between;
-      cursor: pointer; gap: 12px;
-    }
+    .transcript-btn { width: 100%; background: transparent; border: none; padding: 13px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; gap: 12px; }
     .transcript-btn:hover { background: rgba(196,168,130,0.06); }
-    .transcript-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan);
-    }
-    .transcript-chevron {
-      width: 16px; height: 16px; stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      transition: transform 0.3s ease; flex-shrink: 0;
-    }
+    .transcript-label { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan); }
+    .transcript-chevron { width: 16px; height: 16px; stroke: var(--tan); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.3s ease; flex-shrink: 0; }
     .transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
     .transcript-body { display: none; padding: 0 28px 22px; }
     .transcript-body.open { display: block; }
-    .transcript-body p {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.78); line-height: 1.85; margin-bottom: 14px;
-    }
+    .transcript-body p { font-family:'Spectral',Georgia,serif; font-size: var(--body-sm); font-weight: 300; font-style: italic; color: rgba(250,244,232,0.78); line-height: 1.85; margin-bottom: 14px; }
     .transcript-body p:last-child { margin-bottom: 0; }
-    .transcript-body p.section-marker {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-style: normal; font-weight: 500; font-size: var(--label-xs);
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--tan); margin-top: 18px; margin-bottom: 6px;
-    }
+    .transcript-body .section-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; font-style: normal; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan); margin-top: 20px; margin-bottom: 8px; display: block; }
+    .supp-transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.12); }
+    .supp-transcript .transcript-body { padding: 0 20px 18px; }
 
-    /* ══ TAB BAR WRAP + SCROLL HINTS ══ */
-    .tab-bar-wrap { position: sticky; top: 0; z-index: 50; }
-    .tab-scroll-hint-left {
-      position: absolute; top: 0; left: 0; height: 100%; width: 52px;
-      background: linear-gradient(to left, transparent, var(--brown) 55%);
-      display: flex; align-items: center; justify-content: flex-start;
-      padding-left: 8px; z-index: 52;
-      transition: opacity 0.3s; opacity: 0; pointer-events: none;
-    }
-    .tab-scroll-hint-left.visible { opacity: 1; pointer-events: all; }
-    .tab-scroll-hint {
-      position: absolute; top: 0; right: 0; height: 100%; width: 52px;
-      background: linear-gradient(to right, transparent, var(--brown) 55%);
-      display: flex; align-items: center; justify-content: flex-end;
-      padding-right: 8px; z-index: 52; transition: opacity 0.3s;
-    }
-    .tab-scroll-hint.hidden { opacity: 0; pointer-events: none; }
-    .tab-scroll-arrow {
-      width: 28px; height: 28px;
-      border: 1.5px solid rgba(196,168,130,0.5); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; background: var(--brown); flex-shrink: 0;
-      animation: pulse-arrow 1.5s ease-in-out infinite;
-    }
-    .tab-scroll-arrow svg {
-      width: 12px; height: 12px; stroke: var(--tan); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-    @keyframes pulse-arrow {
-      0%, 100% { border-color: rgba(196,168,130,0.4); box-shadow: none; }
-      50% { border-color: var(--tan); box-shadow: 0 0 8px rgba(196,168,130,0.4); }
-    }
-
-    /* ══ TAB BAR ══ */
-    .tab-bar {
-      background: var(--brown);
-      border-top: 3px solid var(--tan);
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-      display: flex; align-items: stretch;
-      overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
-      box-shadow: 0 3px 14px rgba(0,0,0,0.40);
-      -webkit-overflow-scrolling: touch; scroll-behavior: smooth;
-    }
-    .tab-bar::-webkit-scrollbar { display: none; }
-
-    .tab-btn {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 12px; font-weight: 600;
-      letter-spacing: 0.17em; text-transform: uppercase;
-      color: rgba(196,168,130,0.72);
-      background: transparent; border: none;
-      border-right: 1px solid rgba(196,168,130,0.1);
-      padding: 0 20px; min-height: 52px;
-      cursor: pointer; white-space: nowrap; flex-shrink: 0;
-      display: flex; align-items: center; gap: 9px;
-      transition: color 0.2s, background 0.2s;
-      position: relative;
-    }
-    .tab-btn:last-child { border-right: none; }
-    .tab-btn:hover { color: var(--tan); background: rgba(196,168,130,0.08); }
-    .tab-btn.active {
-      color: var(--tan); font-weight: 700; font-size: 13px;
-      letter-spacing: 0.13em; background: transparent;
-    }
-    .tab-btn.active::after {
-      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
-      height: 3px; background: var(--tan);
-    }
-    .tab-check {
-      width: 18px; height: 18px;
-      border: 1.5px solid rgba(196,168,130,0.35); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      transition: background 0.25s, border-color 0.25s;
-    }
-    .tab-check svg {
-      width: 9px; height: 9px; stroke: rgba(196,168,130,0.25); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .tab-btn.active .tab-check { border-color: var(--tan); background: rgba(196,168,130,0.18); }
-    .tab-btn.active .tab-check svg { stroke: var(--tan); }
-    .tab-btn.done .tab-check { background: var(--tan); border-color: var(--tan); }
-    .tab-btn.done .tab-check svg { stroke: var(--brown); }
-    .tab-btn.done { color: rgba(196,168,130,0.6); }
-
-    /* ══ TAB PANELS ══ */
+    /* ══ PANELS ══ */
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
-
-    /* ══ PANEL INNER ══ */
     .panel-inner { padding: 44px 32px 32px; max-width: 760px; margin: 0 auto; }
-
-    /* ══ PANEL TYPOGRAPHY ══ */
-    .panel-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 8px;
-    }
-    .panel-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 30px; font-weight: 300; color: var(--brown); line-height: 1.15;
-    }
+    .panel-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 8px; }
+    .panel-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 30px; font-weight: 300; color: var(--brown); line-height: 1.15; }
     .panel-title em { font-style: italic; color: var(--brown-mid); }
     .panel-rule { width: 40px; height: 1px; background: var(--tan); margin: 16px 0 26px; }
-    .panel-lead {
-      font-size: var(--body-lg); font-weight: 300; line-height: 1.8;
-      color: var(--brown-mid); margin-bottom: 32px;
-    }
+    .panel-lead { font-size: var(--body-lg); font-weight: 300; line-height: 1.8; color: var(--brown-mid); margin-bottom: 32px; }
 
     /* ══ NAV BUTTONS ══ */
-    .nav-wrap {
-      padding: 24px 32px 32px; max-width: 760px; margin: 0 auto;
-      border-top: 1px solid var(--tan-light);
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    }
+    .nav-wrap { padding: 24px 32px 32px; max-width: 760px; margin: 0 auto; border-top: 1px solid var(--tan-light); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
     .nav-wrap.no-back { justify-content: flex-end; }
-    .back-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: transparent; border: 1px solid var(--tan-light); padding: 12px 22px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan-mid); cursor: pointer;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
-    }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid var(--tan-light); padding: 12px 22px; font-family:'Cormorant Garamond',Georgia,serif; font-size: 13px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan-mid); cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; }
     .back-btn:hover { background: var(--cream-dark); border-color: var(--tan-mid); color: var(--brown); }
-    .back-btn svg {
-      width: 13px; height: 13px; stroke: currentColor; fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .continue-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--brown); border: none; padding: 14px 28px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--tan); cursor: pointer; transition: background 0.2s, color 0.2s;
-    }
+    .back-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .continue-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--brown); border: none; padding: 14px 28px; font-family:'Cormorant Garamond',Georgia,serif; font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tan); cursor: pointer; transition: background 0.2s, color 0.2s; }
     .continue-btn:hover { background: var(--brown-mid); color: var(--cream); }
-    .continue-btn svg {
-      width: 14px; height: 14px; stroke: currentColor; fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
+    .continue-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
     /* ══ WHY BLOCK ══ */
-    .why-block {
-      background: var(--cream-dark); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan-mid); padding: 20px 22px; margin-bottom: 28px;
-    }
-    .why-block-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 10px;
-    }
-    .why-block p {
-      font-size: var(--body-md); font-weight: 300; line-height: 1.8;
-      color: var(--brown); margin-bottom: 10px;
-    }
+    .why-block { background: var(--cream-dark); border: 1px solid var(--tan-light); border-left: 3px solid var(--tan-mid); padding: 20px 22px; margin-bottom: 28px; }
+    .why-block-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 15px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 10px; }
+    .why-block p { font-size: var(--body-md); font-weight: 300; line-height: 1.8; color: var(--brown); margin-bottom: 10px; }
     .why-block p:last-child { margin-bottom: 0; }
 
     /* ══ SUPPLEMENTAL VIDEO ══ */
     .supp-video { border: 1px solid var(--tan-light); margin-bottom: 32px; overflow: hidden; }
-    .supp-video-head {
-      background: var(--cream-mid); padding: 14px 20px;
-      display: flex; align-items: center; gap: 14px;
-      border-bottom: 1px solid var(--tan-light); flex-wrap: wrap;
-    }
-    .supp-video-badge {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--brown-mid); background: var(--tan-faint);
-      border: 1px solid var(--tan-light); padding: 4px 11px; flex-shrink: 0;
-    }
-    .supp-video-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 500; color: var(--brown); line-height: 1.3;
-    }
-    .supp-video-container {
-      position: relative; width: 100%; padding-bottom: 56.25%;
-      height: 0; overflow: hidden; background: #100a04;
-    }
-    .supp-video-container iframe {
-      position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block;
-    }
-    .supp-video-foot {
-      padding: 14px 20px; background: var(--cream-dark);
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown-mid); border-top: 1px solid var(--tan-light);
-    }
+    .supp-video-head { background: var(--cream-mid); padding: 14px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--tan-light); flex-wrap: wrap; }
+    .supp-video-badge { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brown-mid); background: var(--tan-faint); border: 1px solid var(--tan-light); padding: 4px 11px; flex-shrink: 0; }
+    .supp-video-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 15px; font-weight: 500; color: var(--brown); line-height: 1.3; }
+    .supp-video-container { position: relative; width: 100%; overflow: hidden; background: #100a04; }
 
-    /* ══ THE QUESTION BLOCK ══ */
-    .question-block {
-      background: var(--brown); border: 1px solid rgba(196,168,130,0.2);
-      padding: 28px 30px; margin-bottom: 28px;
-    }
-    .question-block-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 16px;
-    }
-    .question-block-text {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 22px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.6; margin-bottom: 18px;
-    }
-    .question-block-note {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.65); line-height: 1.72;
-      border-top: 1px solid rgba(196,168,130,0.15); padding-top: 14px;
-    }
+    /* ══ THE QUESTION BLOCK — L2 unique ══ */
+    .question-block { background: var(--brown); border: 1px solid rgba(196,168,130,0.2); padding: 28px 30px; margin-bottom: 28px; }
+    .question-block-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 16px; }
+    .question-block-text { font-family:'Cormorant Garamond',Georgia,serif; font-size: 22px; font-weight: 300; font-style: italic; color: var(--cream); line-height: 1.6; margin-bottom: 18px; }
+    .question-block-note { font-family:'Spectral',Georgia,serif; font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.65); line-height: 1.72; border-top: 1px solid rgba(196,168,130,0.15); padding-top: 14px; }
 
-    /* ══ LOCK BLOCK ══ */
-    .lock-block {
-      background: var(--cream-mid); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan); padding: 22px 24px; margin-bottom: 28px;
-    }
-    .lock-block-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 12px;
-    }
-    .lock-formula {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 19px; font-weight: 400; font-style: italic;
-      color: var(--brown-mid); line-height: 1.55; margin-bottom: 14px;
-    }
+    /* ══ LOCK BLOCK — L2 unique ══ */
+    .lock-block { background: var(--cream-mid); border: 1px solid var(--tan-light); border-left: 3px solid var(--tan); padding: 22px 24px; margin-bottom: 28px; }
+    .lock-block-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 15px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 12px; }
+    .lock-formula { font-family:'Cormorant Garamond',Georgia,serif; font-size: 19px; font-weight: 400; font-style: italic; color: var(--brown-mid); line-height: 1.55; margin-bottom: 14px; }
     .lock-formula em { color: var(--tan-mid); font-style: normal; font-weight: 600; }
-    .lock-block p {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown-mid); margin-bottom: 8px;
-    }
+    .lock-block p { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); margin-bottom: 8px; }
     .lock-block p:last-child { margin-bottom: 0; }
-    .lock-example {
-      background: var(--cream); border: 1px solid var(--tan-faint); padding: 14px 18px; margin-top: 14px;
-    }
-    .lock-example-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 8px;
-    }
-    .lock-example p {
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: var(--brown-mid); line-height: 1.72; margin-bottom: 0;
-    }
+    .lock-example { background: var(--cream); border: 1px solid var(--tan-faint); padding: 14px 18px; margin-top: 14px; }
+    .lock-example-label { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 8px; }
+    .lock-example p { font-size: var(--body-sm); font-weight: 300; font-style: italic; color: var(--brown-mid); line-height: 1.72; margin-bottom: 0; }
 
-    /* ══ KATNISS WALKTHROUGH ══ */
+    /* ══ KATNISS WALKTHROUGH — L2 unique ══ */
     .walkthrough { border: 1px solid var(--tan-light); margin-bottom: 28px; overflow: hidden; }
     .walkthrough-head { background: var(--brown); padding: 16px 22px; border-bottom: 1px solid rgba(196,168,130,0.2); }
-    .walkthrough-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 6px;
-    }
-    .walkthrough-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 18px; font-weight: 300; color: var(--cream); line-height: 1.3;
-    }
+    .walkthrough-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 6px; }
+    .walkthrough-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 18px; font-weight: 300; color: var(--cream); line-height: 1.3; }
     .walkthrough-title em { font-style: italic; color: var(--tan); }
     .walkthrough-body { background: var(--cream-dark); padding: 20px 22px; }
-    .walkthrough-step {
-      display: flex; align-items: flex-start; gap: 16px; padding: 12px 0;
-      border-bottom: 1px solid var(--tan-faint);
-    }
+    .walkthrough-step { display: flex; align-items: flex-start; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--tan-faint); }
     .walkthrough-step:last-child { border-bottom: none; padding-bottom: 0; }
-    .walkthrough-step-marker {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--tan-mid); flex-shrink: 0; margin-top: 2px; min-width: 80px;
-    }
+    .walkthrough-step-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan-mid); flex-shrink: 0; margin-top: 2px; min-width: 80px; }
     .walkthrough-step-content { flex: 1; }
-    .walkthrough-step-content p {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown); margin-bottom: 6px;
-    }
+    .walkthrough-step-content p { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown); margin-bottom: 6px; }
     .walkthrough-step-content p:last-child { margin-bottom: 0; }
     .walkthrough-step-content em { font-style: italic; color: var(--brown-mid); }
     .walkthrough-step-content strong { font-weight: 500; color: var(--brown-mid); }
 
     /* ══ RED FLAGS ══ */
-    .redflag-item {
-      display: flex; align-items: flex-start; gap: 14px; padding: 12px 0;
-      border-bottom: 1px solid var(--tan-faint);
-    }
+    .redflag-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--tan-faint); }
     .redflag-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .redflag-marker {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--tan-mid); flex-shrink: 0; margin-top: 2px; min-width: 64px;
-    }
+    .redflag-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan-mid); flex-shrink: 0; margin-top: 2px; min-width: 64px; }
     .redflag-text { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown); }
     .redflag-text strong { font-weight: 500; color: var(--brown-mid); }
     .redflag-text em { font-style: italic; }
 
-    /* ══ SESSION PANEL ══ */
-    .session-begin-band { background: var(--brown); width: 100%; }
-    .session-begin-inner { padding: 28px 32px 24px; max-width: 760px; margin: 0 auto; }
-    .session-begin-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 26px; font-weight: 500; letter-spacing: 0.03em;
-      color: var(--cream); margin-bottom: 20px;
-      padding-bottom: 14px; border-bottom: 1px solid rgba(196,168,130,0.25); line-height: 1.2;
-    }
+    /* ══ SESSION ══ */
+    .session-begin-band { background: var(--brown); width: 100%; padding: 0; margin-bottom: 0; text-align: left !important; }
+    .session-begin-inner { padding: 28px 32px 24px; max-width: 760px; margin: 0 auto; text-align: left !important; }
+    .session-begin-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 26px; font-weight: 500; letter-spacing: 0.03em; color: var(--cream); margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid rgba(196,168,130,0.25); line-height: 1.2; }
     .session-begin-title em { color: var(--tan); font-style: italic; }
 
-    /* ══ COACHING PROMPT ══ */
-    .prompt-wrap { margin-bottom: 24px; }
-    .prompt-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px; font-weight: 500; color: var(--cream);
-      display: block; margin-bottom: 8px;
-    }
-    .prompt-instruction {
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.72); line-height: 1.65; margin-bottom: 14px;
-    }
-    .prompt-text {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.85); line-height: 1.75;
-      background: rgba(0,0,0,0.25); border: 1px solid rgba(196,168,130,0.2);
-      padding: 18px 20px; margin-bottom: 14px; white-space: pre-wrap;
-      display: none;
-    }
-    .copy-prompt-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--tan); border: none; padding: 11px 22px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 12px; font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--brown); cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-    }
-    .copy-prompt-btn:hover { background: var(--cream); color: var(--brown); }
-    .copy-prompt-btn.copied { background: var(--brown-mid); color: var(--tan); }
+    .prompt-text { font-family:'Spectral',Georgia,serif; font-size: var(--body-sm); font-weight: 300; font-style: italic; color: rgba(250,244,232,0.85); line-height: 1.75; margin-bottom: 20px; white-space: pre-wrap; }
 
-    /* ══ INSTRUCTIONS ══ */
-    .instructions-list { list-style: none; margin-top: 4px; }
-    .instructions-list li {
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.85); line-height: 1.72;
-      padding: 9px 0 9px 26px;
-      border-bottom: 1px solid rgba(196,168,130,0.12);
-      display: block; position: relative;
-    }
+    .copy-btn { display: inline-flex; align-items: center; gap: 9px; background: transparent; border: 1px solid rgba(196,168,130,0.50); padding: 12px 22px; font-family:'Cormorant Garamond',Georgia,serif; font-size: 13px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan); cursor: pointer; transition: background 0.2s, border-color 0.2s; margin-bottom: 24px; }
+    .copy-btn:hover { background: rgba(196,168,130,0.10); border-color: var(--tan); }
+    .copy-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .copy-btn.copied { background: rgba(196,168,130,0.15); border-color: var(--tan); }
+
+    .instructions-list { list-style: none; margin-top: 4px; text-align: left !important; }
+    .instructions-list li { font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.85); line-height: 1.72; padding: 9px 0 9px 26px; border-bottom: 1px solid rgba(196,168,130,0.12); display: block !important; text-align: left !important; position: relative; }
     .instructions-list li:last-child { border-bottom: none; }
-    .instructions-list li::before {
-      content: attr(data-n);
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); color: var(--tan);
-      position: absolute; left: 0; top: 11px;
-    }
+    .instructions-list li::before { content: attr(data-n); font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); color: var(--tan); position: absolute; left: 0; top: 11px; }
     .instructions-list li strong { color: var(--tan); font-weight: 500; }
+    .instructions-list li a { color: var(--tan); text-decoration: underline; text-underline-offset: 2px; opacity: 0.85; }
+    .instructions-list li a:hover { opacity: 1; }
 
-    /* ══ AFTER SESSION / WORKSPACE CTA ══ */
-    .after-session {
-      max-width: 760px; margin: 0 auto;
-      padding: 28px 32px 32px;
-      border-top: 1px solid rgba(196,168,130,0.2);
-    }
-    .after-session-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px; font-weight: 500; color: var(--cream);
-      display: block; margin-bottom: 10px;
-    }
-    .after-session p {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.72); line-height: 1.7; margin-bottom: 20px;
-    }
-    .workspace-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--tan); border: none; padding: 14px 32px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 12px; font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--brown); text-decoration: none;
-      transition: background 0.2s, color 0.2s;
-    }
-    .workspace-btn:hover { background: var(--cream); color: var(--brown); }
-    .workspace-btn svg {
-      width: 13px; height: 13px; stroke: currentColor; fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
+    /* ══ WORKSPACE SECTION ══ */
+    .workspace-section { padding: 32px 32px 28px; max-width: 760px; margin: 0 auto; border-top: 1px solid var(--tan-light); }
+    .workspace-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 8px; }
+    .workspace-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 24px; font-weight: 300; color: var(--brown); line-height: 1.2; margin-bottom: 12px; }
+    .workspace-title em { font-style: italic; color: var(--brown-mid); }
+    .workspace-desc { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); margin-bottom: 20px; }
+    .workspace-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--brown); border: none; padding: 14px 28px; font-family:'Cormorant Garamond',Georgia,serif; font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tan); text-decoration: none; cursor: pointer; transition: background 0.2s, color 0.2s; }
+    .workspace-btn:hover { background: var(--brown-mid); color: var(--cream); }
+    .workspace-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* ══ SAVE REMINDER ══ */
-    .save-reminder {
-      background: var(--brown-mid); border: 1px solid rgba(196,168,130,0.25);
-      padding: 16px 22px; margin: 0 32px 0;
-      max-width: 760px; margin: 0 auto;
-      display: flex; align-items: flex-start; gap: 14px;
-    }
-    .save-reminder-icon { flex-shrink: 0; margin-top: 2px; }
-    .save-reminder-icon svg {
-      width: 18px; height: 18px; stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .save-reminder p {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 500; color: var(--cream); line-height: 1.65;
-    }
-    .save-reminder p strong { color: var(--tan); }
-
-    /* ══ COMPLETE LESSON ══ */
-    .congratulations-img-wrap {
-      background: var(--brown); display: flex; justify-content: center; padding: 36px 32px 40px;
-    }
-    .congratulations-img-wrap img {
-      width: 65%; max-width: 520px; display: block;
-      box-shadow: 0 0 0 1px rgba(196,168,130,0.35),
-                  0 0 0 5px rgba(46,31,14,0.8),
-                  0 0 0 6px rgba(196,168,130,0.2),
-                  0 8px 40px rgba(0,0,0,0.55);
-    }
-
-    .complete-lesson-content {
-      background: var(--cream-dark); border: 1px solid var(--tan-light);
-      border-left: 3px solid var(--tan-mid); padding: 22px 24px; margin-bottom: 28px;
-    }
-    .complete-lesson-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 600; color: var(--brown);
-      display: block; margin-bottom: 10px;
-    }
-    .complete-lesson-content p {
-      font-size: var(--body-md); font-weight: 300; line-height: 1.8;
-      color: var(--brown); margin-bottom: 10px;
-    }
+    /* ══ COMPLETE — checklist, bridge, ted's note — L2 unique ══ */
+    .complete-lesson-content { background: var(--cream-dark); border: 1px solid var(--tan-light); border-left: 3px solid var(--tan-mid); padding: 22px 24px; margin-bottom: 28px; }
+    .complete-lesson-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 15px; font-weight: 600; color: var(--brown); display: block; margin-bottom: 10px; }
+    .complete-lesson-content p { font-size: var(--body-md); font-weight: 300; line-height: 1.8; color: var(--brown); margin-bottom: 10px; }
     .complete-lesson-content p:last-child { margin-bottom: 0; }
     .complete-lesson-checklist { list-style: none; padding: 0; margin-bottom: 0; }
-    .complete-lesson-checklist li {
-      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
-      color: var(--brown-mid); padding: 7px 0;
-      border-bottom: 1px solid var(--tan-faint);
-      display: flex; align-items: flex-start; gap: 10px;
-    }
+    .complete-lesson-checklist li { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); padding: 7px 0; border-bottom: 1px solid var(--tan-faint); display: flex; align-items: flex-start; gap: 10px; }
     .complete-lesson-checklist li:last-child { border-bottom: none; }
-    .check-icon {
-      width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px;
-      border: 1.5px solid var(--tan-mid); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .check-icon svg {
-      width: 8px; height: 8px; stroke: var(--tan-mid); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
+    .check-icon { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; border: 1.5px solid var(--tan-mid); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .check-icon svg { width: 8px; height: 8px; stroke: var(--tan-mid); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* ── Bridge Block ── */
-    .bridge-block {
-      background: var(--brown); border: 1px solid rgba(196,168,130,0.2);
-      padding: 24px 26px; margin-bottom: 28px;
-    }
-    .bridge-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 14px;
-    }
-    .bridge-question {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.6; margin-bottom: 14px;
-    }
-    .bridge-note {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.65); line-height: 1.72;
-      border-top: 1px solid rgba(196,168,130,0.15); padding-top: 12px;
-    }
+    .bridge-block { background: var(--brown); border: 1px solid rgba(196,168,130,0.2); padding: 24px 26px; margin-bottom: 28px; }
+    .bridge-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 14px; }
+    .bridge-question { font-family:'Cormorant Garamond',Georgia,serif; font-size: 20px; font-weight: 300; font-style: italic; color: var(--cream); line-height: 1.6; margin-bottom: 14px; }
+    .bridge-note { font-family:'Spectral',Georgia,serif; font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.65); line-height: 1.72; border-top: 1px solid rgba(196,168,130,0.15); padding-top: 12px; }
 
-    /* ── Ted's Note ── */
     .teds-note { background: var(--cream-dark); border: 1px solid var(--tan-light); padding: 22px 24px; margin-bottom: 28px; }
-    .teds-note-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 12px;
-    }
-    .teds-note p {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-md); font-weight: 300; font-style: italic;
-      color: var(--brown-mid); line-height: 1.82; margin-bottom: 10px;
-    }
+    .teds-note-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 12px; }
+    .teds-note p { font-family:'Spectral',Georgia,serif; font-size: var(--body-md); font-weight: 300; font-style: italic; color: var(--brown-mid); line-height: 1.82; margin-bottom: 10px; }
     .teds-note p:last-child { margin-bottom: 0; }
-    .teds-note-sig {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 400; font-style: normal;
-      color: var(--brown); display: block; margin-top: 14px;
-    }
+    .teds-note-sig { font-family:'Cormorant Garamond',Georgia,serif; font-size: 16px; font-weight: 400; font-style: normal; color: var(--brown); display: block; margin-top: 14px; }
 
-    /* ── Mark as Complete ── */
-    .complete-dark { background: var(--brown); padding: 36px 32px 32px; text-align: center; }
-    .complete-dark-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 14px;
-    }
-    .complete-dark-heading {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 24px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.45; margin-bottom: 6px;
-    }
-    .complete-dark-sub {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.65); line-height: 1.55; margin-bottom: 24px;
-    }
-    .complete-instruction {
-      max-width: 480px; margin: 0 auto 24px;
-      background: rgba(196,168,130,0.1);
-      border: 1px solid rgba(196,168,130,0.2);
-      padding: 16px 20px;
-      display: flex; align-items: flex-start; gap: 12px; text-align: left;
-    }
-    .complete-instruction svg {
-      width: 16px; height: 16px; stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      flex-shrink: 0; margin-top: 2px;
-    }
-    .complete-instruction p {
-      font-size: var(--body-sm); font-weight: 300;
-      color: rgba(250,244,232,0.82); line-height: 1.7;
-    }
+    .complete-instruction { max-width: 480px; margin: 0 auto 24px; background: rgba(196,168,130,0.1); border: 1px solid rgba(196,168,130,0.2); padding: 16px 20px; display: flex; align-items: flex-start; gap: 12px; text-align: left; }
+    .complete-instruction svg { width: 16px; height: 16px; stroke: var(--tan); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 2px; }
+    .complete-instruction p { font-size: var(--body-sm); font-weight: 300; color: rgba(250,244,232,0.82); line-height: 1.7; }
     .complete-instruction p strong { color: var(--tan); font-weight: 500; }
-    .complete-rule { width: 36px; height: 1px; background: rgba(196,168,130,0.25); margin: 0 auto 20px; }
-    .complete-quote {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 17px; font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.75); line-height: 1.65; margin-bottom: 14px;
-    }
-    .complete-attr {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 400;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: rgba(196,168,130,0.55);
-    }
-    .mark-complete-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--tan); border: none; padding: 16px 36px;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 13px; font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--brown); text-decoration: none;
-      transition: background 0.2s, color 0.2s;
-    }
-    .mark-complete-btn:hover { background: var(--cream); color: var(--brown); }
-    .mark-complete-btn svg {
-      width: 15px; height: 15px; stroke: var(--brown); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
 
-    /* ── Contact Jotform ── */
-    .jotform-section { margin-bottom: 0; }
-    .jotform-clip-wrap { overflow: hidden; margin: 0; }
-    .jotform-wrap { border: 1px solid var(--tan-light); margin-bottom: 28px; overflow: hidden; }
-    .jotform-wrap-head {
-      background: var(--brown); padding: 18px 24px;
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-    }
-    .jotform-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 6px;
-    }
-    .jotform-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px; font-weight: 300; color: var(--cream); line-height: 1.3;
-    }
-    .jotform-title em { font-style: italic; color: var(--tan); }
-    .jotform-embed { background: var(--cream-dark); }
+    /* ══ COMPLETE DARK ══ */
+    .congratulations-img-wrap { background: var(--brown); display: flex; justify-content: center; padding: 36px 32px 40px; }
+    .congratulations-img-wrap img { width: 65%; max-width: 520px; display: block; box-shadow: 0 0 0 1px rgba(196,168,130,0.35), 0 0 0 5px rgba(46,31,14,0.8), 0 0 0 6px rgba(196,168,130,0.2), 0 8px 40px rgba(0,0,0,0.55); }
+    .complete-dark { background: var(--brown); padding: 44px 32px 40px; text-align: center; }
+    .complete-dark-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 12px; }
+    .complete-dark-heading { font-family:'Cormorant Garamond',Georgia,serif; font-size: 26px; font-weight: 300; color: var(--cream); margin-bottom: 8px; line-height: 1.2; }
+    .complete-dark-sub { font-size: var(--body-sm); font-weight: 300; font-style: italic; color: rgba(196,168,130,0.7); margin-bottom: 28px; }
+    .complete-rule { width: 40px; height: 1px; background: rgba(196,168,130,0.3); margin: 0 auto 24px; }
+    .complete-quote { font-family:'Cormorant Garamond',Georgia,serif; font-size: 17px; font-weight: 300; font-style: italic; color: rgba(196,168,130,0.7); line-height: 1.65; margin-bottom: 10px; }
+    .complete-attr { font-family:'Cormorant Garamond',Georgia,serif; font-size: var(--label-xs); letter-spacing: 0.14em; text-transform: uppercase; color: rgba(196,168,130,0.4); display: block; margin-bottom: 28px; }
+    .mark-complete-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--tan); color: var(--brown); border: none; padding: 15px 32px; font-family:'Cormorant Garamond',Georgia,serif; font-size: 13px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+    .mark-complete-btn:hover { background: var(--tan-mid); }
+    .mark-complete-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* ══ RESPONSIVE ══ */
-    @media (max-width: 580px) {
-      .supp-video-head { flex-direction: column; align-items: flex-start; gap: 8px; }
-      .nav-wrap { flex-direction: column; align-items: stretch; }
-      .back-btn, .continue-btn { justify-content: center; }
-    }
-    @media (max-width: 560px) {
-      .panel-inner { padding: 28px 20px 24px; }
-      .nav-wrap { padding: 20px; }
-      .panel-title { font-size: 24px; }
-      .complete-dark { padding: 40px 24px 36px; }
-      .question-block-text { font-size: 18px; }
-      .congratulations-img-wrap img { width: 90%; }
-      .tab-btn { padding: 0 14px; font-size: 11px; letter-spacing: 0.13em; min-height: 52px; }
-      .tab-check { width: 16px; height: 16px; }
-      .tab-check svg { width: 8px; height: 8px; }
+    /* Contact Ted */
+    .contact-ted-section { padding: 32px 0 0; }
+    .contact-ted-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 24px; font-weight: 300; color: var(--brown); line-height: 1.2; margin-bottom: 12px; }
+    .contact-ted-title em { font-style: italic; color: var(--brown-mid); }
+    .contact-ted-desc { font-size: var(--body-sm); font-weight: 300; line-height: 1.72; color: var(--brown-mid); margin-bottom: 20px; }
+
+    @media (max-width: 540px) {
+      .panel-inner { padding: 28px 20px 20px; }
+      .nav-wrap { padding: 20px; flex-direction: column; }
+      .continue-btn, .back-btn { width: 100%; justify-content: center; }
       .session-begin-inner { padding: 20px; }
-      .after-session { padding: 20px; }
+      .workspace-section { padding: 24px 20px; }
+      .congratulations-img-wrap img { width: 90%; }
+      .complete-dark { padding: 36px 20px 32px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ══ COMPLETE BANNER ══ -->
+  <!-- ══ COMPLETE BANNER — L2 unique ══ -->
   <div class="complete-banner">
     <div class="complete-banner-icon">
-      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
     <p class="complete-banner-text">
       Work through each section using the tabs below. When finished, open the
@@ -722,15 +311,36 @@
     </p>
   </div>
 
-  <!-- ══ HERO WELCOME IMAGE — shown on load, hidden when any tab is active ══ -->
+  <!-- ══ TAB BAR — STICKY TOP ══ -->
+  <div class="tab-bar-wrap">
+    <nav class="tab-bar" id="tab-bar" aria-label="Lesson sections">
+      <button class="tab-btn" data-tab="video"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Video</button>
+      <button class="tab-btn" data-tab="overview"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Overview</button>
+      <button class="tab-btn" data-tab="question"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>The Question</button>
+      <button class="tab-btn" data-tab="redflags"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Red Flags</button>
+      <button class="tab-btn" data-tab="session"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Your Session</button>
+      <button class="tab-btn" data-tab="complete"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Complete Lesson</button>
+    </nav>
+    <div class="tab-scroll-hint-left" id="tab-scroll-hint-left">
+      <div class="tab-scroll-arrow" onclick="scrollTabBarLeft()">
+        <svg viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg>
+      </div>
+    </div>
+    <div class="tab-scroll-hint" id="tab-scroll-hint">
+      <div class="tab-scroll-arrow" onclick="scrollTabBar()">
+        <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HERO AREA ══ -->
   <div class="hero-welcome" id="hero-welcome">
     <img src="https://stratummethod.github.io/stratum-widget/welcome-hidden-truth.png" alt="Welcome — The Hidden Truth">
   </div>
 
-  <!-- ══ HERO VIDEO — shown only when Video tab is active ══ -->
   <div class="hero-video" id="hero-video">
     <div class="video-container">
-      <div class="yt-facade" id="main-facade" onclick="playFacade(this,'RNpquqxdjMg')">
+      <div class="yt-facade" onclick="playFacade(this,'RNpquqxdjMg')">
         <img src="https://i.ytimg.com/vi/RNpquqxdjMg/maxresdefault.jpg" alt="The Hidden Truth — STRATUM" loading="lazy">
         <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
         <iframe title="The Hidden Truth — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -756,87 +366,41 @@
     </div>
   </div>
 
-  <!-- ══ TAB BAR ══ -->
-  <div class="tab-bar-wrap">
-    <div class="tab-bar" id="tab-bar">
-      <button class="tab-btn" data-tab="video">
-        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
-        Video
-      </button>
-      <button class="tab-btn" data-tab="overview">
-        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
-        Overview
-      </button>
-      <button class="tab-btn" data-tab="question">
-        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
-        The Question
-      </button>
-      <button class="tab-btn" data-tab="redflags">
-        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
-        Red Flags
-      </button>
-      <button class="tab-btn" data-tab="session">
-        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
-        Your Session
-      </button>
-      <button class="tab-btn" data-tab="complete">
-        <span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>
-        Complete Lesson
-      </button>
-    </div>
-    <!-- Left scroll hint -->
-    <div class="tab-scroll-hint-left" id="tab-scroll-hint-left">
-      <div class="tab-scroll-arrow" onclick="scrollTabBarLeft()">
-        <svg viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg>
-      </div>
-    </div>
-    <!-- Right scroll hint -->
-    <div class="tab-scroll-hint" id="tab-scroll-hint">
-      <div class="tab-scroll-arrow" onclick="scrollTabBarRight()">
-        <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
-      </div>
-    </div>
-  </div>
+  <!-- ══ PANELS ══ -->
 
-  <!-- ══ PANEL: VIDEO — no body content; hero-video div handles display ══ -->
+  <!-- VIDEO PANEL -->
   <div class="tab-panel" id="panel-video">
     <div class="nav-wrap no-back">
-      <button class="continue-btn" data-next="overview">
-        Continue to Overview
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="continue-btn" data-next="overview">Continue to Overview<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
   </div>
 
-  <!-- ══ PANEL: OVERVIEW ══ -->
+  <!-- OVERVIEW -->
   <div class="tab-panel" id="panel-overview">
     <div class="panel-inner">
       <span class="panel-eyebrow">The Excavation Ladder · STRATUM: AI Character Coaching</span>
       <h1 class="panel-title">The Hidden <em>Truth</em></h1>
       <div class="panel-rule"></div>
       <p class="panel-lead">Behavior is evidence, not destination. You've documented what your character does — the specific, recurring pattern that shows up across relationships and situations. Now the analytical frame shifts entirely.</p>
-
       <div class="why-block">
         <span class="why-block-title">The Shift: Observer to Interpreter</span>
         <p>In the previous lesson interpretation was off-limits. That discipline had a purpose: you can't excavate the belief beneath a behavior until you've seen the behavior clearly.</p>
         <p>Now you become the interpreter. The question is no longer <em>what does my character do</em> — it's <em>what must they believe for this behavior to feel like the only reasonable response</em>. Same character. Same data. Entirely different lens.</p>
         <p>That shift — from observer to interpreter — is the move that separates surface characterization from psychological depth.</p>
       </div>
-
       <div class="supp-video">
         <div class="supp-video-head">
           <span class="supp-video-badge">Supplemental · Writing Psychology</span>
           <span class="supp-video-title">From Observer to Interpreter: The Shift That Changes Everything</span>
         </div>
         <div class="supp-video-container">
-          <iframe
-            src="https://www.youtube.com/embed/tdK_Bqfi0bU?rel=0&modestbranding=1"
-            title="From Observer to Interpreter: The Shift That Changes Everything"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
+          <div class="yt-facade" onclick="playFacade(this,'tdK_Bqfi0bU')">
+            <img src="https://i.ytimg.com/vi/tdK_Bqfi0bU/maxresdefault.jpg" alt="From Observer to Interpreter: The Shift That Changes Everything" loading="lazy">
+            <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <iframe title="From Observer to Interpreter: The Shift That Changes Everything" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
         </div>
-        <div class="transcript">
+        <div class="supp-transcript">
           <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-overview')">
             <span class="transcript-label">Video Transcript</span>
             <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
@@ -869,40 +433,30 @@
           </div>
         </div>
       </div>
-
     </div>
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="video">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Video
-      </button>
-      <button class="continue-btn" data-next="question">
-        Continue to The Question
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="video"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Video</button>
+      <button class="continue-btn" data-next="question">Continue to The Question<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
-  </div><!-- /panel-overview -->
+  </div>
 
-  <!-- ══ PANEL: THE QUESTION ══ -->
+  <!-- THE QUESTION -->
   <div class="tab-panel" id="panel-question">
     <div class="panel-inner">
       <span class="panel-eyebrow">The Methodology</span>
       <h2 class="panel-title">The Therapist's <em>Question</em></h2>
       <div class="panel-rule"></div>
       <p class="panel-lead">In cognitive behavioral therapy, every recurring behavior — no matter how self-defeating it appears from the outside — makes perfect sense from inside the belief system that produced it. The therapist's task is not to judge the behavior but to reverse-engineer the belief that makes it feel necessary. That is exactly what you are doing now. This is not guessing. This is reasoning from evidence.</p>
-
       <div class="why-block">
         <span class="why-block-title">This Is Not Guessing. This Is Reasoning From Evidence.</span>
         <p>The anchor behavior and three recurring instances you documented in The Surface Pattern are your data set. You are not inventing psychology — you are applying disciplined analytical reasoning to behavior you have already observed. The difference matters. Invented psychology feels constructed. Excavated psychology feels inevitable.</p>
         <p>Your first answer to the question below will almost always be the conscious justification — what your character would say out loud if asked directly. That answer is true, and it is not what you are looking for. What you are looking for operates beneath that layer entirely.</p>
       </div>
-
       <div class="question-block">
         <span class="question-block-eyebrow">The Therapist's Question</span>
         <p class="question-block-text">"What would this person have to believe — about themselves, about other people, or about how the world works — for this behavior to feel like the only reasonable response?"</p>
         <p class="question-block-note">Notice what the question does not ask. It does not ask what caused the behavior. It does not ask what the character feels. It asks what they must believe for the behavior to be not just understandable — but inevitable. That precision is the instrument.</p>
       </div>
-
       <div class="lock-block">
         <span class="lock-block-title">Verifying Your Answer: The Causal Lock</span>
         <p class="lock-formula">Because I believe <em>_______</em>, I must <em>_______</em>.</p>
@@ -913,7 +467,6 @@
           <p>Because I believe no one will protect the people I love if I don't, I must position myself between them and whatever threatens them — every time, regardless of cost.</p>
         </div>
       </div>
-
       <div class="walkthrough">
         <div class="walkthrough-head">
           <span class="walkthrough-eyebrow">The Method in Action</span>
@@ -947,83 +500,53 @@
           </div>
         </div>
       </div>
-
     </div>
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="overview">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Overview
-      </button>
-      <button class="continue-btn" data-next="redflags">
-        Continue to Red Flags
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="overview"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Overview</button>
+      <button class="continue-btn" data-next="redflags">Continue to Red Flags<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
-  </div><!-- /panel-question -->
+  </div>
 
-  <!-- ══ PANEL: RED FLAGS ══ -->
+  <!-- RED FLAGS -->
   <div class="tab-panel" id="panel-redflags">
     <div class="panel-inner">
       <span class="panel-eyebrow">Before Your Coaching Session</span>
       <h2 class="panel-title">Four Signs You Haven't <em>Found It Yet</em></h2>
       <div class="panel-rule"></div>
       <p class="panel-lead">Read these before you start. This session will challenge every answer you give — expect your first instinct to be questioned. These four patterns describe the most common ways the excavation stalls, and how to correct each one in the moment.</p>
-
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 1</span>
-        <p class="redflag-text"><strong>The belief sounds like a virtue.</strong> <em>"She believes in protecting people." "He believes in doing things right."</em> These are too clean. Hidden truths carry an edge of fear, scarcity, or loss. If your character would put the belief on a motivational poster, keep digging.</p>
-      </div>
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 2</span>
-        <p class="redflag-text"><strong>The behavior is only partially explained.</strong> Apply the causal lock across all three instances from The Surface Pattern. If the belief accounts for some instances but strains on others, the belief isn't deep enough yet. The hidden truth explains all of it — including the times the behavior seems irrational or excessive.</p>
-      </div>
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 3</span>
-        <p class="redflag-text"><strong>Your character would admit to it readily.</strong> If your character would own this belief publicly without discomfort, you're still at the level of conscious justification. Hidden truths carry charge. They're the belief the character has never articulated — and would likely deny if named directly.</p>
-      </div>
-      <div class="redflag-item">
-        <span class="redflag-marker">Red Flag 4</span>
-        <p class="redflag-text"><strong>The behavior stops being inevitable.</strong> Read your causal lock sentence. If you can easily imagine your character choosing differently given the same belief, the connection isn't tight enough. The hidden truth makes the behavior feel like the only logical response — not one reasonable option among several.</p>
-      </div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 1</span><p class="redflag-text"><strong>The belief sounds like a virtue.</strong> <em>"She believes in protecting people." "He believes in doing things right."</em> These are too clean. Hidden truths carry an edge of fear, scarcity, or loss. If your character would put the belief on a motivational poster, keep digging.</p></div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 2</span><p class="redflag-text"><strong>The behavior is only partially explained.</strong> Apply the causal lock across all three instances from The Surface Pattern. If the belief accounts for some instances but strains on others, the belief isn't deep enough yet. The hidden truth explains all of it — including the times the behavior seems irrational or excessive.</p></div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 3</span><p class="redflag-text"><strong>Your character would admit to it readily.</strong> If your character would own this belief publicly without discomfort, you're still at the level of conscious justification. Hidden truths carry charge. They're the belief the character has never articulated — and would likely deny if named directly.</p></div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 4</span><p class="redflag-text"><strong>The behavior stops being inevitable.</strong> Read your causal lock sentence. If you can easily imagine your character choosing differently given the same belief, the connection isn't tight enough. The hidden truth makes the behavior feel like the only logical response — not one reasonable option among several.</p></div>
     </div>
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="question">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to The Question
-      </button>
-      <button class="continue-btn" data-next="session">
-        Continue to Your Session
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="question"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to The Question</button>
+      <button class="continue-btn" data-next="session">Continue to Your Session<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
-  </div><!-- /panel-redflags -->
+  </div>
 
-  <!-- ══ PANEL: YOUR SESSION ══ -->
+  <!-- YOUR SESSION -->
   <div class="tab-panel" id="panel-session">
-
     <div class="session-begin-band">
       <div class="session-begin-inner">
         <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
 
-        <div class="prompt-wrap">
-          <div class="prompt-text" id="session-prompt">I'm working on uncovering my character's hidden truth using the STRATUM excavation method. I've completed my Surface Pattern work — I've identified my character's anchor behavior and documented at least three recurring instances across different contexts. I'm attaching that work as a PDF. Please read it before we begin.
-
+        <p class="prompt-text">I'm working on uncovering my character's hidden truth using the STRATUM excavation method. I've completed my Surface Pattern work — I've identified my character's anchor behavior and documented at least three recurring instances across different contexts. I'm attaching that work as a PDF. Please read it before we begin.
 Today's session is about moving from observer to interpreter. My job is to find the belief beneath the behavior — not the conscious justification my character would give if asked, but the deeper operating assumption that makes the behavior feel not just reasonable, but inevitable.
-
 CRITICAL REMINDERS
 — I'm the expert on my character; you're the guide helping me access what I already know
 — Push past my first answer — it will almost always be the conscious justification
 — Every candidate belief must lock with all three behavioral instances or we keep refining
 — Keep me in interpreter mode — discovering the hidden truth, not rationalizing the surface
-— The deliverables are concrete: one hidden truth + a causal lock statement (Because I believe _______, I must _______)</div>
-          <button class="copy-prompt-btn" id="copy-btn" onclick="copyPrompt()">
-            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-            Copy Prompt to Clipboard
-          </button>
-        </div>
+— The deliverables are concrete: one hidden truth + a causal lock statement (Because I believe _______, I must _______)</p>
+
+        <button class="copy-btn" id="copy-prompt-btn" onclick="copyPrompt()">
+          <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Prompt to Clipboard
+        </button>
 
         <ul class="instructions-list">
-          <li data-n="1">Copy the prompt above and open Claude at claude.ai in a new tab. Paste the prompt to begin — you can read it there once it's in Claude.</li>
+          <li data-n="1">Copy the prompt above and open Claude at <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> in a new tab. Paste the prompt to begin — you can read it there once it's in Claude.</li>
           <li data-n="2">After pasting the prompt, attach the <strong>PDF you printed from your Surface Pattern Workspace</strong>. Your coach reads that work first — it is the foundation everything in this session builds on.</li>
           <li data-n="3">Set a timer for <strong>35 minutes</strong>. Do not cut the session short. The most important discovery in this lesson typically happens in the final ten minutes.</li>
           <li data-n="4">When your session is complete, return here and open your <strong>Workspace</strong> below, then print to PDF.</li>
@@ -1031,52 +554,38 @@ CRITICAL REMINDERS
       </div>
     </div>
 
-    <div class="after-session">
-      <span class="after-session-title">After Your Session</span>
-      <p>Record your hidden truth and causal lock statement while they're clear. Your Workspace opens in a new tab so nothing is lost if you need to scroll back through your session.</p>
+    <!-- WORKSPACE -->
+    <div class="workspace-section">
+      <span class="workspace-eyebrow">After Your Session</span>
+      <h3 class="workspace-title">Open Your <em>Workspace</em></h3>
+      <p class="workspace-desc">Record your hidden truth and causal lock statement while they're clear. Your Workspace opens in a new tab so nothing is lost if you need to scroll back through your session.</p>
       <a href="https://form.jotform.com/253386070604859" target="_blank" rel="noopener" class="workspace-btn">
         Open Workspace
-        <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       </a>
     </div>
 
     <div class="nav-wrap">
-      <button class="back-btn" data-prev="redflags">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Red Flags
-      </button>
-      <button class="continue-btn" data-next="complete">
-        Continue to Complete Lesson
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
+      <button class="back-btn" data-prev="redflags"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Red Flags</button>
+      <button class="continue-btn" data-next="complete">Continue to Complete Lesson<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
     </div>
-  </div><!-- /panel-session -->
+  </div>
 
-  <!-- ══ PANEL: COMPLETE LESSON ══ -->
+  <!-- COMPLETE LESSON -->
   <div class="tab-panel" id="panel-complete">
-
     <div class="congratulations-img-wrap">
       <img src="https://stratummethod.github.io/stratum-widget/congratulations-hidden-truth.png" alt="Congratulations — You've Completed The Hidden Truth">
     </div>
 
+    <!-- L2-specific content before the dark complete band -->
     <div class="panel-inner">
-
       <div class="complete-lesson-content">
         <span class="complete-lesson-title">Before You Move On — A Checklist</span>
         <p>The excavation ladder only works if each rung is solid before you step to the next. Make sure you have all three deliverables from this lesson before continuing to Lesson 3.</p>
         <ul class="complete-lesson-checklist">
-          <li>
-            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-            <span>One clear <strong>hidden truth</strong> — not a surface justification, not a virtue, but the belief your character has never consciously articulated that makes their behavior feel inevitable.</span>
-          </li>
-          <li>
-            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-            <span>A <strong>causal lock statement</strong> that holds: <em>"Because I believe _______, I must _______."</em> The behavior should feel like a logical consequence of the belief — not a coincidence.</span>
-          </li>
-          <li>
-            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-            <span>Your <strong>Workspace completed and saved as a PDF</strong> — you will attach it, along with your Surface Pattern PDF, to your Lesson 3 coaching session.</span>
-          </li>
+          <li><span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span>One clear <strong>hidden truth</strong> — not a surface justification, not a virtue, but the belief your character has never consciously articulated that makes their behavior feel inevitable.</span></li>
+          <li><span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span>A <strong>causal lock statement</strong> that holds: <em>"Because I believe _______, I must _______."</em> The behavior should feel like a logical consequence of the belief — not a coincidence.</span></li>
+          <li><span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span>Your <strong>Workspace completed and saved as a PDF</strong> — you will attach it, along with your Surface Pattern PDF, to your Lesson 3 coaching session.</span></li>
         </ul>
       </div>
 
@@ -1099,7 +608,6 @@ CRITICAL REMINDERS
         <p>Lesson 3 is where this belief gets an origin. A wound. A specific moment where the world taught your character something that changed how they saw themselves in it. That's where the excavation goes next.</p>
         <span class="teds-note-sig">— Ted Baker</span>
       </div>
-
     </div>
 
     <div class="complete-dark">
@@ -1118,48 +626,68 @@ CRITICAL REMINDERS
 
       <div style="margin-top: 28px; display: flex; justify-content: center;">
         <!-- REPLACE LESSON-3-LECTURE-URL WITH ACTUAL SYSTEME.IO LESSON 3 URL -->
-        <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/LESSON-3-LECTURE-URL"
-           target="_blank" rel="noopener"
-           class="mark-complete-btn">
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/LESSON-3-LECTURE-URL" target="_blank" rel="noopener" class="mark-complete-btn">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
           Mark as Complete
         </a>
       </div>
     </div>
 
-    <!-- Contact Ted Jotform -->
-    <div class="panel-inner" style="padding-top: 0;">
-      <div class="jotform-section" style="margin-top: 32px;">
-        <div class="jotform-clip-wrap">
-          <div class="jotform-embed">
-            <script type="text/javascript" src="https://form.jotform.com/jsform/260734440316047"></script>
-          </div>
-        </div>
+    <!-- CONTACT TED -->
+    <div class="panel-inner">
+      <div class="contact-ted-section">
+        <span class="panel-eyebrow">Questions or Feedback</span>
+        <h3 class="contact-ted-title">Reach <em>Ted Directly</em></h3>
+        <p class="contact-ted-desc">Something isn't clicking? A question about the methodology? Use the form below to send Ted a note. He reads everything.</p>
+        <a href="https://form.jotform.com/260734440316047" target="_blank" rel="noopener" class="workspace-btn">
+          Contact Ted
+          <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
       </div>
     </div>
-
-  </div><!-- /panel-complete -->
+  </div>
 
   <script>
-    var TAB_ORDER = ['video', 'overview', 'question', 'redflags', 'session', 'complete'];
+    /* ── PROMPT ── */
+    var LESSON2_PROMPT = "I'm working on uncovering my character's hidden truth using the STRATUM excavation method. I've completed my Surface Pattern work — I've identified my character's anchor behavior and documented at least three recurring instances across different contexts. I'm attaching that work as a PDF. Please read it before we begin.\nToday's session is about moving from observer to interpreter. My job is to find the belief beneath the behavior — not the conscious justification my character would give if asked, but the deeper operating assumption that makes the behavior feel not just reasonable, but inevitable.\nCRITICAL REMINDERS\n— I'm the expert on my character; you're the guide helping me access what I already know\n— Push past my first answer — it will almost always be the conscious justification\n— Every candidate belief must lock with all three behavioral instances or we keep refining\n— Keep me in interpreter mode — discovering the hidden truth, not rationalizing the surface\n— The deliverables are concrete: one hidden truth + a causal lock statement (Because I believe _______, I must _______)";
+
+    /* ── COPY ── */
+    function copyPrompt() {
+      var btn = document.getElementById('copy-prompt-btn');
+      var origHTML = btn.innerHTML;
+      var scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+      function showCopied() {
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() { window.scrollTo(0, scrollY); }, 50);
+        setTimeout(function() { btn.innerHTML = origHTML; btn.classList.remove('copied'); }, 2500);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(LESSON2_PROMPT).then(showCopied).catch(function() { fallbackCopy(scrollY, showCopied); });
+      } else { fallbackCopy(scrollY, showCopied); }
+    }
+    function fallbackCopy(scrollY, callback) {
+      var ta = document.createElement('textarea');
+      ta.value = LESSON2_PROMPT;
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); callback(); } catch(e) { alert('Please press Ctrl+C (or Cmd+C) to copy.'); }
+      document.body.removeChild(ta);
+      setTimeout(function() { window.scrollTo(0, scrollY); }, 50);
+    }
+
+    /* ── TABS ── */
+    var TAB_ORDER = ['video','overview','question','redflags','session','complete'];
+    var heroWelcome = document.getElementById('hero-welcome');
+    var heroVideo   = document.getElementById('hero-video');
 
     function activateTab(tabId, markPrev) {
-      /* Hero visibility */
-      var heroWelcome = document.getElementById('hero-welcome');
-      var heroVideo   = document.getElementById('hero-video');
-      heroWelcome.style.display = 'none';
-      heroVideo.style.display   = (tabId === 'video') ? 'block' : 'none';
-
-      /* Buttons & panels */
       document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
       document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
-
       var btn   = document.querySelector('[data-tab="' + tabId + '"]');
       var panel = document.getElementById('panel-' + tabId);
       if (btn)   btn.classList.add('active');
       if (panel) panel.classList.add('active');
-
-      /* Mark previous tab done */
       if (markPrev) {
         var prevIdx = TAB_ORDER.indexOf(tabId) - 1;
         if (prevIdx >= 0) {
@@ -1167,90 +695,57 @@ CRITICAL REMINDERS
           if (prevBtn) prevBtn.classList.add('done');
         }
       }
+      heroWelcome.style.display = 'none';
+      heroVideo.style.display   = (tabId === 'video') ? 'block' : 'none';
 
-      /* Scroll tab into view, then scroll page to top */
       if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       document.querySelector('.tab-bar').scrollIntoView({ behavior: 'smooth' });
       window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      updateScrollHints();
     }
 
-    /* Tab bar clicks */
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-tab'), false);
-      });
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-tab'), false); });
     });
-
-    /* Continue buttons — mark previous done */
     document.querySelectorAll('.continue-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-next'), true);
-      });
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-next'), true); });
     });
-
-    /* Back buttons */
     document.querySelectorAll('.back-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-prev'), false);
-      });
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-prev'), false); });
     });
 
-    /* Transcript toggle */
+    /* ── TAB BAR SCROLL HINT ── */
+    var tabBar        = document.getElementById('tab-bar');
+    var scrollHint    = document.getElementById('tab-scroll-hint');
+    var scrollHintLeft = document.getElementById('tab-scroll-hint-left');
+
+    function updateScrollHint() {
+      if (!tabBar) { return; }
+      var atEnd   = tabBar.scrollLeft + tabBar.clientWidth >= tabBar.scrollWidth - 4;
+      var atStart = tabBar.scrollLeft <= 4;
+      if (scrollHint)     scrollHint.classList.toggle('hidden', atEnd);
+      if (scrollHintLeft) scrollHintLeft.classList.toggle('visible', !atStart);
+    }
+    function scrollTabBar()     { if (tabBar) tabBar.scrollBy({ left:  160, behavior: 'smooth' }); }
+    function scrollTabBarLeft() { if (tabBar) tabBar.scrollBy({ left: -160, behavior: 'smooth' }); }
+
+    if (tabBar) {
+      tabBar.addEventListener('scroll', updateScrollHint);
+      window.addEventListener('resize', updateScrollHint);
+      setTimeout(updateScrollHint, 100);
+    }
+
+    function playFacade(el, videoId) {
+      var iframe = el.querySelector('iframe');
+      iframe.src = 'https://www.youtube.com/embed/' + videoId + '?rel=0&modestbranding=1&autoplay=1';
+      el.classList.add('playing');
+    }
+
     function toggleTranscript(btn, bodyId) {
       var body   = document.getElementById(bodyId);
       var isOpen = body.classList.contains('open');
       body.classList.toggle('open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
     }
-
-    /* YouTube facade */
-    function playFacade(el, videoId) {
-      el.classList.add('playing');
-      el.querySelector('iframe').src =
-        'https://www.youtube.com/embed/' + videoId + '?autoplay=1&rel=0&modestbranding=1';
-    }
-
-    /* Prompt copy */
-    function copyPrompt() {
-      var text = document.getElementById('session-prompt').textContent;
-      var btn  = document.getElementById('copy-btn');
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(function() {
-          btn.classList.add('copied');
-          btn.textContent = 'Copied!';
-          setTimeout(function() {
-            btn.classList.remove('copied');
-            btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy Prompt to Clipboard';
-          }, 2200);
-        });
-      } else {
-        /* Fallback: reveal text for manual copy */
-        var el = document.getElementById('session-prompt');
-        el.style.display = 'block';
-        el.select && el.select();
-      }
-    }
-
-    /* Tab bar scroll hints */
-    function updateScrollHints() {
-      var bar       = document.getElementById('tab-bar');
-      var hintRight = document.getElementById('tab-scroll-hint');
-      var hintLeft  = document.getElementById('tab-scroll-hint-left');
-      var atEnd     = bar.scrollLeft + bar.clientWidth >= bar.scrollWidth - 4;
-      var atStart   = bar.scrollLeft <= 4;
-      hintRight.classList.toggle('hidden', atEnd);
-      hintLeft.classList.toggle('visible', !atStart);
-    }
-    function scrollTabBarRight() {
-      document.getElementById('tab-bar').scrollBy({ left: 120, behavior: 'smooth' });
-    }
-    function scrollTabBarLeft() {
-      document.getElementById('tab-bar').scrollBy({ left: -120, behavior: 'smooth' });
-    }
-    document.getElementById('tab-bar').addEventListener('scroll', updateScrollHints);
-    updateScrollHints();
   </script>
 
 </body>
