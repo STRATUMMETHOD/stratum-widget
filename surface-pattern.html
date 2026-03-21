@@ -493,6 +493,8 @@
 
         <div class="prompt-wrap" style="margin-bottom:20px;">
  <div class="prompt-wrap" style="margin-bottom:20px;">
+  <!-- Coaching Prompt Section -->
+<div class="prompt-wrap" style="margin-bottom:20px;">
   <h3 style="font-family:'Cinzel',serif;
              font-size:1rem;
              font-weight:600;
@@ -528,6 +530,21 @@
     border-color:#6b4c2e;
   }
 </style>
+
+<script>
+  function copyPrompt() {
+    var text = document.getElementById('session-prompt').textContent.trim();
+    var btn  = document.getElementById('copy-prompt-btn');
+    navigator.clipboard.writeText(text).then(function() {
+      btn.classList.add('copied');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg> COPIED';
+      setTimeout(function() {
+        btn.classList.remove('copied');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> COPY PROMPT TO CLIPBOARD';
+      }, 2500);
+    });
+  }
+</script>
 
 
 
