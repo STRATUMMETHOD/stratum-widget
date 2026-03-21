@@ -822,158 +822,60 @@ CRITICAL REMINDERS
       </div>
     </div>
 
-    <div class="panel-inner" style="padding-top: 28px;">
-      <div class="jotform-wrap">
-        <div class="jotform-wrap-head">
-          <span class="jotform-eyebrow">The Hidden Truth · Workspace</span>
-          <div class="jotform-title">Begin Your <em>Coaching Session</em></div>
-        </div>
-        <div class="jotform-embed">
-          <script type="text/javascript" src="https://form.jotform.com/jsform/253386070604859"></script>
-        </div>
-      </div>
-    </div>
-    <div class="nav-wrap">
-      <button class="back-btn" data-prev="redflags">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
-        Back to Red Flags
-      </button>
-      <button class="continue-btn" data-next="complete">
-        Continue to Complete Lesson
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-      </button>
-    </div>
-  </div><!-- /panel-session -->
+<!-- After Your Session Section -->
+<div class="after-session" style="margin-top:30px; padding:20px; background:#faf4e8; border:1px solid #d2c4a5;">
+  <h3 style="font-family:'Cinzel',serif;
+             font-size:1rem;
+             font-weight:600;
+             color:#6b4c2e;
+             margin-bottom:12px;">
+    After Your Session
+  </h3>
+  <p style="font-family:'Spectral',Georgia,serif;
+            font-size:var(--body-sm);
+            font-weight:300;
+            font-style:italic;
+            color:#6b4c2e;
+            line-height:1.7;
+            margin-bottom:14px;">
+    Record your hidden truth and causal lock statement while they’re clear. 
+    Your workspace opens in a new tab so nothing is lost if you need to scroll back through your session.
+  </p>
+  <a href="https://form.jotform.com/253386070604859" target="_blank"
+     style="display:inline-block;
+            background:#b87333;
+            color:#faf4e8;
+            font-family:'Cinzel',serif;
+            font-size:0.72rem;
+            letter-spacing:0.25em;
+            text-transform:uppercase;
+            padding:14px 36px;
+            border:1px solid #b87333;
+            cursor:pointer;
+            transition:background 0.3s, border-color 0.3s;
+            text-decoration:none;">
+    OPEN WORKSPACE →
+  </a>
+</div>
 
-  <!-- ══ PANEL: COMPLETE LESSON ══ -->
-  <div class="tab-panel" id="panel-complete">
+<!-- Navigation -->
+<div class="lesson-nav" style="margin-top:20px; display:flex; justify-content:space-between;">
+  <a href="hidden-truth-red-flags.html"
+     style="color:#6b4c2e; font-family:'Cinzel',serif; text-decoration:none;">
+    ← Back to Red Flags
+  </a>
+  <a href="hidden-truth-complete.html"
+     style="color:#6b4c2e; font-family:'Cinzel',serif; text-decoration:none;">
+    Continue to Complete Lesson →
+  </a>
+</div>
 
-    <div class="congratulations-img-wrap">
-      <img src="https://stratummethod.github.io/stratum-widget/congratulations-hidden-truth.png" alt="Congratulations — You've Completed The Hidden Truth">
-    </div>
-
-    <div class="complete-dark">
-      <span class="complete-dark-eyebrow">When You're Ready</span>
-      <p class="complete-dark-heading">Move to Lesson 3: The Formative Wound.</p>
-      <p class="complete-dark-sub">The excavation finds its origin.</p>
-    </div>
-
-    <!-- Contact Ted Jotform -->
-    <div class="panel-inner">
-      <div class="jotform-section" style="margin-top: 32px;">
-        <div class="jotform-embed">
-          <script type="text/javascript" src="https://form.jotform.com/jsform/260734440316047"></script>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /panel-complete -->
-
-  <script>
-    var TAB_ORDER = ['video', 'overview', 'question', 'redflags', 'session', 'complete'];
-    var heroWelcome = document.getElementById('hero-welcome');
-    var heroVideo   = document.getElementById('hero-video');
-
-    function activateTab(tabId, markPrev) {
-      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
-      var btn   = document.querySelector('[data-tab="' + tabId + '"]');
-      var panel = document.getElementById('panel-' + tabId);
-      if (btn)   btn.classList.add('active');
-      if (panel) panel.classList.add('active');
-      if (markPrev) {
-        var prevIdx = TAB_ORDER.indexOf(tabId) - 1;
-        if (prevIdx >= 0) {
-          var prevBtn = document.querySelector('[data-tab="' + TAB_ORDER[prevIdx] + '"]');
-          if (prevBtn) prevBtn.classList.add('done');
-        }
-      }
-      /* Hero area — welcome hides, video shows only on Video tab */
-      heroWelcome.style.display = 'none';
-      heroVideo.style.display   = (tabId === 'video') ? 'block' : 'none';
-
-      if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    document.querySelectorAll('.tab-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-tab'), false);
-      });
-    });
-
-    /* Continue buttons — mark previous done */
-    document.querySelectorAll('.continue-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-next'), true);
-      });
-    });
-
-    /* Back buttons */
-    document.querySelectorAll('.back-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        activateTab(btn.getAttribute('data-prev'), false);
-      });
-    });
-
-    function copyPrompt() {
-      var text = document.getElementById('session-prompt').textContent.trim();
-      var btn  = document.getElementById('copy-btn');
-      navigator.clipboard.writeText(text).then(function() {
-        btn.classList.add('copied');
-        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied';
-        setTimeout(function() {
-          btn.classList.remove('copied');
-          btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy Prompt to Clipboard';
-        }, 2500);
-      });
-    }
-
-    function playFacade(el, videoId) {
-      var iframe = el.querySelector('iframe');
-      iframe.src = 'https://www.youtube.com/embed/' + videoId + '?rel=0&modestbranding=1&autoplay=1';
-      el.classList.add('playing');
-    }
-
-    function toggleTranscript(btn, bodyId) {
-      var body   = document.getElementById(bodyId);
-      var isOpen = body.classList.contains('open');
-      body.classList.toggle('open', !isOpen);
-      btn.setAttribute('aria-expanded', String(!isOpen));
-    }
-
-    function toggleOverviewTranscript(btn) {
-      var body   = document.getElementById('overview-transcript-body');
-      var isOpen = body.classList.contains('open');
-      body.classList.toggle('open', !isOpen);
-      btn.setAttribute('aria-expanded', String(!isOpen));
-    }
-
-    /* Tab bar scroll arrows */
-    var tabBar      = document.getElementById('tab-bar');
-    var scrollHint  = document.getElementById('tab-scroll-hint');
-    var scrollHintLeft = document.getElementById('tab-scroll-hint-left');
-
-    function updateScrollHint() {
-      if (!tabBar) return;
-      var atEnd   = tabBar.scrollLeft + tabBar.clientWidth >= tabBar.scrollWidth - 4;
-      var atStart = tabBar.scrollLeft <= 4;
-      if (scrollHint)     scrollHint.classList.toggle('hidden', atEnd);
-      if (scrollHintLeft) scrollHintLeft.classList.toggle('visible', !atStart);
-    }
-    function scrollTabBarRight() {
-      if (tabBar) tabBar.scrollBy({ left: 160, behavior: 'smooth' });
-    }
-    function scrollTabBarLeft() {
-      if (tabBar) tabBar.scrollBy({ left: -160, behavior: 'smooth' });
-    }
-    if (tabBar) {
-      tabBar.addEventListener('scroll', updateScrollHint);
-      window.addEventListener('resize', updateScrollHint);
-      setTimeout(updateScrollHint, 100);
-    }
-
-  </script>
+<style>
+  .after-session a:hover {
+    background:#6b4c2e;   /* darker brown hover */
+    border-color:#6b4c2e;
+  }
+</style>
 
 </body>
 </html>
