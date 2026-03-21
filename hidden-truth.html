@@ -34,6 +34,29 @@
       line-height: 1.6;
     }
 
+    /* ══ COMPLETE BANNER ══ */
+    .complete-banner {
+      background: var(--brown);
+      border-bottom: 2px solid var(--tan);
+      padding: 14px 28px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .complete-banner-icon {
+      width: 30px; height: 30px;
+      border: 2px solid var(--tan); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .complete-banner-icon svg {
+      width: 15px; height: 15px; stroke: var(--tan); fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .complete-banner-text {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 14px; font-weight: 500; letter-spacing: 0.02em;
+      color: rgba(250,244,232,0.85); line-height: 1.5;
+    }
+    .complete-banner-text strong { color: var(--tan); font-weight: 700; }
+
     /* ══ VIDEO ══ */
     .video-wrap { background: #100a04; }
     .video-container {
@@ -59,7 +82,7 @@
     .yt-facade.playing img, .yt-facade.playing .yt-play { display: none; }
     .yt-facade.playing iframe { display: block; }
 
-    /* ══ HERO AREA — welcome image, video ══ */
+    /* ══ HERO AREA ══ */
     .hero-welcome { display: block; }
     .hero-welcome img { width: 100%; display: block; }
     .hero-video { display: none; background: #100a04; }
@@ -387,6 +410,17 @@
     .redflag-text strong { font-weight: 500; color: var(--brown-mid); }
     .redflag-text em { font-style: italic; }
 
+    /* ══ SESSION PANEL ══ */
+    .session-begin-band { background: var(--brown); width: 100%; }
+    .session-begin-inner { padding: 28px 32px 24px; max-width: 760px; margin: 0 auto; }
+    .session-begin-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 26px; font-weight: 500; letter-spacing: 0.03em;
+      color: var(--cream); margin-bottom: 20px;
+      padding-bottom: 14px; border-bottom: 1px solid rgba(196,168,130,0.25); line-height: 1.2;
+    }
+    .session-begin-title em { color: var(--tan); font-style: italic; }
+
     /* ══ COACHING PROMPT ══ */
     .prompt-wrap { margin-bottom: 24px; }
     .prompt-label {
@@ -418,17 +452,6 @@
     .copy-prompt-btn:hover { background: var(--cream); color: var(--brown); }
     .copy-prompt-btn.copied { background: var(--brown-mid); color: var(--tan); }
 
-    /* ══ SESSION BEGIN BAND ══ */
-    .session-begin-band { background: var(--brown); width: 100%; padding: 0; margin-bottom: 0; }
-    .session-begin-inner { padding: 28px 32px 24px; max-width: 760px; margin: 0 auto; }
-    .session-begin-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 26px; font-weight: 500; letter-spacing: 0.03em;
-      color: var(--cream); margin-bottom: 20px;
-      padding-bottom: 14px; border-bottom: 1px solid rgba(196,168,130,0.25); line-height: 1.2;
-    }
-    .session-begin-title em { color: var(--tan); font-style: italic; }
-
     /* ══ INSTRUCTIONS ══ */
     .instructions-list { list-style: none; margin-top: 4px; }
     .instructions-list li {
@@ -447,24 +470,56 @@
     }
     .instructions-list li strong { color: var(--tan); font-weight: 500; }
 
-    /* ══ JOTFORM WRAP ══ */
-    .jotform-wrap { border: 1px solid var(--tan-light); margin-bottom: 28px; overflow: hidden; }
-    .jotform-wrap-head {
-      background: var(--brown); padding: 18px 24px; border-bottom: 1px solid rgba(196,168,130,0.2);
+    /* ══ AFTER SESSION / WORKSPACE CTA ══ */
+    .after-session {
+      max-width: 760px; margin: 0 auto;
+      padding: 28px 32px 32px;
+      border-top: 1px solid rgba(196,168,130,0.2);
     }
-    .jotform-eyebrow {
+    .after-session-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 6px;
+      font-size: 20px; font-weight: 500; color: var(--cream);
+      display: block; margin-bottom: 10px;
     }
-    .jotform-title {
+    .after-session p {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: var(--body-sm); font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.72); line-height: 1.7; margin-bottom: 20px;
+    }
+    .workspace-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--tan); border: none; padding: 14px 32px;
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px; font-weight: 300; color: var(--cream); line-height: 1.3;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--brown); text-decoration: none;
+      transition: background 0.2s, color 0.2s;
     }
-    .jotform-title em { font-style: italic; color: var(--tan); }
-    .jotform-embed { background: var(--cream-dark); }
+    .workspace-btn:hover { background: var(--cream); color: var(--brown); }
+    .workspace-btn svg {
+      width: 13px; height: 13px; stroke: currentColor; fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
 
-    /* ══ COMPLETE ══ */
+    /* ══ SAVE REMINDER ══ */
+    .save-reminder {
+      background: var(--brown-mid); border: 1px solid rgba(196,168,130,0.25);
+      padding: 16px 22px; margin: 0 32px 0;
+      max-width: 760px; margin: 0 auto;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .save-reminder-icon { flex-shrink: 0; margin-top: 2px; }
+    .save-reminder-icon svg {
+      width: 18px; height: 18px; stroke: var(--tan); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .save-reminder p {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--body-sm); font-weight: 500; color: var(--cream); line-height: 1.65;
+    }
+    .save-reminder p strong { color: var(--tan); }
+
+    /* ══ COMPLETE LESSON ══ */
     .congratulations-img-wrap {
       background: var(--brown); display: flex; justify-content: center; padding: 36px 32px 40px;
     }
@@ -475,22 +530,63 @@
                   0 0 0 6px rgba(196,168,130,0.2),
                   0 8px 40px rgba(0,0,0,0.55);
     }
-    .complete-dark { background: var(--brown); padding: 44px 32px 40px; text-align: center; }
-    .complete-dark-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 12px;
+
+    .complete-lesson-content {
+      background: var(--cream-dark); border: 1px solid var(--tan-light);
+      border-left: 3px solid var(--tan-mid); padding: 22px 24px; margin-bottom: 28px;
     }
-    .complete-dark-heading {
+    .complete-lesson-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 26px; font-weight: 300; color: var(--cream); margin-bottom: 8px; line-height: 1.2;
+      font-size: 15px; font-weight: 600; color: var(--brown);
+      display: block; margin-bottom: 10px;
     }
-    .complete-dark-sub {
-      font-size: var(--body-sm); font-weight: 300; font-style: italic;
-      color: rgba(196,168,130,0.7); margin-bottom: 28px;
+    .complete-lesson-content p {
+      font-size: var(--body-md); font-weight: 300; line-height: 1.8;
+      color: var(--brown); margin-bottom: 10px;
+    }
+    .complete-lesson-content p:last-child { margin-bottom: 0; }
+    .complete-lesson-checklist { list-style: none; padding: 0; margin-bottom: 0; }
+    .complete-lesson-checklist li {
+      font-size: var(--body-sm); font-weight: 300; line-height: 1.72;
+      color: var(--brown-mid); padding: 7px 0;
+      border-bottom: 1px solid var(--tan-faint);
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .complete-lesson-checklist li:last-child { border-bottom: none; }
+    .check-icon {
+      width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px;
+      border: 1.5px solid var(--tan-mid); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .check-icon svg {
+      width: 8px; height: 8px; stroke: var(--tan-mid); fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
     }
 
-    /* ══ TED'S NOTE ══ */
+    /* ── Bridge Block ── */
+    .bridge-block {
+      background: var(--brown); border: 1px solid rgba(196,168,130,0.2);
+      padding: 24px 26px; margin-bottom: 28px;
+    }
+    .bridge-eyebrow {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs); font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 14px;
+    }
+    .bridge-question {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.6; margin-bottom: 14px;
+    }
+    .bridge-note {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: var(--body-sm); font-weight: 300;
+      color: rgba(250,244,232,0.65); line-height: 1.72;
+      border-top: 1px solid rgba(196,168,130,0.15); padding-top: 12px;
+    }
+
+    /* ── Ted's Note ── */
     .teds-note { background: var(--cream-dark); border: 1px solid var(--tan-light); padding: 22px 24px; margin-bottom: 28px; }
     .teds-note-eyebrow {
       font-family: 'Cormorant Garamond', Georgia, serif;
@@ -509,6 +605,89 @@
       color: var(--brown); display: block; margin-top: 14px;
     }
 
+    /* ── Mark as Complete ── */
+    .complete-dark { background: var(--brown); padding: 36px 32px 32px; text-align: center; }
+    .complete-dark-eyebrow {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs); font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 14px;
+    }
+    .complete-dark-heading {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 24px; font-weight: 300; font-style: italic;
+      color: var(--cream); line-height: 1.45; margin-bottom: 6px;
+    }
+    .complete-dark-sub {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px; font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.65); line-height: 1.55; margin-bottom: 24px;
+    }
+    .complete-instruction {
+      max-width: 480px; margin: 0 auto 24px;
+      background: rgba(196,168,130,0.1);
+      border: 1px solid rgba(196,168,130,0.2);
+      padding: 16px 20px;
+      display: flex; align-items: flex-start; gap: 12px; text-align: left;
+    }
+    .complete-instruction svg {
+      width: 16px; height: 16px; stroke: var(--tan); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .complete-instruction p {
+      font-size: var(--body-sm); font-weight: 300;
+      color: rgba(250,244,232,0.82); line-height: 1.7;
+    }
+    .complete-instruction p strong { color: var(--tan); font-weight: 500; }
+    .complete-rule { width: 36px; height: 1px; background: rgba(196,168,130,0.25); margin: 0 auto 20px; }
+    .complete-quote {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 17px; font-weight: 300; font-style: italic;
+      color: rgba(250,244,232,0.75); line-height: 1.65; margin-bottom: 14px;
+    }
+    .complete-attr {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs); font-weight: 400;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(196,168,130,0.55);
+    }
+    .mark-complete-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--tan); border: none; padding: 16px 36px;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 13px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--brown); text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .mark-complete-btn:hover { background: var(--cream); color: var(--brown); }
+    .mark-complete-btn svg {
+      width: 15px; height: 15px; stroke: var(--brown); fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* ── Contact Jotform ── */
+    .jotform-section { margin-bottom: 0; }
+    .jotform-clip-wrap { overflow: hidden; margin: 0; }
+    .jotform-wrap { border: 1px solid var(--tan-light); margin-bottom: 28px; overflow: hidden; }
+    .jotform-wrap-head {
+      background: var(--brown); padding: 18px 24px;
+      border-bottom: 1px solid rgba(196,168,130,0.2);
+    }
+    .jotform-eyebrow {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs); font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--tan); display: block; margin-bottom: 6px;
+    }
+    .jotform-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px; font-weight: 300; color: var(--cream); line-height: 1.3;
+    }
+    .jotform-title em { font-style: italic; color: var(--tan); }
+    .jotform-embed { background: var(--cream-dark); }
+
     /* ══ RESPONSIVE ══ */
     @media (max-width: 580px) {
       .supp-video-head { flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -525,12 +704,59 @@
       .tab-btn { padding: 0 14px; font-size: 11px; letter-spacing: 0.13em; min-height: 52px; }
       .tab-check { width: 16px; height: 16px; }
       .tab-check svg { width: 8px; height: 8px; }
+      .session-begin-inner { padding: 20px; }
+      .after-session { padding: 20px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ══ TAB BAR — sticky top, with scroll arrows ══ -->
+  <!-- ══ COMPLETE BANNER ══ -->
+  <div class="complete-banner">
+    <div class="complete-banner-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <p class="complete-banner-text">
+      Work through each section using the tabs below. When finished, open the
+      <strong>Complete Lesson</strong> tab and click <strong>Mark as Complete</strong> to unlock Lesson 3.
+    </p>
+  </div>
+
+  <!-- ══ HERO WELCOME IMAGE — shown on load, hidden when any tab is active ══ -->
+  <div class="hero-welcome" id="hero-welcome">
+    <img src="https://stratummethod.github.io/stratum-widget/welcome-hidden-truth.png" alt="Welcome — The Hidden Truth">
+  </div>
+
+  <!-- ══ HERO VIDEO — shown only when Video tab is active ══ -->
+  <div class="hero-video" id="hero-video">
+    <div class="video-container">
+      <div class="yt-facade" id="main-facade" onclick="playFacade(this,'RNpquqxdjMg')">
+        <img src="https://i.ytimg.com/vi/RNpquqxdjMg/maxresdefault.jpg" alt="The Hidden Truth — STRATUM" loading="lazy">
+        <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+        <iframe title="The Hidden Truth — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+    <div class="transcript">
+      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-main')">
+        <span class="transcript-label">Video Transcript</span>
+        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="transcript-body" id="transcript-main">
+        <p>Think about someone you know who keeps doing something that makes no sense to you.</p>
+        <p>Maybe they apologize constantly — even when they've done nothing wrong. Maybe they push people away right when a relationship is going well. Maybe they volunteer for the hardest assignments even when they're already stretched thin and exhausted.</p>
+        <p>You've asked them why. They've given you an explanation. And something about that explanation felt incomplete.</p>
+        <p>That's because it was. What they gave you was the conscious justification — the reason that feels true on the surface. What they didn't give you, what they probably couldn't give you, is the belief operating beneath it. The assumption so embedded in how they move through the world that they've never had to articulate it. Because they've never had to question it.</p>
+        <p>That belief — the one beneath the justification — is what we call the hidden truth.</p>
+        <p>And finding it is what today's lesson is about.</p>
+        <p>In Lesson 1, you documented what your character does. You built the evidence base — the specific, recurring behavior that shows up across different relationships, different situations, different kinds of pressure. That was the observer's task. Disciplined. Concrete. No interpretation.</p>
+        <p>Today the frame shifts entirely. You become the interpreter. And the question changes from: what does my character do — to: what must they believe for this behavior to feel like the only reasonable response?</p>
+        <p>That shift is what takes a character from observed to understood. From surface to psychology. From what they do to who they are.</p>
+        <p>Let's go find it.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB BAR ══ -->
   <div class="tab-bar-wrap">
     <div class="tab-bar" id="tab-bar">
       <button class="tab-btn" data-tab="video">
@@ -572,48 +798,15 @@
     </div>
   </div>
 
-  <!-- ══ WELCOME IMAGE — shown on load, hidden when any tab is active ══ -->
-  <div class="hero-welcome" id="hero-welcome">
-    <img src="https://stratummethod.github.io/stratum-widget/welcome-hidden-truth.png" alt="Welcome — The Hidden Truth">
-  </div>
-
-  <!-- ══ VIDEO — shown only when Video tab is active ══ -->
-  <div class="hero-video" id="hero-video">
-    <div class="video-container">
-      <div class="yt-facade" onclick="playFacade(this,'RNpquqxdjMg')">
-        <img src="https://i.ytimg.com/vi/RNpquqxdjMg/maxresdefault.jpg" alt="The Hidden Truth — STRATUM" loading="lazy">
-        <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-        <iframe title="The Hidden Truth — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-      </div>
-    </div>
-    <div class="transcript">
-      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-body')">
-        <span class="transcript-label">Video Transcript</span>
-        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <div class="transcript-body" id="transcript-body">
-        <p>Think about someone you know who keeps doing something that makes no sense to you.</p>
-        <p>Maybe they apologize constantly — even when they've done nothing wrong. Maybe they push people away right when a relationship is going well. Maybe they volunteer for the hardest assignments even when they're already stretched thin and exhausted.</p>
-        <p>You've asked them why. They've given you an explanation. And something about that explanation felt incomplete.</p>
-        <p>That's because it was. What they gave you was the conscious justification — the reason that feels true on the surface. What they didn't give you, what they probably couldn't give you, is the belief operating beneath it. The assumption so embedded in how they move through the world that they've never had to articulate it. Because they've never had to question it.</p>
-        <p>That belief — the one beneath the justification — is what we call the hidden truth.</p>
-        <p>And finding it is what today's lesson is about.</p>
-        <p>In Lesson 1, you documented what your character does. You built the evidence base — the specific, recurring behavior that shows up across different relationships, different situations, different kinds of pressure. That was the observer's task. Disciplined. Concrete. No interpretation.</p>
-        <p>Today the frame shifts entirely. You become the interpreter. And the question changes from: what does my character do — to: what must they believe for this behavior to feel like the only reasonable response?</p>
-        <p>That shift is what takes a character from observed to understood. From surface to psychology. From what they do to who they are.</p>
-        <p>Let's go find it.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ PANELS ══ -->
-
-  <!-- VIDEO PANEL — no content, hero handles it -->
+  <!-- ══ PANEL: VIDEO — no body content; hero-video div handles display ══ -->
   <div class="tab-panel" id="panel-video">
     <div class="nav-wrap no-back">
-      <button class="continue-btn" data-next="overview">Continue to Overview<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+      <button class="continue-btn" data-next="overview">
+        Continue to Overview
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+      </button>
     </div>
-  </div><!-- /panel-video -->
+  </div>
 
   <!-- ══ PANEL: OVERVIEW ══ -->
   <div class="tab-panel" id="panel-overview">
@@ -644,11 +837,11 @@
           </iframe>
         </div>
         <div class="transcript">
-          <button class="transcript-btn" aria-expanded="false" onclick="toggleOverviewTranscript(this)">
+          <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-overview')">
             <span class="transcript-label">Video Transcript</span>
             <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
-          <div class="transcript-body" id="overview-transcript-body">
+          <div class="transcript-body" id="transcript-overview">
             <p>There's a moment in every serious character development process where the work changes. Not just gets harder — actually changes in kind.</p>
             <p>You've been watching your character. Documenting what they do. Building the evidence base — the specific, recurring behaviors that show up again and again, with different people, in different situations, under different kinds of pressure. That work was deliberate. It had rules. Interpretation was off-limits. You were a documentary filmmaker, not a therapist.</p>
             <p>That phase is over. And today I want to talk about what happens next. Because the shift from observer to interpreter is not just a change of perspective. It's a change in the entire question you're asking. And if you don't make it cleanly, you'll stay stuck at the surface of a character forever.</p>
@@ -671,9 +864,7 @@
             <p>With Katniss: Because I believe no one will protect the people I love if I don't, I must position myself between them and whatever threatens them — every time, regardless of the cost to me.</p>
             <p>That sentence should feel airtight. The behavior should feel inevitable given the belief. If you read it and think "well, maybe" — keep going. You're still at the level of conscious justification. The lock works when you can't imagine the character doing anything else.</p>
             <p>You have the pattern. You have the data. Now sit with it. And ask the question — slowly, precisely — what would this person have to believe about themselves, about other people, or about how the world works, for this behavior to feel like the only reasonable response?</p>
-            <p>Expect your first answer to be too clean. Push past it. Expect the real answer to carry an edge. Lean into that. And when the behavior becomes an inevitable consequence of the belief — when the causal lock clicks and you can't imagine any other response — you'll know you've arrived.</p>
             <p>The surface told you what your character does. The hidden truth tells you who they are.</p>
-            <p>Push past the conscious justification. Find the belief that makes the behavior feel not just reasonable — but necessary. Test it with the causal lock. And when that sentence clicks — when the behavior becomes an inevitable consequence of the belief — you'll know you've found it.</p>
             <p>That understanding is what makes writing feel less like invention and more like excavation. If this way of approaching character resonates with you, this is exactly the kind of thinking we work through in STRATUM — my AI character coaching course for fiction writers. You can learn more at myaiwritingcoach.com.</p>
           </div>
         </div>
@@ -700,10 +891,27 @@
       <div class="panel-rule"></div>
       <p class="panel-lead">In cognitive behavioral therapy, every recurring behavior — no matter how self-defeating it appears from the outside — makes perfect sense from inside the belief system that produced it. The therapist's task is not to judge the behavior but to reverse-engineer the belief that makes it feel necessary. That is exactly what you are doing now. This is not guessing. This is reasoning from evidence.</p>
 
+      <div class="why-block">
+        <span class="why-block-title">This Is Not Guessing. This Is Reasoning From Evidence.</span>
+        <p>The anchor behavior and three recurring instances you documented in The Surface Pattern are your data set. You are not inventing psychology — you are applying disciplined analytical reasoning to behavior you have already observed. The difference matters. Invented psychology feels constructed. Excavated psychology feels inevitable.</p>
+        <p>Your first answer to the question below will almost always be the conscious justification — what your character would say out loud if asked directly. That answer is true, and it is not what you are looking for. What you are looking for operates beneath that layer entirely.</p>
+      </div>
+
       <div class="question-block">
         <span class="question-block-eyebrow">The Therapist's Question</span>
         <p class="question-block-text">"What would this person have to believe — about themselves, about other people, or about how the world works — for this behavior to feel like the only reasonable response?"</p>
         <p class="question-block-note">Notice what the question does not ask. It does not ask what caused the behavior. It does not ask what the character feels. It asks what they must believe for the behavior to be not just understandable — but inevitable. That precision is the instrument.</p>
+      </div>
+
+      <div class="lock-block">
+        <span class="lock-block-title">Verifying Your Answer: The Causal Lock</span>
+        <p class="lock-formula">Because I believe <em>_______</em>, I must <em>_______</em>.</p>
+        <p>Once you have a candidate belief, test it with this sentence. The lock works when the behavior becomes a logical consequence of the belief — when you can no longer imagine the character doing anything else given what they believe.</p>
+        <p>If the sentence reads as "well, maybe" rather than "of course," you are probably still at the level of conscious justification. Keep going.</p>
+        <div class="lock-example">
+          <span class="lock-example-label">Katniss Everdeen · Lock Example</span>
+          <p>Because I believe no one will protect the people I love if I don't, I must position myself between them and whatever threatens them — every time, regardless of cost.</p>
+        </div>
       </div>
 
       <div class="walkthrough">
@@ -792,6 +1000,7 @@
 
   <!-- ══ PANEL: YOUR SESSION ══ -->
   <div class="tab-panel" id="panel-session">
+
     <div class="session-begin-band">
       <div class="session-begin-inner">
         <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
@@ -817,65 +1026,232 @@ CRITICAL REMINDERS
           <li data-n="1">Copy the prompt above and open Claude at claude.ai in a new tab. Paste the prompt to begin — you can read it there once it's in Claude.</li>
           <li data-n="2">After pasting the prompt, attach the <strong>PDF you printed from your Surface Pattern Workspace</strong>. Your coach reads that work first — it is the foundation everything in this session builds on.</li>
           <li data-n="3">Set a timer for <strong>35 minutes</strong>. Do not cut the session short. The most important discovery in this lesson typically happens in the final ten minutes.</li>
-          <li data-n="4">When your session is complete, return here and fill out your <strong>Workspace</strong> below, then print to PDF.</li>
+          <li data-n="4">When your session is complete, return here and open your <strong>Workspace</strong> below, then print to PDF.</li>
         </ul>
       </div>
     </div>
 
-<!-- After Your Session Section -->
-<div class="after-session" style="margin-top:30px; padding:20px; background:#faf4e8; border:1px solid #d2c4a5;">
-  <h3 style="font-family:'Cinzel',serif;
-             font-size:1rem;
-             font-weight:600;
-             color:#6b4c2e;
-             margin-bottom:12px;">
-    After Your Session
-  </h3>
-  <p style="font-family:'Spectral',Georgia,serif;
-            font-size:var(--body-sm);
-            font-weight:300;
-            font-style:italic;
-            color:#6b4c2e;
-            line-height:1.7;
-            margin-bottom:14px;">
-    Record your hidden truth and causal lock statement while they’re clear. 
-    Your workspace opens in a new tab so nothing is lost if you need to scroll back through your session.
-  </p>
-  <a href="https://form.jotform.com/253386070604859" target="_blank"
-     style="display:inline-block;
-            background:#b87333;
-            color:#faf4e8;
-            font-family:'Cinzel',serif;
-            font-size:0.72rem;
-            letter-spacing:0.25em;
-            text-transform:uppercase;
-            padding:14px 36px;
-            border:1px solid #b87333;
-            cursor:pointer;
-            transition:background 0.3s, border-color 0.3s;
-            text-decoration:none;">
-    OPEN WORKSPACE →
-  </a>
-</div>
+    <div class="after-session">
+      <span class="after-session-title">After Your Session</span>
+      <p>Record your hidden truth and causal lock statement while they're clear. Your Workspace opens in a new tab so nothing is lost if you need to scroll back through your session.</p>
+      <a href="https://form.jotform.com/253386070604859" target="_blank" rel="noopener" class="workspace-btn">
+        Open Workspace
+        <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+      </a>
+    </div>
 
-<!-- Navigation -->
-<div class="lesson-nav" style="margin-top:20px; display:flex; justify-content:space-between;">
-  <a href="hidden-truth-red-flags.html"
-     style="color:#6b4c2e; font-family:'Cinzel',serif; text-decoration:none;">
-    ← Back to Red Flags
-  </a>
-  <a href="hidden-truth-complete.html"
-     style="color:#6b4c2e; font-family:'Cinzel',serif; text-decoration:none;">
-    Continue to Complete Lesson →
-  </a>
-</div>
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="redflags">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>
+        Back to Red Flags
+      </button>
+      <button class="continue-btn" data-next="complete">
+        Continue to Complete Lesson
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+      </button>
+    </div>
+  </div><!-- /panel-session -->
 
-<style>
-  .after-session a:hover {
-    background:#6b4c2e;   /* darker brown hover */
-    border-color:#6b4c2e;
-  }
-</style>
+  <!-- ══ PANEL: COMPLETE LESSON ══ -->
+  <div class="tab-panel" id="panel-complete">
+
+    <div class="congratulations-img-wrap">
+      <img src="https://stratummethod.github.io/stratum-widget/congratulations-hidden-truth.png" alt="Congratulations — You've Completed The Hidden Truth">
+    </div>
+
+    <div class="panel-inner">
+
+      <div class="complete-lesson-content">
+        <span class="complete-lesson-title">Before You Move On — A Checklist</span>
+        <p>The excavation ladder only works if each rung is solid before you step to the next. Make sure you have all three deliverables from this lesson before continuing to Lesson 3.</p>
+        <ul class="complete-lesson-checklist">
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+            <span>One clear <strong>hidden truth</strong> — not a surface justification, not a virtue, but the belief your character has never consciously articulated that makes their behavior feel inevitable.</span>
+          </li>
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+            <span>A <strong>causal lock statement</strong> that holds: <em>"Because I believe _______, I must _______."</em> The behavior should feel like a logical consequence of the belief — not a coincidence.</span>
+          </li>
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+            <span>Your <strong>Workspace completed and saved as a PDF</strong> — you will attach it, along with your Surface Pattern PDF, to your Lesson 3 coaching session.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="why-block">
+        <span class="why-block-title">What You've Established</span>
+        <p>In The Surface Pattern you documented what your character does. Today you uncovered why — the belief operating beneath their awareness that makes their behavior feel not just reasonable, but necessary.</p>
+        <p>That belief is now the lens through which every scene you write will gain new precision. You know what your character is protecting. You know what they cannot stop doing. You know the logic that runs underneath the visible surface.</p>
+        <p>In Lesson 3 you will trace this belief back to its origin — the specific experience that made it feel true. Your character believes this. But they weren't born believing it. Something taught them. That is the next question.</p>
+      </div>
+
+      <div class="bridge-block">
+        <span class="bridge-eyebrow">A Question to Carry Into Lesson 3</span>
+        <p class="bridge-question">"Your character believes this. But they weren't born believing it. Something taught them. What was it?"</p>
+        <p class="bridge-note">You don't need an answer right now. This is the exact question that opens Lesson 3: The Formative Wound. Sit with it. Your character's belief had an origin — a specific moment or experience that made the hidden truth feel like the only reasonable conclusion. Your adaptive unconscious is already working on it.</p>
+      </div>
+
+      <div class="teds-note">
+        <span class="teds-note-eyebrow">A Note from Ted</span>
+        <p>The hidden truth you uncovered today is the architecture beneath everything your character does. Every scene they appear in is now more legible to you — because you know what belief is running underneath the behavior.</p>
+        <p>Lesson 3 is where this belief gets an origin. A wound. A specific moment where the world taught your character something that changed how they saw themselves in it. That's where the excavation goes next.</p>
+        <span class="teds-note-sig">— Ted Baker</span>
+      </div>
+
+    </div>
+
+    <div class="complete-dark">
+      <span class="complete-dark-eyebrow">When You're Ready</span>
+      <p class="complete-dark-heading">Move to Lesson 3: The Formative Wound.</p>
+      <p class="complete-dark-sub">The excavation finds its origin.</p>
+
+      <div class="complete-instruction">
+        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <p>Make sure you have <strong>printed your Workspace to PDF</strong> from the Your Session tab — you'll need it in Lesson 3. Then click <strong>Mark as Complete</strong> below to record your progress and unlock Lesson 3.</p>
+      </div>
+
+      <div class="complete-rule"></div>
+      <p class="complete-quote">"Because I believe _______, I must _______."<br>When that sentence feels inevitable — you've found it.</p>
+      <span class="complete-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
+
+      <div style="margin-top: 28px; display: flex; justify-content: center;">
+        <!-- REPLACE LESSON-3-LECTURE-URL WITH ACTUAL SYSTEME.IO LESSON 3 URL -->
+        <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/LESSON-3-LECTURE-URL"
+           target="_blank" rel="noopener"
+           class="mark-complete-btn">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Mark as Complete
+        </a>
+      </div>
+    </div>
+
+    <!-- Contact Ted Jotform -->
+    <div class="panel-inner" style="padding-top: 0;">
+      <div class="jotform-section" style="margin-top: 32px;">
+        <div class="jotform-clip-wrap">
+          <div class="jotform-embed">
+            <script type="text/javascript" src="https://form.jotform.com/jsform/260734440316047"></script>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-complete -->
+
+  <script>
+    var TAB_ORDER = ['video', 'overview', 'question', 'redflags', 'session', 'complete'];
+
+    function activateTab(tabId, markPrev) {
+      /* Hero visibility */
+      var heroWelcome = document.getElementById('hero-welcome');
+      var heroVideo   = document.getElementById('hero-video');
+      heroWelcome.style.display = 'none';
+      heroVideo.style.display   = (tabId === 'video') ? 'block' : 'none';
+
+      /* Buttons & panels */
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+
+      var btn   = document.querySelector('[data-tab="' + tabId + '"]');
+      var panel = document.getElementById('panel-' + tabId);
+      if (btn)   btn.classList.add('active');
+      if (panel) panel.classList.add('active');
+
+      /* Mark previous tab done */
+      if (markPrev) {
+        var prevIdx = TAB_ORDER.indexOf(tabId) - 1;
+        if (prevIdx >= 0) {
+          var prevBtn = document.querySelector('[data-tab="' + TAB_ORDER[prevIdx] + '"]');
+          if (prevBtn) prevBtn.classList.add('done');
+        }
+      }
+
+      /* Scroll tab into view, then scroll page to top */
+      if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      document.querySelector('.tab-bar').scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      updateScrollHints();
+    }
+
+    /* Tab bar clicks */
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        activateTab(btn.getAttribute('data-tab'), false);
+      });
+    });
+
+    /* Continue buttons — mark previous done */
+    document.querySelectorAll('.continue-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        activateTab(btn.getAttribute('data-next'), true);
+      });
+    });
+
+    /* Back buttons */
+    document.querySelectorAll('.back-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        activateTab(btn.getAttribute('data-prev'), false);
+      });
+    });
+
+    /* Transcript toggle */
+    function toggleTranscript(btn, bodyId) {
+      var body   = document.getElementById(bodyId);
+      var isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    }
+
+    /* YouTube facade */
+    function playFacade(el, videoId) {
+      el.classList.add('playing');
+      el.querySelector('iframe').src =
+        'https://www.youtube.com/embed/' + videoId + '?autoplay=1&rel=0&modestbranding=1';
+    }
+
+    /* Prompt copy */
+    function copyPrompt() {
+      var text = document.getElementById('session-prompt').textContent;
+      var btn  = document.getElementById('copy-btn');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          btn.classList.add('copied');
+          btn.textContent = 'Copied!';
+          setTimeout(function() {
+            btn.classList.remove('copied');
+            btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy Prompt to Clipboard';
+          }, 2200);
+        });
+      } else {
+        /* Fallback: reveal text for manual copy */
+        var el = document.getElementById('session-prompt');
+        el.style.display = 'block';
+        el.select && el.select();
+      }
+    }
+
+    /* Tab bar scroll hints */
+    function updateScrollHints() {
+      var bar       = document.getElementById('tab-bar');
+      var hintRight = document.getElementById('tab-scroll-hint');
+      var hintLeft  = document.getElementById('tab-scroll-hint-left');
+      var atEnd     = bar.scrollLeft + bar.clientWidth >= bar.scrollWidth - 4;
+      var atStart   = bar.scrollLeft <= 4;
+      hintRight.classList.toggle('hidden', atEnd);
+      hintLeft.classList.toggle('visible', !atStart);
+    }
+    function scrollTabBarRight() {
+      document.getElementById('tab-bar').scrollBy({ left: 120, behavior: 'smooth' });
+    }
+    function scrollTabBarLeft() {
+      document.getElementById('tab-bar').scrollBy({ left: -120, behavior: 'smooth' });
+    }
+    document.getElementById('tab-bar').addEventListener('scroll', updateScrollHints);
+    updateScrollHints();
+  </script>
 
 </body>
 </html>
