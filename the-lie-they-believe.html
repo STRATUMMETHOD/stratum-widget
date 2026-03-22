@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Lie They Believe — STRATUM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream:#faf4e8; --cream-dark:#f2ead8; --cream-mid:#ede5d4;
+      --tan:#c4a882; --tan-mid:#a8895e; --tan-light:#ddd0b8; --tan-faint:#ede5d4;
+      --brown:#2e1f0e; --brown-mid:#5c3d1e; --brown-light:#8b6340;
+      --label-xs:11px; --label-sm:12px; --label-md:13px;
+      --body-sm:14px; --body-md:15px; --body-lg:16px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family:'Spectral',Georgia,serif; background:var(--cream); color:var(--brown); line-height:1.6; }
+
+    /* TAB BAR */
+    .tab-bar { position:sticky; top:0; z-index:50; display:flex; overflow-x:auto; background:var(--brown); border-top:3px solid var(--tan); border-bottom:1px solid rgba(196,168,130,0.18); box-shadow:0 3px 14px rgba(0,0,0,0.40); -webkit-overflow-scrolling:touch; scrollbar-width:none; scroll-behavior:smooth; }
+    .tab-bar::-webkit-scrollbar { display:none; }
+    .tab-bar-wrap { position:sticky; top:0; z-index:50; }
+    .tab-scroll-hint-left { position:absolute; top:0; left:0; height:100%; width:52px; background:linear-gradient(to left,transparent,var(--brown) 55%); display:flex; align-items:center; justify-content:flex-start; padding-left:8px; z-index:52; transition:opacity 0.3s; opacity:0; pointer-events:none; }
+    .tab-scroll-hint-left.visible { opacity:1; pointer-events:all; }
+    .tab-scroll-hint { position:absolute; top:0; right:0; height:100%; width:52px; background:linear-gradient(to right,transparent,var(--brown) 55%); display:flex; align-items:center; justify-content:flex-end; padding-right:8px; z-index:52; transition:opacity 0.3s; }
+    .tab-scroll-hint.hidden { opacity:0; pointer-events:none; }
+    .tab-scroll-arrow { width:28px; height:28px; border:1.5px solid rgba(196,168,130,0.5); border-radius:50%; display:flex; align-items:center; justify-content:center; pointer-events:all; cursor:pointer; background:var(--brown); animation:pulse-arrow 1.5s ease-in-out infinite; flex-shrink:0; }
+    .tab-scroll-arrow svg { width:12px; height:12px; stroke:var(--tan); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    @keyframes pulse-arrow { 0%,100% { border-color:rgba(196,168,130,0.4); box-shadow:none; } 50% { border-color:var(--tan); box-shadow:0 0 8px rgba(196,168,130,0.4); } }
+    .tab-btn { font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; font-weight:500; letter-spacing:0.15em; text-transform:uppercase; color:rgba(196,168,130,0.55); background:transparent; border:none; border-right:1px solid rgba(196,168,130,0.12); padding:0 16px; min-height:52px; cursor:pointer; white-space:nowrap; flex:0 0 auto; min-width:140px; display:flex; align-items:center; justify-content:center; gap:9px; transition:color 0.2s,background 0.2s; position:relative; }
+    .tab-btn:last-child { border-right:none; }
+    .tab-btn:hover { color:var(--tan); background:rgba(196,168,130,0.08); }
+    .tab-btn.active { color:var(--tan); font-weight:700; font-size:13px; letter-spacing:0.13em; }
+    .tab-btn.active::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:var(--tan); }
+    .tab-check { width:18px; height:18px; border:1.5px solid rgba(196,168,130,0.35); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.25s,border-color 0.25s; }
+    .tab-check svg { width:9px; height:9px; stroke:rgba(196,168,130,0.25); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .tab-btn.active .tab-check { border-color:var(--tan); background:rgba(196,168,130,0.18); }
+    .tab-btn.active .tab-check svg { stroke:var(--tan); }
+    .tab-btn.done .tab-check { background:var(--tan); border-color:var(--tan); }
+    .tab-btn.done .tab-check svg { stroke:var(--brown); }
+    .tab-btn.done { color:rgba(196,168,130,0.6); }
+
+    /* HERO */
+    .hero-welcome { display:block; }
+    .hero-welcome img { width:100%; display:block; }
+    .hero-video { display:none; background:#100a04; }
+    .video-container { position:relative; width:100%; padding-bottom:56.25%; height:0; overflow:hidden; }
+    .video-container iframe { position:absolute; inset:0; width:100%; height:100%; border:none; display:block; }
+
+    /* YOUTUBE FACADE */
+    .yt-facade { position:relative; width:100%; padding-bottom:56.25%; background:#000; cursor:pointer; overflow:hidden; }
+    .yt-facade img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.3s ease; }
+    .yt-facade:hover img { transform:scale(1.02); }
+    .yt-facade .yt-play { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:68px; height:48px; background:#ff0000; border-radius:12px; display:flex; align-items:center; justify-content:center; transition:background 0.2s,transform 0.2s; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+    .yt-facade:hover .yt-play { background:#cc0000; transform:translate(-50%,-50%) scale(1.1); }
+    .yt-facade .yt-play svg { width:24px; height:24px; fill:#fff; margin-left:4px; }
+    .yt-facade iframe { position:absolute; inset:0; width:100%; height:100%; border:none; display:none; }
+    .yt-facade.playing img,.yt-facade.playing .yt-play { display:none; }
+    .yt-facade.playing iframe { display:block; }
+
+    /* TRANSCRIPT */
+    .transcript { background:var(--brown); border-top:1px solid rgba(196,168,130,0.15); }
+    .transcript-btn { width:100%; background:transparent; border:none; padding:13px 24px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; gap:12px; }
+    .transcript-btn:hover { background:rgba(196,168,130,0.06); }
+    .transcript-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan); }
+    .transcript-chevron { width:16px; height:16px; stroke:var(--tan); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:transform 0.3s ease; flex-shrink:0; }
+    .transcript-btn[aria-expanded="true"] .transcript-chevron { transform:rotate(180deg); }
+    .transcript-body { display:none; padding:0 28px 22px; }
+    .transcript-body.open { display:block; }
+    .transcript-body p { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(250,244,232,0.78); line-height:1.85; margin-bottom:14px; }
+    .transcript-body p:last-child { margin-bottom:0; }
+    .transcript-body .section-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; font-style:normal; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan); margin-top:20px; margin-bottom:8px; display:block; }
+    .supp-transcript { background:var(--brown); border-top:1px solid rgba(196,168,130,0.12); }
+    .supp-transcript .transcript-body { padding:0 20px 18px; }
+
+    /* PANELS */
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .panel-inner { padding:44px 32px 32px; max-width:760px; margin:0 auto; }
+    .panel-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:8px; }
+    .panel-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:30px; font-weight:300; color:var(--brown); line-height:1.15; }
+    .panel-title em { font-style:italic; color:var(--brown-mid); }
+    .panel-rule { width:40px; height:1px; background:var(--tan); margin:16px 0 26px; }
+    .panel-lead { font-size:var(--body-lg); font-weight:300; line-height:1.8; color:var(--brown-mid); margin-bottom:32px; }
+
+    /* NAV BUTTONS */
+    .nav-wrap { padding:24px 32px 32px; max-width:760px; margin:0 auto; border-top:1px solid var(--tan-light); display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .nav-wrap.no-back { justify-content:flex-end; }
+    .back-btn { display:inline-flex; align-items:center; gap:8px; background:transparent; border:1px solid var(--tan-light); padding:12px 22px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan-mid); cursor:pointer; transition:background 0.2s,color 0.2s,border-color 0.2s; }
+    .back-btn:hover { background:var(--cream-dark); border-color:var(--tan-mid); color:var(--brown); }
+    .back-btn svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .continue-btn { display:inline-flex; align-items:center; gap:10px; background:var(--brown); border:none; padding:14px 28px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; color:var(--tan); cursor:pointer; transition:background 0.2s,color 0.2s; }
+    .continue-btn:hover { background:var(--brown-mid); color:var(--cream); }
+    .continue-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* WHY BLOCK */
+    .why-block { background:var(--cream-dark); border:1px solid var(--tan-light); border-left:3px solid var(--tan-mid); padding:20px 22px; margin-bottom:28px; }
+    .why-block-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:15px; font-weight:600; color:var(--brown); display:block; margin-bottom:10px; }
+    .why-block p { font-size:var(--body-md); font-weight:300; line-height:1.8; color:var(--brown); margin-bottom:10px; }
+    .why-block p:last-child { margin-bottom:0; }
+
+    /* SUPPLEMENTAL VIDEO */
+    .supp-video { border:1px solid var(--tan-light); margin-bottom:32px; overflow:hidden; }
+    .supp-video-head { background:var(--cream-mid); padding:14px 20px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--tan-light); flex-wrap:wrap; }
+    .supp-video-badge { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--brown-mid); background:var(--tan-faint); border:1px solid var(--tan-light); padding:4px 11px; flex-shrink:0; }
+    .supp-video-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:15px; font-weight:500; color:var(--brown); line-height:1.3; }
+    .supp-video-container { position:relative; width:100%; overflow:hidden; background:#100a04; }
+
+    /* REQUIREMENTS / FORMS GRID */
+    .requirements-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:14px; }
+    .requirements-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--tan-light); border:1px solid var(--tan-light); margin-bottom:32px; }
+    .requirements-grid.three-col { grid-template-columns:1fr 1fr 1fr; }
+    .req-card { background:var(--cream); padding:20px 22px; }
+    .req-card-number { font-family:'Cormorant Garamond',Georgia,serif; font-size:28px; font-weight:300; font-style:italic; color:var(--tan); line-height:1; margin-bottom:6px; display:block; }
+    .req-card-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; font-weight:600; color:var(--brown); display:block; margin-bottom:8px; }
+    .req-card-desc { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown-mid); margin-bottom:10px; }
+    .req-card-example { font-size:13px; font-weight:300; font-style:italic; color:var(--brown-light); line-height:1.65; padding-top:8px; border-top:1px solid var(--tan-faint); }
+    .req-card-example strong { font-style:normal; font-weight:500; color:var(--tan-mid); }
+
+    /* WALKTHROUGH */
+    .walkthrough { border:1px solid var(--tan-light); margin-bottom:28px; overflow:hidden; }
+    .walkthrough-head { background:var(--brown); padding:16px 22px; border-bottom:1px solid rgba(196,168,130,0.2); }
+    .walkthrough-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:6px; }
+    .walkthrough-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:18px; font-weight:300; color:var(--cream); line-height:1.3; }
+    .walkthrough-title em { font-style:italic; color:var(--tan); }
+    .walkthrough-body { background:var(--cream-dark); padding:20px 22px; }
+    .walkthrough-step { display:flex; align-items:flex-start; gap:16px; padding:12px 0; border-bottom:1px solid var(--tan-faint); }
+    .walkthrough-step:last-child { border-bottom:none; padding-bottom:0; }
+    .walkthrough-step-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--tan-mid); flex-shrink:0; margin-top:2px; min-width:80px; }
+    .walkthrough-step-content { flex:1; }
+    .walkthrough-step-content p { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown); margin-bottom:6px; }
+    .walkthrough-step-content p:last-child { margin-bottom:0; }
+    .walkthrough-step-content em { font-style:italic; color:var(--brown-mid); }
+    .walkthrough-step-content strong { font-weight:500; color:var(--brown-mid); }
+
+    /* RED FLAGS */
+    .redflag-item { display:flex; align-items:flex-start; gap:14px; padding:12px 0; border-bottom:1px solid var(--tan-faint); }
+    .redflag-item:last-child { border-bottom:none; padding-bottom:0; }
+    .redflag-marker { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--tan-mid); flex-shrink:0; margin-top:2px; min-width:64px; }
+    .redflag-text { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown); }
+    .redflag-text strong { font-weight:500; color:var(--brown-mid); }
+    .redflag-text em { font-style:italic; }
+
+    /* SESSION */
+    .session-begin-band { background:var(--brown); width:100%; padding:0; margin-bottom:0; text-align:left !important; }
+    .session-begin-inner { padding:28px 32px 24px; max-width:760px; margin:0 auto; text-align:left !important; }
+    .session-begin-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:26px; font-weight:500; letter-spacing:0.03em; color:var(--cream); margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid rgba(196,168,130,0.25); line-height:1.2; }
+    .session-begin-title em { color:var(--tan); font-style:italic; }
+    .prompt-text { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(250,244,232,0.85); line-height:1.75; margin-bottom:20px; white-space:pre-wrap; }
+    .copy-btn { display:inline-flex; align-items:center; gap:9px; background:#c4a882; border:1px solid #c4a882; padding:12px 22px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--brown); cursor:pointer; transition:background 0.2s,border-color 0.2s; margin-bottom:24px; }
+    .copy-btn:hover { background:var(--tan-mid); border-color:var(--tan-mid); }
+    .copy-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .copy-btn.copied { background:var(--tan-mid); border-color:var(--tan-mid); }
+    .instructions-list { list-style:none; margin-top:4px; text-align:left !important; }
+    .instructions-list li { font-size:var(--body-sm); font-weight:300; color:rgba(250,244,232,0.85); line-height:1.72; padding:9px 0 9px 26px; border-bottom:1px solid rgba(196,168,130,0.12); display:block !important; text-align:left !important; position:relative; }
+    .instructions-list li:last-child { border-bottom:none; }
+    .instructions-list li::before { content:attr(data-n); font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); color:var(--tan); position:absolute; left:0; top:11px; }
+    .instructions-list li strong { color:var(--tan); font-weight:500; }
+    .instructions-list li a { color:var(--tan); text-decoration:underline; text-underline-offset:2px; opacity:0.85; }
+    .instructions-list li a:hover { opacity:1; }
+
+    /* WORKSPACE */
+    .workspace-section { padding:32px 32px 28px; max-width:760px; margin:0 auto; border-top:1px solid var(--tan-light); }
+    .workspace-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:8px; }
+    .workspace-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:24px; font-weight:300; color:var(--brown); line-height:1.2; margin-bottom:12px; }
+    .workspace-title em { font-style:italic; color:var(--brown-mid); }
+    .workspace-desc { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown-mid); margin-bottom:20px; }
+    .workspace-btn { display:inline-flex; align-items:center; gap:10px; background:var(--brown); border:none; padding:14px 28px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; color:var(--tan); text-decoration:none; cursor:pointer; transition:background 0.2s,color 0.2s; }
+    .workspace-btn:hover { background:var(--brown-mid); color:var(--cream); }
+    .workspace-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* COMPLETE — checklist, bridge, ted note */
+    .complete-lesson-content { background:var(--cream-dark); border:1px solid var(--tan-light); border-left:3px solid var(--tan-mid); padding:22px 24px; margin-bottom:28px; }
+    .complete-lesson-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:15px; font-weight:600; color:var(--brown); display:block; margin-bottom:10px; }
+    .complete-lesson-content p { font-size:var(--body-md); font-weight:300; line-height:1.8; color:var(--brown); margin-bottom:10px; }
+    .complete-lesson-content p:last-child { margin-bottom:0; }
+    .complete-lesson-checklist { list-style:none; padding:0; margin-bottom:0; }
+    .complete-lesson-checklist li { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown-mid); padding:7px 0; border-bottom:1px solid var(--tan-faint); display:flex; align-items:flex-start; gap:10px; }
+    .complete-lesson-checklist li:last-child { border-bottom:none; }
+    .check-icon { width:16px; height:16px; flex-shrink:0; margin-top:1px; border:1.5px solid var(--tan-mid); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+    .check-icon svg { width:8px; height:8px; stroke:var(--tan-mid); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .bridge-block { background:var(--brown); border:1px solid rgba(196,168,130,0.2); padding:24px 26px; margin-bottom:28px; }
+    .bridge-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:14px; }
+    .bridge-question { font-family:'Cormorant Garamond',Georgia,serif; font-size:20px; font-weight:300; font-style:italic; color:var(--cream); line-height:1.6; margin-bottom:14px; }
+    .bridge-note { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; color:rgba(250,244,232,0.65); line-height:1.72; border-top:1px solid rgba(196,168,130,0.15); padding-top:12px; }
+    .teds-note { background:var(--cream-dark); border:1px solid var(--tan-light); padding:22px 24px; margin-bottom:28px; }
+    .teds-note-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:12px; }
+    .teds-note p { font-family:'Spectral',Georgia,serif; font-size:var(--body-md); font-weight:300; font-style:italic; color:var(--brown-mid); line-height:1.82; margin-bottom:10px; }
+    .teds-note p:last-child { margin-bottom:0; }
+    .teds-note-sig { font-family:'Cormorant Garamond',Georgia,serif; font-size:16px; font-weight:400; font-style:normal; color:var(--brown); display:block; margin-top:14px; }
+    .complete-instruction { max-width:480px; margin:0 auto 24px; background:rgba(196,168,130,0.1); border:1px solid rgba(196,168,130,0.2); padding:16px 20px; display:flex; align-items:flex-start; gap:12px; text-align:left; }
+    .complete-instruction svg { width:16px; height:16px; stroke:var(--tan); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; margin-top:2px; }
+    .complete-instruction p { font-size:var(--body-sm); font-weight:300; color:rgba(250,244,232,0.82); line-height:1.7; }
+    .complete-instruction p strong { color:var(--tan); font-weight:500; }
+
+    /* COMPLETE DARK */
+    .congratulations-img-wrap { background:var(--brown); display:flex; justify-content:center; padding:36px 32px 40px; }
+    .congratulations-img-wrap img { width:65%; max-width:520px; display:block; box-shadow:0 0 0 1px rgba(196,168,130,0.35),0 0 0 5px rgba(46,31,14,0.8),0 0 0 6px rgba(196,168,130,0.2),0 8px 40px rgba(0,0,0,0.55); }
+    .complete-dark { background:var(--brown); padding:44px 32px 40px; text-align:center; }
+    .complete-dark-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:12px; }
+    .complete-dark-heading { font-family:'Cormorant Garamond',Georgia,serif; font-size:26px; font-weight:300; color:var(--cream); margin-bottom:8px; line-height:1.2; }
+    .complete-dark-sub { font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(196,168,130,0.7); margin-bottom:28px; }
+    .complete-rule { width:40px; height:1px; background:rgba(196,168,130,0.3); margin:0 auto 24px; }
+    .complete-quote { font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; font-weight:300; font-style:italic; color:rgba(196,168,130,0.7); line-height:1.65; margin-bottom:10px; }
+    .complete-attr { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); letter-spacing:0.14em; text-transform:uppercase; color:rgba(196,168,130,0.4); display:block; margin-bottom:28px; }
+    .mark-complete-btn { display:inline-flex; align-items:center; gap:10px; background:var(--tan); color:var(--brown); border:none; padding:15px 32px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer; text-decoration:none; transition:background 0.2s; }
+    .mark-complete-btn:hover { background:var(--tan-mid); }
+    .mark-complete-btn svg { width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* CONTACT TED */
+    .contact-ted-section { padding:32px 0 0; }
+    .contact-ted-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:24px; font-weight:300; color:var(--brown); line-height:1.2; margin-bottom:12px; }
+    .contact-ted-title em { font-style:italic; color:var(--brown-mid); }
+    .contact-ted-desc { font-size:var(--body-sm); font-weight:300; line-height:1.72; color:var(--brown-mid); margin-bottom:20px; }
+
+    @media (max-width:600px) {
+      .requirements-grid.three-col { grid-template-columns:1fr; }
+    }
+    @media (max-width:540px) {
+      .requirements-grid { grid-template-columns:1fr; }
+      .panel-inner { padding:28px 20px 20px; }
+      .nav-wrap { padding:20px; flex-direction:column; }
+      .continue-btn,.back-btn { width:100%; justify-content:center; }
+      .session-begin-inner { padding:20px; }
+      .workspace-section { padding:24px 20px; }
+      .congratulations-img-wrap img { width:90%; }
+      .complete-dark { padding:36px 20px 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar-wrap">
+    <nav class="tab-bar" id="tab-bar" aria-label="Lesson sections">
+      <button class="tab-btn" data-tab="video"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Video</button>
+      <button class="tab-btn" data-tab="overview"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Overview</button>
+      <button class="tab-btn" data-tab="threeforms"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Three Forms</button>
+      <button class="tab-btn" data-tab="redflags"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Red Flags</button>
+      <button class="tab-btn" data-tab="session"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Your Session</button>
+      <button class="tab-btn" data-tab="complete"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Complete Lesson</button>
+    </nav>
+    <div class="tab-scroll-hint-left" id="tab-scroll-hint-left">
+      <div class="tab-scroll-arrow" onclick="scrollTabBarLeft()"><svg viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg></div>
+    </div>
+    <div class="tab-scroll-hint" id="tab-scroll-hint">
+      <div class="tab-scroll-arrow" onclick="scrollTabBar()"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero-welcome" id="hero-welcome">
+    <img src="PLACEHOLDER-welcome-lie-they-believe.png" alt="Welcome to The Lie They Believe — STRATUM">
+  </div>
+  <div class="hero-video" id="hero-video">
+    <div class="video-container">
+      <div class="yt-facade" onclick="playFacade(this,'PLACEHOLDER-L4-VIDEO-ID')">
+        <img src="https://i.ytimg.com/vi/PLACEHOLDER-L4-VIDEO-ID/maxresdefault.jpg" alt="The Lie They Believe — STRATUM" loading="lazy">
+        <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+        <iframe title="Lesson 4: The Lie They Believe — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+    <div class="transcript">
+      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-main')">
+        <span class="transcript-label">Video Transcript</span>
+        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="transcript-body" id="transcript-main">
+        <p>Here's what makes the lie so difficult to excavate.</p>
+        <p>It doesn't feel like a lie.</p>
+        <p>It feels like the truest thing your character knows. It feels like bedrock — the solid ground beneath every decision they make, every risk they avoid, every relationship they almost let themselves have. That's what makes it worth writing about. Not the obvious distortions. The ones that masquerade as self-knowledge. The ones your character would defend to the death.</p>
+        <p class="section-marker">What You've Already Built</p>
+        <p>In three lessons, you built the causal chain. What your character does. What they believe that makes the behavior feel necessary. Where that belief began. Today you excavate the final piece. Not what happened. Not how they interpreted it. What they concluded about themselves because of it. That conclusion is the lie. And by the end of today, you'll understand exactly why it's different from everything you've found before — and why that difference is the engine of your entire story.</p>
+        <p class="section-marker">One Crystallized Lie</p>
+        <p>One crystallized lie. Not a catalog of distortions — one. The core conclusion that grew directly and inevitably from the formative wound. The wound was the event. The hidden truth is how they read the world because of it. But the wound didn't just update their worldview. It made them conclude something about themselves. About their worth. Their identity. Their obligations. What they must do to survive. That conclusion is the lie. And it doesn't feel false to them. It feels like reality.</p>
+        <p class="section-marker">The Complete Chain</p>
+        <p>Let me give you the complete chain one more time, because Lesson Four is where it becomes whole. Surface pattern: she volunteers, she steps between danger and the people she loves, again and again, across different situations, different people. Hidden truth: "The people I love cannot protect themselves without me." Formative wound: her father's death, her mother's collapse, an eleven-year-old girl looking around for an adult — and finding no one. The lie: I am solely responsible for everyone's survival. Notice the progression. The wound produced the belief. The belief drives the behavior. But the lie — the lie is the distorted conclusion about her own identity that makes everything feel inescapable.</p>
+        <p class="section-marker">The Distinction That Trips Most Writers</p>
+        <p>Hidden truth and the lie often sound similar. Writers tell me all the time: "I already found the lie — wasn't that the hidden truth?" Usually, no. Walter White. The story he tells himself: I did this for my family. Watch what actually drives him. His hidden truth: "I have been overlooked and diminished. What was rightfully mine was taken from me." That's an observation about the world. His lie: "I am exceptional — and I am owed recognition. If I am not being recognized, I am being wronged." The hidden truth explains why he started. The lie explains why he couldn't stop — even when his family was terrified of him, even when everything he claimed to be protecting was already gone. Hidden truth: the world. Lie: the self. Every time.</p>
+        <p class="section-marker">The Quiet Lies</p>
+        <p>The lies worth writing about aren't always dramatic. Consider a woman who grew up in a home where love was conditional on usefulness. She was valued when she helped. Invisible when she didn't. No single catastrophic wound — just years of a pattern that crystallized into certainty. Her hidden truth: I am only safe when I am needed. Her lie: I have no intrinsic worth. My value exists only in what I do for others. Not cinematic. Not operatic. But devastating in its precision. She'll resist being cared for. She'll overextend until she collapses. She'll feel guilty for the collapse. The lie explains all of it — not as pathology, but as the only rational conclusion of a child working with the evidence she was given. The quiet lies — the ones that sound almost reasonable — are often the most interesting ones to write.</p>
+        <p class="section-marker">What Comes Next</p>
+        <p>The lie doesn't just limit your character. It creates a false want — a goal that feels urgent and meaningful, but that can never address the underlying wound. Walter White wants recognition. Power that can't be taken away. But what he needs is to confront the story he's been telling himself for twenty years. He never gets there. That gap — between the want the lie produces and the need the wound created — is the engine of five seasons of television. In Lesson Five, we excavate that gap directly. But we can only get there from a lie precise enough to build on. Find that lie. Write it as one sentence. Come to your session with that sentence already forming. Everything sharpens from here.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIDEO PANEL -->
+  <div class="tab-panel" id="panel-video">
+    <div class="nav-wrap no-back">
+      <button class="continue-btn" data-next="overview">Continue to Overview<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="tab-panel" id="panel-overview">
+    <div class="panel-inner">
+      <span class="panel-eyebrow">The Excavation Ladder · STRATUM: AI Character Coaching</span>
+      <h1 class="panel-title">The Lie They <em>Believe</em></h1>
+      <div class="panel-rule"></div>
+      <p class="panel-lead">Three lessons deep. You know what your character does, what they believe, and where that belief began. Today you excavate the final layer of the chain — not what happened, not how they read the world because of it, but what they concluded about themselves. That conclusion is the lie. And it doesn't feel like a lie to them. It feels like bedrock.</p>
+
+      <div class="why-block">
+        <span class="why-block-title">The Distinction That Changes Everything</span>
+        <p>This is where most writers stall — not because the work is harder, but because the target is easier to miss. The hidden truth and the lie sound similar. They both describe something your character believes deeply. But they are not the same thing, and the difference is everything.</p>
+        <p>The hidden truth is an observation about the world or about other people. It explains how your character reads their environment. The lie is a conclusion about the self — about identity, worth, or obligation. It explains what your character has decided, at the deepest level, about who they are and what they must do to survive.</p>
+        <p>Before your session, watch the video below. It addresses the psychology of why characters — and the writers who create them — resist releasing the lie even when they can see it clearly. Understanding that resistance is not incidental to this lesson. It is the lesson.</p>
+      </div>
+
+      <div class="supp-video">
+        <div class="supp-video-head">
+          <span class="supp-video-badge">Supplemental · Writing Psychology</span>
+          <span class="supp-video-title">The Comfort of the Lie — Why Your Character Doesn't Want to Be Freed</span>
+        </div>
+        <div class="supp-video-container">
+          <div class="yt-facade" onclick="playFacade(this,'PLACEHOLDER-COMFORT-LIE-VIDEO-ID')">
+            <img src="https://i.ytimg.com/vi/PLACEHOLDER-COMFORT-LIE-VIDEO-ID/maxresdefault.jpg" alt="The Comfort of the Lie — Why Your Character Doesn't Want to Be Freed" loading="lazy">
+            <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <iframe title="The Comfort of the Lie — Why Your Character Doesn't Want to Be Freed" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+        <div class="supp-transcript">
+          <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-comfort-lie')">
+            <span class="transcript-label">Video Transcript</span>
+            <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="transcript-body" id="transcript-comfort-lie">
+            <p>There's a moment in character development that stops almost every writer cold. You've done the work. You know what your character does. You know the wound that created it. You've traced the distorted conclusion they drew from that wound — the lie at the center of their psychology. You understand them, maybe better than they understand themselves. And then you try to write their transformation. And it doesn't move.</p>
+            <p>Most writers assume they've made a craft error. They haven't. What they're bumping into is one of the deepest truths in human psychology. The lie is not the enemy. The lie is the shelter.</p>
+            <p class="section-marker">Thirty-Five Years of Evidence</p>
+            <p>I spent thirty-five years in behavioral diagnostics and executive coaching. I worked with leaders inside Fortune 500 companies — some of the most analytically gifted people I've ever encountered. They could diagnose complex organizational problems in minutes. They understood systems, incentives, human behavior at scale. And some of them were completely unable to change a personal pattern that was costing them everything. Not because they lacked intelligence. Not because they lacked motivation. They wanted to change. They'd hired me specifically to help them change. They could articulate the problem with surgical precision. But the lie was load-bearing. And they couldn't let go of it without feeling like the whole structure would come down.</p>
+            <p class="section-marker">What the Lie Actually Provides</p>
+            <p>The lie provides predictability. If I believe I can never truly trust anyone, then every disappointment confirms what I already knew. The world is exactly as I mapped it. That confirmation — even when it hurts — is perversely comforting. The lie provides identity. After enough time, the lie doesn't just describe what your character believes — it describes who they are. Strip it away and you haven't just corrected a false belief. You've removed a self. The lie provides purpose. If your character believes they're solely responsible for everyone's survival, that belief is exhausting and joyless and limiting. But it also gives them something to do every morning. A reason to get up.</p>
+            <p class="section-marker">What This Means for Your Story</p>
+            <p>Real transformation — the kind that earns the reader's belief — requires the character to pay the cost of releasing the lie. They have to feel what it would mean to give it up. Not just intellectually. In their body. In their relationships. In their sense of who they are. The character has to stand at the edge of that loss and choose anyway. That choice only lands if the writer understood why the lie was worth keeping in the first place. When you understand the lie as shelter, not obstruction, the transformation becomes an act of genuine courage. Stop asking: why won't my character change? Ask instead: what would my character lose if they did? That shift changes everything.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-wrap no-back">
+      <button class="continue-btn" data-next="threeforms">Continue to Three Forms<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+  </div>
+
+  <!-- THREE FORMS OF THE LIE -->
+  <div class="tab-panel" id="panel-threeforms">
+    <div class="panel-inner">
+      <span class="panel-eyebrow">The Methodology</span>
+      <h2 class="panel-title">Three Forms of <em>the Lie</em></h2>
+      <div class="panel-rule"></div>
+      <p class="panel-lead">The lie doesn't have one shape. But it has three recognizable forms — and for any given character, one will be more precise than the others. Your job is not to pick a form first. Find the lie, then test it in all three forms. The one that makes your character's behavior feel most inescapable is the form you use.</p>
+
+      <span class="requirements-label">The Three Forms</span>
+      <div class="requirements-grid three-col">
+        <div class="req-card">
+          <span class="req-card-number">01</span>
+          <span class="req-card-title">Identity Statement</span>
+          <p class="req-card-desc">A declaration about who the character fundamentally is. The most direct form. It names the self-definition the wound burned into them.</p>
+          <p class="req-card-example"><strong>Structure:</strong> "I am ___________."<br><strong>Example:</strong> I am solely responsible for everyone's survival.<br><strong>Use when:</strong> The lie is primarily about the character's role or nature.</p>
+        </div>
+        <div class="req-card">
+          <span class="req-card-number">02</span>
+          <span class="req-card-title">Worldview Distortion</span>
+          <p class="req-card-desc">A statement about reality that is actually a conclusion about the self in disguise. What looks like an observation is really a self-applied verdict.</p>
+          <p class="req-card-example"><strong>Structure:</strong> "No one can ___" or "The world requires me to ___."<br><strong>Example:</strong> No one else is capable of doing what I must do.<br><strong>Use when:</strong> The character projects the lie outward onto the world.</p>
+        </div>
+        <div class="req-card">
+          <span class="req-card-number">03</span>
+          <span class="req-card-title">False Imperative</span>
+          <p class="req-card-desc">A command the character issues to themselves — the behavioral rule that follows inevitably from the lie. It explains the compulsion rather than the identity.</p>
+          <p class="req-card-example"><strong>Structure:</strong> "I must ___, or else ___."<br><strong>Example:</strong> I must protect everyone, or I've failed.<br><strong>Use when:</strong> The lie manifests most clearly as an obligation that cannot be refused.</p>
+        </div>
+      </div>
+
+      <div class="walkthrough">
+        <div class="walkthrough-head">
+          <span class="walkthrough-eyebrow">Three Forms in Action</span>
+          <div class="walkthrough-title">One lie, three forms — applied to <em>the same character</em></div>
+        </div>
+        <div class="walkthrough-body">
+          <div class="walkthrough-step">
+            <span class="walkthrough-step-marker">Character</span>
+            <div class="walkthrough-step-content">
+              <p>A woman who grew up in a household where love was conditional on usefulness. She was valued when she helped, invisible when she wasn't. No single catastrophic wound — years of a pattern that crystallized into certainty.</p>
+              <p><em>Hidden truth (Lesson 2): "I am only safe when I am needed."</em></p>
+            </div>
+          </div>
+          <div class="walkthrough-step">
+            <span class="walkthrough-step-marker">Form 01</span>
+            <div class="walkthrough-step-content">
+              <p><strong>Identity statement:</strong> <em>"I have no intrinsic worth. My value exists only in what I do for others."</em></p>
+              <p>Most precise for this character. Names exactly what the wound taught her about herself — not about the world, but about what she is when no one needs her.</p>
+            </div>
+          </div>
+          <div class="walkthrough-step">
+            <span class="walkthrough-step-marker">Form 02</span>
+            <div class="walkthrough-step-content">
+              <p><strong>Worldview distortion:</strong> <em>"People only stay when you make yourself indispensable to them."</em></p>
+              <p>Looks like a statement about people. Is actually a verdict about her own worthiness to be kept. Both forms describe the same lie — this one is slightly less precise for this character.</p>
+            </div>
+          </div>
+          <div class="walkthrough-step">
+            <span class="walkthrough-step-marker">Form 03</span>
+            <div class="walkthrough-step-content">
+              <p><strong>False imperative:</strong> <em>"I must earn my place in every relationship, or I will be left."</em></p>
+              <p>Captures the behavioral compulsion — the relentless earning, the inability to receive care without reciprocating immediately. For this character, Form 01 is the root. Form 03 is what it looks like every day.</p>
+            </div>
+          </div>
+          <div class="walkthrough-step">
+            <span class="walkthrough-step-marker">The Test</span>
+            <div class="walkthrough-step-content">
+              <p>Run all three. Ask: which form makes <strong>all</strong> her behavior feel inescapable — her resistance to being cared for, her overextension, her guilt when she collapses? The form that answers all three instances from Lesson 1 is the one you use.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="supp-video">
+        <div class="supp-video-head">
+          <span class="supp-video-badge">Supplemental · The Methodology</span>
+          <span class="supp-video-title">Hidden Truth vs. The Lie — How to Tell the Difference</span>
+        </div>
+        <div class="supp-video-container">
+          <div class="yt-facade" onclick="playFacade(this,'PLACEHOLDER-DISTINCTION-VIDEO-ID')">
+            <img src="https://i.ytimg.com/vi/PLACEHOLDER-DISTINCTION-VIDEO-ID/maxresdefault.jpg" alt="Hidden Truth vs. The Lie — How to Tell the Difference" loading="lazy">
+            <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <iframe title="Hidden Truth vs. The Lie — How to Tell the Difference" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+        <div class="supp-transcript">
+          <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-distinction')">
+            <span class="transcript-label">Video Transcript</span>
+            <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="transcript-body" id="transcript-distinction">
+            <p>[Transcript placeholder — add when video is produced.]</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="overview"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Overview</button>
+      <button class="continue-btn" data-next="redflags">Continue to Red Flags<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+  </div>
+
+  <!-- RED FLAGS -->
+  <div class="tab-panel" id="panel-redflags">
+    <div class="panel-inner">
+      <span class="panel-eyebrow">Before Your Coaching Session</span>
+      <h2 class="panel-title">Four Signs You Haven't <em>Found It Yet</em></h2>
+      <div class="panel-rule"></div>
+      <p class="panel-lead">Read these before you start. This is the lesson where writers most often mistake a strong-sounding answer for the right one. These four patterns describe exactly how that happens — and what to do about each.</p>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 1</span><p class="redflag-text"><strong>Your lie sounds identical to your Lesson Two hidden truth.</strong> The test: does this statement describe the world or the self? <em>"The people I love cannot protect themselves"</em> is about others — that's a hidden truth. <em>"I am solely responsible for their survival"</em> is about the self — that's a lie. If you cannot state the difference for your specific character, keep refining.</p></div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 2</span><p class="redflag-text"><strong>The lie is too vague to belong only to this character.</strong> <em>"I'm not good enough"</em> and <em>"I can't trust anyone"</em> could belong to half the characters ever written. A real lie is causally tight to this exact wound. Ask: given precisely this wound, what was the only conclusion available? If another character with a different wound could arrive at the same lie, push deeper.</p></div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 3</span><p class="redflag-text"><strong>You're circling between two or three competing lies.</strong> That uncertainty means you're outside the lie, not inside it. Don't split the difference — ask which one is most causally tight to the wound, and which would be most devastating if it turned out to be false. One of them is the root. The others are its expressions.</p></div>
+      <div class="redflag-item"><span class="redflag-marker">Red Flag 4</span><p class="redflag-text"><strong>The lie doesn't trace inevitably to the Lesson Three wound.</strong> The wound-to-lie connection should feel unavoidable — not just plausible. Complete this sentence: <em>Because [wound], my character concluded [lie].</em> If that sentence requires explanation, the lie is not yet tight enough. When it locks, you'll feel it.</p></div>
+    </div>
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="threeforms"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Three Forms</button>
+      <button class="continue-btn" data-next="session">Continue to Your Session<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+  </div>
+
+  <!-- YOUR SESSION -->
+  <div class="tab-panel" id="panel-session">
+    <div class="session-begin-band">
+      <div class="session-begin-inner">
+        <div class="session-begin-title">Begin Your <em>Coaching Session</em></div>
+        <button class="copy-btn" id="copy-prompt-btn" onclick="copyPrompt()">
+          <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Prompt to Clipboard
+        </button>
+        <ul class="instructions-list">
+          <li data-n="1">Copy the prompt above and open Claude at <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> in a new tab. Paste the prompt to begin your session.</li>
+          <li data-n="2">Attach the <strong>PDFs you saved from Lessons 1, 2, and 3</strong>. Your coach reads all three before beginning — the wound, the hidden truth, and the anchor behavior are the foundation this session builds on.</li>
+          <li data-n="3">Set a timer for <strong>40 minutes</strong>. This session challenges every answer you give. The most important discovery typically arrives when you're ready to settle for less.</li>
+          <li data-n="4">When your session is complete, return here and open your <strong>Workspace</strong> below to capture your deliverables. Print to PDF — you'll need it in Lesson 5.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="workspace-section">
+      <span class="workspace-eyebrow">After Your Session</span>
+      <h3 class="workspace-title">Open Your <em>Workspace</em></h3>
+      <p class="workspace-desc">Record your lie, its form, and the wound-to-lie connection while they're clear. Your workspace opens in a new tab — nothing is lost if you need to scroll back through your session.</p>
+      <a href="PLACEHOLDER-JOTFORM-L4-URL" target="_blank" rel="noopener" class="workspace-btn">
+        Open Workspace
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+    </div>
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="redflags"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Red Flags</button>
+      <button class="continue-btn" data-next="complete">Continue to Complete Lesson<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+  </div>
+
+  <!-- COMPLETE LESSON -->
+  <div class="tab-panel" id="panel-complete">
+    <div class="congratulations-img-wrap">
+      <img src="PLACEHOLDER-congratulations-lie-they-believe.png" alt="Congratulations — You've Completed The Lie They Believe">
+    </div>
+
+    <div class="panel-inner">
+
+      <div class="complete-lesson-content">
+        <span class="complete-lesson-title">Before You Move On — A Checklist</span>
+        <p>The excavation ladder only holds if each rung is solid before you step to the next. The lie is the last rung of the foundation — everything in Lessons 5 through 8 builds on its precision. Make sure you have all three deliverables before continuing.</p>
+        <ul class="complete-lesson-checklist">
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>One crystallized <strong>lie</strong> — stated as a single sentence in its most precise form. Not a restatement of the hidden truth. Not a vague self-judgment. A conclusion about the self, causally tight to the wound.</span>
+          </li>
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>The <strong>form identified</strong> — identity statement, worldview distortion, or false imperative. You should be able to say why this form is more precise than the others for your specific character.</span>
+          </li>
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>The <strong>wound-to-lie connection</strong> stated and locked: <em>Because [wound], my character concluded [lie].</em> That sentence should feel inevitable — not explained, not argued for. Inevitable.</span>
+          </li>
+          <li>
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>Your <strong>Workspace completed and saved as a PDF</strong>. You will attach it, along with your PDFs from Lessons 1, 2, and 3, to your Lesson 5 coaching session.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="bridge-block">
+        <span class="bridge-eyebrow">A Question to Carry Into Lesson 5</span>
+        <p class="bridge-question">"Given the lie your character believes — what does that lie make them pursue? And what does the wound mean they actually need?"</p>
+        <p class="bridge-note">The lie creates a false want — a goal that feels urgent and meaningful, but that cannot address the underlying wound. In Lesson 5, you'll excavate the gap between what your character chases and what would actually heal them. That structural conflict is the engine of your story's arc. You've built the foundation. Now we find out what it's made of.</p>
+      </div>
+
+      <div class="teds-note">
+        <span class="teds-note-eyebrow">A Note from Ted</span>
+        <p>In thirty-five years of coaching, the lie is the layer I watched people protect most fiercely — not because they were dishonest, but because the lie was load-bearing. It held up their sense of who they were. The work of releasing it wasn't intellectual. It was the hardest thing they did.</p>
+        <p>Your character's lie is the same. You're not writing a flaw to be corrected. You're writing a shelter that has outlived the conditions that made it necessary. That distinction is the difference between a character who changes and a character who transforms.</p>
+        <span class="teds-note-sig">— Ted Baker</span>
+      </div>
+
+    </div>
+
+    <div class="complete-dark">
+      <span class="complete-dark-eyebrow">When You're Ready</span>
+      <p class="complete-dark-heading">Move to Lesson 5: Want vs. Need</p>
+      <p class="complete-dark-sub">The lie creates the want. The wound reveals the need. The gap between them is your story.</p>
+
+      <div class="complete-instruction">
+        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <p>Make sure you have <strong>printed your Workspace to PDF</strong> from the Your Session tab — you'll need it in Lesson 5. Then click <strong>Mark as Complete</strong> below to record your progress and unlock Lesson 5.</p>
+      </div>
+
+      <div class="complete-rule"></div>
+      <p class="complete-quote">"Because [wound], my character concluded [lie]."<br>When that sentence needs no explanation — you've found it.</p>
+      <span class="complete-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
+
+      <div style="margin-top:28px;">
+        <!-- REPLACE PLACEHOLDER-L5-LECTURE-URL WITH ACTUAL SYSTEME.IO LESSON 5 URL -->
+        <a href="https://myaiwritingcoach.com/school/course/stratum/lecture/PLACEHOLDER-L5-LECTURE-URL" target="_blank" rel="noopener" class="mark-complete-btn">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Mark as Complete
+        </a>
+      </div>
+    </div>
+
+    <!-- CONTACT TED -->
+    <div class="panel-inner" style="padding-top:20px;">
+      <div class="contact-ted-section">
+        <span class="panel-eyebrow">Questions or Feedback</span>
+        <h3 class="contact-ted-title">Reach <em>Ted Directly</em></h3>
+        <p class="contact-ted-desc">Something isn't clicking? A question about the distinction between the hidden truth and the lie? Use the form below to send Ted a note. He reads everything.</p>
+        <a href="https://form.jotform.com/260734440316047" target="_blank" rel="noopener" class="workspace-btn">
+          Contact Ted
+          <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var L4_PROMPT = "ROLE\nYour role is to help me excavate the lie my character believes \u2014 the distorted conclusion they drew from their formative wound about their own identity, worth, or obligations. You are a Socratic questioner. Do not suggest lies. Do not accept vague answers. Keep pushing until I find the one crystallized lie that could belong to no other character.\n\nCRITICAL DISTINCTION TO MAINTAIN THROUGHOUT\nThe hidden truth (Lesson 2) is an observation about the world or about others \u2014 what my character believes about people, about life, about what can be trusted.\nThe lie is a conclusion about the self \u2014 what my character concluded about their own identity, worth, or obligations because of what happened to them.\nIf my answer sounds like a restatement of the hidden truth, stop me and redirect. The lie is always self-referential. This is the distinction that matters most in this session.\n\nTWO REQUIRED DELIVERABLES\n1. One crystallized lie \u2014 stated as a single sentence in its most precise form.\n2. The wound-to-lie connection: Because [wound], my character concluded [lie]. This should feel inevitable, not just plausible.\n\nSESSION STRUCTURE\n\nStage 1: The Distinction (10 minutes)\nAsk me to state my Lesson 2 hidden truth and my Lesson 3 wound. Then ask: what is the difference between what my character believes about the world and what they concluded about themselves? If I cannot articulate this difference for my specific character, the lie is not yet distinct enough. Do not move forward until I can state it clearly.\n\nStage 2: Finding the Lie (15 minutes)\nAsk me: given exactly this wound, what did your character conclude about their own identity, worth, or obligations? Push past the first answer. Ask: does this describe the world or the self? Could this lie belong to any hurt character, or is it specific to this exact wound? Keep refining until it is precise.\n\nStage 3: The Three Forms Test (10 minutes)\nTest the lie in all three forms:\n\u2022 Identity statement: \u201cI am...\u201d\n\u2022 Worldview distortion as self-applied: \u201cNo one can... / The world requires me to...\u201d\n\u2022 False imperative: \u201cI must... or else\u201d\nAsk: which form is most precise for this character? Which makes all three anchor behavior instances from Lesson 1 feel inescapable? That is the form we use.\n\nStage 4: The Wound-to-Lie Lock (5 minutes)\nComplete the sentence: Because [wound], my character concluded [lie]. If that sentence requires explanation, the lie is not tight enough yet. Push until it locks. The connection should feel as inevitable as the Lesson 2 causal lock.\n\nCRITICAL REMINDERS\n\u2014 Hidden truth: world. Lie: self. Every time.\n\u2014 A vague lie (\u201cI\u2019m not enough\u201d) could belong to anyone. The right lie belongs only to this character.\n\u2014 The lie should explain why the character cannot stop \u2014 even when the cost is catastrophic.\n\u2014 All three instances of the anchor behavior from Lesson 1 should be explained by the lie.\n\u2014 The wound-to-lie connection must feel inevitable, not argued for.\n\nBEGIN\nI\u2019ve attached my completed PDFs from Lessons 1, 2, and 3. Please read them first, then begin Stage 1 by asking me to state my hidden truth and my wound, and to articulate what distinguishes the lie from what I found in Lesson 2.";
+
+    function copyPrompt() {
+      var btn = document.getElementById('copy-prompt-btn');
+      var origHTML = btn.innerHTML;
+      var scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+      function showCopied() {
+        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() { window.scrollTo(0, scrollY); }, 50);
+        setTimeout(function() { btn.innerHTML = origHTML; btn.classList.remove('copied'); }, 2500);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(L4_PROMPT).then(showCopied).catch(function() { fallbackCopy(scrollY, showCopied); });
+      } else { fallbackCopy(scrollY, showCopied); }
+    }
+    function fallbackCopy(scrollY, callback) {
+      var ta = document.createElement('textarea');
+      ta.value = L4_PROMPT;
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); callback(); } catch(e) { alert('Please press Ctrl+C (or Cmd+C) to copy.'); }
+      document.body.removeChild(ta);
+      setTimeout(function() { window.scrollTo(0, scrollY); }, 50);
+    }
+
+    var TAB_ORDER = ['video','overview','threeforms','redflags','session','complete'];
+    var heroWelcome = document.getElementById('hero-welcome');
+    var heroVideo   = document.getElementById('hero-video');
+
+    function activateTab(tabId, markPrev) {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+      var btn   = document.querySelector('[data-tab="' + tabId + '"]');
+      var panel = document.getElementById('panel-' + tabId);
+      if (btn)   btn.classList.add('active');
+      if (panel) panel.classList.add('active');
+      if (markPrev) {
+        var prevIdx = TAB_ORDER.indexOf(tabId) - 1;
+        if (prevIdx >= 0) {
+          var prevBtn = document.querySelector('[data-tab="' + TAB_ORDER[prevIdx] + '"]');
+          if (prevBtn) prevBtn.classList.add('done');
+        }
+      }
+      heroWelcome.style.display = 'none';
+      heroVideo.style.display   = (tabId === 'video') ? 'block' : 'none';
+      if (btn) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+      document.querySelector('.tab-bar').scrollIntoView({ behavior:'smooth' });
+      window.scrollTo({ top:0, behavior:'smooth' });
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-tab'), false); });
+    });
+    document.querySelectorAll('.continue-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-next'), true); });
+    });
+    document.querySelectorAll('.back-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-prev'), false); });
+    });
+
+    var tabBar = document.getElementById('tab-bar');
+    var scrollHint = document.getElementById('tab-scroll-hint');
+    var scrollHintLeft = document.getElementById('tab-scroll-hint-left');
+
+    function updateScrollHint() {
+      if (!tabBar) { return; }
+      var atEnd   = tabBar.scrollLeft + tabBar.clientWidth >= tabBar.scrollWidth - 4;
+      var atStart = tabBar.scrollLeft <= 4;
+      if (scrollHint)     scrollHint.classList.toggle('hidden', atEnd);
+      if (scrollHintLeft) scrollHintLeft.classList.toggle('visible', !atStart);
+    }
+    function scrollTabBar()     { if (tabBar) tabBar.scrollBy({ left:  160, behavior:'smooth' }); }
+    function scrollTabBarLeft() { if (tabBar) tabBar.scrollBy({ left: -160, behavior:'smooth' }); }
+
+    if (tabBar) {
+      tabBar.addEventListener('scroll', updateScrollHint);
+      window.addEventListener('resize', updateScrollHint);
+      setTimeout(updateScrollHint, 100);
+    }
+
+    function playFacade(el, videoId) {
+      var iframe = el.querySelector('iframe');
+      iframe.src = 'https://www.youtube.com/embed/' + videoId + '?rel=0&modestbranding=1&autoplay=1';
+      el.classList.add('playing');
+    }
+
+    function toggleTranscript(btn, bodyId) {
+      var body   = document.getElementById(bodyId);
+      var isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    }
+  </script>
+
+</body>
+</html>
