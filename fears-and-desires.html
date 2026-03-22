@@ -34,6 +34,7 @@
     .tab-btn:hover { color:var(--tan); background:rgba(196,168,130,0.08); }
     .tab-btn.active { color:var(--tan); font-weight:700; font-size:13px; letter-spacing:0.13em; }
     .tab-btn.active::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:var(--tan); }
+    .tab-check { width:18px; height:18px; border:1.5px solid rgba(196,168,130,0.35); border-radius:50%; display:flex; align-items:center; justify-content:flex-shrink:0; transition:background 0.25s,border-color 0.25s; }
     .tab-check { width:18px; height:18px; border:1.5px solid rgba(196,168,130,0.35); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.25s,border-color 0.25s; }
     .tab-check svg { width:9px; height:9px; stroke:rgba(196,168,130,0.25); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
     .tab-btn.active .tab-check { border-color:var(--tan); background:rgba(196,168,130,0.18); }
@@ -209,7 +210,7 @@
     .excavation-chain-body { background:var(--cream); padding:18px 22px; }
     .chain-rung { display:flex; align-items:flex-start; gap:16px; padding:10px 0; position:relative; }
     .chain-rung:not(:last-child)::before { content:''; position:absolute; left:7px; top:26px; width:1px; height:calc(100% - 6px); background:rgba(196,168,130,0.28); }
-    .chain-dot { width:16px; height:16px; border-radius:50%; border:1.5px solid rgba(196,168,130,0.38); background:var(--cream-mid); flex-shrink:0; margin-top:3px; transition:background 0.2s,border-color 0.2s; }
+    .chain-dot { width:16px; height:16px; border-radius:50%; border:1.5px solid rgba(196,168,130,0.38); background:var(--cream-mid); flex-shrink:0; margin-top:3px; }
     .chain-rung.active .chain-dot { background:var(--tan); border-color:var(--tan); width:18px; height:18px; margin-top:2px; }
     .chain-content { flex:1; }
     .chain-layer-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:rgba(168,137,94,0.6); display:block; margin-bottom:1px; }
@@ -220,7 +221,7 @@
     .chain-rung.active .chain-layer-desc { color:var(--brown-mid); }
     .chain-rung.active { background:var(--cream-dark); border-radius:4px; padding:12px 10px; margin:6px -6px; }
 
-    /* Katniss full-chain walkthrough */
+    /* Katniss walkthrough */
     .walkthrough { border:1px solid var(--tan-light); margin-bottom:28px; overflow:hidden; }
     .walkthrough-head { background:var(--brown); padding:16px 22px; border-bottom:1px solid rgba(196,168,130,0.2); }
     .walkthrough-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:6px; }
@@ -235,7 +236,6 @@
     .walkthrough-step-content p:last-child { margin-bottom:0; }
     .walkthrough-step-content em { font-style:italic; color:var(--brown-mid); }
     .walkthrough-step-content strong { font-weight:500; color:var(--brown-mid); }
-    /* Highlighted rows for L6 layers */
     .walkthrough-step.bedrock { background:var(--brown); border-bottom:1px solid rgba(196,168,130,0.12); margin:0 -22px; padding:14px 22px; }
     .walkthrough-step.bedrock .walkthrough-step-marker { color:var(--tan); }
     .walkthrough-step.bedrock .walkthrough-step-content p { color:rgba(250,244,232,0.88); }
@@ -244,7 +244,7 @@
     .walkthrough-note { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:var(--brown-mid); line-height:1.72; background:var(--cream); border:1px solid var(--tan-faint); border-top:none; padding:14px 22px; margin:0 -22px -20px; }
     .walkthrough-note strong { font-style:normal; font-weight:500; color:var(--brown-mid); }
 
-    /* Discipline block (one fear, one desire) */
+    /* Discipline block */
     .discipline-block { background:var(--brown); border:1px solid rgba(196,168,130,0.2); padding:24px 26px; margin-bottom:28px; }
     .discipline-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:14px; }
     .discipline-rule { font-family:'Cormorant Garamond',Georgia,serif; font-size:20px; font-weight:300; font-style:italic; color:var(--cream); line-height:1.5; margin-bottom:14px; }
@@ -292,8 +292,8 @@
   <!-- HERO VIDEO -->
   <div class="hero-video" id="hero-video">
     <div class="video-container">
-      <div class="yt-facade" onclick="playFacade(this,'4GEodVaKiKc')">
-        <img src="https://i.ytimg.com/vi/4GEodVaKiKc/maxresdefault.jpg" alt="Fears &amp; Desires — STRATUM" loading="lazy">
+      <div class="yt-facade" onclick="playFacade(this,'NQ00Ba3ahG4')">
+        <img src="https://i.ytimg.com/vi/NQ00Ba3ahG4/maxresdefault.jpg" alt="Fears &amp; Desires — STRATUM" loading="lazy">
         <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
         <iframe title="Lesson 6: Fears &amp; Desires — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
       </div>
@@ -378,8 +378,8 @@
           <span class="supp-video-title">The Emotion Beneath the Belief — Why Fear Runs the Show</span>
         </div>
         <div class="supp-video-container">
-          <div class="yt-facade" onclick="playFacade(this,'4GEodVaKiKc')">
-            <img src="https://i.ytimg.com/vi/4GEodVaKiKc/maxresdefault.jpg" alt="The Emotion Beneath the Belief — Why Fear Runs the Show" loading="lazy">
+          <div class="yt-facade" onclick="playFacade(this,'LtbaM2uTlBg')">
+            <img src="https://i.ytimg.com/vi/LtbaM2uTlBg/maxresdefault.jpg" alt="The Emotion Beneath the Belief — Why Fear Runs the Show" loading="lazy">
             <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
             <iframe title="The Emotion Beneath the Belief — Why Fear Runs the Show" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
           </div>
@@ -390,8 +390,40 @@
             <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="transcript-body" id="transcript-supp1">
-            <!-- Transcript coming -->
-            <p>Transcript coming soon.</p>
+            <p>I want to tell you about a woman I worked with about fifteen years into my corporate coaching career.</p>
+            <p>She led a large marketing organization. Exceptionally talented. And she had a pattern that was costing her — she couldn't stop managing her team's work after she'd delegated it. She'd assign a project, then check in the same day. Then the next morning. Then she'd quietly redo sections of it herself at ten o'clock at night. Her team felt micromanaged. She felt exhausted. And she knew exactly what she was doing.</p>
+            <p>She'd been in therapy. She'd read the books. She could tell me, in precise clinical language, exactly why she behaved this way. Control as a response to early instability. A belief that if she didn't oversee everything, something essential would fall apart. She understood her own psychology better than most coaches could articulate it.</p>
+            <p>And she still couldn't stop.</p>
+            <p>I've thought about that woman often in the years since. Because what she taught me — what thirty-five years of working with driven, self-aware people eventually made undeniable — is something that changes how I think about character in fiction.</p>
+            <p>Understanding a belief doesn't free you from it. And the reason is simple: the belief is not what's running the show. Fear is.</p>
+            <p class="section-marker">What Fear Actually Is</p>
+            <p>We tend to think of our psychological patterns as operating at the level of belief. I believe I'm responsible for everything, so I act as if I'm responsible for everything. If I could just change the belief, the behavior would change.</p>
+            <p>That's a cognitive model. And it's partially true. Beliefs do shape behavior. But underneath most of the beliefs that are genuinely difficult to change — the ones that survive therapy, survive insight, survive years of self-awareness — there is something that is not a belief at all.</p>
+            <p>It's an emotional charge. A pre-cognitive certainty about what will happen if you stop.</p>
+            <p>Not a thought. A knowing. The kind of knowing that lives in the chest and the gut, not in the part of the mind that reads books and understands psychology.</p>
+            <p>For the woman I worked with, the belief was: if I don't oversee this, something will go wrong. But the fear underneath it was something she could barely say out loud. The fear was: if something goes wrong because I trusted someone else, I will be responsible for the destruction of something I was supposed to protect. And the evidence her nervous system was running on was thirty years old — a memory of a time when she had trusted, and it had gone catastrophically wrong, and she had been eleven years old and completely powerless.</p>
+            <p>The belief was cognitive. The fear was something else entirely. And the fear was what was running the show.</p>
+            <p class="section-marker">What This Means for Your Characters</p>
+            <p>This distinction matters enormously if you write fiction, because it changes what your characters are capable of.</p>
+            <p>One of the most common failures of character work is writing a psychologically self-aware character who changes their behavior because they understand it. They realize what they've been doing. They have the insight. And then they stop.</p>
+            <p>It's unsatisfying, and most writers feel it without knowing why.</p>
+            <p>The reason is that insight operates at the cognitive level. It changes the belief, maybe. But it doesn't touch the fear. And the fear is what's making the behavior feel like survival.</p>
+            <p>A character can fully understand their pattern — can articulate it clearly, can explain the wound it came from, can see exactly how it's costing them — and still be completely unable to stop. Because stopping feels like stepping off a ledge. Not a metaphorical ledge. An actual ledge. The body reads the prospect as physical danger.</p>
+            <p>That's why characters resist change. Not because they lack self-awareness. Because what they're afraid of isn't cognitive.</p>
+            <p class="section-marker">The Characters Who Stay With You</p>
+            <p>Think about the characters who stay with you.</p>
+            <p>The ones who feel real in a way that characters who are merely well-constructed do not. What they almost always have in common is this: there is something they cannot do, even when they know they should. Even when they want to. Even when every rational signal in the story is telling them that the behavior is destroying them.</p>
+            <p>Hamlet understands that he should act. He knows it. He can articulate it at length. He has every reason in the world. And he cannot. The fear underneath the understanding is not fear of failure — it's something deeper, something about the nature of action and guilt and the irreversibility of certain knowledge that his conscious mind cannot get beneath. He keeps thinking about it because thinking is the only thing that keeps him from having to feel what the action would require.</p>
+            <p>That is not poor character design. That is the most accurate representation of how human psychology actually works that drama has ever produced.</p>
+            <p>Katniss Everdeen knows, by the later books, exactly what she's doing. She has the self-awareness. And she cannot stop. Because what stops her isn't a belief she can argue herself out of. It's the certainty, running at a level below thought, that if she stops, everyone she loves will be destroyed. The self-awareness doesn't free her. It makes the tragedy more specific.</p>
+            <p class="section-marker">The Question That Changes Everything</p>
+            <p>So what do you do with this as a writer?</p>
+            <p>You stop trying to locate your character's block at the level of belief and start looking for it at the level of fear. Ask a different question. Not: what does my character believe? But: what does my character believe will happen if they stop believing it?</p>
+            <p>What collapses? What becomes unbearable? What does the body know that the mind is protecting itself from having to acknowledge?</p>
+            <p>That answer — that specific, almost physical answer — is the emotional engine of your character's behavior. And once you find it, you'll understand something crucial: your character's resistance to change is not a failure of self-awareness. It's a completely logical response to a terror that is running below the level where logic operates.</p>
+            <p>That's what makes the arc matter. Not the character learning something. The character facing something that understanding alone cannot touch — and having to move through the fear itself to get to the other side.</p>
+            <p>This is the work I've spent the last several years translating from corporate behavioral diagnostics into tools for fiction writers. If you want to go through this process systematically — starting from the surface behavior and working all the way down to the fear that makes the arc structurally inevitable — that's exactly what we do inside STRATUM: AI Character Coaching at myaiwritingcoach.com.</p>
+            <p>Because the characters who change the reader — the ones who stay — they didn't just understand something. They faced something that no amount of understanding could substitute for. That's the story worth telling.</p>
           </div>
         </div>
       </div>
@@ -426,7 +458,6 @@
         </div>
       </div>
 
-      <!-- Six-layer excavation chain -->
       <div class="excavation-chain">
         <div class="excavation-chain-head">
           <span class="excavation-chain-eyebrow">The Complete Excavation</span>
@@ -484,7 +515,6 @@
         </div>
       </div>
 
-      <!-- Katniss full-chain walkthrough -->
       <div class="walkthrough">
         <div class="walkthrough-head">
           <span class="walkthrough-eyebrow">The Complete Chain in Action</span>
@@ -545,7 +575,6 @@
         </div>
       </div>
 
-      <!-- One Fear. One Desire. -->
       <div class="discipline-block">
         <span class="discipline-eyebrow">The Discipline</span>
         <p class="discipline-rule">One fear. One desire. Not a list — the root.</p>
@@ -570,7 +599,6 @@
             <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="transcript-body" id="transcript-supp2">
-            <!-- Transcript coming -->
             <p>Transcript coming soon.</p>
           </div>
         </div>
@@ -713,7 +741,7 @@
   </div>
 
   <script>
-    var LESSON6_PROMPT = "ROLE\nYour role is to help me excavate my character's fear and desire \u2014 the emotional bedrock underneath their want and need. Fear is the pre-cognitive charge that makes the lie feel like survival. Desire is the reaching-toward that makes the need feel both unbearable and irresistible. You are a Socratic questioner working at the emotional level, not the analytical level. Do not name the fear or desire for me. Ask questions that help me feel my way to the answers.\n\nBOUNDARIES \u2014 WHAT TO AVOID\nDo not suggest specific fears or desires. Do not let me restate the want as the fear \u2014 the fear is deeper than a strategic concern. Do not accept a desire that merely restates the need \u2014 it must carry emotional charge, almost physical in its immediacy. Do not let me generate lists \u2014 one fear, one desire only. Do not interpret or psychoanalyze. Ask.\n\nTWO REQUIRED DELIVERABLES\n1. One fear \u2014 the specific emotional catastrophe my character believes will happen if they stop believing the lie. Stated with emotional specificity, not abstraction.\n2. One desire \u2014 the emotional reaching toward what the wound took away. Simple and profound. Often sounds like something a child would say \u2014 because it was formed at the age the wound happened.\n\nSESSION STRUCTURE\n\nStage 1: From Lie to Fear (15 minutes)\nAsk me to state my character's lie from Lesson 4. Then ask: \"What does your character believe would happen if they stopped? Not stopped the behavior \u2014 stopped believing the lie was true? What collapses?\" Push from general to specific. The fear should be almost physical in its immediacy \u2014 something the body knows, not just the mind concludes.\n\nStage 2: Testing the Fear (10 minutes)\nTest: Is this fear rooted in the specific wound from Lesson 3? Does it explain why the lie feels like survival rather than just a belief? Could this fear belong to a different character with a different history? If yes, it is not specific enough yet. When the fear is right, it could only belong to this character.\n\nStage 3: From Wound to Desire (10 minutes)\nShift to desire. Ask: \"In the moment the wound formed \u2014 what was your character reaching for that wasn't there? What did they need that the wound made unavailable?\" The desire is almost always simple \u2014 safety, belonging, being seen, being held, permission to need. Often so elemental it sounds like something a child would say. That is correct.\n\nStage 4: Testing the Opposition (5 minutes)\nTest the pair: does fear drive toward the want? Does desire pull toward the need? If both could coexist without structural conflict \u2014 if your character could pursue the want at full intensity and simultaneously open to the desire \u2014 you don't have the right pair yet. When the opposition locks, help me state both in one clear, emotionally specific sentence each.\n\nCRITICAL REMINDERS\n\u2014 Fear answers: what does my character believe will happen if they stop?\n\u2014 Desire answers: what is my character reaching for that the wound took away?\n\u2014 Both must be emotionally specific \u2014 not analytical, not conceptual\n\u2014 The fear should feel pre-cognitive, like something the body knows, not the mind concludes\n\u2014 The desire should feel almost too simple \u2014 elemental, not complicated\n\u2014 One fear, one desire. No lists.\n\u2014 The opposition must be structural: fear drives toward want, desire pulls toward need\n\u2014 I am the expert on my character; you are the guide helping me access what I already know\n\nBEGIN\nI've attached my completed PDFs from Lessons 1 through 5. Please read them first, then begin Stage 1 by asking me to state my character's lie and what they believe would happen if they stopped believing it was true.";
+    var LESSON6_PROMPT = "ROLE\nYour role is to help me excavate my character\u2019s fear and desire \u2014 the emotional bedrock beneath the want and need I found in Lesson 5. Fear is the pre-cognitive charge that makes the lie feel like survival rather than just a belief. Desire is the emotional reaching-toward that makes the need feel both unbearable to be denied and too dangerous to fully open to. You are a Socratic questioner working at the emotional level, not the analytical level. Do not name the fear or desire for me. Ask questions that help me feel my way to the answers, not think my way in.\n\nBOUNDARIES \u2014 WHAT TO AVOID\nDo not suggest specific fears or desires. Do not let me restate the want as the fear \u2014 the fear is what makes abandoning the want feel dangerous, not a description of what the want is protecting against. Do not accept a desire that merely restates the need in different words \u2014 it must carry immediate emotional weight, almost physical in its quality. Do not let me generate a list \u2014 one fear, one desire only. If I offer multiple, ask me which one is the root. Do not interpret or psychoanalyze my character. Ask.\n\nTWO REQUIRED DELIVERABLES\n1. One fear \u2014 stated as the specific emotional catastrophe my character believes will happen if they stop believing the lie is true. Not a category (\"fear of abandonment\") \u2014 the precise charge that belongs only to this character given this wound at the age it formed.\n2. One desire \u2014 stated as the emotional reaching-toward that the wound made unavailable. Simple and profound. Often sounds like something a child would say \u2014 because it was formed at the age the wound formed.\n\nSESSION STRUCTURE\n\nStage 1: From Lie to Fear (15 minutes)\nAsk me to state my character\u2019s lie from Lesson 4. Then ask: What does your character believe would happen if they stopped \u2014 not stopped the behavior, but stopped believing the lie was true? What collapses? What becomes unbearable? Push from the general to the specific. Fear is not \"she\u2019d lose people.\" Fear is the exact emotional catastrophe that this specific wound, in this specific person, makes unthinkable. The answer should feel physical and immediate \u2014 something the body knows before the mind has finished the sentence.\n\nStage 2: Testing the Fear (10 minutes)\nApply three tests. First: does this fear trace directly to the Lesson 3 wound? The fear should be the emotional form of the wound \u2014 the terror that the wound proved was possible. Second: does this fear explain why the lie feels like survival rather than just a strategy? If my character could simply think their way out of the lie, the fear isn\u2019t right yet. Third: could this fear belong to a different character with a different history? If the answer is yes, push me to make it more specific. When the fear is right, it could only belong to this person.\n\nStage 3: From Wound to Desire (10 minutes)\nShift to desire. Ask: In the moment the wound formed \u2014 what was your character reaching for that wasn\u2019t there? Not what they needed strategically, but what they were aching for in their body, in that moment. What did the wound take from them that they have never stopped reaching toward? Desire is almost always elemental \u2014 safety, belonging, being seen, being held, being loved without having to earn it, permission to rest. If the desire sounds complicated or sophisticated, it isn\u2019t deep enough yet. Go simpler. Go younger.\n\nStage 4: Testing the Opposition (5 minutes)\nTest the pair as a structural unit. Fear drives toward the want \u2014 toward the strategy that the lie produces. Desire pulls toward the need \u2014 toward the transformation the wound requires. If my character could pursue the want at full intensity and simultaneously open to the desire without one threatening the other, the pair is not right yet. When the pair locks, the fear is the exact charge that makes the desire feel dangerous \u2014 and the desire is the exact reaching that makes the fear feel urgent. Help me state both in one emotionally specific sentence each.\n\nIf I haven\u2019t started writing yet: Trust what surfaces when you go to the emotional level. The fear and desire are already implied by the wound and the lie \u2014 we are uncovering them, not constructing them.\n\nIf I\u2019m revising: Look at the moments in your manuscript where your character almost opens \u2014 and then doesn\u2019t. The desire is what\u2019s pulling at them in those moments. The fear is what closes the door. Name both.\n\nCRITICAL REMINDERS\n\u2014 Fear answers: what does my character believe will happen if they stop believing the lie?\n\u2014 Desire answers: what is my character reaching for that the wound made unavailable?\n\u2014 Both must be emotionally specific \u2014 not analytical, not conceptual, not restated from the layers above\n\u2014 The fear should feel pre-cognitive \u2014 the kind of certainty that lives in the chest and gut, not in the part of the mind that reads books and understands psychology\n\u2014 The desire should feel almost too simple \u2014 elemental is correct, complicated is not deep enough\n\u2014 The fear must trace directly to the Lesson 3 wound, or we keep refining\n\u2014 The desire must be distinct from the Lesson 5 need \u2014 the need is structural, the desire is emotional\n\u2014 One fear. One desire. If I offer more than one of either, ask me which is the root\n\u2014 The opposition must be structural: fear drives toward the want; desire pulls toward the need; they must be made of the same wound, pressing in opposite directions\n\u2014 I am the expert on my character. You are the guide helping me access what I already know.\n\nBEGIN\nI\u2019ve attached my completed PDFs from Lessons 1 through 5. Please read them first, then begin Stage 1 by asking me to state my character\u2019s lie from Lesson 4 \u2014 and then ask me what my character believes would happen if they stopped believing it was true.";
 
     function copyPrompt() {
       var btn = document.getElementById('copy-prompt-btn');
