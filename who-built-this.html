@@ -5,497 +5,232 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Who Built This and Why — STRATUM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --cream:        #faf4e8;
-      --cream-dark:   #f2ead8;
-      --cream-mid:    #ede5d4;
-      --tan:          #c4a882;
-      --tan-mid:      #a8895e;
-      --tan-light:    #ddd0b8;
-      --tan-faint:    #ede5d4;
-      --brown:        #2e1f0e;
-      --brown-mid:    #5c3d1e;
-      --brown-light:  #8b6340;
-      --green:        #2a5c2a;
-      --green-bg:     #f0f5f0;
-      --green-border: #a8c4a8;
-      --amber:        #7a4e10;
-      --amber-bg:     #fdf3e3;
-      --amber-border: #d4b88a;
-
-      /* ── Typography scale ──────────────────────────────────────
-         Floor rules (from readability audit):
-           • Nothing displayed to users below 11px
-           • Uppercase/tracked labels: 11–12px minimum
-           • Reading-length paragraphs: 15px minimum
-           • Primary body text: 16px
-         Aesthetic is unchanged — same faces, same tracking,
-         same uppercase treatment — just at legible sizes.
-      ───────────────────────────────────────────────────────── */
-      --label-xs:   11px;   /* was 9–10px — eyebrows, small caps labels  */
-      --label-sm:   12px;   /* was 11px  — transcript toggle, section num */
-      --label-md:   13px;   /* unchanged — deliverables title             */
-      --body-sm:    14px;   /* was 13px  — table cells, callout body      */
-      --body-md:    15px;   /* was 14px  — callout/deliverable/claude text */
-      --body-lg:    16px;   /* was 15px  — primary section paragraphs     */
+      --cream:#faf4e8; --cream-dark:#f2ead8; --cream-mid:#ede5d4;
+      --tan:#c4a882; --tan-mid:#a8895e; --tan-light:#ddd0b8; --tan-faint:#ede5d4;
+      --brown:#2e1f0e; --brown-mid:#5c3d1e; --brown-light:#8b6340;
+      --label-xs:11px; --label-sm:12px; --label-md:13px;
+      --body-sm:14px; --body-md:15px; --body-lg:16px;
+      --green:#2a5c2a; --green-bg:#f0f5f0; --green-border:#a8c4a8;
+      --amber:#7a4e10; --amber-bg:#fdf3e3; --amber-border:#d4b88a;
     }
-
     html { scroll-behavior: smooth; }
+    body { font-family:'Spectral',Georgia,serif; background:var(--cream); color:var(--brown); line-height:1.6; }
 
-    body {
-      font-family: 'Spectral', Georgia, serif;
-      background: var(--cream);
-      color: var(--brown);
-      line-height: 1.6; /* was 1 — corrected base; individual overrides still apply */
-    }
+    /* TAB BAR */
+    .tab-bar { position:sticky; top:0; z-index:50; display:flex; overflow-x:auto; background:var(--brown); border-top:3px solid var(--tan); border-bottom:1px solid rgba(196,168,130,0.18); box-shadow:0 3px 14px rgba(0,0,0,0.40); -webkit-overflow-scrolling:touch; scrollbar-width:none; scroll-behavior:smooth; }
+    .tab-bar::-webkit-scrollbar { display:none; }
+    .tab-bar-wrap { position:sticky; top:0; z-index:50; }
+    .tab-scroll-hint-left { position:absolute; top:0; left:0; height:100%; width:52px; background:linear-gradient(to left,transparent,var(--brown) 55%); display:flex; align-items:center; justify-content:flex-start; padding-left:8px; z-index:52; transition:opacity 0.3s; opacity:0; pointer-events:none; }
+    .tab-scroll-hint-left.visible { opacity:1; pointer-events:all; }
+    .tab-scroll-hint { position:absolute; top:0; right:0; height:100%; width:52px; background:linear-gradient(to right,transparent,var(--brown) 55%); display:flex; align-items:center; justify-content:flex-end; padding-right:8px; z-index:52; transition:opacity 0.3s; }
+    .tab-scroll-hint.hidden { opacity:0; pointer-events:none; }
+    .tab-scroll-arrow { width:28px; height:28px; border:1.5px solid rgba(196,168,130,0.5); border-radius:50%; display:flex; align-items:center; justify-content:center; pointer-events:all; cursor:pointer; background:var(--brown); animation:pulse-arrow 1.5s ease-in-out infinite; flex-shrink:0; }
+    .tab-scroll-arrow svg { width:12px; height:12px; stroke:var(--tan); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    @keyframes pulse-arrow { 0%,100% { border-color:rgba(196,168,130,0.4); box-shadow:none; } 50% { border-color:var(--tan); box-shadow:0 0 8px rgba(196,168,130,0.4); } }
+    .tab-btn { font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; font-weight:500; letter-spacing:0.15em; text-transform:uppercase; color:rgba(196,168,130,0.55); background:transparent; border:none; border-right:1px solid rgba(196,168,130,0.12); padding:0 16px; min-height:52px; cursor:pointer; white-space:nowrap; flex:0 0 auto; min-width:140px; display:flex; align-items:center; justify-content:center; gap:9px; transition:color 0.2s,background 0.2s; position:relative; }
+    .tab-btn:last-child { border-right:none; }
+    .tab-btn:hover { color:var(--tan); background:rgba(196,168,130,0.08); }
+    .tab-btn.active { color:var(--tan); font-weight:700; font-size:13px; letter-spacing:0.13em; }
+    .tab-btn.active::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:var(--tan); }
+    .tab-check { width:18px; height:18px; border:1.5px solid rgba(196,168,130,0.35); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.25s,border-color 0.25s; }
+    .tab-check svg { width:9px; height:9px; stroke:rgba(196,168,130,0.25); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .tab-btn.active .tab-check { border-color:var(--tan); background:rgba(196,168,130,0.18); }
+    .tab-btn.active .tab-check svg { stroke:var(--tan); }
+    .tab-btn.done .tab-check { background:var(--tan); border-color:var(--tan); }
+    .tab-btn.done .tab-check svg { stroke:var(--brown); }
+    .tab-btn.done { color:rgba(196,168,130,0.6); }
 
-    /* ══ COMPLETE BANNER ══ */
-    .complete-banner {
-      background: var(--brown);
-      border-bottom: 2px solid var(--tan);
-      padding: 18px 28px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .complete-banner-icon {
-      width: 36px; height: 36px;
-      border: 2px solid var(--tan);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .complete-banner-icon svg {
-      width: 18px; height: 18px;
-      stroke: var(--tan); fill: none;
-      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .complete-banner-text {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 15px; font-weight: 500;
-      letter-spacing: 0.02em;
-      color: #faf4e8; line-height: 1.55;
-    }
-    .complete-banner-text strong { color: var(--tan); font-weight: 700; }
+    /* HERO */
+    .hero-welcome { display:block; }
+    .hero-welcome img { width:100%; display:block; }
+    .hero-video { display:none; background:#100a04; }
+    .video-container { position:relative; width:100%; padding-bottom:56.25%; height:0; overflow:hidden; }
+    .video-container iframe { position:absolute; inset:0; width:100%; height:100%; border:none; display:block; }
 
-    /* ══ VIDEO ══ */
-    .video-wrap { background: #100a04; }
-    .video-container {
-      position: relative; width: 100%;
-      padding-bottom: 56.25%; height: 0; overflow: hidden;
-    }
-    .video-container iframe {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      border: none; display: block;
-    }
+    /* YOUTUBE FACADE */
+    .yt-facade { position:relative; width:100%; padding-bottom:56.25%; background:#000; cursor:pointer; overflow:hidden; }
+    .yt-facade img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.3s ease; }
+    .yt-facade:hover img { transform:scale(1.02); }
+    .yt-facade .yt-play { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:68px; height:48px; background:#ff0000; border-radius:12px; display:flex; align-items:center; justify-content:center; transition:background 0.2s,transform 0.2s; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+    .yt-facade:hover .yt-play { background:#cc0000; transform:translate(-50%,-50%) scale(1.1); }
+    .yt-facade .yt-play svg { width:24px; height:24px; fill:#fff; margin-left:4px; }
+    .yt-facade iframe { position:absolute; inset:0; width:100%; height:100%; border:none; display:none; }
+    .yt-facade.playing img,.yt-facade.playing .yt-play { display:none; }
+    .yt-facade.playing iframe { display:block; }
 
-    /* ── Transcript ── */
-    .transcript { background: var(--brown); border-top: 1px solid rgba(196,168,130,0.15); }
-    .transcript-btn {
-      width: 100%; background: transparent; border: none;
-      padding: 13px 24px;
-      display: flex; align-items: center; justify-content: space-between;
-      cursor: pointer; gap: 12px;
-    }
-    .transcript-btn:hover { background: rgba(196,168,130,0.06); }
-    .transcript-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-sm); /* was 11px → 12px */
-      font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--tan);
-    }
-    .transcript-chevron {
-      width: 16px; height: 16px;
-      stroke: var(--tan); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      transition: transform 0.3s ease; flex-shrink: 0;
-    }
-    .transcript-btn[aria-expanded="true"] .transcript-chevron { transform: rotate(180deg); }
-    .transcript-body { display: none; padding: 0 28px 22px; }
-    .transcript-body.open { display: block; }
-    .transcript-body p {
-      font-family: 'Spectral', Georgia, serif;
-      font-size: var(--body-sm); /* was 13px → 14px */
-      font-weight: 300; font-style: italic;
-      color: rgba(250,244,232,0.78); /* slightly increased opacity for contrast */
-      line-height: 1.85; margin-bottom: 14px;
-    }
-    .transcript-body p:last-child { margin-bottom: 0; }
+    /* TRANSCRIPT */
+    .transcript { background:var(--brown); border-top:1px solid rgba(196,168,130,0.15); }
+    .transcript-btn { width:100%; background:transparent; border:none; padding:13px 24px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; gap:12px; }
+    .transcript-btn:hover { background:rgba(196,168,130,0.06); }
+    .transcript-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan); }
+    .transcript-chevron { width:16px; height:16px; stroke:var(--tan); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:transform 0.3s ease; flex-shrink:0; }
+    .transcript-btn[aria-expanded="true"] .transcript-chevron { transform:rotate(180deg); }
+    .transcript-body { display:none; padding:0 28px 22px; }
+    .transcript-body.open { display:block; }
+    .transcript-body p { font-family:'Spectral',Georgia,serif; font-size:var(--body-sm); font-weight:300; font-style:italic; color:rgba(250,244,232,0.78); line-height:1.85; margin-bottom:14px; }
+    .transcript-body p:last-child { margin-bottom:0; }
 
-    /* ══ MAIN ══ */
-    .main {
-      padding: 48px 32px 24px;
-      max-width: 760px;
-      margin: 0 auto;
-    }
+    /* PANELS */
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .panel-inner { padding:44px 32px 32px; max-width:760px; margin:0 auto; }
+    .panel-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:8px; }
+    .panel-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:30px; font-weight:300; color:var(--brown); line-height:1.15; }
+    .panel-title em { font-style:italic; color:var(--brown-mid); }
+    .panel-rule { width:40px; height:1px; background:var(--tan); margin:16px 0 26px; }
+    .panel-lead { font-size:var(--body-lg); font-weight:300; line-height:1.8; color:var(--brown-mid); margin-bottom:32px; }
 
-    .lesson-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); /* was 10px → 11px */
-      font-weight: 500;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan-mid); margin-bottom: 10px; display: block;
-    }
-    .page-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 36px; font-weight: 300;
-      color: var(--brown); line-height: 1.15; margin-bottom: 6px;
-    }
-    .page-title em { font-style: italic; color: var(--brown-mid); }
-    .title-rule { width: 48px; height: 1px; background: var(--tan); margin: 18px 0 28px; }
+    /* NAV BUTTONS */
+    .nav-wrap { padding:24px 32px 32px; max-width:760px; margin:0 auto; border-top:1px solid var(--tan-light); display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .nav-wrap.no-back { justify-content:flex-end; }
+    .back-btn { display:inline-flex; align-items:center; gap:8px; background:transparent; border:1px solid var(--tan-light); padding:12px 22px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:var(--tan-mid); cursor:pointer; transition:background 0.2s,color 0.2s,border-color 0.2s; }
+    .back-btn:hover { background:var(--cream-dark); border-color:var(--tan-mid); color:var(--brown); }
+    .back-btn svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .continue-btn { display:inline-flex; align-items:center; gap:10px; background:var(--brown); border:none; padding:14px 28px; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; color:var(--tan); cursor:pointer; transition:background 0.2s,color 0.2s; }
+    .continue-btn:hover { background:var(--brown-mid); color:var(--cream); }
+    .continue-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 
-    .lead {
-      font-size: var(--body-lg); /* was 16px → 16px (unchanged) */
-      font-weight: 300; line-height: 1.8;
-      color: var(--brown-mid); margin-bottom: 40px;
-      padding-bottom: 32px; border-bottom: 1px solid var(--tan-light);
-    }
+    /* SECTION STYLES */
+    .section { margin-bottom:40px; }
+    .section-header { display:flex; align-items:baseline; gap:14px; margin-bottom:16px; }
+    .section-num { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-sm); font-weight:500; letter-spacing:0.1em; color:var(--tan-mid); text-transform:uppercase; flex-shrink:0; }
+    .section-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:22px; font-weight:500; color:var(--brown); line-height:1.2; }
+    .section p { font-size:var(--body-lg); font-weight:300; line-height:1.85; color:var(--brown); margin-bottom:18px; }
+    .section p:last-child { margin-bottom:0; }
 
-    /* ══ SECTIONS ══ */
-    .section { margin-bottom: 40px; }
-    .section-header {
-      display: flex; align-items: baseline;
-      gap: 14px; margin-bottom: 16px;
-    }
-    .section-num {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-sm); /* was 13px → 12px; it's a Roman numeral label */
-      font-weight: 500;
-      letter-spacing: 0.1em; color: var(--tan-mid);
-      text-transform: uppercase; flex-shrink: 0;
-    }
-    .section-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 22px; font-weight: 500;
-      color: var(--brown); line-height: 1.2;
-    }
-    .section p {
-      font-size: var(--body-lg); /* was 15px → 16px — primary reading text */
-      font-weight: 300;
-      line-height: 1.85; color: var(--brown);
-      margin-bottom: 18px;
-    }
-    .section p:last-child { margin-bottom: 0; }
+    /* LEAD */
+    .intro-lead { font-size:var(--body-lg); font-weight:300; line-height:1.8; color:var(--brown-mid); margin-bottom:24px; padding-bottom:24px; border-bottom:1px solid var(--tan-light); }
 
-    /* ══ PULL QUOTE ══ */
-    .pull-quote {
-      background: var(--brown);
-      padding: 28px 32px;
-      margin: 32px 0;
-      position: relative;
-    }
-    .pull-quote::before {
-      content: '';
-      position: absolute; left: 0; top: 0; bottom: 0;
-      width: 3px; background: var(--tan);
-    }
-    .pull-quote p {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 20px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.65; margin: 0;
-    }
+    /* PULL QUOTE */
+    .pull-quote { background:var(--brown); padding:28px 32px; margin:32px 0; position:relative; }
+    .pull-quote::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--tan); }
+    .pull-quote p { font-family:'Cormorant Garamond',Georgia,serif; font-size:20px; font-weight:300; font-style:italic; color:var(--cream); line-height:1.65; margin:0; }
 
-    /* ══ CALLOUT BOXES ══ */
-    .callout {
-      padding: 20px 24px; margin: 24px 0;
-      border-left: 3px solid;
-    }
-    .callout.green { background: var(--green-bg); border-color: var(--green); }
-    .callout.amber { background: var(--amber-bg); border-color: var(--amber); }
-    .callout-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); /* was 10px → 11px */
-      font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      display: block; margin-bottom: 9px;
-    }
-    .callout.green .callout-label { color: var(--green); }
-    .callout.amber .callout-label { color: var(--amber); }
-    .callout p {
-      font-size: var(--body-md); /* was 14px → 15px */
-      font-weight: 300;
-      line-height: 1.8; color: var(--brown); margin: 0;
-    }
-    .callout p strong { font-weight: 500; }
+    /* CALLOUT */
+    .callout { padding:20px 24px; margin:24px 0; border-left:3px solid; }
+    .callout.amber { background:var(--amber-bg); border-color:var(--amber); }
+    .callout-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.18em; text-transform:uppercase; display:block; margin-bottom:9px; }
+    .callout.amber .callout-label { color:var(--amber); }
+    .callout p { font-size:var(--body-md); font-weight:300; line-height:1.8; color:var(--brown); margin:0; }
+    .callout p strong { font-weight:500; }
 
-    /* ══ DELIVERABLES ══ */
-    .deliverables {
-      background: var(--cream-dark);
-      border: 1px solid var(--tan-light);
-      padding: 28px 32px; margin: 28px 0;
-    }
-    .deliverables-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-md); /* was 13px — unchanged; it's a heading label, fine */
-      font-weight: 600;
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--tan-mid); display: block; margin-bottom: 18px;
-    }
-    .deliverable-item {
-      display: flex; gap: 16px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--tan-faint);
-      align-items: flex-start;
-    }
-    .deliverable-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .deliverable-item:first-of-type { padding-top: 0; }
-    .deliverable-marker {
-      width: 20px; height: 20px;
-      border: 1px solid var(--tan); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; margin-top: 2px;
-    }
-    .deliverable-marker svg {
-      width: 10px; height: 10px;
-      stroke: var(--tan-mid); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    }
-    .deliverable-text {
-      font-size: var(--body-md); /* was 14px → 15px */
-      font-weight: 300;
-      line-height: 1.75; color: var(--brown);
-    }
-    .deliverable-text strong { font-weight: 500; color: var(--brown-mid); }
+    /* DELIVERABLES */
+    .deliverables { background:var(--cream-dark); border:1px solid var(--tan-light); padding:28px 32px; margin:28px 0; }
+    .deliverables-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-md); font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--tan-mid); display:block; margin-bottom:18px; }
+    .deliverable-item { display:flex; gap:16px; padding:12px 0; border-bottom:1px solid var(--tan-faint); align-items:flex-start; }
+    .deliverable-item:last-child { border-bottom:none; padding-bottom:0; }
+    .deliverable-item:first-of-type { padding-top:0; }
+    .deliverable-marker { width:20px; height:20px; border:1px solid var(--tan); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px; }
+    .deliverable-marker svg { width:10px; height:10px; stroke:var(--tan-mid); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .deliverable-text { font-size:var(--body-md); font-weight:300; line-height:1.75; color:var(--brown); }
+    .deliverable-text strong { font-weight:500; color:var(--brown-mid); }
 
-    /* ══ CONTRAST GRID ══ */
-    .contrast-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 1px; background: var(--tan-light);
-      border: 1px solid var(--tan-light);
-      margin: 24px 0; overflow: hidden;
-    }
-    .contrast-col { background: var(--cream); padding: 20px 22px; }
-    .contrast-col.right { background: var(--cream-dark); }
-    .contrast-col-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); /* was 10px → 11px */
-      font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      display: block; margin-bottom: 14px;
-    }
-    .contrast-col:first-child .contrast-col-label { color: var(--brown-light); }
-    .contrast-col.right .contrast-col-label { color: var(--tan-mid); }
-    .contrast-col p {
-      font-size: var(--body-sm); /* was 13px → 14px */
-      font-weight: 300;
-      line-height: 1.8; color: var(--brown); margin-bottom: 10px;
-    }
-    .contrast-col p:last-child { margin-bottom: 0; }
+    /* CONTRAST GRID */
+    .contrast-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--tan-light); border:1px solid var(--tan-light); margin:24px 0; overflow:hidden; }
+    .contrast-col { background:var(--cream); padding:20px 22px; }
+    .contrast-col.right { background:var(--cream-dark); }
+    .contrast-col-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.18em; text-transform:uppercase; display:block; margin-bottom:14px; }
+    .contrast-col:first-child .contrast-col-label { color:var(--brown-light); }
+    .contrast-col.right .contrast-col-label { color:var(--tan-mid); }
+    .contrast-col p { font-size:var(--body-sm); font-weight:300; line-height:1.8; color:var(--brown); margin-bottom:10px; }
+    .contrast-col p:last-child { margin-bottom:0; }
 
-    /* ══ CLAUDE CONTEXT BLOCK ══ */
-    .claude-block {
-      border: 1px solid var(--tan-light);
-      margin: 28px 0;
-    }
-    .claude-block-head {
-      background: var(--brown);
-      padding: 16px 24px;
-      border-bottom: 1px solid rgba(196,168,130,0.2);
-    }
-    .claude-block-eyebrow {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); /* was 9px → 11px — most critical fix */
-      font-weight: 600;
-      letter-spacing: 0.22em; /* slightly reduced from 0.26em — better at 11px */
-      text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 6px;
-    }
-    .claude-block-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 19px; font-weight: 300;
-      color: var(--cream); line-height: 1.3;
-    }
-    .claude-block-title em { font-style: italic; color: var(--tan); }
-    .claude-block-body {
-      background: var(--cream-dark);
-      padding: 22px 24px 24px;
-    }
-    .claude-block-intro {
-      font-size: var(--body-md); /* was 14px → 15px */
-      font-weight: 300; line-height: 1.8;
-      color: var(--brown); margin-bottom: 22px;
-    }
+    /* CLAUDE BLOCK */
+    .claude-block { border:1px solid var(--tan-light); margin:28px 0; }
+    .claude-block-head { background:var(--brown); padding:16px 24px; border-bottom:1px solid rgba(196,168,130,0.2); }
+    .claude-block-eyebrow { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:6px; }
+    .claude-block-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:19px; font-weight:300; color:var(--cream); line-height:1.3; }
+    .claude-block-title em { font-style:italic; color:var(--tan); }
+    .claude-block-body { background:var(--cream-dark); padding:22px 24px 24px; }
+    .claude-block-intro { font-size:var(--body-md); font-weight:300; line-height:1.8; color:var(--brown); margin-bottom:22px; }
 
-    /* AI comparison table */
-    .ai-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-      border: 1px solid var(--tan-light);
-    }
-    .ai-table thead tr {
-      background: var(--brown);
-    }
-    .ai-table thead th {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); /* was 10px → 11px */
-      font-weight: 600;
-      letter-spacing: 0.16em; /* slightly tighter at larger size — still caps style */
-      text-transform: uppercase;
-      color: var(--tan);
-      padding: 11px 16px;
-      text-align: left;
-    }
-    .ai-table thead th:not(:first-child) {
-      text-align: center;
-      border-left: 1px solid rgba(196,168,130,0.2);
-    }
-    /* Vendor subtitle inside header cell */
-    .ai-table thead th span.vendor-name {
-      display: block;
-      font-weight: 300;
-      font-style: italic;
-      letter-spacing: 0;
-      text-transform: none;
-      font-size: 13px;
-      opacity: 1;
-      color: rgba(196,168,130,0.75);
-      margin-top: 3px;
-    }
+    /* AI TABLE */
+    .ai-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:20px; }
+    .ai-table { width:100%; border-collapse:collapse; border:1px solid var(--tan-light); min-width:480px; }
+    .ai-table thead tr { background:var(--brown); }
+    .ai-table thead th { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--tan); padding:11px 16px; text-align:left; }
+    .ai-table thead th:not(:first-child) { text-align:center; border-left:1px solid rgba(196,168,130,0.2); }
+    .ai-table thead th span.vendor-name { display:block; font-weight:300; font-style:italic; letter-spacing:0; text-transform:none; font-size:13px; opacity:1; color:rgba(196,168,130,0.75); margin-top:3px; }
+    .ai-table tbody tr { border-bottom:1px solid var(--tan-faint); background:var(--cream); }
+    .ai-table tbody tr:nth-child(even) { background:var(--cream-dark); }
+    .ai-table tbody td { font-size:var(--body-sm); font-weight:300; line-height:1.55; color:var(--brown); padding:11px 16px; vertical-align:middle; }
+    .ai-table tbody td:not(:first-child) { text-align:center; border-left:1px solid var(--tan-faint); }
+    .ai-table .feature-label { font-weight:400; color:var(--brown-mid); }
+    .mark-yes { color:#4a7c4a; font-size:15px; }
+    .mark-no { color:var(--tan-light); font-size:15px; }
+    .mark-star { color:var(--tan-mid); font-size:15px; }
+    .ai-table .claude-row td { background:#f5ede0; font-weight:400; }
+    .ai-table .claude-row td:first-child { border-left:3px solid var(--tan-mid); padding-left:13px; }
+    .claude-why { background:var(--cream); border-left:3px solid var(--tan); padding:16px 18px; }
+    .claude-why p { font-size:var(--body-sm); font-weight:300; line-height:1.8; color:var(--brown-mid); }
+    .claude-why p strong { font-weight:500; color:var(--brown); }
 
-    /* Scrollable table wrapper — prevents narrow mobile columns */
-    .ai-table-wrap {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      margin-bottom: 20px;
-    }
-    .ai-table-wrap .ai-table {
-      margin-bottom: 0;
-      min-width: 480px;
-    }
-    .ai-table tbody tr {
-      border-bottom: 1px solid var(--tan-faint);
-      background: var(--cream);
-    }
-    .ai-table tbody tr:nth-child(even) { background: var(--cream-dark); }
-    .ai-table tbody td {
-      font-size: var(--body-sm); /* was 13px → 14px */
-      font-weight: 300;
-      line-height: 1.55; color: var(--brown);
-      padding: 11px 16px;
-      vertical-align: middle;
-    }
-    .ai-table tbody td:not(:first-child) {
-      text-align: center;
-      border-left: 1px solid var(--tan-faint);
-    }
-    .ai-table .feature-label {
-      font-weight: 400; color: var(--brown-mid);
-    }
-    /* check / dash / star markers */
-    .mark-yes  { color: #4a7c4a; font-size: 15px; }
-    .mark-no   { color: var(--tan-light); font-size: 15px; }
-    .mark-star { color: var(--tan-mid); font-size: 15px; }
+    /* ACTION BOX */
+    .action-box { background:var(--brown); padding:28px 32px; margin:16px 0 0; text-align:center; border-bottom:1px solid rgba(196,168,130,0.3); }
+    .action-box-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:10px; }
+    .action-box p { font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; font-weight:300; font-style:italic; color:var(--cream); line-height:1.65; margin:0; }
+    .action-box p strong { font-style:normal; font-weight:500; color:var(--tan); }
 
-    /* Claude highlight row */
-    .ai-table .claude-row td {
-      background: #f5ede0;
-      font-weight: 400;
-    }
-    .ai-table .claude-row td:first-child {
-      border-left: 3px solid var(--tan-mid);
-      padding-left: 13px;
-    }
+    /* CLOSING */
+    .closing { background:var(--brown); padding:36px 32px; text-align:center; }
+    .closing-quote { font-family:'Cormorant Garamond',Georgia,serif; font-size:21px; font-weight:300; font-style:italic; color:var(--cream); line-height:1.65; margin-bottom:20px; }
+    .closing-attr { font-family:'Cormorant Garamond',Georgia,serif; font-size:var(--label-xs); font-weight:400; letter-spacing:0.2em; text-transform:uppercase; color:var(--tan); }
 
-    .claude-why {
-      background: var(--cream);
-      border-left: 3px solid var(--tan);
-      padding: 16px 18px;
-    }
-    .claude-why p {
-      font-size: var(--body-sm); /* was 13px → 14px */
-      font-weight: 300; line-height: 1.8;
-      color: var(--brown-mid);
-    }
-    .claude-why p strong { font-weight: 500; color: var(--brown); }
-
-    /* ══ ACTION BOX ══ */
-    .action-box {
-      background: var(--brown);
-      padding: 28px 32px; margin: 16px 0 0;
-      text-align: center;
-      border-bottom: 1px solid rgba(196,168,130,0.3);
-    }
-    .action-box-label {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); /* was 10px → 11px */
-      font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--tan); display: block; margin-bottom: 10px;
-    }
-    .action-box p {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 17px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.65; margin: 0;
-    }
-    .action-box p strong { font-style: normal; font-weight: 500; color: var(--tan); }
-
-    .closing {
-      background: var(--brown);
-      padding: 36px 32px;
-      text-align: center; margin-top: 0;
-    }
-    .closing-quote {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 21px; font-weight: 300; font-style: italic;
-      color: var(--cream); line-height: 1.65; margin-bottom: 20px;
-    }
-    .closing-attr {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: var(--label-xs); /* was 10px → 11px */
-      font-weight: 400;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--tan);
-    }
-
-    @media (max-width: 560px) {
-      .main { padding: 32px 20px 40px; }
-      .page-title { font-size: 28px; }
-      .contrast-grid { grid-template-columns: 1fr; }
-      .pull-quote { padding: 22px 20px; }
-      .deliverables { padding: 22px 20px; }
-      .complete-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
-      /* On mobile, bump table text slightly for thumb-distance reading */
-      .ai-table thead th { font-size: 12px; padding: 9px 11px; }
-      .ai-table tbody td { font-size: 14px; padding: 9px 11px; }
+    @media (max-width:540px) {
+      .contrast-grid { grid-template-columns:1fr; }
+      .panel-inner { padding:28px 20px 20px; }
+      .nav-wrap { padding:20px; flex-direction:column; }
+      .continue-btn,.back-btn { width:100%; justify-content:center; }
+      .deliverables { padding:22px 20px; }
+      .pull-quote { padding:22px 20px; }
+      .action-box { padding:24px 20px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ══ COMPLETE BANNER ══ -->
-  <div class="complete-banner">
-    <div class="complete-banner-icon">
-      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <!-- TAB BAR -->
+  <div class="tab-bar-wrap">
+    <nav class="tab-bar" id="tab-bar" aria-label="Lesson sections">
+      <button class="tab-btn" data-tab="video"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Video</button>
+      <button class="tab-btn" data-tab="introduction"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Introduction</button>
+      <button class="tab-btn" data-tab="results"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Results</button>
+      <button class="tab-btn" data-tab="difference"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Difference</button>
+      <button class="tab-btn" data-tab="next-steps"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Next Steps</button>
+      <button class="tab-btn" data-tab="claude"><span class="tab-check"><svg viewBox="0 0 10 10"><polyline points="2 5 4 7 8 3"/></svg></span>Claude</button>
+    </nav>
+    <div class="tab-scroll-hint-left" id="tab-scroll-hint-left">
+      <div class="tab-scroll-arrow" onclick="scrollTabBarLeft()"><svg viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg></div>
     </div>
-    <p class="complete-banner-text">
-      When you finish this lesson, scroll past the content below to find the
-      <strong>Mark as Complete</strong> button. Click it before moving to the next lesson.
-    </p>
+    <div class="tab-scroll-hint" id="tab-scroll-hint">
+      <div class="tab-scroll-arrow" onclick="scrollTabBar()"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+    </div>
   </div>
 
-  <!-- ══ VIDEO ══ -->
-  <div class="video-wrap">
+  <!-- HERO WELCOME IMAGE -->
+  <div class="hero-welcome" id="hero-welcome">
+    <img src="https://stratummethod.github.io/stratum-widget/welcome-who-built-this.png" alt="Welcome to Who Built This and Why — STRATUM">
+  </div>
+
+  <!-- HERO VIDEO -->
+  <div class="hero-video" id="hero-video">
     <div class="video-container">
-      <iframe
-        src="https://www.youtube.com/embed/GPVLwxwSaNA?rel=0&modestbranding=1"
-        title="Who Built This and Why — Ted Baker"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-      </iframe>
+      <div class="yt-facade" onclick="playFacade(this,'GPVLwxwSaNA')">
+        <img src="https://i.ytimg.com/vi/GPVLwxwSaNA/maxresdefault.jpg" alt="Who Built This and Why — STRATUM" loading="lazy">
+        <div class="yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+        <iframe title="Who Built This and Why — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
     </div>
     <div class="transcript">
-      <button class="transcript-btn" aria-expanded="false" aria-controls="transcript-body" onclick="toggleTranscript(this)">
+      <button class="transcript-btn" aria-expanded="false" onclick="toggleTranscript(this,'transcript-main')">
         <span class="transcript-label">Video Transcript</span>
-        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        <svg class="transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
-      <div class="transcript-body" id="transcript-body">
+      <div class="transcript-body" id="transcript-main">
         <p>Welcome. I'm Ted Baker.</p>
         <p>I am so glad that you're here, because you've chosen to invest in your writing, and that's no small thing.</p>
         <p>Writing can feel lonely, and even overwhelming at times, but this course is designed to remind you that you are not alone in the process. You have guidance, structure, and something no other writing course offers: personalized AI coaching sessions that help you extract what you already intuitively know about your characters.</p>
@@ -507,25 +242,35 @@
     </div>
   </div>
 
-  <!-- ══ MAIN ══ -->
-  <div class="main">
+  <!-- VIDEO PANEL -->
+  <div class="tab-panel" id="panel-video">
+    <div class="nav-wrap no-back">
+      <button class="continue-btn" data-next="introduction">Continue to Introduction<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+  </div>
 
-    <span class="lesson-label">Introduction · STRATUM: AI Character Coaching</span>
-    <h1 class="page-title">Who Built This —<br>and <em>Why</em></h1>
-    <div class="title-rule"></div>
+  <!-- INTRODUCTION PANEL -->
+  <div class="tab-panel" id="panel-introduction">
+    <div class="panel-inner">
+      <span class="panel-eyebrow">Introduction · STRATUM: AI Character Coaching</span>
+      <h1 class="panel-title">Who Built This —<br>and <em>Why</em></h1>
+      <div class="panel-rule"></div>
+      <p class="intro-lead">For over 35 years, I taught businesses to solve complex problems by going deeper than the obvious — past surface symptoms to the underlying layer driving them. STRATUM applies that same discipline to character development. What you're about to learn isn't a collection of writing tips. It's a systematic methodology for excavating the psychological truth that makes fictional characters feel undeniably real.</p>
+      <p class="intro-lead" style="border-bottom:none; margin-bottom:0; padding-bottom:0;">You made a serious investment to be here. This course will honor that.</p>
+    </div>
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="video"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Video</button>
+      <button class="continue-btn" data-next="results">Continue to Results<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+  </div>
 
-    <p class="lead">For over 35 years, I taught businesses to solve complex problems by going deeper than the obvious — past surface symptoms to the underlying layer driving them. STRATUM applies that same discipline to character development. What you're about to learn isn't a collection of writing tips. It's a systematic methodology for excavating the psychological truth that makes fictional characters feel undeniably real.</p>
-
-    <p class="lead" style="margin-top: -16px;">You made a serious investment to be here. This course will honor that.</p>
-
-    <!-- ══ SECTION I ══ -->
-    <div class="section">
-      <div class="section-header">
-        <span class="section-num">I</span>
-        <h2 class="section-title">What You'll Walk Away With</h2>
-      </div>
-
-      <p>By the end, you won't just know your character. You'll have excavated their complete psychological architecture.</p>
+  <!-- RESULTS PANEL -->
+  <div class="tab-panel" id="panel-results">
+    <div class="panel-inner">
+      <span class="panel-eyebrow">The Methodology</span>
+      <h2 class="panel-title">What You'll Walk Away <em>With</em></h2>
+      <div class="panel-rule"></div>
+      <p class="panel-lead">By the end, you won't just know your character. You'll have excavated their complete psychological architecture.</p>
 
       <div class="deliverables">
         <span class="deliverables-title">Your Complete Character Architecture</span>
@@ -561,139 +306,172 @@
         </div>
       </div>
 
-      <p>You'll have a character who surprises you, resists easy resolution, and earns the reader's emotional investment — because they were <em>discovered</em>, not constructed.</p>
-    </div>
-
-    <!-- ══ SECTION II ══ -->
-    <div class="section">
-      <div class="section-header">
-        <span class="section-num">II</span>
-        <h2 class="section-title">How This Course Works Differently</h2>
-      </div>
-
-      <p>Most character development advice asks you to invent — to fill in templates, brainstorm backstory, and fabricate psychology from scratch.</p>
-      <p>STRATUM works in the opposite direction.</p>
-
-      <div class="contrast-grid">
-        <div class="contrast-col">
-          <span class="contrast-col-label">Most Courses Ask You To</span>
-          <p>Fill in character templates</p>
-          <p>Brainstorm backstory</p>
-          <p>Fabricate psychology from scratch</p>
-          <p>Use AI to generate answers</p>
-          <p>Build a plausible history</p>
-        </div>
-        <div class="contrast-col right">
-          <span class="contrast-col-label">STRATUM Teaches You To</span>
-          <p>Excavate what's already true</p>
-          <p>Trace belief back to origin</p>
-          <p>Discover through Socratic questioning</p>
-          <p>Use AI to find what you already know</p>
-          <p>Recognize what was inevitable</p>
-        </div>
-      </div>
-
-      <p>Every lesson is designed to help you excavate what's already true about your character, layer by layer, using structured Socratic questioning rather than creative guesswork.</p>
-
-      <div class="pull-quote">
-        <p>Your AI coach doesn't generate answers. It asks the questions that help you find what you already know. That distinction — excavation versus fabrication — is the entire methodology. Keep it in mind as you begin.</p>
+      <div class="section">
+        <p>You'll have a character who surprises you, resists easy resolution, and earns the reader's emotional investment — because they were <em>discovered</em>, not constructed.</p>
       </div>
     </div>
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="introduction"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Introduction</button>
+      <button class="continue-btn" data-next="difference">Continue to Difference<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+  </div>
 
-    <!-- ══ SECTION III ══ -->
-    <div class="section">
-      <div class="section-header">
-        <span class="section-num">III</span>
-        <h2 class="section-title">Your Next Steps</h2>
-      </div>
+  <!-- DIFFERENCE PANEL -->
+  <div class="tab-panel" id="panel-difference">
+    <div class="panel-inner">
+      <span class="panel-eyebrow">The Methodology</span>
+      <h2 class="panel-title">How This Course Works <em>Differently</em></h2>
+      <div class="panel-rule"></div>
 
-      <p>Before you touch a single lesson, your next step is choosing the right character to bring to the excavation. The Character Selection Guide walks you through that decision. After that, you'll set up your AI coaching environment — a five-minute configuration that shapes every session that follows.</p>
-
-      <p>Every coaching session in STRATUM is built around a specific prompt architecture that transforms your AI coach from a general-purpose tool into a disciplined Socratic partner who knows your methodology, respects your boundaries, and refuses to do the work for you.</p>
-
-      <p>That AI coach is <strong>Claude</strong> — and if you haven't used it before, here's what you need to know.</p>
-
-      <!-- ══ CLAUDE CONTEXT BLOCK ══ -->
-      <div class="claude-block">
-        <div class="claude-block-head">
-          <span class="claude-block-eyebrow">Your Coaching Tool — What It Is &amp; Why It Was Chosen</span>
-          <div class="claude-block-title">Claude, by <em>Anthropic</em></div>
+      <div class="section">
+        <div class="section-header">
+          <span class="section-num">II</span>
+          <h3 class="section-title">How This Course Works Differently</h3>
         </div>
-        <div class="claude-block-body">
-          <p class="claude-block-intro">You've almost certainly heard of ChatGPT. Claude is in the same category — a large language model AI — but made by a different company, Anthropic, with a different design philosophy. Understanding the distinction matters for how you'll use it in this course.</p>
+        <p>Most character development advice asks you to invent — to fill in templates, brainstorm backstory, and fabricate psychology from scratch.</p>
+        <p>STRATUM works in the opposite direction.</p>
 
-          <p class="claude-block-intro" style="font-style: italic; font-size: var(--body-sm); color: var(--brown-light); margin-top: -10px;">If you already use another AI tool, you don't have to switch. That said, Claude is the recommended choice for this course — and the table below explains why.</p>
-
-          <div class="ai-table-wrap">
-          <table class="ai-table">
-            <thead>
-              <tr>
-                <th>Feature</th>
-                <th>ChatGPT<span class="vendor-name">OpenAI</span></th>
-                <th>Gemini<span class="vendor-name">Google</span></th>
-                <th>Copilot<span class="vendor-name">Microsoft</span></th>
-                <th>Claude<span class="vendor-name">Anthropic</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="feature-label">Works with detailed prompts</td>
-                <td><span class="mark-yes">✓</span></td>
-                <td><span class="mark-yes">✓</span></td>
-                <td><span class="mark-yes">✓</span></td>
-                <td class="claude-row"><span class="mark-yes">✓</span></td>
-              </tr>
-              <tr>
-                <td class="feature-label">Reads attached PDFs</td>
-                <td><span class="mark-yes">✓</span></td>
-                <td><span class="mark-yes">✓</span></td>
-                <td><span class="mark-yes">✓</span></td>
-                <td class="claude-row"><span class="mark-yes">✓</span></td>
-              </tr>
-              <tr>
-                <td class="feature-label">Memory across sessions (Projects)</td>
-                <td><span class="mark-no">—</span></td>
-                <td><span class="mark-no">—</span></td>
-                <td><span class="mark-no">—</span></td>
-                <td class="claude-row"><span class="mark-star">★</span></td>
-              </tr>
-              <tr>
-                <td class="feature-label">Holds role across 8 lessons</td>
-                <td><span class="mark-no">—</span></td>
-                <td><span class="mark-no">—</span></td>
-                <td><span class="mark-no">—</span></td>
-                <td class="claude-row"><span class="mark-star">★</span></td>
-              </tr>
-              <tr>
-                <td class="feature-label">Resists drifting into content generation</td>
-                <td><span class="mark-no">—</span></td>
-                <td><span class="mark-no">—</span></td>
-                <td><span class="mark-no">—</span></td>
-                <td class="claude-row"><span class="mark-star">★</span></td>
-              </tr>
-              <tr>
-                <td class="feature-label">Free tier available</td>
-                <td><span class="mark-yes">✓</span></td>
-                <td><span class="mark-yes">✓</span></td>
-                <td><span class="mark-yes">✓</span></td>
-                <td class="claude-row"><span class="mark-yes">✓</span></td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="contrast-grid">
+          <div class="contrast-col">
+            <span class="contrast-col-label">Most Courses Ask You To</span>
+            <p>Fill in character templates</p>
+            <p>Brainstorm backstory</p>
+            <p>Fabricate psychology from scratch</p>
+            <p>Use AI to generate answers</p>
+            <p>Build a plausible history</p>
           </div>
-
-          <div class="claude-why">
-            <p><strong>The single reason Claude was chosen over the others: Projects.</strong> Claude's Projects feature gives your coach persistent memory across all eight lessons. It remembers your character's anchor behavior from Lesson 1 when you arrive at Lesson 5. It accumulates context the way a human coach would across multiple sessions. No other major AI tool does this reliably without manual workarounds. For a course built on progressive depth, that continuity isn't a convenience — it's the foundation the methodology depends on.</p>
+          <div class="contrast-col right">
+            <span class="contrast-col-label">STRATUM Teaches You To</span>
+            <p>Excavate what's already true</p>
+            <p>Trace belief back to origin</p>
+            <p>Discover through Socratic questioning</p>
+            <p>Use AI to find what you already know</p>
+            <p>Recognize what was inevitable</p>
           </div>
         </div>
+
+        <p>Every lesson is designed to help you excavate what's already true about your character, layer by layer, using structured Socratic questioning rather than creative guesswork.</p>
+
+        <div class="pull-quote">
+          <p>Your AI coach doesn't generate answers. It asks the questions that help you find what you already know. That distinction — excavation versus fabrication — is the entire methodology. Keep it in mind as you begin.</p>
+        </div>
       </div>
-      <!-- /claude-block -->
+    </div>
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="results"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Results</button>
+      <button class="continue-btn" data-next="next-steps">Continue to Next Steps<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+  </div>
 
-      <p>The next lesson — <em>Building Your AI Coach</em> — walks you through setting up Claude in five steps. The lesson after that, <em>Calibrating Your Coach</em>, gives it the context it needs to coach you specifically.</p>
+  <!-- NEXT STEPS PANEL -->
+  <div class="tab-panel" id="panel-next-steps">
+    <div class="panel-inner">
+      <span class="panel-eyebrow">Before You Begin</span>
+      <h2 class="panel-title">Your Next <em>Steps</em></h2>
+      <div class="panel-rule"></div>
 
-      <div class="callout amber">
-        <span class="callout-label">Do Not Skip This</span>
-        <p>Skip the setup and the sessions will still function. <strong>Do it properly and you'll have a coaching partner calibrated to push you in exactly the right direction for all lessons.</strong> The five minutes you spend here will shape every session that follows. Don't skip it.</p>
+      <div class="section">
+        <p>Before you touch a single lesson, your next step is choosing the right character to bring to the excavation. The Character Selection Guide walks you through that decision. After that, you'll set up your AI coaching environment — a five-minute configuration that shapes every session that follows.</p>
+        <p>Every coaching session in STRATUM is built around a specific prompt architecture that transforms your AI coach from a general-purpose tool into a disciplined Socratic partner who knows your methodology, respects your boundaries, and refuses to do the work for you.</p>
+        <p>That AI coach is <strong>Claude</strong> — and the next tab explains what it is, why it was chosen over the alternatives, and what makes it the right tool for this methodology.</p>
+      </div>
+    </div>
+
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="difference"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Difference</button>
+      <button class="continue-btn" data-next="claude">Continue to Claude<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+  </div>
+
+  <!-- CLAUDE PANEL -->
+  <div class="tab-panel" id="panel-claude">
+    <div class="panel-inner">
+      <span class="panel-eyebrow">Your Coaching Tool</span>
+      <h2 class="panel-title">Why <em>Claude</em></h2>
+      <div class="panel-rule"></div>
+      <p class="panel-lead">That AI coach is Claude — and if you haven't used it before, here's what you need to know.</p>
+
+      <div class="section">
+        <!-- CLAUDE BLOCK -->
+        <div class="claude-block">
+          <div class="claude-block-head">
+            <span class="claude-block-eyebrow">Your Coaching Tool — What It Is &amp; Why It Was Chosen</span>
+            <div class="claude-block-title">Claude, by <em>Anthropic</em></div>
+          </div>
+          <div class="claude-block-body">
+            <p class="claude-block-intro">You've almost certainly heard of ChatGPT. Claude is in the same category — a large language model AI — but made by a different company, Anthropic, with a different design philosophy. Understanding the distinction matters for how you'll use it in this course.</p>
+            <p class="claude-block-intro" style="font-style:italic; font-size:var(--body-sm); color:var(--brown-light); margin-top:-10px;">If you already use another AI tool, you don't have to switch. That said, Claude is the recommended choice for this course — and the table below explains why.</p>
+
+            <div class="ai-table-wrap">
+              <table class="ai-table">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th>ChatGPT<span class="vendor-name">OpenAI</span></th>
+                    <th>Gemini<span class="vendor-name">Google</span></th>
+                    <th>Copilot<span class="vendor-name">Microsoft</span></th>
+                    <th>Claude<span class="vendor-name">Anthropic</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="feature-label">Works with detailed prompts</td>
+                    <td><span class="mark-yes">✓</span></td>
+                    <td><span class="mark-yes">✓</span></td>
+                    <td><span class="mark-yes">✓</span></td>
+                    <td class="claude-row"><span class="mark-yes">✓</span></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-label">Reads attached PDFs</td>
+                    <td><span class="mark-yes">✓</span></td>
+                    <td><span class="mark-yes">✓</span></td>
+                    <td><span class="mark-yes">✓</span></td>
+                    <td class="claude-row"><span class="mark-yes">✓</span></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-label">Memory across sessions (Projects)</td>
+                    <td><span class="mark-no">—</span></td>
+                    <td><span class="mark-no">—</span></td>
+                    <td><span class="mark-no">—</span></td>
+                    <td class="claude-row"><span class="mark-star">★</span></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-label">Holds role across 8 lessons</td>
+                    <td><span class="mark-no">—</span></td>
+                    <td><span class="mark-no">—</span></td>
+                    <td><span class="mark-no">—</span></td>
+                    <td class="claude-row"><span class="mark-star">★</span></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-label">Resists drifting into content generation</td>
+                    <td><span class="mark-no">—</span></td>
+                    <td><span class="mark-no">—</span></td>
+                    <td><span class="mark-no">—</span></td>
+                    <td class="claude-row"><span class="mark-star">★</span></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-label">Free tier available</td>
+                    <td><span class="mark-yes">✓</span></td>
+                    <td><span class="mark-yes">✓</span></td>
+                    <td><span class="mark-yes">✓</span></td>
+                    <td class="claude-row"><span class="mark-yes">✓</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="claude-why">
+              <p><strong>The single reason Claude was chosen over the others: Projects.</strong> Claude's Projects feature gives your coach persistent memory across all eight lessons. It remembers your character's anchor behavior from Lesson 1 when you arrive at Lesson 5. It accumulates context the way a human coach would across multiple sessions. No other major AI tool does this reliably without manual workarounds. For a course built on progressive depth, that continuity isn't a convenience — it's the foundation the methodology depends on.</p>
+            </div>
+          </div>
+        </div>
+
+        <p>The next lesson — <em>Building Your AI Coach</em> — walks you through setting up Claude in five steps. The lesson after that, <em>Calibrating Your Coach</em>, gives it the context it needs to coach you specifically.</p>
+
+        <div class="callout amber">
+          <span class="callout-label">Do Not Skip This</span>
+          <p>Skip the setup and the sessions will still function. <strong>Do it properly and you'll have a coaching partner calibrated to push you in exactly the right direction for all lessons.</strong> The five minutes you spend here will shape every session that follows. Don't skip it.</p>
+        </div>
       </div>
     </div>
 
@@ -702,17 +480,80 @@
       <p>Move to the next lesson: <strong>Your Character Selection Guide.</strong><br>The single most important decision you'll make before Lesson 1 begins.</p>
     </div>
 
-  </div><!-- /main -->
+    <div class="closing">
+      <p class="closing-quote">Writing is discovery. You're learning how to better access your instincts as a storyteller.</p>
+      <span class="closing-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
+    </div>
 
-  <div class="closing">
-    <p class="closing-quote">Writing is discovery. You're learning how to better access your instincts as a storyteller.</p>
-    <span class="closing-attr">— Ted Baker &nbsp;·&nbsp; STRATUM: AI Character Coaching &nbsp;·&nbsp; myaiwritingcoach.com</span>
+    <div class="nav-wrap">
+      <button class="back-btn" data-prev="next-steps"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back to Next Steps</button>
+    </div>
   </div>
 
   <script>
-    function toggleTranscript(btn) {
-      const body = document.getElementById('transcript-body');
-      const isOpen = body.classList.contains('open');
+    var TAB_ORDER = ['video','introduction','results','difference','next-steps','claude'];
+    var heroWelcome = document.getElementById('hero-welcome');
+    var heroVideo   = document.getElementById('hero-video');
+
+    function activateTab(tabId, markPrev) {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+      var btn   = document.querySelector('[data-tab="' + tabId + '"]');
+      var panel = document.getElementById('panel-' + tabId);
+      if (btn)   btn.classList.add('active');
+      if (panel) panel.classList.add('active');
+      if (markPrev) {
+        var prevIdx = TAB_ORDER.indexOf(tabId) - 1;
+        if (prevIdx >= 0) {
+          var prevBtn = document.querySelector('[data-tab="' + TAB_ORDER[prevIdx] + '"]');
+          if (prevBtn) prevBtn.classList.add('done');
+        }
+      }
+      heroWelcome.style.display = 'none';
+      heroVideo.style.display   = (tabId === 'video') ? 'block' : 'none';
+      if (btn) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+      window.scrollTo({ top:0, behavior:'smooth' });
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-tab'), false); });
+    });
+    document.querySelectorAll('.continue-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-next'), true); });
+    });
+    document.querySelectorAll('.back-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-prev'), false); });
+    });
+
+    var tabBar = document.getElementById('tab-bar');
+    var scrollHint = document.getElementById('tab-scroll-hint');
+    var scrollHintLeft = document.getElementById('tab-scroll-hint-left');
+
+    function updateScrollHint() {
+      if (!tabBar) { return; }
+      var atEnd   = tabBar.scrollLeft + tabBar.clientWidth >= tabBar.scrollWidth - 4;
+      var atStart = tabBar.scrollLeft <= 4;
+      if (scrollHint)     scrollHint.classList.toggle('hidden', atEnd);
+      if (scrollHintLeft) scrollHintLeft.classList.toggle('visible', !atStart);
+    }
+    function scrollTabBar()     { if (tabBar) tabBar.scrollBy({ left:  160, behavior:'smooth' }); }
+    function scrollTabBarLeft() { if (tabBar) tabBar.scrollBy({ left: -160, behavior:'smooth' }); }
+
+    if (tabBar) {
+      tabBar.addEventListener('scroll', updateScrollHint);
+      window.addEventListener('resize', updateScrollHint);
+      setTimeout(updateScrollHint, 100);
+    }
+
+    function playFacade(el, videoId) {
+      var iframe = el.querySelector('iframe');
+      iframe.src = 'https://www.youtube.com/embed/' + videoId + '?rel=0&modestbranding=1&autoplay=1';
+      el.classList.add('playing');
+    }
+
+    function toggleTranscript(btn, bodyId) {
+      var body   = document.getElementById(bodyId);
+      var isOpen = body.classList.contains('open');
       body.classList.toggle('open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
     }
