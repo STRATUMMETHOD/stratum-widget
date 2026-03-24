@@ -1,0 +1,1447 @@
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ── RESET ── */
+.sh-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Override any Systeme.io centering inside hero */
+.sh-hero .sh-hero-inner,
+.sh-hero .sh-hero-left,
+.sh-hero .sh-hero-eyebrow,
+.sh-hero h1,
+.sh-hero .sh-hero-sub,
+.sh-hero .sh-hero-cta-block,
+.sh-hero .sh-hero-proof { text-align: left !important; }
+
+/*
+  SYSTEME.IO: Set block width to "Full"
+  sh-wrap background bleeds wall-to-wall at Full width.
+*/
+.sh-wrap {
+    font-family: 'Instrument Sans', sans-serif;
+    background-color: #f9f5f0;
+    color: #1a1512;
+    line-height: 1.6;
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* ════════════════════════════════
+   HERO — full-bleed dark
+════════════════════════════════ */
+.sh-hero {
+    background: #1a1512;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.sh-hero-strata {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    opacity: 0.07;
+}
+
+.sh-strata-line {
+    flex: 1;
+    border-bottom: 1px solid #c4a882;
+}
+
+.sh-hero-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 64px 0;
+}
+
+.sh-hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #b08d57;
+    margin-bottom: 28px;
+}
+
+.sh-hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: #b08d57;
+}
+
+.sh-hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(56px, 8vw, 108px);
+    font-weight: 300;
+    line-height: 0.97;
+    letter-spacing: -0.02em;
+    color: #f9f5f0;
+    margin-bottom: 36px;
+    max-width: 1000px;
+}
+
+.sh-hero h1 em {
+    font-style: italic;
+    color: #c4a882;
+    display: block;
+}
+
+.sh-hero h1 strong {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.sh-hero-sub {
+    font-size: 18px;
+    color: rgba(249,245,240,0.6);
+    line-height: 1.75;
+    max-width: 640px;
+    margin-bottom: 40px;
+    text-align: left;
+}
+
+.sh-hero-cta-block {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 48px;
+    text-align: left;
+    align-items: flex-start;
+}
+
+.sh-btn-hero {
+    display: inline-block;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #1a1512;
+    background: #c4a882;
+    padding: 18px 40px;
+    text-decoration: none;
+    border-radius: 3px;
+    transition: background 0.25s;
+    align-self: flex-start;
+}
+
+.sh-btn-hero:hover { background: #f9f5f0; }
+
+.sh-hero-free-note {
+    font-size: 12px;
+    color: rgba(196,168,130,0.6);
+    letter-spacing: 0.06em;
+}
+
+.sh-hero-proof {
+    border-left: 2px solid rgba(196,168,130,0.35);
+    padding-left: 20px;
+    margin-bottom: 64px;
+}
+
+.sh-hero-proof-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-style: italic;
+    color: rgba(249,245,240,0.55);
+    line-height: 1.65;
+    margin-bottom: 10px;
+}
+
+.sh-hero-proof-author {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(196,168,130,0.55);
+}
+
+.sh-hero-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-self: end;
+}
+
+.sh-hero-layers {
+    width: 100%;
+    border-top: 1px solid rgba(196,168,130,0.15);
+    border-left: 1px solid rgba(196,168,130,0.15);
+    border-right: 1px solid rgba(196,168,130,0.15);
+}
+
+.sh-hl {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(196,168,130,0.1);
+    gap: 14px;
+    transition: background 0.2s;
+}
+
+.sh-hl:hover { background: rgba(196,168,130,0.05); }
+
+.sh-hl-num {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: rgba(196,168,130,0.45);
+    text-transform: uppercase;
+}
+
+.sh-hl-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 400;
+    color: rgba(249,245,240,0.75);
+}
+
+.sh-hl-bar {
+    height: 3px;
+    border-radius: 2px;
+    width: 32px;
+    flex-shrink: 0;
+}
+
+.sh-hero-strip {
+    background: #b08d57;
+    height: 4px;
+    width: 100%;
+}
+
+/* ════════════════════════════════
+   VIDEO
+════════════════════════════════ */
+.sh-video {
+    background: #f9f5f0;
+    padding: 80px 64px;
+    border-bottom: 1px solid #e0d7cd;
+}
+
+.sh-video-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 72px;
+    align-items: center;
+}
+
+.sh-video-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #b08d57;
+    border: 1px solid #c4a882;
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+}
+
+.sh-video-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(30px, 3.5vw, 44px);
+    font-weight: 400;
+    line-height: 1.1;
+    color: #1a1512;
+    margin-bottom: 18px;
+}
+
+.sh-video-title em { font-style: italic; color: #4a3728; }
+
+.sh-video-body {
+    font-size: 15px;
+    color: #6b5540;
+    line-height: 1.8;
+    margin-bottom: 28px;
+}
+
+.sh-video-def {
+    border-left: 2px solid #e0d7cd;
+    padding-left: 18px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-style: italic;
+    color: #8a6f56;
+    line-height: 1.6;
+}
+
+.sh-video-embed {
+    position: relative;
+    width: 100%;
+    border: 1px solid #e0d7cd;
+    background: #1a1512;
+    box-shadow: 0 8px 40px rgba(26,21,18,0.12);
+}
+
+.sh-video-embed::before {
+    content: '';
+    display: block;
+    padding-top: 56.25%;
+}
+
+.sh-video-embed iframe,
+.sh-video-embed video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+/* ════════════════════════════════
+   TESTIMONIAL BAND
+════════════════════════════════ */
+.sh-testi-band {
+    background: #ffffff;
+    border-top: 1px solid #e0d7cd;
+    border-bottom: 1px solid #e0d7cd;
+    padding: 72px 64px;
+}
+
+.sh-testi-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 64px;
+    align-items: center;
+}
+
+.sh-testi-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #b08d57;
+    margin-bottom: 16px;
+}
+
+.sh-testi-headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 400;
+    line-height: 1.15;
+    color: #1a1512;
+}
+
+.sh-testi-headline em { font-style: italic; color: #4a3728; }
+
+.sh-testi-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-style: italic;
+    line-height: 1.7;
+    color: #1a1512;
+    border-left: 2px solid #b08d57;
+    padding-left: 24px;
+    margin-bottom: 20px;
+}
+
+.sh-testi-author {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a3728;
+    letter-spacing: 0.04em;
+}
+
+/* ════════════════════════════════
+   PERSONA CARDS — Is This You?
+════════════════════════════════ */
+.sh-personas {
+    background: #f9f5f0;
+    border-bottom: 1px solid #e0d7cd;
+    padding: 88px 64px;
+}
+
+.sh-personas-inner { max-width: 1200px; margin: 0 auto; }
+
+.sh-personas-header {
+    margin-bottom: 56px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: end;
+}
+
+.sh-personas-header-left {}
+
+.sh-section-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #b08d57;
+    border: 1px solid #c4a882;
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 16px;
+}
+
+.sh-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 4vw, 50px);
+    font-weight: 400;
+    line-height: 1.08;
+    color: #1a1512;
+}
+
+.sh-section-title em { font-style: italic; color: #4a3728; }
+
+.sh-personas-header-right {
+    font-size: 15px;
+    color: #6b5540;
+    line-height: 1.75;
+    padding-bottom: 6px;
+}
+
+/* ── PERSONA FLAT GRID ──
+   4 row bands × 3 columns.
+   Every cell in the same row band shares identical height
+   regardless of content — no more uneven Desired Outcome rows.
+*/
+.sh-persona-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto auto auto auto;
+    gap: 0;
+    margin-bottom: 56px;
+    border: 1px solid #e0d7cd;
+}
+
+/* Every cell */
+.sh-pc-cell {
+    background: #ffffff;
+    border-right: 1px solid #e0d7cd;
+    border-bottom: 1px solid #e0d7cd;
+    padding: 24px 32px;
+}
+
+.sh-pc-cell:nth-child(3),
+.sh-pc-cell:nth-child(6),
+.sh-pc-cell:nth-child(9),
+.sh-pc-cell:nth-child(12) { border-right: none; }
+
+/* Last row — no bottom border */
+.sh-pc-cell:nth-child(10),
+.sh-pc-cell:nth-child(11),
+.sh-pc-cell:nth-child(12) { border-bottom: none; }
+
+/* Row 1 — accent bar + card header */
+.sh-pc-cell.head {
+    padding: 0 0 0 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.sh-pc-head-inner {
+    padding: 32px 32px 24px;
+}
+
+/* Accent bar at top of each header cell */
+.sh-pc-cell.head::before {
+    content: '';
+    display: block;
+    height: 3px;
+    width: 100%;
+}
+
+.sh-pc-cell.head.col-1::before { background: #8a9e8a; }
+.sh-pc-cell.head.col-2::before { background: #b08d57; }
+.sh-pc-cell.head.col-3::before { background: #7a8fa6; }
+
+.sh-pc-age {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #b08d57;
+    margin-bottom: 10px;
+}
+
+.sh-pc-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 500;
+    color: #1a1512;
+    line-height: 1.1;
+    margin-bottom: 4px;
+}
+
+.sh-pc-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-style: italic;
+    color: #8a6f56;
+}
+
+/* Row label */
+.sh-pc-row-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #c4a882;
+    margin-bottom: 8px;
+}
+
+/* Row text */
+.sh-pc-row-text {
+    font-size: 14px;
+    color: #3a2512;
+    line-height: 1.65;
+}
+
+.sh-pc-row-text strong {
+    color: #1a1512;
+    font-weight: 600;
+}
+
+/* Row 4 — Desired Outcome: highlighted background */
+.sh-pc-cell.outcome {
+    background: #f9f5f0;
+}
+
+.sh-pc-cell.outcome .sh-pc-row-label { color: #b08d57; }
+
+.sh-pc-cell.outcome .sh-pc-row-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-style: italic;
+    color: #1a1512;
+    font-weight: 400;
+}
+
+/* CTA below cards */
+.sh-personas-cta {
+    text-align: center;
+    padding-top: 8px;
+}
+
+.sh-personas-cta-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-style: italic;
+    color: #4a3728;
+    margin-bottom: 28px;
+    line-height: 1.5;
+}
+
+.sh-personas-note {
+    display: block;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #b08d57;
+    letter-spacing: 0.06em;
+}
+
+/* ════════════════════════════════
+   QUIZ
+════════════════════════════════ */
+.sh-quiz {
+    background: #ffffff;
+    border-bottom: 1px solid #e0d7cd;
+    padding: 88px 64px;
+}
+
+.sh-quiz-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 72px;
+    align-items: start;
+}
+
+.sh-quiz-aside-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #b08d57;
+    border: 1px solid #c4a882;
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+}
+
+.sh-quiz-aside-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 3.2vw, 42px);
+    font-weight: 400;
+    line-height: 1.1;
+    color: #1a1512;
+    margin-bottom: 18px;
+}
+
+.sh-quiz-aside-title em { font-style: italic; color: #4a3728; }
+
+.sh-quiz-aside p {
+    font-size: 15px;
+    color: #6b5540;
+    line-height: 1.75;
+    margin-bottom: 16px;
+}
+
+.sh-quiz-card {
+    background: #f9f5f0;
+    border: 1px solid #e0d7cd;
+    padding: 44px 40px;
+}
+
+/* Question fade transition */
+#sh-question-content {
+    transition: opacity 0.25s ease;
+}
+
+#sh-question-content.sh-fading {
+    opacity: 0;
+}
+
+/* Selected button state */
+.sh-opt-btn.sh-selected {
+    background: #2c1a0e !important;
+    color: #f9f5f0 !important;
+    border-color: #2c1a0e !important;
+}
+
+.sh-depth-meter {
+    width: 100%;
+    height: 5px;
+    background: #e0d7cd;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 36px;
+}
+
+.sh-depth-fill {
+    height: 100%;
+    width: 25%;
+    background: #b08d57;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.sh-quiz-step-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #b08d57;
+    margin-bottom: 14px;
+}
+
+.sh-quiz-question {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(20px, 2.2vw, 26px);
+    font-weight: 400;
+    color: #1a1512;
+    line-height: 1.35;
+    margin-bottom: 28px;
+}
+
+.sh-quiz-question em { font-style: italic; color: #4a3728; }
+
+.sh-quiz-options { display: flex; flex-direction: column; gap: 10px; }
+
+.sh-opt-btn {
+    padding: 16px 20px;
+    border: 1px solid #e0d7cd;
+    background: #ffffff;
+    cursor: pointer;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 14px;
+    text-align: left;
+    color: #1a1512;
+    border-radius: 3px;
+    line-height: 1.5;
+    transition: border-color 0.2s, background 0.2s;
+    width: 100%;
+}
+
+.sh-opt-btn:hover { border-color: #b08d57; background: #f0e8dc; }
+
+.sh-quiz-result-text {
+    font-size: 15px;
+    color: #4a3728;
+    line-height: 1.75;
+    margin-bottom: 28px;
+}
+
+/* ════════════════════════════════
+   DIFFERENTIATORS
+════════════════════════════════ */
+.sh-diff {
+    background: #2c1a0e;
+    padding: 88px 64px;
+}
+
+.sh-diff-inner { max-width: 1200px; margin: 0 auto; }
+
+.sh-diff-header { margin-bottom: 52px; }
+
+.sh-diff-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #b08d57;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.sh-diff-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(30px, 3.5vw, 48px);
+    font-weight: 300;
+    line-height: 1.08;
+    color: #f9f5f0;
+    max-width: 580px;
+}
+
+.sh-diff-title em { font-style: italic; color: #c4a882; }
+
+.sh-diff-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+}
+
+.sh-diff-card {
+    padding: 40px 36px;
+    border: 1px solid rgba(196,168,130,0.12);
+    background: rgba(255,255,255,0.025);
+    transition: background 0.2s;
+}
+
+.sh-diff-card:hover { background: rgba(255,255,255,0.045); }
+
+.sh-diff-card-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px;
+    font-weight: 300;
+    line-height: 1;
+    color: rgba(176,141,87,0.2);
+    margin-bottom: 14px;
+}
+
+.sh-diff-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: #f9f5f0;
+    margin-bottom: 12px;
+    line-height: 1.2;
+}
+
+.sh-diff-card p {
+    font-size: 14px;
+    color: rgba(249,245,240,0.5);
+    line-height: 1.75;
+}
+
+.sh-diff-card p em { color: rgba(196,168,130,0.75); font-style: italic; }
+
+/* ════════════════════════════════
+   FAQ
+════════════════════════════════ */
+.sh-faq {
+    background: #f9f5f0;
+    border-bottom: 1px solid #e0d7cd;
+    padding: 88px 64px;
+}
+
+.sh-faq-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 72px;
+    align-items: start;
+}
+
+.sh-faq-aside-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 400;
+    line-height: 1.1;
+    color: #1a1512;
+    margin-bottom: 14px;
+}
+
+.sh-faq-aside-title em { font-style: italic; color: #4a3728; }
+
+.sh-faq-aside p {
+    font-size: 14px;
+    color: #6b5540;
+    line-height: 1.75;
+    margin-bottom: 20px;
+}
+
+.sh-faq-link {
+    font-size: 13px;
+    font-weight: 500;
+    color: #4a3728;
+    text-decoration: none;
+    border-bottom: 1px solid #c4a882;
+    padding-bottom: 2px;
+    transition: color 0.2s;
+}
+
+.sh-faq-link:hover { color: #2c1a0e; }
+
+.sh-faq-groups { display: flex; flex-direction: column; gap: 32px; }
+
+.sh-faq-group-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #b08d57;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0d7cd;
+}
+
+.sh-faq-item {
+    border-bottom: 1px solid #e8ddd0;
+    cursor: pointer;
+}
+
+.sh-faq-q {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: #1a1512;
+    line-height: 1.4;
+    user-select: none;
+}
+
+.sh-faq-icon {
+    font-size: 20px;
+    color: #b08d57;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: transform 0.25s;
+}
+
+.sh-faq-item.open .sh-faq-icon { transform: rotate(45deg); }
+
+.sh-faq-a {
+    font-size: 14px;
+    color: #6b5540;
+    line-height: 1.75;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding-bottom 0.25s;
+}
+
+.sh-faq-item.open .sh-faq-a { max-height: 400px; padding-bottom: 18px; }
+
+/* ════════════════════════════════
+   FINAL CTA
+════════════════════════════════ */
+.sh-final-cta {
+    background: #ffffff;
+    padding: 104px 64px;
+    text-align: center;
+    border-top: 1px solid #e0d7cd;
+}
+
+.sh-final-cta-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #b08d57;
+    margin-bottom: 20px;
+}
+
+.sh-final-cta-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(38px, 5.5vw, 66px);
+    font-weight: 300;
+    line-height: 1.05;
+    color: #1a1512;
+    max-width: 720px;
+    margin: 0 auto 24px;
+}
+
+.sh-final-cta-title em { font-style: italic; color: #4a3728; }
+
+.sh-final-cta p {
+    font-size: 17px;
+    color: #6b5540;
+    line-height: 1.75;
+    max-width: 480px;
+    margin: 0 auto 44px;
+}
+
+.sh-btn-primary {
+    display: inline-block;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ffffff;
+    background: #2c1a0e;
+    padding: 16px 38px;
+    text-decoration: none;
+    border-radius: 3px;
+    transition: background 0.25s;
+}
+
+.sh-btn-primary:hover { background: #b08d57; }
+
+.sh-final-note {
+    display: block;
+    margin-top: 14px;
+    font-size: 12px;
+    color: #b08d57;
+    letter-spacing: 0.06em;
+}
+
+/* ════════════════════════════════
+   SCROLL REVEAL
+════════════════════════════════ */
+.sh-reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.sh-reveal.sh-in { opacity: 1; transform: none; }
+
+/* ════════════════════════════════
+   RESPONSIVE
+════════════════════════════════ */
+@media (max-width: 1024px) {
+    .sh-hero-inner { padding: 20px 40px 0; }
+    .sh-video { padding: 64px 40px; }
+    .sh-video-inner { grid-template-columns: 1fr; gap: 40px; }
+    .sh-testi-band { padding: 60px 40px; }
+    .sh-testi-inner { grid-template-columns: 1fr; gap: 32px; }
+    .sh-personas { padding: 72px 40px; }
+    .sh-personas-header { grid-template-columns: 1fr; gap: 20px; }
+    .sh-persona-grid { grid-template-columns: 1fr; }
+    .sh-pc-cell:nth-child(3),
+    .sh-pc-cell:nth-child(6),
+    .sh-pc-cell:nth-child(9),
+    .sh-pc-cell:nth-child(12) { border-right: none; }
+    .sh-pc-cell:nth-child(10),
+    .sh-pc-cell:nth-child(11) { border-bottom: 1px solid #e0d7cd; }
+    .sh-pc-cell { border-right: none; }
+    .sh-quiz { padding: 72px 40px; }
+    .sh-quiz-inner { grid-template-columns: 1fr; gap: 40px; }
+    .sh-diff { padding: 72px 40px; }
+    .sh-diff-grid { grid-template-columns: 1fr; }
+    .sh-faq { padding: 72px 40px; }
+    .sh-faq-inner { grid-template-columns: 1fr; gap: 40px; }
+    .sh-final-cta { padding: 80px 40px; }
+}
+
+@media (max-width: 640px) {
+    .sh-hero-inner { padding: 20px 24px 0; }
+    .sh-hero h1 { font-size: 48px; }
+    .sh-video { padding: 56px 24px; }
+    .sh-testi-band { padding: 52px 24px; }
+    .sh-personas { padding: 60px 24px; }
+    .sh-pc-head { padding: 24px 24px 18px; }
+    .sh-pc-row { padding: 16px 24px; }
+    .sh-quiz { padding: 60px 24px; }
+    .sh-quiz-card { padding: 32px 24px; }
+    .sh-diff { padding: 60px 24px; }
+    .sh-faq { padding: 60px 24px; }
+    .sh-final-cta { padding: 64px 24px; }
+}
+</style>
+
+<div class="sh-wrap">
+
+<!-- ════════════════════════════════
+     HERO
+════════════════════════════════ -->
+<section class="sh-hero">
+    <div class="sh-hero-strata">
+        <div class="sh-strata-line"></div>
+        <div class="sh-strata-line"></div>
+        <div class="sh-strata-line"></div>
+        <div class="sh-strata-line"></div>
+        <div class="sh-strata-line"></div>
+        <div class="sh-strata-line"></div>
+        <div class="sh-strata-line"></div>
+        <div class="sh-strata-line"></div>
+    </div>
+
+    <div class="sh-hero-inner">
+        <div class="sh-hero-left" style="text-align:left;">
+            <p class="sh-hero-eyebrow">Narrative Archaeology Through AI Coaching</p>
+            <h1>
+                Your characters<br>
+                already know<br>
+                <em>who they are.</em>
+                <strong>Go find them.</strong>
+            </h1>
+            <p class="sh-hero-sub">STRATUM is the only character development course built on 35 years of behavioral diagnostics — now applied to fiction. Not worksheets. Not trait lists. A systematic excavation of the psychological truth your character is already hiding.</p>
+            <div class="sh-hero-cta-block">
+                <a href="/free-lesson" class="sh-btn-hero">Start Free — Lesson 1</a>
+                <span class="sh-hero-free-note">No credit card &nbsp;·&nbsp; No email pressure &nbsp;·&nbsp; One complete lesson</span>
+            </div>
+            <div class="sh-hero-proof">
+                <p class="sh-hero-proof-quote">"The first lesson made it clearer who my character is and how she thinks and behaves. It even gave me ideas for scenes I hadn't considered. The AI felt like a genuine thinking partner. Ted has developed something extremely good."</p>
+                <p class="sh-hero-proof-author">— Axel Aubert, fantasy writer, Oslo, Norway</p>
+            </div>
+        </div>
+
+    
+    </div>
+
+    <div class="sh-hero-strip"></div>
+</section>
+
+
+<!-- ════════════════════════════════
+     VIDEO
+════════════════════════════════ -->
+<section class="sh-video sh-reveal">
+    <div class="sh-video-inner">
+        <div class="sh-video-copy">
+            <span class="sh-video-tag">From Ted Baker</span>
+            <h2 class="sh-video-title">The methodology<br>behind the <em>method</em></h2>
+            <p class="sh-video-body">35 years of behavioral diagnostics. One question that changed everything: why do high-performing people make self-defeating decisions? The answer — and the methodology it produced — is now STRATUM.</p>
+            <p class="sh-video-def">"We don't create characters. We find them, buried in the layers of the human heart." — Ted Baker</p>
+        </div>
+        <div class="sh-video-embed">
+            <!--
+                REPLACE src WITH YOUR VIDEO URL:
+                YouTube:  https://www.youtube.com/embed/YOUR_VIDEO_ID
+                Vimeo:    https://player.vimeo.com/video/YOUR_VIDEO_ID
+                HeyGen mp4: replace iframe with:
+                <video controls poster="THUMBNAIL.jpg">
+                  <source src="YOUR_VIDEO.mp4" type="video/mp4">
+                </video>
+            -->
+            <iframe
+                src="https://www.youtube.com/embed/QEap-oS-HT0"
+                title="STRATUM — The Methodology Behind the Method"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+</section>
+
+
+<!-- ════════════════════════════════
+     TESTIMONIAL
+════════════════════════════════ -->
+<div class="sh-testi-band sh-reveal">
+    <div class="sh-testi-inner">
+        <div>
+            <p class="sh-testi-label">Student Result</p>
+            <h2 class="sh-testi-headline">I saw scenes<br>I hadn't <em>imagined.</em></h2>
+        </div>
+        <div>
+            <p class="sh-testi-quote">The first lesson made it clearer who my character is and how she thinks and behaves. It even gave me ideas for scenes I hadn't considered — like what happens when she can't do her habitual behavior anymore. I've been writing less than a year and have never taken a character development course before. The AI felt like a genuine thinking partner. I think Ted has developed something extremely good that will truly aid writers in getting a deeper understanding of their characters.</p>
+            <p class="sh-testi-author">— Axel Aubert, fantasy writer, Oslo, Norway</p>
+        </div>
+    </div>
+</div>
+
+
+<!-- ════════════════════════════════
+     PERSONA CARDS
+════════════════════════════════ -->
+<section class="sh-personas sh-reveal">
+    <div class="sh-personas-inner">
+
+        <div class="sh-personas-header">
+            <div class="sh-personas-header-left">
+                <span class="sh-section-tag">Is This You?</span>
+                <h2 class="sh-section-title">Three writers.<br><em>One methodology.</em></h2>
+            </div>
+            <div class="sh-personas-header-right">
+                STRATUM was built for writers who are serious about craft — regardless of where they are in their career. If you see yourself in any of these profiles, you're exactly who this course was designed for.
+            </div>
+        </div>
+
+        <div class="sh-persona-grid">
+
+            <!-- ROW 1: Headers -->
+            <div class="sh-pc-cell head col-1">
+                <div class="sh-pc-head-inner">
+                    <h3 class="sh-pc-title">The Academic Pivot</h3>
+                    <p class="sh-pc-subtitle">Accurate, but not yet alive</p>
+                </div>
+            </div>
+            <div class="sh-pc-cell head col-2">
+                <div class="sh-pc-head-inner">
+                    <h3 class="sh-pc-title">The Legacy Novelist</h3>
+                    <p class="sh-pc-subtitle">Writing something that cannot be faked</p>
+                </div>
+            </div>
+            <div class="sh-pc-cell head col-3">
+                <div class="sh-pc-head-inner">
+                    <h3 class="sh-pc-title">The Insight Architect</h3>
+                    <p class="sh-pc-subtitle">Building authority through depth</p>
+                </div>
+            </div>
+
+            <!-- ROW 2: The Pain -->
+            <div class="sh-pc-cell">
+                <p class="sh-pc-row-label">The Pain</p>
+                <p class="sh-pc-row-text">"My writing is accurate but boring. I can't connect with a real audience — the research is there, but the <strong>human pulse isn't.</strong>"</p>
+            </div>
+            <div class="sh-pc-cell">
+                <p class="sh-pc-row-label">The Pain</p>
+                <p class="sh-pc-row-text">"AI is flooding my genre. I need to write something so <strong>psychologically deep</strong> that no machine could have produced it."</p>
+            </div>
+            <div class="sh-pc-cell">
+                <p class="sh-pc-row-label">The Pain</p>
+                <p class="sh-pc-row-text">"I'm tired of hustle culture and surface-level craft advice. I want to build something <strong>high-value and authoritative</strong> — work that positions me as the expert."</p>
+            </div>
+
+            <!-- ROW 3: Why STRATUM -->
+            <div class="sh-pc-cell">
+                <p class="sh-pc-row-label">Why STRATUM</p>
+                <p class="sh-pc-row-text">You need character coaching to <strong>humanize your data.</strong> STRATUM gives you the systematic methodology to turn rigorous research into characters readers feel.</p>
+            </div>
+            <div class="sh-pc-cell">
+                <p class="sh-pc-row-label">Why STRATUM</p>
+                <p class="sh-pc-row-text">You want a <strong>system</strong> — not inspiration, not prompts — to organize your massive creative vision into a coherent psychological architecture that holds.</p>
+            </div>
+            <div class="sh-pc-cell">
+                <p class="sh-pc-row-label">Why STRATUM</p>
+                <p class="sh-pc-row-text">You value the <strong>quiet luxury</strong> of premium positioning. STRATUM's systematic methodology is the antithesis of generic AI content — and that's exactly your brand.</p>
+            </div>
+
+            <!-- ROW 4: Desired Outcome -->
+            <div class="sh-pc-cell outcome">
+                <p class="sh-pc-row-label">Desired Outcome</p>
+                <p class="sh-pc-row-text">A book deal — or a Substack following so loyal it funds your writing life.</p>
+            </div>
+            <div class="sh-pc-cell outcome">
+                <p class="sh-pc-row-label">Desired Outcome</p>
+                <p class="sh-pc-row-text">A legacy work. One that wins awards, builds a cult following, or simply outlasts you.</p>
+            </div>
+            <div class="sh-pc-cell outcome">
+                <p class="sh-pc-row-label">Desired Outcome</p>
+                <p class="sh-pc-row-text">To be known as the number-one expert in your specialized niche — a writer whose depth cannot be replicated.</p>
+            </div>
+
+        </div>
+
+        <div class="sh-personas-cta">
+            <p class="sh-personas-cta-quote">"We don't create characters. We find them, buried in the layers of the human heart." — <a href="/your-instructor" style="color:#4a3728;">Ted Baker</a></p>
+            <a href="/free-lesson" class="sh-btn-primary">Begin Your Excavation</a>
+            <span class="sh-personas-note">No Credit Card Required &nbsp;·&nbsp; Lesson 1 is Free</span>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ════════════════════════════════
+     QUIZ
+════════════════════════════════ -->
+<section class="sh-quiz sh-reveal">
+    <div class="sh-quiz-inner">
+        <div class="sh-quiz-aside">
+            <span class="sh-quiz-aside-tag">The Socratic Mirror</span>
+            <h2 class="sh-quiz-aside-title">How deep does your<br>character <em>actually</em> go?</h2>
+            <p>Answer three questions to discover where your character development stands — and what layer of excavation you're ready for next.</p>
+            <p>Most writers are surprised by what they find.</p>
+        </div>
+        <div class="sh-quiz-card">
+            <div class="sh-depth-meter">
+                <div class="sh-depth-fill" id="sh-depth-bar"></div>
+            </div>
+            <div id="sh-question-content">
+                <p class="sh-quiz-step-label">Question 1 of 3</p>
+                <h3 class="sh-quiz-question">When you look at your current draft, how much tension is driven by psychological necessity?</h3>
+                <div class="sh-quiz-options">
+                    <button class="sh-opt-btn" data-quiz="next">The plot mostly dictates what happens to my characters.</button>
+                    <button class="sh-opt-btn" data-quiz="next">I have character moments, but they feel separate from the plot.</button>
+                    <button class="sh-opt-btn" data-quiz="next">Nothing happens that isn't a direct result of a character's internal wound.</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ════════════════════════════════
+     DIFFERENTIATORS
+════════════════════════════════ -->
+<section class="sh-diff sh-reveal">
+    <div class="sh-diff-inner">
+        <div class="sh-diff-header">
+            <span class="sh-diff-tag">Excavation vs. Fabrication</span>
+            <h2 class="sh-diff-title">What makes STRATUM<br><em>fundamentally different</em></h2>
+        </div>
+        <div class="sh-diff-grid">
+            <div class="sh-diff-card">
+                <div class="sh-diff-card-num">01</div>
+                <h3 class="sh-diff-card-title">Excavation, Not Fabrication</h3>
+                <p>Instead of filling out worksheets or inventing traits, you discover the psychological architecture that <em>already exists</em> in your intuitive understanding of your character. Using AI as a Socratic coaching partner, you systematically uncover behavior patterns, driving beliefs, and the complete causal chain.</p>
+            </div>
+            <div class="sh-diff-card">
+                <div class="sh-diff-card-num">02</div>
+                <h3 class="sh-diff-card-title">AI as Coach, Not Creator</h3>
+                <p>STRATUM uses AI as a <em>Socratic coaching partner</em>, not a content generator. The AI asks you questions. You provide the answers from your knowledge of your character. Your voice, your character, your creative decisions — strengthened, not replaced.</p>
+            </div>
+            <div class="sh-diff-card">
+                <div class="sh-diff-card-num">03</div>
+                <h3 class="sh-diff-card-title">The Causal Chain</h3>
+                <p>Traditional worksheets collect disconnected facts. STRATUM builds a connected architecture: behavior → hidden truth → formative wound → the lie → want vs. need. Each element causally connects to the next, producing an integrated psychology that drives <em>inevitable</em> choices.</p>
+            </div>
+            <div class="sh-diff-card">
+                <div class="sh-diff-card-num">04</div>
+                <h3 class="sh-diff-card-title">Executive-Level Methodology</h3>
+                <p>35 years of behavioral diagnostics — the same discipline used to decode why high-performing people make self-defeating decisions — applied directly to fictional character psychology. Not writing advice. <em>Diagnostic methodology.</em></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ════════════════════════════════
+     FAQ
+════════════════════════════════ -->
+<section class="sh-faq sh-reveal">
+    <div class="sh-faq-inner">
+        <div class="sh-faq-aside">
+            <span class="sh-section-tag">Common Questions</span>
+            <h2 class="sh-faq-aside-title">Everything you<br>need to <em>know</em></h2>
+            <p>The most common questions writers ask before beginning the excavation.</p>
+            <a href="/course-curriculum" class="sh-faq-link">View full curriculum →</a>
+        </div>
+        <div class="sh-faq-groups">
+
+            <div>
+                <p class="sh-faq-group-title">The Methodology</p>
+                <div class="sh-faq-item">
+                    <div class="sh-faq-q">What makes STRATUM different from other character development courses? <span class="sh-faq-icon">+</span></div>
+                    <div class="sh-faq-a">STRATUM teaches you to excavate rather than fabricate character psychology. Instead of filling out worksheets or inventing traits, you discover the psychological architecture that already exists in your intuitive understanding of your character. Using AI as a Socratic coaching partner, you systematically uncover behavior patterns, driving beliefs, formative wounds, and the complete causal chain that makes your characters psychologically coherent.</div>
+                </div>
+                <div class="sh-faq-item">
+                    <div class="sh-faq-q">I've tried character worksheets before. Why didn't they work? <span class="sh-faq-icon">+</span></div>
+                    <div class="sh-faq-a">Traditional worksheets ask you to invent disconnected facts: favorite color, biggest fear, childhood memory. These details don't add up to a coherent psychology. STRATUM works differently — you start with one observable behavior, then excavate the hidden truth, the formative wound, and the lie your character believes. Each element causally connects to the next. The result isn't a collection of facts. It's an integrated psychological architecture.</div>
+                </div>
+                <div class="sh-faq-item">
+                    <div class="sh-faq-q">Do I need to understand psychology to use this method? <span class="sh-faq-icon">+</span></div>
+                    <div class="sh-faq-a">No. You need to understand human behavior as a storyteller, not as a therapist. STRATUM borrows concepts from Cognitive Behavioral Therapy and Schema Therapy, but only to enrich your storytelling. You're not diagnosing. You're discovering what your character would have to believe for their behavior to make sense.</div>
+                </div>
+            </div>
+
+            <div>
+                <p class="sh-faq-group-title">The Course Structure</p>
+                <div class="sh-faq-item">
+                    <div class="sh-faq-q">How long does the course take? <span class="sh-faq-icon">+</span></div>
+                    <div class="sh-faq-a">Most writers will complete one lesson per week, finishing the full course in approximately two months. Each lesson includes video instruction, an AI coaching session (35–40 minutes), and workspace exercises. You work at your own pace.</div>
+                </div>
+                <div class="sh-faq-item">
+                    <div class="sh-faq-q">Do I need to complete the course in order? <span class="sh-faq-icon">+</span></div>
+                    <div class="sh-faq-a">Yes. The excavation methodology is deliberately sequential. Lesson 3 (The Formative Wound) requires the hidden truth you discovered in Lesson 2. Lesson 4 (The Lie) emerges from the wound in Lesson 3. Skipping ahead disrupts the causal chain that creates psychological coherence.</div>
+                </div>
+                <div class="sh-faq-item">
+                    <div class="sh-faq-q">Can I use this method for multiple characters? <span class="sh-faq-icon">+</span></div>
+                    <div class="sh-faq-a">Absolutely. You'll initially select one character — typically your protagonist — to excavate. Once you've mastered the method, you can repeat the process for antagonists, supporting characters, or multiple POV characters. Most writers find the second excavation goes significantly faster.</div>
+                </div>
+            </div>
+
+            <div>
+                <p class="sh-faq-group-title">AI &amp; Technology</p>
+                <div class="sh-faq-item">
+                    <div class="sh-faq-q">How is this different from using AI to write my characters for me? <span class="sh-faq-icon">+</span></div>
+                    <div class="sh-faq-a">STRATUM uses AI as a Socratic coaching partner, not a content generator. The AI asks questions. You provide the answers from your knowledge of your character. You're not accepting AI suggestions — you're using AI to help you access what you already intuitively know but haven't yet articulated. It strengthens your craft instead of replacing it.</div>
+                </div>
+                <div class="sh-faq-item">
+                    <div class="sh-faq-q">What AI tools do I need? <span class="sh-faq-icon">+</span></div>
+                    <div class="sh-faq-a">STRATUM is designed to work with Claude (by Anthropic), though the methodology adapts to other platforms. You can start with free-tier AI tools. Each lesson includes a pre-written coaching prompt — you copy it, paste it, and the session begins. No prompt engineering required.</div>
+                </div>
+            </div>
+
+            <div>
+                <p class="sh-faq-group-title">Will It Work for Me?</p>
+                <div class="sh-faq-item">
+                    <div class="sh-faq-q">Will this method work for my genre? <span class="sh-faq-icon">+</span></div>
+                    <div class="sh-faq-a">Yes. The excavation methodology applies to any genre with psychologically complex characters — literary fiction, thriller, mystery, romance, science fiction, fantasy, historical fiction. Whether your character wields a sword or works in corporate law, the underlying psychology functions the same way.</div>
+                </div>
+                <div class="sh-faq-item">
+                    <div class="sh-faq-q">What if I've already written my first draft? <span class="sh-faq-icon">+</span></div>
+                    <div class="sh-faq-a">Even better. You'll bring existing scenes and character choices into the excavation process, which often reveals patterns you've been writing intuitively. The course makes revision dramatically clearer — because you finally understand why your character does what they do.</div>
+                </div>
+                <div class="sh-faq-item">
+                    <div class="sh-faq-q">I'm experienced but my characters still feel flat. Will this help? <span class="sh-faq-icon">+</span></div>
+                    <div class="sh-faq-a">This is exactly who STRATUM serves. You know story structure. You understand plot mechanics. You can write clean prose. But your characters don't rival the psychological complexity you see in prestige television or literary fiction. STRATUM gives you the systematic process that traditional writing instruction skips.</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ════════════════════════════════
+     FINAL CTA
+════════════════════════════════ -->
+<section class="sh-final-cta sh-reveal">
+    <p class="sh-final-cta-eyebrow">Your First Step</p>
+    <h2 class="sh-final-cta-title">The wound already exists.<br><em>You're not creating it.<br>You're finding it.</em></h2>
+    <p>Lesson 1 is completely free. No credit card. No email pressure. Experience the full excavation methodology — video, AI coaching, workspace exercises — applied to your own character. Sixty minutes that change how you see every scene you'll ever write.</p>
+    <a href="/free-lesson" class="sh-btn-primary">Access Free Lesson 1</a>
+    <span class="sh-final-note">No credit card required &nbsp;·&nbsp; Full course access on enrollment &nbsp;·&nbsp; $347</span>
+</section>
+
+
+</div><!-- end sh-wrap -->
+
+<script>
+(function() {
+    if (window.shQuizReady) return;
+    window.shQuizReady = true;
+    window.shStep = 1;
+    window.shBusy = false;
+
+    var shQuestions = [
+        {
+            label: 'Question 2 of 3',
+            q: 'How would you prefer to use AI in your creative process?',
+            opts: [
+                'To generate plot ideas and descriptions for me.',
+                'To organize my research and summarize notes.',
+                'To act as a Socratic coach that challenges my logic.'
+            ]
+        },
+        {
+            label: 'Question 3 of 3',
+            q: 'What is your primary goal for your current project?',
+            opts: [
+                'To finish a draft quickly and start the next one.',
+                'To ensure my research is accurately represented.',
+                'To create a legacy work with unshakeable psychological depth.'
+            ]
+        }
+    ];
+
+    function shBuildOptions(opts) {
+        var html = '';
+        for (var i = 0; i < opts.length; i++) {
+            html += '<button class="sh-opt-btn" data-quiz="next">' + opts[i] + '</button>';
+        }
+        return html;
+    }
+
+    function shAdvance(clickedBtn) {
+        // Prevent double-fire
+        if (window.shBusy) return;
+        window.shBusy = true;
+
+        var content = document.getElementById('sh-question-content');
+        var bar = document.getElementById('sh-depth-bar');
+        if (!content || !bar) { window.shBusy = false; return; }
+
+        // 1. Flash the selected button dark
+        if (clickedBtn) clickedBtn.classList.add('sh-selected');
+
+        // 2. After brief pause, fade out content
+        setTimeout(function() {
+            content.classList.add('sh-fading');
+
+            // 3. After fade, swap content and fade back in
+            setTimeout(function() {
+                if (window.shStep <= shQuestions.length) {
+                    var q = shQuestions[window.shStep - 1];
+                    bar.style.width = (25 + (window.shStep * 25)) + '%';
+                    content.innerHTML = '<p class="sh-quiz-step-label">' + q.label + '</p>'
+                        + '<h3 class="sh-quiz-question">' + q.q + '</h3>'
+                        + '<div class="sh-quiz-options">' + shBuildOptions(q.opts) + '</div>';
+                    window.shStep++;
+                } else {
+                    bar.style.width = '100%';
+                    content.innerHTML = '<p class="sh-quiz-step-label">Assessment Complete</p>'
+                        + '<h3 class="sh-quiz-question">You are an <em>Insight Architect</em></h3>'
+                        + '<p class="sh-quiz-result-text">Your rigor is high, but your character\'s soul is still buried. You need the STRATUM Causal Chain to turn your data into human drama.</p>'
+                        + '<a href="/free-lesson" class="sh-btn-primary">Access Your Free Lesson 1</a>';
+                }
+                content.classList.remove('sh-fading');
+                window.shBusy = false;
+            }, 260);
+        }, 180);
+    }
+
+    function shBindQuiz() {
+        var container = document.getElementById('sh-question-content');
+        if (!container) return;
+        var card = container.parentElement;
+        if (!card || card.getAttribute('data-quiz-bound')) return;
+        card.setAttribute('data-quiz-bound', '1');
+        card.addEventListener('click', function(e) {
+            var btn = e.target;
+            while (btn && btn !== card) {
+                if (btn.tagName === 'BUTTON' && btn.getAttribute('data-quiz') === 'next') {
+                    e.stopPropagation();
+                    shAdvance(btn);
+                    return;
+                }
+                btn = btn.parentElement;
+            }
+        });
+    }
+
+    function shBindReveal() {
+        if (!window.IntersectionObserver) return;
+        var obs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('sh-in'); });
+        }, { threshold: 0.08 });
+        document.querySelectorAll('.sh-reveal').forEach(function(el) { obs.observe(el); });
+    }
+
+    function shBindFaq() {
+        document.querySelectorAll('.sh-faq-item').forEach(function(item) {
+            if (item.getAttribute('data-faq-bound')) return;
+            item.setAttribute('data-faq-bound', '1');
+            var q = item.querySelector('.sh-faq-q');
+            if (!q) return;
+            q.addEventListener('click', function() {
+                var isOpen = item.classList.contains('open');
+                document.querySelectorAll('.sh-faq-item').forEach(function(i) { i.classList.remove('open'); });
+                if (!isOpen) item.classList.add('open');
+            });
+        });
+    }
+
+    function shInit() {
+        shBindQuiz();
+        shBindReveal();
+        shBindFaq();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', shInit);
+    } else {
+        shInit();
+    }
+})();
+</script>
