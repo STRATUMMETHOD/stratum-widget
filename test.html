@@ -1,0 +1,574 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+.wb-root *, .wb-root *::before, .wb-root *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.wb-root {
+  --cream:#faf4e8; --cream-dark:#f2ead8; --cream-mid:#ede5d4;
+  --tan:#c4a882; --tan-mid:#a8895e; --tan-light:#ddd0b8; --tan-faint:#ede5d4;
+  --brown:#2e1f0e; --brown-mid:#5c3d1e; --brown-light:#8b6340;
+  --label-xs:11px; --label-sm:12px; --label-md:13px;
+  --body-sm:14px; --body-md:15px; --body-lg:16px;
+  --amber:#7a4e10; --amber-bg:#fdf3e3;
+  font-family: 'Spectral', Georgia, serif;
+  background: var(--cream);
+  color: var(--brown);
+  line-height: 1.6;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.wb-strata {
+  height: 4px;
+  background: linear-gradient(90deg, #1a1208 0%, #2e1f0e 15%, #6b4c2e 30%, #b87333 50%, #c9882a 65%, #d4b896 80%, #f0e8d8 100%);
+}
+.wb-header {
+  background-color: #faf4e8;
+  background-image: radial-gradient(ellipse at 50% 0%, rgba(195,148,72,0.13) 0%, transparent 58%);
+  padding: 38px 24px 34px;
+  text-align: center;
+}
+.wb-header-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 22px 0 20px;
+  border-top: 1px solid rgba(155,105,45,0.2);
+  border-bottom: 1px solid rgba(155,105,45,0.2);
+}
+.wb-header-eyebrow {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(0.95rem, 1.6vw, 1.12rem);
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  color: #7a4e1e;
+  display: block;
+  margin-bottom: 14px;
+}
+.wb-header-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2.21rem, 5.52vw, 3.6rem);
+  font-weight: 400;
+  color: #2e1f0e;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+}
+.wb-header-title em { font-style: italic; color: #b85c20; }
+.wb-header-rule {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 160px;
+  margin: 16px auto 0;
+}
+.wb-header-rule-line { flex: 1; height: 1px; background: rgba(140,80,30,0.25); }
+.wb-header-rule-glyph { font-family: 'Cormorant Garamond', serif; color: #a07030; font-size: 0.75rem; opacity: 0.6; }
+
+/* ── VIDEO ── */
+.wb-hero-video { background: #100a04; }
+.wb-yt-facade { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; cursor: pointer; overflow: hidden; }
+.wb-yt-facade img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s ease; }
+.wb-yt-facade:hover img { transform: scale(1.02); }
+.wb-yt-facade .wb-yt-play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 68px; height: 48px;
+  background: #ff0000; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.wb-yt-facade:hover .wb-yt-play { background: #cc0000; transform: translate(-50%,-50%) scale(1.1); }
+.wb-yt-facade .wb-yt-play svg { width: 24px; height: 24px; fill: #fff; margin-left: 4px; }
+.wb-yt-facade iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: none; }
+.wb-yt-facade.playing img, .wb-yt-facade.playing .wb-yt-play { display: none; }
+.wb-yt-facade.playing iframe { display: block; }
+
+/* ── TRANSCRIPT ── */
+.wb-transcript {
+  background: #faf4e8;
+  border-top: 1px solid rgba(155,105,45,0.2);
+}
+.wb-transcript-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  gap: 12px;
+}
+.wb-transcript-btn:hover { background: rgba(155,105,45,0.06); }
+.wb-transcript-label {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #7a5530;
+}
+.wb-transcript-chevron {
+  width: 16px; height: 16px;
+  stroke: #7a5530;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+.wb-transcript-btn[aria-expanded="true"] .wb-transcript-chevron { transform: rotate(180deg); }
+.wb-transcript-body { display: none; padding: 0 28px 24px; }
+.wb-transcript-body.open { display: block; }
+.wb-transcript-body p {
+  font-family: 'Spectral', Georgia, serif;
+  font-size: var(--body-sm);
+  font-weight: 300;
+  font-style: italic;
+  color: #5c3d1e;
+  line-height: 1.85;
+  margin-bottom: 14px;
+}
+.wb-transcript-body p:last-child { margin-bottom: 0; }
+
+/* ── PANELS ── */
+.wb-tab-panel { display: none; }
+.wb-tab-panel.active { display: block; }
+.wb-panel-inner { padding: 44px 32px 32px; max-width: 760px; margin: 0 auto; border-top: 1px solid rgba(155,105,45,0.2); }
+.wb-panel-eyebrow { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 8px; }
+.wb-panel-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; font-weight: 300; color: var(--brown); line-height: 1.15; }
+.wb-panel-title em { font-style: italic; color: var(--brown-mid); }
+.wb-panel-rule { width: 40px; height: 1px; background: var(--tan); margin: 16px 0 26px; }
+.wb-panel-lead { font-size: var(--body-lg); font-weight: 300; line-height: 1.8; color: var(--brown-mid); margin-bottom: 32px; }
+
+/* ── NAV BUTTONS ── */
+.wb-nav-wrap { padding: 24px 32px 28px; max-width: 760px; margin: 0 auto; border-top: 1px solid var(--tan-light); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.wb-nav-wrap.no-back { justify-content: flex-end; }
+.wb-back-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid var(--tan-light); padding: 12px 22px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 13px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tan-mid); cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+.wb-back-btn:hover { background: var(--cream-dark); border-color: var(--tan-mid); color: var(--brown); }
+.wb-back-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.wb-continue-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--brown); border: none; padding: 14px 28px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tan); cursor: pointer; transition: background 0.2s, color 0.2s; }
+.wb-continue-btn:hover { background: var(--brown-mid); color: var(--cream); }
+.wb-continue-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── COMPLETION NOTE ── */
+.wb-completion-note {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 32px 32px;
+  text-align: center;
+}
+.wb-completion-note span {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: var(--brown-light);
+  letter-spacing: 0.01em;
+}
+
+/* ── CONTENT ELEMENTS ── */
+.wb-section { margin-bottom: 40px; }
+.wb-section p { font-size: var(--body-lg); font-weight: 300; line-height: 1.85; color: var(--brown); margin-bottom: 18px; }
+.wb-section p:last-child { margin-bottom: 0; }
+.wb-intro-lead { font-size: var(--body-lg); font-weight: 300; line-height: 1.8; color: var(--brown-mid); margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--tan-light); }
+
+.wb-pull-quote { background: var(--brown); padding: 28px 32px; margin: 32px 0; position: relative; }
+.wb-pull-quote::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--tan); }
+.wb-pull-quote p { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20px; font-weight: 300; font-style: italic; color: var(--cream); line-height: 1.65; margin: 0; }
+
+.wb-callout { padding: 20px 24px; margin: 24px 0; border-left: 3px solid; }
+.wb-callout.amber { background: var(--amber-bg); border-color: var(--amber); }
+.wb-callout-label { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; display: block; margin-bottom: 9px; }
+.wb-callout.amber .wb-callout-label { color: var(--amber); }
+.wb-callout p { font-size: var(--body-md); font-weight: 300; line-height: 1.8; color: var(--brown); margin: 0; }
+.wb-callout p strong { font-weight: 500; }
+
+.wb-deliverables { background: var(--cream-dark); border: 1px solid var(--tan-light); padding: 28px 32px; margin: 28px 0; }
+.wb-deliverables-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-md); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tan-mid); display: block; margin-bottom: 18px; }
+.wb-deliverable-item { display: flex; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--tan-faint); align-items: flex-start; }
+.wb-deliverable-item:last-child { border-bottom: none; padding-bottom: 0; }
+.wb-deliverable-item:first-of-type { padding-top: 0; }
+.wb-deliverable-marker { width: 20px; height: 20px; border: 1px solid var(--tan); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.wb-deliverable-marker svg { width: 10px; height: 10px; stroke: var(--tan-mid); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.wb-deliverable-text { font-size: var(--body-md); font-weight: 300; line-height: 1.75; color: var(--brown); }
+.wb-deliverable-text strong { font-weight: 500; color: var(--brown-mid); }
+
+.wb-contrast-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--tan-light); border: 1px solid var(--tan-light); margin: 24px 0; overflow: hidden; }
+.wb-contrast-col { background: var(--cream); padding: 20px 22px; }
+.wb-contrast-col.right { background: var(--cream-dark); }
+.wb-contrast-col-label { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; display: block; margin-bottom: 14px; }
+.wb-contrast-col:first-child .wb-contrast-col-label { color: var(--brown-light); }
+.wb-contrast-col.right .wb-contrast-col-label { color: var(--tan-mid); }
+.wb-contrast-col p { font-size: var(--body-sm); font-weight: 300; line-height: 1.8; color: var(--brown); margin-bottom: 10px; }
+.wb-contrast-col p:last-child { margin-bottom: 0; }
+
+.wb-claude-block { border: 1px solid var(--tan-light); margin: 28px 0; }
+.wb-claude-block-head { background: var(--brown); padding: 16px 24px; border-bottom: 1px solid rgba(196,168,130,0.2); }
+.wb-claude-block-eyebrow { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tan); display: block; margin-bottom: 6px; }
+.wb-claude-block-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; font-weight: 300; color: var(--cream); line-height: 1.3; }
+.wb-claude-block-title em { font-style: italic; color: var(--tan); }
+.wb-claude-block-body { background: var(--cream-dark); padding: 22px 24px 24px; }
+.wb-claude-block-intro { font-size: var(--body-md); font-weight: 300; line-height: 1.8; color: var(--brown); margin-bottom: 22px; }
+
+.wb-ai-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 20px; }
+.wb-ai-table { width: 100%; border-collapse: collapse; border: 1px solid var(--tan-light); min-width: 480px; }
+.wb-ai-table thead tr { background: var(--brown); }
+.wb-ai-table thead th { font-family: 'Cormorant Garamond', Georgia, serif; font-size: var(--label-xs); font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--tan); padding: 11px 16px; text-align: left; }
+.wb-ai-table thead th:not(:first-child) { text-align: center; border-left: 1px solid rgba(196,168,130,0.2); }
+.wb-ai-table thead th span.wb-vendor-name { display: block; font-weight: 300; font-style: italic; letter-spacing: 0; text-transform: none; font-size: 13px; color: rgba(196,168,130,0.75); margin-top: 3px; }
+.wb-ai-table tbody tr { border-bottom: 1px solid var(--tan-faint); background: var(--cream); }
+.wb-ai-table tbody tr:nth-child(even) { background: var(--cream-dark); }
+.wb-ai-table tbody td { font-size: var(--body-sm); font-weight: 300; line-height: 1.55; color: var(--brown); padding: 11px 16px; vertical-align: middle; }
+.wb-ai-table tbody td:not(:first-child) { text-align: center; border-left: 1px solid var(--tan-faint); }
+.wb-ai-table .wb-feature-label { font-weight: 400; color: var(--brown-mid); }
+.wb-mark-yes  { color: #4a7c4a; font-size: 15px; }
+.wb-mark-no   { color: var(--tan-light); font-size: 15px; }
+.wb-mark-star { color: var(--tan-mid); font-size: 15px; }
+.wb-ai-table .wb-claude-row td { background: #f5ede0; font-weight: 400; }
+.wb-ai-table .wb-claude-row td:first-child { border-left: 3px solid var(--tan-mid); padding-left: 13px; }
+.wb-claude-why { background: var(--cream); border-left: 3px solid var(--tan); padding: 16px 18px; }
+.wb-claude-why p { font-size: var(--body-sm); font-weight: 300; line-height: 1.8; color: var(--brown-mid); }
+.wb-claude-why p strong { font-weight: 500; color: var(--brown); }
+
+@media (max-width: 540px) {
+  .wb-header { padding: 28px 20px 24px; }
+  .wb-contrast-grid { grid-template-columns: 1fr; }
+  .wb-panel-inner { padding: 28px 20px 20px; }
+  .wb-nav-wrap { padding: 20px 20px 20px; flex-direction: column; }
+  .wb-continue-btn, .wb-back-btn { width: 100%; justify-content: center; }
+  .wb-deliverables { padding: 22px 20px; }
+  .wb-pull-quote { padding: 22px 20px; }
+  .wb-completion-note { padding: 0 20px 28px; }
+}
+</style>
+
+<div class="wb-root" id="wb-root">
+
+  <!-- HEADER -->
+  <div class="wb-strata" id="wb-strata"></div>
+  <div class="wb-header" id="wb-header">
+    <div class="wb-header-inner">
+      <span class="wb-header-eyebrow">"There is nothing to writing. All you do is sit down at a typewriter and bleed." - Ernest Hemingway</span>
+      <h1 class="wb-header-title">Welcome To STRATUM</h1>
+      <div class="wb-header-rule">
+        <div class="wb-header-rule-line"></div>
+        <span class="wb-header-rule-glyph">⊕</span>
+        <div class="wb-header-rule-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIDEO — always visible -->
+  <div class="wb-hero-video" id="wb-hero-video">
+    <div class="wb-yt-facade" id="wb-yt-facade">
+      <img src="https://i.ytimg.com/vi/Tt8iCBWOkp8/maxresdefault.jpg" alt="Who Built This and Why — STRATUM" loading="lazy">
+      <div class="wb-yt-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+      <iframe title="Who Built This and Why — STRATUM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <div class="wb-transcript">
+      <button class="wb-transcript-btn" aria-expanded="false" id="wb-transcript-btn">
+        <span class="wb-transcript-label">Video Transcript</span>
+        <svg class="wb-transcript-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="wb-transcript-body" id="wb-transcript-main">
+        <p>Welcome. I'm Ted Baker.</p>
+        <p>I am so glad that you're here, because you've chosen to invest in your writing, and that's no small thing.</p>
+        <p>Writing can feel lonely, and even overwhelming at times, but this course is designed to remind you that you are not alone in the process. You have guidance, structure, and something no other writing course offers: personalized AI coaching sessions that help you extract what you already intuitively know about your characters.</p>
+        <p>I know what it feels like to wrestle with a story that matters to you. I'm in the middle of writing my own novel. And you know, I have faced the same questions you're probably asking yourself: How much backstory is too much? How do I reveal it without slowing the story down? Experience has taught me that the best answers come not from generic advice, but from systematic discovery tailored to specific needs.</p>
+        <p>By the end of the course, you'll have a complete psychological architecture for your character, and practical techniques to reveal breathing, living characters in ways that captivate readers.</p>
+        <p>Writing is discovery, and you're learning how to better access your instincts as a storyteller.</p>
+        <p>I'm excited to see what you'll create. Let's get started.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIDEO NAV -->
+  <div class="wb-tab-panel active" id="wb-panel-video">
+    <div class="wb-nav-wrap no-back">
+      <button class="wb-continue-btn" data-next="results">Next<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+    <div class="wb-completion-note">
+      <span>Only click Mark as Complete when you are ready to move to the next lesson.</span>
+    </div>
+  </div>
+
+  <!-- RESULTS PANEL -->
+  <div class="wb-tab-panel" id="wb-panel-results">
+    <div class="wb-panel-inner">
+      <span class="wb-panel-eyebrow">The Methodology</span>
+      <h2 class="wb-panel-title">What You'll Walk Away <em>With</em></h2>
+      <div class="wb-panel-rule"></div>
+      <p class="wb-panel-lead">By the end, you won’t just know your character — you’ll know what broke them, and why that break still drives them.</p>
+
+      <div class="wb-deliverables">
+        <span class="wb-deliverables-title">The Excavation Ladder</span>
+        <div class="wb-deliverable-item">
+          <div class="wb-deliverable-marker"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg></div>
+          <p class="wb-deliverable-text"><strong>The Surface Pattern</strong> — The behavior visible on the page. Observable, recurring, consequential.</p>
+        </div>
+        <div class="wb-deliverable-item">
+          <div class="wb-deliverable-marker"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg></div>
+          <p class="wb-deliverable-text"><strong>The Hidden Truth</strong> — The belief operating beneath your character's awareness that makes their behavior feel necessary.</p>
+        </div>
+        <div class="wb-deliverable-item">
+          <div class="wb-deliverable-marker"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg></div>
+          <p class="wb-deliverable-text"><strong>The Formative Wound</strong> — The specific experience that made that belief the only reasonable conclusion.</p>
+        </div>
+        <div class="wb-deliverable-item">
+          <div class="wb-deliverable-marker"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg></div>
+          <p class="wb-deliverable-text"><strong>The Lie</strong> — The distorted conclusion your character drew from what happened, now shaping every choice they make.</p>
+        </div>
+        <div class="wb-deliverable-item">
+          <div class="wb-deliverable-marker"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg></div>
+          <p class="wb-deliverable-text"><strong>Want vs. Need</strong> — What they're chasing, and what they actually require. Why those two things are in conflict, and why that conflict is your story.</p>
+        </div>
+      </div>
+
+      <div class="wb-section">
+        <p>You’ll start hearing the heartbeat beneath every line.</p>
+      </div>
+    </div>
+    <div class="wb-nav-wrap">
+      <button class="wb-back-btn" data-prev="video"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back</button>
+      <button class="wb-continue-btn" data-next="difference">Next<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+    <div class="wb-completion-note">
+      <span>Only click Mark as Complete when you are ready to move to the next lesson.</span>
+    </div>
+  </div>
+
+  <!-- DIFFERENCE PANEL -->
+  <div class="wb-tab-panel" id="wb-panel-difference">
+    <div class="wb-panel-inner">
+      <span class="wb-panel-eyebrow">The Methodology</span>
+      <h2 class="wb-panel-title">How This Course Works <em>Differently</em></h2>
+      <div class="wb-panel-rule"></div>
+
+      <div class="wb-section">
+        
+
+        <div class="wb-contrast-grid">
+          <div class="wb-contrast-col">
+            <span class="wb-contrast-col-label">Most Courses Ask You To</span>
+            <p>Fill in character templates</p>
+            <p>Brainstorm backstory</p>
+            <p>Fabricate psychology from scratch</p>
+            <p>Use AI to generate answers</p>
+            <p>Build a plausible history</p>
+          </div>
+          <div class="wb-contrast-col right">
+            <span class="wb-contrast-col-label">STRATUM Teaches You To</span>
+            <p>Excavate what's already true</p>
+            <p>Trace belief back to origin</p>
+            <p>Discover through Socratic questioning</p>
+            <p>Use AI to find what you already know</p>
+            <p>Recognize what was inevitable</p>
+          </div>
+        </div>
+
+        <p>Every lesson is designed to help you excavate what's already true about your character, layer by layer, using structured Socratic questioning rather than creative guesswork.</p>
+
+        <div class="wb-pull-quote">
+          <p>Your AI coach doesn't generate answers. It asks the questions that help you find what you already know. That distinction — excavation versus fabrication — is the entire methodology. Keep it in mind as you begin.</p>
+        </div>
+      </div>
+    </div>
+    <div class="wb-nav-wrap">
+      <button class="wb-back-btn" data-prev="results"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back</button>
+      <button class="wb-continue-btn" data-next="next-steps">Next<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+    <div class="wb-completion-note">
+      <span>Only click Mark as Complete when you are ready to move to the next lesson.</span>
+    </div>
+  </div>
+
+  <!-- NEXT STEPS PANEL -->
+  <div class="wb-tab-panel" id="wb-panel-next-steps">
+    <div class="wb-panel-inner">
+      <span class="wb-panel-eyebrow">Before You Begin</span>
+      <h2 class="wb-panel-title">Your Next <em>Steps</em></h2>
+      <div class="wb-panel-rule"></div>
+
+      <div class="wb-section">
+        <p>Before you touch a single lesson, your next step is choosing the right character to bring to the excavation. The Character Selection Guide walks you through that decision. After that, you'll set up your AI coaching environment — a five-minute configuration that shapes every session that follows.</p>
+        <p>Every coaching session in STRATUM is built around a specific prompt architecture that transforms your AI coach from a general-purpose tool into a disciplined Socratic partner who knows your methodology, respects your boundaries, and refuses to do the work for you.</p>
+        <p>The AI coach is <strong>Claude</strong> — and the next section explains what it is, why it was chosen over the alternatives, and what makes it the right tool for this methodology.</p>
+      </div>
+    </div>
+    <div class="wb-nav-wrap">
+      <button class="wb-back-btn" data-prev="difference"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back</button>
+      <button class="wb-continue-btn" data-next="claude">Next<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+    </div>
+    <div class="wb-completion-note">
+      <span>Only click Mark as Complete when you are ready to move to the next lesson.</span>
+    </div>
+  </div>
+
+  <!-- CLAUDE PANEL -->
+  <div class="wb-tab-panel" id="wb-panel-claude">
+    <div class="wb-panel-inner">
+      <span class="wb-panel-eyebrow">Your Coaching Tool</span>
+      <h2 class="wb-panel-title">Why <em>Claude</em></h2>
+      <div class="wb-panel-rule"></div>
+      <p class="wb-panel-lead">That AI coach is Claude — and if you haven't used it before, here's what you need to know.</p>
+
+      <div class="wb-section">
+        <div class="wb-claude-block">
+          <div class="wb-claude-block-head">
+            <span class="wb-claude-block-eyebrow">Your Coaching Tool — What It Is &amp; Why It Was Chosen</span>
+            <div class="wb-claude-block-title">Claude, by <em>Anthropic</em></div>
+          </div>
+          <div class="wb-claude-block-body">
+            <p class="wb-claude-block-intro">You've almost certainly heard of ChatGPT. Claude is in the same category — a large language model AI — but made by a different company, Anthropic, with a different design philosophy. Understanding the distinction matters for how you'll use it in this course.</p>
+            <p class="wb-claude-block-intro" style="font-style:italic; font-size:var(--body-sm); color:var(--brown-light); margin-top:-10px;">If you already use another AI tool, you don't have to switch. That said, Claude is the recommended choice for this course — and the table below explains why.</p>
+
+            <div class="wb-ai-table-wrap">
+              <table class="wb-ai-table">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th>ChatGPT<span class="wb-vendor-name">OpenAI</span></th>
+                    <th>Gemini<span class="wb-vendor-name">Google</span></th>
+                    <th>Copilot<span class="wb-vendor-name">Microsoft</span></th>
+                    <th>Claude<span class="wb-vendor-name">Anthropic</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="wb-feature-label">Works with detailed prompts</td>
+                    <td><span class="wb-mark-yes">✓</span></td>
+                    <td><span class="wb-mark-yes">✓</span></td>
+                    <td><span class="wb-mark-yes">✓</span></td>
+                    <td class="wb-claude-row"><span class="wb-mark-yes">✓</span></td>
+                  </tr>
+                  <tr>
+                    <td class="wb-feature-label">Reads attached PDFs</td>
+                    <td><span class="wb-mark-yes">✓</span></td>
+                    <td><span class="wb-mark-yes">✓</span></td>
+                    <td><span class="wb-mark-yes">✓</span></td>
+                    <td class="wb-claude-row"><span class="wb-mark-yes">✓</span></td>
+                  </tr>
+                  <tr>
+                    <td class="wb-feature-label">Memory across sessions (Projects)</td>
+                    <td><span class="wb-mark-no">—</span></td>
+                    <td><span class="wb-mark-no">—</span></td>
+                    <td><span class="wb-mark-no">—</span></td>
+                    <td class="wb-claude-row"><span class="wb-mark-star">★</span></td>
+                  </tr>
+                  <tr>
+                    <td class="wb-feature-label">Holds role across 8 lessons</td>
+                    <td><span class="wb-mark-no">—</span></td>
+                    <td><span class="wb-mark-no">—</span></td>
+                    <td><span class="wb-mark-no">—</span></td>
+                    <td class="wb-claude-row"><span class="wb-mark-star">★</span></td>
+                  </tr>
+                  <tr>
+                    <td class="wb-feature-label">Resists drifting into content generation</td>
+                    <td><span class="wb-mark-no">—</span></td>
+                    <td><span class="wb-mark-no">—</span></td>
+                    <td><span class="wb-mark-no">—</span></td>
+                    <td class="wb-claude-row"><span class="wb-mark-star">★</span></td>
+                  </tr>
+                  <tr>
+                    <td class="wb-feature-label">Free tier available</td>
+                    <td><span class="wb-mark-yes">✓</span></td>
+                    <td><span class="wb-mark-yes">✓</span></td>
+                    <td><span class="wb-mark-yes">✓</span></td>
+                    <td class="wb-claude-row"><span class="wb-mark-yes">✓</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="wb-claude-why">
+              <p><strong>The single reason Claude was chosen over the others: Projects.</strong> Claude's Projects feature gives your coach persistent memory across all eight lessons. It remembers your character's anchor behavior from Lesson 1 when you arrive at Lesson 5. It accumulates context the way a human coach would across multiple sessions. No other major AI tool does this reliably without manual workarounds. For a course built on progressive depth, that continuity isn't a convenience — it's the foundation the methodology depends on.</p>
+            </div>
+          </div>
+        </div>
+
+        <p>The next lesson — <em>Building Your AI Coach</em> — walks you through setting up Claude in five steps. The lesson after that, <em>Calibrating Your Coach</em>, gives it the context it needs to coach you specifically.</p>
+
+        <div class="wb-callout amber">
+          <span class="wb-callout-label">Do Not Skip This</span>
+          <p>Skip the setup and the sessions will still function. <strong>Do it properly and you'll have a coaching partner calibrated to push you in exactly the right direction for all lessons.</strong> The five minutes you spend here will shape every session that follows. Don't skip it.</p>
+        </div>
+      </div>
+    </div>
+    <div class="wb-nav-wrap">
+      <button class="wb-back-btn" data-prev="next-steps"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 18 5 12 11 6"/></svg>Back</button>
+    </div>
+    <div class="wb-completion-note">
+      <span>Only click Mark as Complete when you are ready to move to the next lesson.</span>
+    </div>
+  </div>
+
+</div><!-- /wb-root -->
+
+<script>
+(function() {
+  var root      = document.getElementById('wb-root');
+  var heroVideo = document.getElementById('wb-hero-video');
+  var header    = document.getElementById('wb-header');
+  var strata    = document.getElementById('wb-strata');
+
+  function activateTab(tabId) {
+    var panels = root.querySelectorAll('.wb-tab-panel');
+    for (var i = 0; i < panels.length; i++) panels[i].classList.remove('active');
+    var panel = document.getElementById('wb-panel-' + tabId);
+    if (panel) panel.classList.add('active');
+    var onVideo = (tabId === 'video');
+    heroVideo.style.display = onVideo ? 'block' : 'none';
+    if (header) header.style.display = onVideo ? 'block' : 'none';
+    if (strata) strata.style.display = onVideo ? 'block' : 'none';
+    setTimeout(function() {
+      var el = root.parentElement;
+      while (el && el !== document.body) {
+        if (el.scrollHeight > el.clientHeight) {
+          el.scrollTo({ top: 0, behavior: 'smooth' });
+          break;
+        }
+        el = el.parentElement;
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 50);
+  }
+
+  var contBtns = root.querySelectorAll('.wb-continue-btn');
+  for (var i = 0; i < contBtns.length; i++) {
+    (function(btn) {
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-next')); });
+    })(contBtns[i]);
+  }
+
+  var backBtns = root.querySelectorAll('.wb-back-btn');
+  for (var i = 0; i < backBtns.length; i++) {
+    (function(btn) {
+      btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-prev')); });
+    })(backBtns[i]);
+  }
+
+  var facade = document.getElementById('wb-yt-facade');
+  if (facade) {
+    facade.addEventListener('click', function() {
+      if (!facade.classList.contains('playing')) {
+        var iframe = facade.querySelector('iframe');
+        iframe.src = 'https://www.youtube.com/embed/Tt8iCBWOkp8?rel=0&modestbranding=1&autoplay=1';
+        facade.classList.add('playing');
+      }
+    });
+  }
+
+  var transcriptBtn  = document.getElementById('wb-transcript-btn');
+  var transcriptBody = document.getElementById('wb-transcript-main');
+  if (transcriptBtn && transcriptBody) {
+    transcriptBtn.addEventListener('click', function() {
+      var isOpen = transcriptBody.classList.contains('open');
+      transcriptBody.classList.toggle('open', !isOpen);
+      transcriptBtn.setAttribute('aria-expanded', String(!isOpen));
+    });
+  }
+
+})();
+</script>
