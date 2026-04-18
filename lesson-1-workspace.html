@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workspace — The Surface Pattern · STRATUM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream:#faf4e8; --cream-dark:#f2ead8; --cream-mid:#ede5d4;
+      --tan:#c4a882; --tan-mid:#a8895e; --tan-light:#ddd0b8; --tan-faint:#ede5d4;
+      --brown:#2e1f0e; --brown-mid:#5c3d1e; --brown-light:#8b6340;
+      --label-xs:11px; --label-sm:12px; --label-md:13px;
+      --body-sm:14px; --body-md:15px; --body-lg:16px;
+    }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Spectral', Georgia, serif;
+      background: var(--cream);
+      color: var(--brown);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* STRATA HEADER BAR */
+    .strata-bar {
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(to right,
+        #3d1f05 0%,
+        #6b3a12 12%,
+        #a8895e 25%,
+        #c4a882 38%,
+        #ddd0b8 50%,
+        #c4a882 62%,
+        #a8895e 75%,
+        #6b3a12 88%,
+        #3d1f05 100%
+      );
+      flex-shrink: 0;
+    }
+
+    /* PAGE HEADER */
+    .page-header {
+      background: var(--brown);
+      border-bottom: 1px solid rgba(196,168,130,0.18);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 54px;
+      flex-shrink: 0;
+    }
+    .page-header-left {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+    .page-header-brand {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--tan);
+    }
+    .page-header-divider {
+      width: 1px;
+      height: 14px;
+      background: rgba(196,168,130,0.25);
+      align-self: center;
+    }
+    .page-header-lesson {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(196,168,130,0.5);
+    }
+    .page-header-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 13px;
+      font-weight: 300;
+      font-style: italic;
+      color: rgba(250,244,232,0.55);
+    }
+
+    /* LAYOUT */
+    .workspace-layout {
+      display: flex;
+      min-height: calc(100vh - 59px);
+    }
+
+    /* LEFT SIDEBAR */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      background: var(--brown);
+      border-right: 1px solid rgba(196,168,130,0.12);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(196,168,130,0.2) transparent;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(196,168,130,0.2); border-radius: 2px; }
+
+    /* TIMER */
+    .timer-block {
+      padding: 24px 22px 20px;
+      border-bottom: 1px solid rgba(196,168,130,0.12);
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .timer-label {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs);
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(196,168,130,0.5);
+      display: block;
+      margin-bottom: 10px;
+    }
+    .timer-face {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(196,168,130,0.15);
+      border-radius: 4px;
+      padding: 14px 16px 12px;
+      margin-bottom: 12px;
+    }
+    .timer-display {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 42px;
+      font-weight: 300;
+      color: var(--cream);
+      letter-spacing: 0.04em;
+      line-height: 1;
+      display: block;
+      transition: color 0.4s;
+    }
+    .timer-display.warning { color: #e8c46a; }
+    .timer-display.urgent  { color: #e07a5f; }
+    .timer-sub {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs);
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(196,168,130,0.35);
+      display: block;
+      margin-top: 6px;
+    }
+    .timer-controls {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+    .timer-btn {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs);
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid rgba(196,168,130,0.22);
+      color: rgba(196,168,130,0.55);
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .timer-btn:hover {
+      border-color: var(--tan);
+      color: var(--tan);
+      background: rgba(196,168,130,0.06);
+    }
+    .timer-btn.primary {
+      background: rgba(196,168,130,0.1);
+      border-color: rgba(196,168,130,0.35);
+      color: var(--tan);
+    }
+    .timer-btn.primary:hover {
+      background: rgba(196,168,130,0.18);
+      border-color: var(--tan);
+    }
+
+    /* TIMER PROGRESS BAR */
+    .timer-progress-wrap {
+      height: 3px;
+      background: rgba(196,168,130,0.1);
+      margin: 12px 0 0;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .timer-progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, var(--tan-mid), var(--tan));
+      width: 100%;
+      transition: width 1s linear, background-color 0.4s;
+      transform-origin: left;
+    }
+
+    /* SIDEBAR REFERENCE */
+    .sidebar-ref {
+      padding: 20px 20px 16px;
+      flex: 1;
+    }
+    .sidebar-ref-eyebrow {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs);
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(196,168,130,0.5);
+      display: block;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(196,168,130,0.1);
+    }
+    .req-ref-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(196,168,130,0.08);
+      align-items: flex-start;
+    }
+    .req-ref-item:last-child { border-bottom: none; }
+    .req-ref-num {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 22px;
+      font-weight: 300;
+      font-style: italic;
+      color: rgba(196,168,130,0.3);
+      line-height: 1;
+      flex-shrink: 0;
+      width: 26px;
+      padding-top: 1px;
+    }
+    .req-ref-body {}
+    .req-ref-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--tan);
+      display: block;
+      margin-bottom: 3px;
+    }
+    .req-ref-desc {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 12px;
+      font-weight: 300;
+      color: rgba(250,244,232,0.5);
+      line-height: 1.65;
+    }
+    .req-ref-example {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 11px;
+      font-weight: 300;
+      font-style: italic;
+      color: rgba(196,168,130,0.4);
+      line-height: 1.6;
+      margin-top: 5px;
+      padding-top: 5px;
+      border-top: 1px solid rgba(196,168,130,0.08);
+    }
+
+    /* SIDEBAR FOOTER */
+    .sidebar-footer {
+      padding: 14px 20px;
+      border-top: 1px solid rgba(196,168,130,0.1);
+      flex-shrink: 0;
+    }
+    .sidebar-footer-note {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 11px;
+      font-weight: 300;
+      font-style: italic;
+      color: rgba(196,168,130,0.3);
+      line-height: 1.6;
+    }
+
+    /* MAIN CONTENT */
+    .workspace-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--cream);
+    }
+    .workspace-main-header {
+      padding: 28px 36px 24px;
+      border-bottom: 1px solid var(--tan-light);
+      background: var(--cream-dark);
+    }
+    .workspace-eyebrow {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: var(--label-xs);
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--tan-mid);
+      display: block;
+      margin-bottom: 6px;
+    }
+    .workspace-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 28px;
+      font-weight: 300;
+      color: var(--brown);
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .workspace-title em {
+      font-style: italic;
+      color: var(--brown-mid);
+    }
+    .workspace-desc {
+      font-size: var(--body-sm);
+      font-weight: 300;
+      line-height: 1.72;
+      color: var(--brown-mid);
+    }
+
+    /* FORM CONTAINER */
+    .form-container {
+      flex: 1;
+      padding: 0;
+      position: relative;
+    }
+    /* Override jotform defaults to blend with STRATUM */
+    .form-container .jotform-form,
+    #form-container-wrap {
+      background: transparent !important;
+    }
+
+    /* MOBILE RESPONSIVE */
+    @media (max-width: 900px) {
+      .workspace-layout { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        flex-direction: row;
+        flex-wrap: wrap;
+        overflow-y: visible;
+      }
+      .timer-block {
+        width: 100%;
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(196,168,130,0.12);
+        border-right: none;
+      }
+      .timer-display { font-size: 32px; }
+      .sidebar-ref {
+        display: none; /* hide on mobile to save space */
+      }
+      .sidebar-footer { display: none; }
+      .workspace-main-header { padding: 20px 20px 16px; }
+    }
+    @media (max-width: 600px) {
+      .page-header { padding: 0 16px; }
+      .page-header-title { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="strata-bar"></div>
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="page-header-left">
+      <span class="page-header-brand">STRATUM</span>
+      <div class="page-header-divider"></div>
+      <span class="page-header-lesson">Lesson 1 · The Excavation Ladder</span>
+    </div>
+    <span class="page-header-title">Personal Workspace</span>
+  </header>
+
+  <!-- LAYOUT -->
+  <div class="workspace-layout">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+
+      <!-- TIMER -->
+      <div class="timer-block">
+        <span class="timer-label">Session Time</span>
+        <div class="timer-face">
+          <span class="timer-display" id="timer-display">35:00</span>
+          <span class="timer-sub">minutes remaining</span>
+          <div class="timer-progress-wrap">
+            <div class="timer-progress-bar" id="timer-progress"></div>
+          </div>
+        </div>
+        <div class="timer-controls">
+          <button class="timer-btn primary" id="timer-start-btn" onclick="timerToggle()">Start</button>
+          <button class="timer-btn" onclick="timerReset()">Reset</button>
+        </div>
+      </div>
+
+      <!-- 4 REQUIREMENTS REFERENCE -->
+      <div class="sidebar-ref">
+        <span class="sidebar-ref-eyebrow">The Four Requirements</span>
+
+        <div class="req-ref-item">
+          <span class="req-ref-num">01</span>
+          <div class="req-ref-body">
+            <span class="req-ref-title">Specific</span>
+            <span class="req-ref-desc">A concrete action — not a label or trait.</span>
+            <span class="req-ref-example">"She volunteers" not "she's protective"</span>
+          </div>
+        </div>
+
+        <div class="req-ref-item">
+          <span class="req-ref-num">02</span>
+          <div class="req-ref-body">
+            <span class="req-ref-title">Visible</span>
+            <span class="req-ref-desc">A camera would capture it happening.</span>
+            <span class="req-ref-example">"He examines every object" not "he feels curious"</span>
+          </div>
+        </div>
+
+        <div class="req-ref-item">
+          <span class="req-ref-num">03</span>
+          <div class="req-ref-body">
+            <span class="req-ref-title">Recurring</span>
+            <span class="req-ref-desc">A pattern across contexts, people, and time.</span>
+            <span class="req-ref-example">Three instances minimum — not one moment</span>
+          </div>
+        </div>
+
+        <div class="req-ref-item">
+          <span class="req-ref-num">04</span>
+          <div class="req-ref-body">
+            <span class="req-ref-title">Consequential</span>
+            <span class="req-ref-desc">It shapes relationships, decisions, the arc.</span>
+            <span class="req-ref-example">"Decorative" behavior won't pass this test</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR FOOTER -->
+      <div class="sidebar-footer">
+        <p class="sidebar-footer-note">Stay in observer mode. What the camera sees — not what it means.</p>
+      </div>
+
+    </aside>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="workspace-main">
+
+      <div class="workspace-main-header">
+        <span class="workspace-eyebrow">Lesson 1 · The Surface Pattern</span>
+        <h1 class="workspace-title">Your <em>Coaching Workspace</em></h1>
+        <p class="workspace-desc">Complete your AI coaching session first, then return here to record your anchor behavior and three instances. Your responses are saved automatically.</p>
+      </div>
+
+      <!-- JOTFORM -->
+      <div class="form-container" id="form-container-wrap">
+        <script type="text/javascript" src="https://form.jotform.com/jsform/260755899682882"></script>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    // TIMER
+    var TOTAL_SECONDS = 35 * 60;
+    var remaining = TOTAL_SECONDS;
+    var timerInterval = null;
+    var running = false;
+
+    function pad(n) { return n < 10 ? '0' + n : String(n); }
+
+    function updateTimerDisplay() {
+      var m = Math.floor(remaining / 60);
+      var s = remaining % 60;
+      var display = document.getElementById('timer-display');
+      var progress = document.getElementById('timer-progress');
+      var pct = (remaining / TOTAL_SECONDS) * 100;
+
+      display.textContent = pad(m) + ':' + pad(s);
+      progress.style.width = pct + '%';
+
+      display.className = 'timer-display';
+      if (remaining <= 300) {
+        display.classList.add('urgent');
+        progress.style.background = 'linear-gradient(to right, #c0392b, #e07a5f)';
+      } else if (remaining <= 600) {
+        display.classList.add('warning');
+        progress.style.background = 'linear-gradient(to right, #b8860b, #e8c46a)';
+      }
+    }
+
+    function timerToggle() {
+      var btn = document.getElementById('timer-start-btn');
+      if (running) {
+        clearInterval(timerInterval);
+        running = false;
+        btn.textContent = 'Resume';
+        btn.classList.remove('primary');
+      } else {
+        if (remaining <= 0) { timerReset(); return; }
+        running = true;
+        btn.textContent = 'Pause';
+        btn.classList.add('primary');
+        timerInterval = setInterval(function() {
+          remaining--;
+          updateTimerDisplay();
+          if (remaining <= 0) {
+            clearInterval(timerInterval);
+            running = false;
+            btn.textContent = 'Done';
+            document.getElementById('timer-display').textContent = '0:00';
+            document.getElementById('timer-progress').style.width = '0%';
+          }
+        }, 1000);
+      }
+    }
+
+    function timerReset() {
+      clearInterval(timerInterval);
+      running = false;
+      remaining = TOTAL_SECONDS;
+      var btn = document.getElementById('timer-start-btn');
+      btn.textContent = 'Start';
+      var progress = document.getElementById('timer-progress');
+      progress.style.background = 'linear-gradient(to right, var(--tan-mid), var(--tan))';
+      updateTimerDisplay();
+    }
+  </script>
+
+</body>
+</html>
