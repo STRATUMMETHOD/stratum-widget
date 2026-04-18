@@ -206,6 +206,17 @@
       flex: 1;
       padding: 0;
     }
+    /* Override Jotform's internal max-width so it fills the column */
+    .form-wrap .jotform-form,
+    .form-wrap form,
+    .form-wrap #form-container,
+    .form-wrap .supernova-container,
+    .form-wrap .jf-form-container,
+    .form-wrap [class*="jf-"],
+    .form-wrap [id*="jotform"] {
+      max-width: 100% !important;
+      width: 100% !important;
+    }
 
     /* ── MOBILE ── */
     @media (max-width: 820px) {
@@ -299,11 +310,46 @@
         <p class="main-desc">Complete your AI coaching session first, then return here to record your anchor behavior and three instances. Your responses are saved automatically.</p>
       </div>
 
-      <div class="form-wrap">
+      <div class="form-wrap" id="form-wrap">
         <script type="text/javascript" src="https://form.jotform.com/jsform/260755899682882"></script>
       </div>
 
     </main>
+
+  <style>
+    /* Post-load: force Jotform's injected containers to fill full width */
+    #form-wrap > div,
+    #form-wrap > div > div,
+    #form-wrap iframe {
+      max-width: 100% !important;
+      width: 100% !important;
+    }
+  </style>
+
+  <script>
+    /* Jotform injects divs with inline width styles after the script runs.
+       Poll briefly and strip them so the form fills the column. */
+    (function() {
+      function stripInlineWidths() {
+        var wrap = document.getElementById('form-wrap');
+        if (!wrap) return;
+        var els = wrap.querySelectorAll('*');
+        for (var i = 0; i < els.length; i++) {
+          var el = els[i];
+          if (el.style && el.style.maxWidth) el.style.maxWidth = '100%';
+          if (el.style && el.style.width && el.style.width !== '100%') {
+            el.style.width = '100%';
+          }
+        }
+      }
+      var attempts = 0;
+      var poll = setInterval(function() {
+        stripInlineWidths();
+        attempts++;
+        if (attempts >= 10) clearInterval(poll);
+      }, 300);
+    })();
+  </script>
 
   </div>
 
