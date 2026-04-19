@@ -47,7 +47,6 @@
     .sidebar::-webkit-scrollbar { width: 4px; }
     .sidebar::-webkit-scrollbar-thumb { background: var(--tan-light); border-radius: 2px; }
 
-    /* Sidebar header */
     .sidebar-header {
       padding: 24px 20px 18px;
       border-bottom: 1px solid var(--tan-light);
@@ -81,7 +80,6 @@
       margin-top: 12px;
     }
 
-    /* Requirement items */
     .sidebar-body {
       padding: 16px 20px 20px;
       flex: 1;
@@ -134,7 +132,6 @@
       color: var(--tan-mid);
     }
 
-    /* Sidebar footer note */
     .sidebar-footer {
       padding: 14px 20px 18px;
       border-top: 1px solid var(--tan-light);
@@ -159,7 +156,6 @@
       background: var(--cream);
     }
 
-    /* Main header */
     .main-header {
       padding: 32px 36px 26px;
       border-bottom: 1px solid var(--tan-light);
@@ -193,29 +189,15 @@
       background: var(--tan);
       margin: 10px 0 14px;
     }
-    .main-desc {
-      font-size: var(--body-sm);
-      font-weight: 300;
-      line-height: 1.75;
-      color: var(--brown-mid);
-      max-width: 560px;
-    }
 
-    /* Form area */
+    /* ── FORM AREA ── */
     .form-wrap {
       flex: 1;
-      padding: 0;
-    }
-    /* Override Jotform's internal max-width so it fills the column */
-    .form-wrap .jotform-form,
-    .form-wrap form,
-    .form-wrap #form-container,
-    .form-wrap .supernova-container,
-    .form-wrap .jf-form-container,
-    .form-wrap [class*="jf-"],
-    .form-wrap [id*="jotform"] {
-      max-width: 100% !important;
-      width: 100% !important;
+      padding: 32px 36px 40px;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     /* ── MOBILE ── */
@@ -235,6 +217,7 @@
       }
       .req-item { padding: 10px 0; }
       .main-header { padding: 20px 20px 18px; }
+      .form-wrap { padding: 20px; }
     }
     @media (max-width: 500px) {
       .sidebar-body { grid-template-columns: 1fr; }
@@ -307,7 +290,7 @@
         <span class="main-eyebrow">Lesson 1 · The Surface Pattern</span>
         <h1 class="main-title">Your <em>Coaching Workspace</em></h1>
         <div class="main-rule"></div>
-          </div>
+      </div>
 
       <div class="form-wrap" id="form-wrap">
         <script type="text/javascript" src="https://form.jotform.com/jsform/260755899682882"></script>
@@ -315,42 +298,115 @@
 
     </main>
 
+  </div>
+
   <style>
-    /* Post-load: force Jotform's injected containers to fill full width */
+    /* ── JOTFORM OVERRIDE: cream background + centered ── */
+
+    /* The outer shell Jotform injects */
     #form-wrap > div,
-    #form-wrap > div > div,
-    #form-wrap iframe {
-      max-width: 100% !important;
+    .supernova,
+    .supernova-container,
+    .form-all,
+    .jf-form-container,
+    #JotFormIFrame,
+    [class*="jotform"],
+    [id*="jotform"] {
+      background: var(--cream) !important;
+      background-color: var(--cream) !important;
+      max-width: 680px !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
       width: 100% !important;
+      box-shadow: none !important;
+    }
+
+    /* Individual form sections */
+    .form-all,
+    .form-body,
+    .form-header,
+    .form-line,
+    .form-matrix-table,
+    .form-sub-label,
+    .form-single,
+    .form-section,
+    .pg-body,
+    .jf-header,
+    .jf-footer,
+    .jf-page,
+    [class*="form-all"],
+    [class*="form-body"],
+    [class*="form-section"],
+    [class*="form-line"],
+    [class*="pg-body"],
+    [class*="jf-page"] {
+      background: var(--cream) !important;
+      background-color: var(--cream) !important;
+    }
+
+    /* Question labels */
+    .form-label,
+    .form-label-top,
+    .form-sub-label,
+    label,
+    .form-all label {
+      color: var(--brown) !important;
+      font-family: 'Cormorant Garamond', Georgia, serif !important;
+    }
+
+    /* Text inputs */
+    .form-all input[type="text"],
+    .form-all input[type="email"],
+    .form-all textarea,
+    .form-all select {
+      background: var(--cream-dark) !important;
+      background-color: var(--cream-dark) !important;
+      border: 1px solid var(--tan-light) !important;
+      color: var(--brown) !important;
     }
   </style>
 
   <script>
-    /* Jotform injects divs with inline width styles after the script runs.
-       Poll briefly and strip them so the form fills the column. */
+    /* Poll after Jotform injects its DOM and strip any inline dark backgrounds */
     (function() {
-      function stripInlineWidths() {
-        var wrap = document.getElementById('form-wrap');
-        if (!wrap) return;
-        var els = wrap.querySelectorAll('*');
-        for (var i = 0; i < els.length; i++) {
-          var el = els[i];
-          if (el.style && el.style.maxWidth) el.style.maxWidth = '100%';
-          if (el.style && el.style.width && el.style.width !== '100%') {
-            el.style.width = '100%';
-          }
+      var CREAM = '#faf4e8';
+      var DARK_PATTERNS = ['#2e1f0e','#100a04','#1a1208','rgb(46,31,14)','rgb(16,10,4)'];
+
+      function isTargetColor(val) {
+        if (!val) return false;
+        var v = val.toLowerCase().replace(/\s/g,'');
+        return DARK_PATTERNS.some(function(p){ return v.indexOf(p.replace(/\s/g,'')) !== -1; });
+      }
+
+      function cleanEl(el) {
+        if (!el || !el.style) return;
+        if (isTargetColor(el.style.backgroundColor) || isTargetColor(el.style.background)) {
+          el.style.backgroundColor = CREAM;
+          el.style.background = CREAM;
+        }
+        if (el.style.maxWidth && el.style.maxWidth !== '680px') {
+          el.style.maxWidth = '680px';
+          el.style.marginLeft = 'auto';
+          el.style.marginRight = 'auto';
         }
       }
+
+      function sweep() {
+        var wrap = document.getElementById('form-wrap');
+        if (!wrap) return;
+        cleanEl(wrap);
+        var all = wrap.querySelectorAll('*');
+        for (var i = 0; i < all.length; i++) cleanEl(all[i]);
+      }
+
       var attempts = 0;
       var poll = setInterval(function() {
-        stripInlineWidths();
+        sweep();
         attempts++;
-        if (attempts >= 10) clearInterval(poll);
+        if (attempts >= 20) clearInterval(poll);
       }, 300);
     })();
   </script>
-
-  </div>
 
 </body>
 </html>
