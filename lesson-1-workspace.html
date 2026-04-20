@@ -31,7 +31,7 @@
 
     /* ── LEFT SIDEBAR ── */
     .sidebar {
-      width: 260px;
+      width: 312px;
       flex-shrink: 0;
       background: var(--cream-dark);
       border-right: 1px solid var(--tan-light);
@@ -48,7 +48,7 @@
     .sidebar::-webkit-scrollbar-thumb { background: var(--tan-light); border-radius: 2px; }
 
     .sidebar-header {
-      padding: 24px 20px 18px;
+      padding: 24px 22px 18px;
       border-bottom: 1px solid var(--tan-light);
       flex-shrink: 0;
     }
@@ -81,7 +81,7 @@
     }
 
     .sidebar-body {
-      padding: 16px 20px 20px;
+      padding: 16px 22px 20px;
       flex: 1;
     }
     .req-item {
@@ -133,7 +133,7 @@
     }
 
     .sidebar-footer {
-      padding: 14px 20px 18px;
+      padding: 14px 22px 18px;
       border-top: 1px solid var(--tan-light);
       flex-shrink: 0;
       background: var(--cream-mid);
@@ -173,7 +173,7 @@
     }
     .main-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 28px;
+      font-size: 35px;
       font-weight: 300;
       color: var(--brown);
       line-height: 1.15;
@@ -200,6 +200,17 @@
       align-items: center;
     }
 
+    /* ── FORM CONTAINER CARD ── */
+    .form-card {
+      width: 100%;
+      max-width: 680px;
+      background: var(--cream-dark);
+      border: 1px solid var(--tan-light);
+      border-top: 3px solid var(--tan);
+      padding: 0;
+      overflow: hidden;
+    }
+
     /* ── MOBILE ── */
     @media (max-width: 820px) {
       .workspace-layout { flex-direction: column; }
@@ -221,6 +232,7 @@
     }
     @media (max-width: 500px) {
       .sidebar-body { grid-template-columns: 1fr; }
+      .main-title { font-size: 28px; }
     }
   </style>
 </head>
@@ -293,7 +305,9 @@
       </div>
 
       <div class="form-wrap" id="form-wrap">
-        <script type="text/javascript" src="https://form.jotform.com/jsform/260755899682882"></script>
+        <div class="form-card" id="form-card">
+          <script type="text/javascript" src="https://form.jotform.com/jsform/260755899682882"></script>
+        </div>
       </div>
 
     </main>
@@ -301,76 +315,70 @@
   </div>
 
   <style>
-    /* ── JOTFORM OVERRIDE: cream background + centered ── */
-
-    /* The outer shell Jotform injects */
-    #form-wrap > div,
-    .supernova,
-    .supernova-container,
-    .form-all,
-    .jf-form-container,
-    #JotFormIFrame,
-    [class*="jotform"],
-    [id*="jotform"] {
-      background: var(--cream) !important;
-      background-color: var(--cream) !important;
-      max-width: 680px !important;
+    /* ── JOTFORM OVERRIDE: match cream-dark card background ── */
+    #form-card > div,
+    #form-wrap .supernova,
+    #form-wrap .supernova-container,
+    #form-wrap .form-all,
+    #form-wrap .jf-form-container,
+    #form-wrap [class*="jotform"],
+    #form-wrap [id*="jotform"] {
+      background: var(--cream-dark) !important;
+      background-color: var(--cream-dark) !important;
+      max-width: 100% !important;
       margin-left: auto !important;
       margin-right: auto !important;
       width: 100% !important;
       box-shadow: none !important;
     }
 
-    /* Individual form sections */
-    .form-all,
-    .form-body,
-    .form-header,
-    .form-line,
-    .form-matrix-table,
-    .form-sub-label,
-    .form-single,
-    .form-section,
-    .pg-body,
-    .jf-header,
-    .jf-footer,
-    .jf-page,
-    [class*="form-all"],
-    [class*="form-body"],
-    [class*="form-section"],
-    [class*="form-line"],
-    [class*="pg-body"],
-    [class*="jf-page"] {
-      background: var(--cream) !important;
-      background-color: var(--cream) !important;
+    #form-wrap .form-all,
+    #form-wrap .form-body,
+    #form-wrap .form-header,
+    #form-wrap .form-line,
+    #form-wrap .form-matrix-table,
+    #form-wrap .form-sub-label,
+    #form-wrap .form-single,
+    #form-wrap .form-section,
+    #form-wrap .pg-body,
+    #form-wrap .jf-header,
+    #form-wrap .jf-footer,
+    #form-wrap .jf-page,
+    #form-wrap [class*="form-all"],
+    #form-wrap [class*="form-body"],
+    #form-wrap [class*="form-section"],
+    #form-wrap [class*="form-line"],
+    #form-wrap [class*="pg-body"],
+    #form-wrap [class*="jf-page"] {
+      background: var(--cream-dark) !important;
+      background-color: var(--cream-dark) !important;
     }
 
-    /* Question labels */
-    .form-label,
-    .form-label-top,
-    .form-sub-label,
-    label,
-    .form-all label {
+    #form-wrap .form-label,
+    #form-wrap .form-label-top,
+    #form-wrap .form-sub-label,
+    #form-wrap label,
+    #form-wrap .form-all label {
       color: var(--brown) !important;
       font-family: 'Cormorant Garamond', Georgia, serif !important;
     }
 
-    /* Text inputs */
-    .form-all input[type="text"],
-    .form-all input[type="email"],
-    .form-all textarea,
-    .form-all select {
-      background: var(--cream-dark) !important;
-      background-color: var(--cream-dark) !important;
+    #form-wrap .form-all input[type="text"],
+    #form-wrap .form-all input[type="email"],
+    #form-wrap .form-all textarea,
+    #form-wrap .form-all select {
+      background: var(--cream) !important;
+      background-color: var(--cream) !important;
       border: 1px solid var(--tan-light) !important;
       color: var(--brown) !important;
     }
   </style>
 
   <script>
-    /* Poll after Jotform injects its DOM and strip any inline dark backgrounds */
     (function() {
-      var CREAM = '#faf4e8';
-      var DARK_PATTERNS = ['#2e1f0e','#100a04','#1a1208','rgb(46,31,14)','rgb(16,10,4)'];
+      var CARD_BG   = '#f2ead8';
+      var INPUT_BG  = '#faf4e8';
+      var DARK_PATTERNS = ['#2e1f0e','#100a04','#1a1208','rgb(46,31,14)','rgb(16,10,4)','rgb(46, 31, 14)'];
 
       function isTargetColor(val) {
         if (!val) return false;
@@ -381,18 +389,23 @@
       function cleanEl(el) {
         if (!el || !el.style) return;
         if (isTargetColor(el.style.backgroundColor) || isTargetColor(el.style.background)) {
-          el.style.backgroundColor = CREAM;
-          el.style.background = CREAM;
+          el.style.backgroundColor = CARD_BG;
+          el.style.background = CARD_BG;
         }
-        if (el.style.maxWidth && el.style.maxWidth !== '680px') {
-          el.style.maxWidth = '680px';
+        var tag = (el.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+          el.style.backgroundColor = INPUT_BG;
+          el.style.background = INPUT_BG;
+        }
+        if (el.style.maxWidth && el.style.maxWidth !== '100%' && el.style.maxWidth !== '680px') {
+          el.style.maxWidth = '100%';
           el.style.marginLeft = 'auto';
           el.style.marginRight = 'auto';
         }
       }
 
       function sweep() {
-        var wrap = document.getElementById('form-wrap');
+        var wrap = document.getElementById('form-card');
         if (!wrap) return;
         cleanEl(wrap);
         var all = wrap.querySelectorAll('*');
@@ -403,7 +416,7 @@
       var poll = setInterval(function() {
         sweep();
         attempts++;
-        if (attempts >= 20) clearInterval(poll);
+        if (attempts >= 30) clearInterval(poll);
       }, 300);
     })();
   </script>
