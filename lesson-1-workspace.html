@@ -29,12 +29,12 @@
       min-height: 100vh;
     }
 
-    /* ── LEFT SIDEBAR ── */
+    /* ── RIGHT SIDEBAR ── */
     .sidebar {
       width: 374px;
       flex-shrink: 0;
       background: var(--cream-dark);
-      border-right: 1px solid var(--tan-light);
+      border-left: 1px solid var(--tan-light);
       position: sticky;
       top: 0;
       height: 100vh;
@@ -47,8 +47,43 @@
     .sidebar::-webkit-scrollbar { width: 4px; }
     .sidebar::-webkit-scrollbar-thumb { background: var(--tan-light); border-radius: 2px; }
 
+    /* ── SIDEBAR ANCHOR (new) ── */
+    .sidebar-anchor {
+      padding: 22px 26px 18px;
+      background: var(--cream-mid);
+      border-bottom: 1px solid var(--tan-light);
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .sidebar-anchor-mark {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--tan-mid);
+      display: block;
+      margin-bottom: 6px;
+    }
+    .sidebar-anchor-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 23px;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--brown-mid);
+      line-height: 1.1;
+      letter-spacing: -0.005em;
+    }
+    .sidebar-anchor-rule {
+      width: 22px;
+      height: 1px;
+      background: var(--tan);
+      margin: 10px auto 0;
+      opacity: 0.7;
+    }
+
     .sidebar-header {
-      padding: 24px 26px 18px;
+      padding: 22px 26px 18px;
       border-bottom: 1px solid var(--tan-light);
       flex-shrink: 0;
     }
@@ -218,7 +253,11 @@
         height: auto;
         position: relative;
         overflow-y: visible;
+        border-left: none;
+        border-top: 1px solid var(--tan-light);
       }
+      .sidebar-anchor { padding: 18px 20px 14px; }
+      .sidebar-anchor-title { font-size: 20px; }
       .sidebar-body {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -239,8 +278,31 @@
 
   <div class="workspace-layout">
 
-    <!-- LEFT SIDEBAR -->
+    <!-- MAIN CONTENT (left) -->
+    <main class="workspace-main">
+
+      <div class="main-header">
+        <span class="main-eyebrow">Layer 1 · The Surface Pattern</span>
+        <h1 class="main-title">Your <em>Coaching Workspace</em></h1>
+        <div class="main-rule"></div>
+      </div>
+
+      <div class="form-wrap" id="form-wrap">
+        <div class="form-card" id="form-card">
+          <script type="text/javascript" src="https://form.jotform.com/jsform/261105935231045"></script>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- RIGHT SIDEBAR -->
     <aside class="sidebar">
+
+      <div class="sidebar-anchor">
+        <span class="sidebar-anchor-mark">Reference Panel</span>
+        <span class="sidebar-anchor-title">For Your Reference</span>
+        <div class="sidebar-anchor-rule"></div>
+      </div>
 
       <div class="sidebar-header">
         <span class="sidebar-eyebrow">The Excavation Ladder · L1</span>
@@ -293,23 +355,6 @@
       </div>
 
     </aside>
-
-    <!-- MAIN CONTENT -->
-    <main class="workspace-main">
-
-      <div class="main-header">
-        <span class="main-eyebrow">Layer 1 · The Surface Pattern</span>
-        <h1 class="main-title">Your <em>Coaching Workspace</em></h1>
-        <div class="main-rule"></div>
-      </div>
-
-      <div class="form-wrap" id="form-wrap">
-        <div class="form-card" id="form-card">
-          <script type="text/javascript" src="https://form.jotform.com/jsform/261105935231045"></script>
-        </div>
-      </div>
-
-    </main>
 
   </div>
 
