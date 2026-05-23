@@ -61,7 +61,7 @@
 </head>
 <body>
 
-<p class="intro">Every single writer brings at least one belief with them. A belief that explains why their characters aren't working. It might be quiet. It might sound reasonable. It might have been handed to you by a workshop, a rejection letter, or a writing teacher whose voice you've never stopped hearing.<br><br>Mine was the genre one: I need to know where the plot is going before my characters can fully exist. When I sat down to write fiction, I kept waiting for the story architecture to tell me who my characters were. I had the method backwards the whole time. The belief came from the novels I loved: Cussler, Brown, Clancy. Every one of them runs on plot. I absorbed the structure without realizing I was also absorbing an assumption about which came first.</p>
+<p class="intro">Every writer brings at least one belief with them. A belief that explains why their characters aren't working. It might be quiet. It might sound reasonable. It might have been handed to you by a workshop, a rejection letter, or a writing teacher whose voice you've never stopped hearing.</p>
 
 <details>
   <summary>
@@ -86,6 +86,23 @@
   </summary>
   <p class="body">This one is the most corrosive because it makes the problem permanent. It turns a skills gap into a personality verdict. Once you believe it, every flat scene becomes evidence — and you stop looking for a method.</p>
 </details>
+
+<script src="https://cdn.jsdelivr.net/npm/iframe-resizer@4.3.9/js/iframeResizer.contentWindow.min.js"></script>
+<script>
+  // Also send height to Jotform widget API
+  function sendHeight() {
+    var h = document.body.scrollHeight;
+    window.parent.postMessage('{"action":"setHeight","height":' + h + '}', '*');
+  }
+  // Send on load
+  sendHeight();
+  // Resend whenever a details element opens or closes
+  document.querySelectorAll('details').forEach(function(d) {
+    d.addEventListener('toggle', function() {
+      setTimeout(sendHeight, 50);
+    });
+  });
+</script>
 
 </body>
 </html>
