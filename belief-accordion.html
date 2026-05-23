@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beliefs</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: transparent; padding: 4px; }
+
+  p.intro {
+    font-size: 13px;
+    color: #0f1820;
+    line-height: 1.7;
+    margin-bottom: 14px;
+  }
+
+  details {
+    border-left: 3px solid #B8860B;
+    background: #F8F5EB;
+    margin-bottom: 10px;
+  }
+
+  summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    list-style: none;
+    font-family: Georgia, serif;
+    font-size: 13px;
+    font-style: italic;
+    color: #1a2e44;
+    line-height: 1.6;
+  }
+
+  summary::-webkit-details-marker { display: none; }
+
+  .chevron {
+    color: #B8860B;
+    flex-shrink: 0;
+    font-style: normal;
+    font-size: 14px;
+    margin-top: 1px;
+    transition: transform 0.2s;
+  }
+
+  details[open] .chevron {
+    transform: rotate(180deg);
+  }
+
+  .body {
+    font-size: 12px;
+    color: #555555;
+    line-height: 1.6;
+    padding: 0 14px 10px 14px;
+  }
+</style>
+</head>
+<body>
+
+<p class="intro">Every writer brings at least one belief with them. A belief that explains why their characters aren't working. It might be quiet. It might sound reasonable. It might have been handed to you by a workshop, a rejection letter, or a writing teacher whose voice you've never stopped hearing.</p>
+
+<details>
+  <summary>
+    "If I could just find the right image — the right detail — my characters would come alive. I just need to show more, not tell."
+    <span class="chevron">▾</span>
+  </summary>
+  <p class="body">This one often comes from years of being told to show, don't tell. It produces beautiful surfaces and empty interiors. The writer becomes expert at depicting behavior... and loses access to the logic underneath it.</p>
+</details>
+
+<details>
+  <summary>
+    "My characters aren't coming together because I don't have enough plot yet. Once I know what happens, they'll know what to say."
+    <span class="chevron">▾</span>
+  </summary>
+  <p class="body">This one often grows in writers trained on genre fiction — thrillers, mysteries, adventure. It treats character as a function of plot. The character waits to be activated by events rather than arriving with something already at stake.</p>
+</details>
+
+<details>
+  <summary>
+    "Some writers are just naturally good at this. I'm not one of them."
+    <span class="chevron">▾</span>
+  </summary>
+  <p class="body">This one is the most corrosive because it makes the problem permanent. It turns a skills gap into a personality verdict. Once you believe it, every flat scene becomes evidence — and you stop looking for a method.</p>
+</details>
+
+</body>
+</html>
