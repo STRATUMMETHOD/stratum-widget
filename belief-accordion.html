@@ -6,7 +6,7 @@
 <title>Beliefs</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; background: transparent; padding: 4px; }
+  body { font-family: Arial, sans-serif; background: transparent; padding: 4px 4px 0 4px; }
 
   p.intro {
     font-size: 13px;
@@ -19,6 +19,10 @@
     border-left: 3px solid #B8860B;
     background: #F8F5EB;
     margin-bottom: 10px;
+  }
+
+  details:last-of-type {
+    margin-bottom: 0;
   }
 
   summary {
@@ -89,14 +93,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/iframe-resizer@4.3.9/js/iframeResizer.contentWindow.min.js"></script>
 <script>
-  // Also send height to Jotform widget API
   function sendHeight() {
     var h = document.body.scrollHeight;
     window.parent.postMessage('{"action":"setHeight","height":' + h + '}', '*');
   }
-  // Send on load
   sendHeight();
-  // Resend whenever a details element opens or closes
   document.querySelectorAll('details').forEach(function(d) {
     d.addEventListener('toggle', function() {
       setTimeout(sendHeight, 50);
