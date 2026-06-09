@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Write Living Characters — A Fiction Writer's Masterclass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:       #0f0d0a;
+  --ink2:      #1a1612;
+  --ink3:      #231f19;
+  --gold:      #b8922a;
+  --gold-lt:   #d4a83c;
+  --gold-dim:  rgba(184,146,42,0.22);
+  --cream:     #f2ead6;
+  --cream-dim: #a89e88;
+  --sage:      #6b7c5e;
+  --sage-lt:   #8a9e78;
+  --sage-dim:  rgba(107,124,94,0.18);
+  --terra:     #8b4a2f;
+  --terra-lt:  #a85c3a;
+  --terra-dim: rgba(139,74,47,0.15);
+  --bronze:    #9a7040;
+  --white:     #ffffff;
+  --border:    rgba(255,255,255,0.06);
+  --border-g:  rgba(184,146,42,0.2);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'DM Sans',sans-serif;
+  font-weight:300;
+  background:var(--ink);
+  color:var(--cream);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.7;
+}
+
+/* ─── TYPOGRAPHY ─── */
+.t-eyebrow{font-size:10px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);}
+.t-display{font-family:'Cormorant Garamond',serif;font-weight:300;line-height:.96;letter-spacing:-.02em;}
+.t-serif{font-family:'Cormorant Garamond',serif;}
+.t-muted{color:rgba(242,234,214,.52);}
+.t-sage{color:var(--sage-lt);}
+.t-terra{color:var(--terra-lt);}
+.gold-em{font-style:italic;color:var(--gold-lt);}
+.outline-em{color:transparent;-webkit-text-stroke:1px rgba(184,146,42,.4);}
+
+/* ─── NAV ─── */
+.nav{
+  position:sticky;top:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 clamp(20px,5vw,72px);height:62px;
+  background:rgba(15,13,10,.92);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;color:var(--cream);letter-spacing:.05em;}
+.nav-logo em{font-style:italic;color:var(--gold);}
+.nav-dot{display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:8px;box-shadow:0 0 8px var(--gold);}
+.nav-btn{
+  font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink);background:var(--gold);
+  padding:10px 24px;text-decoration:none;
+  transition:background .2s,transform .15s;
+}
+.nav-btn:hover{background:var(--gold-lt);transform:translateY(-1px);}
+
+/* ─── HERO ─── */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;
+  padding:clamp(100px,12vw,140px) clamp(20px,5vw,72px) clamp(60px,8vw,90px);
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(ellipse 65% 50% at 50% 35%,rgba(184,146,42,.07) 0%,transparent 65%),
+    radial-gradient(ellipse 40% 30% at 20% 80%,rgba(107,124,94,.06) 0%,transparent 55%),
+    radial-gradient(ellipse 35% 25% at 80% 75%,rgba(139,74,47,.05) 0%,transparent 50%),
+    var(--ink);
+}
+.hero-kicker{
+  display:inline-flex;align-items:center;gap:14px;
+  margin-bottom:36px;
+  opacity:0;animation:up .9s ease .2s forwards;
+}
+.kline{width:32px;height:1px;background:rgba(184,146,42,.4);}
+.hero-h1{
+  font-size:clamp(64px,10vw,132px);
+  color:var(--white);
+  margin-bottom:0;
+  opacity:0;animation:up .9s ease .4s forwards;
+}
+.hero-rule{
+  width:52px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  margin:24px auto;
+  opacity:0;animation:up .9s ease .58s forwards;
+}
+.hero-sub{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(16px,2.2vw,22px);font-style:italic;font-weight:300;
+  color:var(--cream-dim);letter-spacing:.04em;
+  margin-bottom:36px;
+  opacity:0;animation:up .9s ease .65s forwards;
+}
+.hero-body{
+  font-size:clamp(15px,1.8vw,17px);
+  color:rgba(242,234,214,.55);line-height:1.9;
+  max-width:540px;margin:0 auto 52px;
+  opacity:0;animation:up .9s ease .8s forwards;
+}
+.hero-body strong{color:var(--cream);font-weight:400;}
+.hero-ctas{
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  opacity:0;animation:up .9s ease 1s forwards;
+}
+.btn-hero{
+  display:inline-block;background:var(--gold);color:var(--ink);
+  font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
+  text-decoration:none;padding:20px 64px;
+  transition:all .25s;
+}
+.btn-hero:hover{background:var(--gold-lt);transform:translateY(-3px);}
+.hero-micro{font-size:11px;color:rgba(168,158,136,.4);letter-spacing:.07em;}
+.hero-stats{
+  display:flex;justify-content:center;gap:clamp(28px,5vw,72px);
+  margin:60px auto 0;padding-top:32px;
+  border-top:1px solid rgba(184,146,42,.1);
+  max-width:560px;width:100%;
+  opacity:0;animation:up .9s ease 1.1s forwards;
+}
+.stat-n{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(28px,4vw,46px);font-weight:300;
+  color:var(--gold);line-height:1;margin-bottom:5px;text-align:center;
+}
+.stat-l{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(168,158,136,.4);text-align:center;}
+@keyframes up{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+/* ─── DEPTH SCROLL SECTION ─── */
+.depth-wrap{
+  background:var(--ink2);
+  border-top:1px solid var(--border);
+  padding:clamp(64px,9vw,100px) clamp(20px,5vw,72px);
+}
+.depth-inner{max-width:900px;margin:0 auto;text-align:center;}
+.depth-stage{
+  position:relative;min-height:280px;
+  margin:52px auto 0;max-width:680px;
+  cursor:pointer;
+}
+.depth-layer{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .65s ease,transform .65s ease;
+  pointer-events:none;
+}
+.depth-card{
+  background:rgba(26,22,18,.9);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:36px 40px;
+  max-width:600px;width:100%;
+  text-align:left;
+  position:relative;overflow:hidden;
+}
+.depth-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  transition:background .4s;
+}
+.depth-layer[data-layer="0"] .depth-card::before{background:rgba(255,255,255,.08);}
+.depth-layer[data-layer="1"] .depth-card::before{background:var(--gold);}
+.depth-layer[data-layer="2"] .depth-card::before{background:linear-gradient(90deg,var(--gold),var(--terra-lt));}
+.depth-layer[data-layer="3"] .depth-card::before{background:var(--terra-lt);}
+.depth-lbl{font-size:9px;font-weight:500;letter-spacing:.25em;text-transform:uppercase;margin-bottom:14px;}
+.depth-q{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(18px,2.8vw,26px);font-style:italic;font-weight:300;
+  color:var(--white);line-height:1.4;margin-bottom:12px;
+}
+.depth-desc{font-size:13px;color:rgba(168,158,136,.65);line-height:1.75;}
+.depth-pips{display:flex;justify-content:center;gap:10px;margin-top:28px;}
+.depth-pip{
+  width:7px;height:7px;border-radius:50%;
+  background:rgba(184,146,42,.2);
+  border:none;padding:0;cursor:pointer;
+  transition:background .2s,transform .2s;
+}
+.depth-pip.active{background:var(--gold);transform:scale(1.35);}
+.depth-hint{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(184,146,42,.3);margin-top:10px;}
+
+/* ─── ANATOMY SECTION ─── */
+.anatomy-wrap{
+  padding:clamp(64px,9vw,100px) clamp(20px,5vw,72px);
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 50%,rgba(107,124,94,.06) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 50%,rgba(139,74,47,.05) 0%,transparent 55%),
+    var(--ink3);
+  border-top:1px solid var(--border);
+}
+.anatomy-inner{max-width:960px;margin:0 auto;display:grid;grid-template-columns:1fr 1.1fr;gap:72px;align-items:start;}
+@media(max-width:720px){.anatomy-inner{grid-template-columns:1fr;gap:48px;}}
+.anatomy-left{position:sticky;top:90px;}
+.anatomy-diagram{display:flex;flex-direction:column;gap:0;}
+.anatomy-connector-line{width:2px;height:20px;margin:0 auto;}
+.a-conn-1{background:linear-gradient(to bottom,rgba(255,255,255,.07),var(--gold-dim));}
+.a-conn-2{background:linear-gradient(to bottom,var(--gold-dim),rgba(139,74,47,.3));}
+
+.a-layer{
+  border-radius:4px;
+  padding:22px 24px;
+  cursor:pointer;
+  position:relative;overflow:hidden;
+  transition:border-color .25s,background .25s;
+  border:1px solid transparent;
+}
+.a-layer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.a-layer-left{display:flex;align-items:center;gap:14px;}
+.a-layer-icon{
+  width:36px;height:36px;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;flex-shrink:0;
+  font-family:'Cormorant Garamond',serif;font-weight:600;
+}
+.a-layer-meta{flex:1;}
+.a-layer-tag{font-size:9px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;margin-bottom:3px;}
+.a-layer-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:var(--white);line-height:1.2;}
+.a-layer-plus{
+  font-size:20px;font-weight:300;color:rgba(184,146,42,.35);
+  transition:transform .3s,color .2s;flex-shrink:0;line-height:1;
+  font-family:'DM Sans',sans-serif;
+}
+.a-layer.open .a-layer-plus{transform:rotate(45deg);color:rgba(184,146,42,.7);}
+.a-layer-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1);}
+.a-layer.open .a-layer-body{max-height:200px;}
+.a-layer-content{
+  padding:14px 0 4px 50px;
+  font-size:13px;color:rgba(168,158,136,.75);line-height:1.8;
+  border-top:1px solid rgba(255,255,255,.05);margin-top:14px;
+}
+.a-layer-content em{font-style:italic;color:rgba(184,146,42,.7);}
+.a-layer-content strong{font-weight:400;color:var(--cream);}
+
+/* surface */
+.al-surface{background:rgba(255,255,255,.04);}
+.al-surface:hover,.al-surface.open{border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.06);}
+.al-surface .a-layer-icon{background:rgba(255,255,255,.06);color:rgba(242,234,214,.4);}
+.al-surface .a-layer-tag{color:rgba(242,234,214,.3);}
+/* line */
+.al-line{background:rgba(184,146,42,.06);}
+.al-line:hover,.al-line.open{border-color:rgba(184,146,42,.25);background:rgba(184,146,42,.1);}
+.al-line .a-layer-icon{background:rgba(184,146,42,.1);color:var(--gold);}
+.al-line .a-layer-tag{color:rgba(184,146,42,.6);}
+/* substrate */
+.al-sub{background:rgba(139,74,47,.1);}
+.al-sub:hover,.al-sub.open{border-color:rgba(139,74,47,.35);background:rgba(139,74,47,.15);}
+.al-sub .a-layer-icon{background:rgba(139,74,47,.18);color:var(--terra-lt);}
+.al-sub .a-layer-tag{color:rgba(168,90,58,.65);}
+
+/* anatomy right panel */
+.anatomy-right{}
+.anatomy-explanation{margin-top:52px;}
+.anatomy-explanation p{font-size:15px;color:rgba(242,234,214,.55);line-height:1.85;margin-bottom:18px;}
+.anatomy-explanation strong{color:var(--cream);font-weight:400;}
+.anatomy-pull{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(18px,2.5vw,24px);font-style:italic;font-weight:300;
+  color:var(--cream);line-height:1.4;
+  border-left:2px solid var(--sage);padding-left:22px;
+  margin:28px 0;
+}
+
+/* ─── INSTRUCTOR / ORGANIC EARTH SECTION ─── */
+.instructor-wrap{
+  padding:clamp(64px,9vw,100px) clamp(20px,5vw,72px);
+  background:
+    radial-gradient(ellipse 70% 60% at 30% 60%,rgba(107,124,94,.1) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 40% at 75% 30%,rgba(154,112,64,.06) 0%,transparent 50%),
+    var(--ink2);
+  border-top:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.instructor-wrap::before{
+  content:'"';
+  position:absolute;top:-60px;left:clamp(10px,5vw,60px);
+  font-family:'Cormorant Garamond',serif;
+  font-size:340px;font-weight:300;
+  color:rgba(107,124,94,.05);line-height:1;
+  pointer-events:none;user-select:none;
+}
+.instructor-inner{
+  max-width:960px;margin:0 auto;
+  display:grid;grid-template-columns:220px 1fr;gap:64px;
+  align-items:start;position:relative;z-index:1;
+}
+@media(max-width:680px){.instructor-inner{grid-template-columns:1fr;gap:40px;}}
+.instructor-card{
+  background:rgba(26,22,18,.8);
+  border:1px solid rgba(107,124,94,.2);
+  border-top:2px solid var(--sage);
+  padding:28px 24px;
+  backdrop-filter:blur(10px);
+}
+.ins-name{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--white);margin-bottom:4px;}
+.ins-role{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--sage-lt);margin-bottom:24px;}
+.ins-stat{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);display:grid;grid-template-columns:56px 1fr;gap:12px;align-items:baseline;}
+.ins-stat:last-child{border-bottom:none;}
+.ins-stat-val{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--bronze);line-height:1;}
+.ins-stat-desc{font-size:12px;color:var(--cream-dim);line-height:1.5;}
+.ins-text p{font-size:15px;color:rgba(242,234,214,.58);line-height:1.9;margin-bottom:18px;}
+.ins-text strong{color:var(--cream);font-weight:400;}
+.ins-quote{
+  background:rgba(15,13,10,.6);
+  border-left:2px solid var(--bronze);
+  padding:20px 24px;margin-top:24px;
+  backdrop-filter:blur(8px);
+}
+.ins-quote p{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;font-weight:300;color:var(--cream);line-height:1.6;margin:0 0 8px;}
+.ins-quote cite{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--cream-dim);font-style:normal;opacity:.5;}
+
+/* ─── CURRICULUM ─── */
+.curric-wrap{
+  padding:clamp(64px,9vw,100px) clamp(20px,5vw,72px);
+  background:var(--ink);
+  border-top:1px solid var(--border);
+}
+.curric-inner{max-width:960px;margin:0 auto;}
+.curric-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:1px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.04);
+  margin-top:52px;
+}
+@media(max-width:600px){.curric-grid{grid-template-columns:1fr;}}
+.curric-module{
+  background:var(--ink2);padding:36px 30px;
+  position:relative;overflow:hidden;
+  transition:background .25s;
+}
+.curric-module:hover{background:var(--ink3);}
+.curric-module-accent{
+  position:absolute;top:0;left:0;right:0;height:2px;
+  opacity:0;transition:opacity .25s;
+}
+.curric-module:hover .curric-module-accent{opacity:1;}
+.cm-1 .curric-module-accent{background:linear-gradient(90deg,rgba(255,255,255,.15),transparent);}
+.cm-2 .curric-module-accent{background:linear-gradient(90deg,var(--gold),transparent);}
+.cm-3 .curric-module-accent{background:linear-gradient(90deg,var(--sage),transparent);}
+.cm-4 .curric-module-accent{background:linear-gradient(90deg,var(--terra-lt),transparent);}
+.cm-num{font-size:9px;font-weight:500;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.cm-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--white);margin-bottom:12px;line-height:1.2;}
+.cm-desc{font-size:13px;color:rgba(168,158,136,.6);line-height:1.75;margin-bottom:18px;}
+.cm-tag{display:inline-block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(184,146,42,.45);border:1px solid rgba(184,146,42,.15);padding:5px 12px;}
+
+/* ─── OUTCOMES ─── */
+.outcomes-wrap{
+  padding:clamp(64px,9vw,100px) clamp(20px,5vw,72px);
+  background:var(--ink2);border-top:1px solid var(--border);text-align:center;
+}
+.outcomes-inner{max-width:900px;margin:0 auto;}
+.outcomes-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(36px,5.5vw,68px);font-weight:300;
+  line-height:.95;color:var(--white);margin-bottom:64px;
+}
+.outcomes-h2 em{display:block;font-style:italic;color:var(--gold);}
+.out-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.04);text-align:left;
+}
+@media(max-width:600px){.out-grid{grid-template-columns:1fr;}}
+.out-item{background:var(--ink3);padding:28px 24px;}
+.out-check{
+  width:28px;height:28px;border:1px solid rgba(184,146,42,.3);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gold);font-size:11px;margin-bottom:14px;
+}
+.out-item p{font-size:13px;color:rgba(168,158,136,.65);line-height:1.75;}
+.out-item strong{font-weight:400;color:var(--cream);}
+
+/* ─── FOR WHO ─── */
+.forwho-wrap{
+  padding:clamp(64px,9vw,100px) clamp(20px,5vw,72px);
+  background:
+    radial-gradient(ellipse 50% 50% at 80% 50%,rgba(139,74,47,.06) 0%,transparent 55%),
+    var(--ink);
+  border-top:1px solid var(--border);
+}
+.forwho-inner{max-width:900px;margin:0 auto;}
+.fw-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.04);margin-top:48px;
+}
+@media(max-width:560px){.fw-grid{grid-template-columns:1fr;}}
+.fw-yes,.fw-no{background:var(--ink2);padding:32px 28px;}
+.fw-label{font-size:9px;font-weight:500;letter-spacing:.25em;text-transform:uppercase;margin-bottom:22px;}
+.fw-yes .fw-label{color:var(--sage-lt);}
+.fw-no .fw-label{color:rgba(168,158,136,.25);}
+.fw-item{font-size:13px;color:rgba(168,158,136,.6);line-height:1.7;padding:9px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;}
+.fw-item:last-child{border-bottom:none;}
+.fw-yes .fw-item em{color:var(--sage-lt);font-style:normal;flex-shrink:0;}
+.fw-no .fw-item em{color:rgba(168,158,136,.2);font-style:normal;flex-shrink:0;}
+
+/* ─── AI COACH WIDGET ─── */
+.coach-wrap{
+  padding:clamp(64px,9vw,100px) clamp(20px,5vw,72px);
+  background:var(--ink2);border-top:1px solid var(--border);
+}
+.coach-inner{max-width:760px;margin:0 auto;}
+.coach-intro{text-align:center;margin-bottom:48px;}
+.coach-intro p{font-size:15px;color:rgba(242,234,214,.52);max-width:560px;margin:12px auto 0;line-height:1.85;}
+.coach-shell{
+  border:1px solid var(--border-g);
+  background:rgba(20,16,12,.95);
+  overflow:hidden;
+  box-shadow:0 24px 64px rgba(0,0,0,.5);
+}
+.coach-header{
+  padding:18px 24px;border-bottom:1px solid var(--border);
+  background:rgba(12,10,8,.8);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.coach-header-l{display:flex;align-items:center;gap:12px;}
+.coach-avatar{
+  width:36px;height:36px;border:1px solid var(--gold-dim);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold);
+}
+.coach-name-txt{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:400;color:var(--white);}
+.coach-role-txt{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(184,146,42,.45);}
+.coach-status-row{display:flex;align-items:center;gap:16px;}
+.coach-dot{width:6px;height:6px;background:#10b981;border-radius:50%;box-shadow:0 0 8px rgba(16,185,129,.5);animation:pulse 2s ease infinite;}
+.coach-active-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(168,158,136,.3);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.coach-reset-btn{background:none;border:none;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(168,158,136,.25);cursor:pointer;font-family:'DM Sans',sans-serif;transition:color .15s;padding:0;}
+.coach-reset-btn:hover{color:rgba(168,158,136,.5);}
+.coach-msgs{
+  height:340px;overflow-y:auto;
+  padding:28px 24px 16px;
+  display:flex;flex-direction:column;gap:18px;
+  scroll-behavior:smooth;
+}
+.coach-msgs::-webkit-scrollbar{width:3px;}
+.coach-msgs::-webkit-scrollbar-thumb{background:rgba(184,146,42,.15);}
+.msg-row{display:flex;gap:10px;max-width:88%;}
+.msg-coach{align-self:flex-start;}
+.msg-user{align-self:flex-end;flex-direction:row-reverse;}
+.msg-bubble{padding:13px 17px;font-size:14px;line-height:1.75;}
+.msg-coach .msg-bubble{
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border);
+  color:rgba(242,234,214,.82);
+}
+.msg-user .msg-bubble{
+  background:rgba(184,146,42,.1);
+  border:1px solid var(--border-g);
+  color:rgba(242,234,214,.9);
+}
+.msg-bubble em{font-style:italic;color:rgba(184,146,42,.75);}
+.msg-bubble strong{font-weight:400;color:var(--white);}
+.typing-wrap{display:flex;align-items:center;gap:4px;padding:13px 17px;background:rgba(255,255,255,.05);border:1px solid var(--border);width:fit-content;}
+.tdot{width:5px;height:5px;background:rgba(184,146,42,.4);border-radius:50%;animation:tdot 1.2s ease infinite;}
+.tdot:nth-child(2){animation-delay:.2s;}
+.tdot:nth-child(3){animation-delay:.4s;}
+@keyframes tdot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+.cta-card{
+  background:rgba(184,146,42,.07);
+  border:1px solid rgba(184,146,42,.2);
+  padding:20px 22px;
+}
+.cta-card p{font-size:13px;color:rgba(242,234,214,.75);line-height:1.75;margin-bottom:6px;}
+.cta-card p+p{color:rgba(242,234,214,.48);font-size:12px;}
+.cta-card-btn{
+  display:inline-block;background:var(--gold);color:var(--ink);
+  font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
+  text-decoration:none;padding:11px 26px;
+  transition:background .2s;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;margin-top:14px;
+}
+.cta-card-btn:hover{background:var(--gold-lt);}
+.coach-chips{padding:0 24px 14px;}
+.chips-lbl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(184,146,42,.35);margin-bottom:8px;}
+.chips-row{display:flex;gap:7px;flex-wrap:wrap;}
+.chip{
+  font-size:12px;color:rgba(242,234,214,.45);
+  border:1px solid var(--border);
+  padding:6px 13px;cursor:pointer;
+  background:rgba(255,255,255,.02);font-family:'DM Sans',sans-serif;
+  transition:all .15s;
+}
+.chip:hover{background:rgba(184,146,42,.07);color:rgba(242,234,214,.8);border-color:var(--border-g);}
+.coach-input-wrap{padding:14px 18px 18px;border-top:1px solid var(--border);background:rgba(12,10,8,.6);}
+.coach-input-row{
+  display:flex;align-items:flex-end;gap:10px;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--border);
+  padding:9px 13px;
+  transition:border-color .2s;
+}
+.coach-input-row:focus-within{border-color:var(--border-g);}
+.coach-textarea{
+  flex:1;background:transparent;border:none;outline:none;
+  font-family:'DM Sans',sans-serif;font-size:14px;color:var(--cream);
+  resize:none;max-height:120px;min-height:20px;line-height:1.6;
+  caret-color:var(--gold);
+}
+.coach-textarea::placeholder{color:rgba(168,158,136,.28);}
+.coach-send{
+  width:32px;height:32px;background:var(--gold);
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s,transform .15s;flex-shrink:0;
+}
+.coach-send:hover{background:var(--gold-lt);transform:scale(1.05);}
+.coach-send:disabled{background:rgba(184,146,42,.18);cursor:not-allowed;transform:none;}
+.coach-send svg{width:13px;height:13px;fill:var(--ink);}
+.coach-foot-note{text-align:center;font-size:10px;color:rgba(168,158,136,.22);letter-spacing:.06em;margin-top:10px;}
+
+/* ─── CTA ─── */
+.cta-wrap{
+  padding:clamp(80px,12vw,130px) clamp(20px,5vw,72px);
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 100%,rgba(184,146,42,.05) 0%,transparent 65%),
+    radial-gradient(ellipse 45% 35% at 50% 50%,rgba(107,124,94,.04) 0%,transparent 60%),
+    var(--ink);
+  border-top:1px solid rgba(184,146,42,.1);
+  text-align:center;position:relative;overflow:hidden;
+}
+.cta-inner{max-width:640px;margin:0 auto;position:relative;z-index:1;}
+.cta-pre{
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  margin-bottom:24px;
+}
+.cta-pre::before,.cta-pre::after{content:'';flex:0 0 32px;height:1px;background:rgba(184,146,42,.25);}
+.cta-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(48px,8vw,88px);font-weight:300;
+  line-height:.93;color:var(--white);letter-spacing:-.02em;margin-bottom:24px;
+}
+.cta-h2 em{display:block;font-style:italic;color:var(--gold);}
+.cta-body{font-size:16px;color:rgba(242,234,214,.48);line-height:1.85;margin-bottom:48px;}
+.cta-body strong{color:var(--cream);font-weight:400;}
+.cta-typewriter{
+  background:rgba(26,22,18,.8);border:1px solid var(--border-g);
+  padding:16px 20px;margin-bottom:20px;
+  display:flex;align-items:center;gap:12px;
+  text-align:left;
+}
+.tw-arrow{color:rgba(184,146,42,.4);font-size:14px;flex-shrink:0;}
+.tw-text{flex:1;font-size:14px;color:rgba(242,234,214,.6);font-family:'Cormorant Garamond',serif;font-style:italic;min-width:0;}
+.tw-cursor{width:1.5px;height:15px;background:var(--gold);animation:blink 1.1s step-end infinite;flex-shrink:0;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+.btn-cta{
+  display:inline-block;background:var(--gold);color:var(--ink);
+  font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
+  text-decoration:none;padding:22px 68px;width:100%;
+  transition:all .25s;
+}
+.btn-cta:hover{background:var(--gold-lt);}
+.cta-note{font-size:11px;color:rgba(168,158,136,.25);letter-spacing:.06em;margin-top:14px;}
+.trust-row{
+  display:flex;justify-content:center;gap:clamp(20px,4vw,48px);
+  margin-top:48px;padding-top:32px;border-top:1px solid var(--border);flex-wrap:wrap;
+}
+.trust-item{text-align:center;}
+.trust-sym{
+  width:30px;height:30px;border:1px solid rgba(184,146,42,.15);
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(184,146,42,.45);font-size:12px;margin:0 auto 6px;
+}
+.trust-lbl{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(168,158,136,.25);}
+
+/* ─── FOOTER ─── */
+.footer{
+  background:rgba(10,8,6,.98);
+  border-top:1px solid var(--border);
+  padding:28px clamp(20px,5vw,72px);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+.footer-brand{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--cream);}
+.footer-brand em{font-style:italic;color:var(--gold);}
+.footer-eco{display:flex;align-items:center;gap:6px;font-size:10px;color:rgba(168,158,136,.22);}
+.eco-dot{width:5px;height:5px;background:var(--sage);border-radius:50%;}
+.footer-copy{font-size:10px;color:rgba(168,158,136,.2);}
+
+/* ─── REVEAL ─── */
+.r{opacity:0;transform:translateY(24px);transition:opacity .65s ease,transform .65s ease;}
+.r.on{opacity:1;transform:none;}
+.d1{transition-delay:.08s;}.d2{transition-delay:.16s;}.d3{transition-delay:.24s;}
+
+/* ─── IFRAME RESIZER (for systeme.io embed) ─── */
+html{height:auto;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo"><span class="nav-dot"></span>Write <em>Living</em> Characters</div>
+  <a href="#enroll" class="nav-btn">Enroll Now</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-kicker">
+    <span class="kline"></span>
+    <span class="t-eyebrow">A Fiction Writer's Masterclass · Ted Baker</span>
+    <span class="kline"></span>
+  </div>
+  <h1 class="hero-h1 t-display">Write<br><em class="gold-em">Living</em><br><span class="outline-em">Characters</span></h1>
+  <div class="hero-rule"></div>
+  <p class="hero-sub">The method that changes everything — for the rest of your writing life.</p>
+  <p class="hero-body">You finish a scene. You read it back.<br>Something inside you whispers: <strong><em>flat.</em></strong><br><br>Not talent. Not research. <strong>Method.</strong> And there is one.</p>
+  <div class="hero-ctas">
+    <a href="#enroll" class="btn-hero">Start Excavating Your Characters</a>
+    <span class="hero-micro">Novelists · Screenwriters · Short story writers · Any genre</span>
+  </div>
+  <div class="hero-stats">
+    <div><div class="stat-n">35</div><div class="stat-l">Years consulting</div></div>
+    <div><div class="stat-n">20K+</div><div class="stat-l">People coached</div></div>
+    <div><div class="stat-n">4</div><div class="stat-l">Course sections</div></div>
+  </div>
+</section>
+
+<!-- DIRECTION 1: DEPTH SCROLL -->
+<section class="depth-wrap">
+  <div class="depth-inner">
+    <div class="t-eyebrow r">The Problem</div>
+    <h2 class="t-display r" style="font-size:clamp(30px,4.5vw,54px);color:#fff;margin-top:14px;">Every character has four layers.<br><em class="gold-em">Most writers never get past the first.</em></h2>
+    <p class="r t-muted" style="font-size:15px;max-width:540px;margin:14px auto 0;line-height:1.85;">Click to go deeper — this is the arc your characters take when the method is working.</p>
+    <div class="depth-stage r" id="depth-stage">
+      <div class="depth-layer" data-layer="0" id="dl0">
+        <div class="depth-card">
+          <div class="depth-lbl t-muted">Layer 1 · The Surface</div>
+          <div class="depth-q">"The dialogue works. The plot moves. But the character is a puppet."</div>
+          <div class="depth-desc">What the reader sees. What the writer writes. The technically competent exterior that satisfies craft rules and leaves no trace in the reader.</div>
+        </div>
+      </div>
+      <div class="depth-layer" data-layer="1" id="dl1">
+        <div class="depth-card">
+          <div class="depth-lbl" style="color:rgba(184,146,42,.5);">Layer 2 · The Line</div>
+          <div class="depth-q">"I did it for my family."</div>
+          <div class="depth-desc">The sentence the character tells themselves to justify who they are. Rehearsed so many times it no longer sounds like a defense. This is where most writers stop — and why their characters feel hollow.</div>
+        </div>
+      </div>
+      <div class="depth-layer" data-layer="2" id="dl2">
+        <div class="depth-card">
+          <div class="depth-lbl" style="color:rgba(184,146,42,.65);">Layer 3 · The Question</div>
+          <div class="depth-q">"What happens to you if that line isn't true?"</div>
+          <div class="depth-desc">The Socratic question that cracks the surface open. The third or fourth answer — the one that surprises even the writer — lives here. This is what the method teaches you to ask.</div>
+        </div>
+      </div>
+      <div class="depth-layer" data-layer="3" id="dl3">
+        <div class="depth-card" style="border-color:rgba(139,74,47,.35);background:rgba(20,8,6,.95);">
+          <div class="depth-lbl" style="color:rgba(168,90,58,.65);">Layer 4 · The Substrate</div>
+          <div class="depth-q">"I did it for me. I liked it. I was good at it. And I was really — I was alive."</div>
+          <div class="depth-desc">The wound beneath the behavior. The specific fear that generates everything the character does and says — including what they will never say. Readers feel this before they can name it. This is what the course excavates.</div>
+        </div>
+      </div>
+    </div>
+    <div class="depth-pips r">
+      <button class="depth-pip active" onclick="goLayer(0)"></button>
+      <button class="depth-pip" onclick="goLayer(1)"></button>
+      <button class="depth-pip" onclick="goLayer(2)"></button>
+      <button class="depth-pip" onclick="goLayer(3)"></button>
+    </div>
+    <p class="depth-hint r">Click anywhere to go deeper</p>
+  </div>
+</section>
+
+<!-- DIRECTION 2: ANATOMY DIAGRAM -->
+<section class="anatomy-wrap">
+  <div class="anatomy-inner">
+    <div class="anatomy-left">
+      <div class="t-eyebrow r">Interactive Diagram</div>
+      <h2 class="t-display r" style="font-size:clamp(28px,4vw,50px);color:#fff;margin-top:14px;line-height:1.05;">The architecture of <em class="gold-em">every real character</em></h2>
+      <p class="r t-muted" style="font-size:14px;line-height:1.85;margin-top:14px;">Open each layer. Most writers build the surface carefully and never find what lives beneath it.</p>
+      <div class="anatomy-diagram r" style="margin-top:36px;">
+        <div class="a-layer al-surface" id="al1" onclick="toggleA('al1')">
+          <div class="a-layer-head">
+            <div class="a-layer-left">
+              <div class="a-layer-icon">I</div>
+              <div class="a-layer-meta">
+                <div class="a-layer-tag">The Surface</div>
+                <div class="a-layer-title">What they say and do</div>
+              </div>
+            </div>
+            <div class="a-layer-plus">+</div>
+          </div>
+          <div class="a-layer-body">
+            <div class="a-layer-content">The visible behavior. The dialogue. The decisions. Craft instruction teaches you to write this — and it's never enough on its own. A character built only here is technically competent and emotionally empty.</div>
+          </div>
+        </div>
+        <div class="anatomy-connector-line a-conn-1"></div>
+        <div class="a-layer al-line" id="al2" onclick="toggleA('al2')">
+          <div class="a-layer-head">
+            <div class="a-layer-left">
+              <div class="a-layer-icon">II</div>
+              <div class="a-layer-meta">
+                <div class="a-layer-tag">The Line</div>
+                <div class="a-layer-title">The sentence they tell themselves</div>
+              </div>
+            </div>
+            <div class="a-layer-plus">+</div>
+          </div>
+          <div class="a-layer-body">
+            <div class="a-layer-content">Every character justifies who they are with a sentence. <em>"I don't have a choice."</em> <em>"I'm fine."</em> <em>"I did it for my family."</em> It's been rehearsed so many times it no longer sounds like a defense. <strong>This is the Walter White line.</strong></div>
+          </div>
+        </div>
+        <div class="anatomy-connector-line a-conn-2"></div>
+        <div class="a-layer al-sub" id="al3" onclick="toggleA('al3')">
+          <div class="a-layer-head">
+            <div class="a-layer-left">
+              <div class="a-layer-icon" style="font-family:'Cormorant Garamond',serif;">III</div>
+              <div class="a-layer-meta">
+                <div class="a-layer-tag">The Substrate</div>
+                <div class="a-layer-title">The wound that generates everything</div>
+              </div>
+            </div>
+            <div class="a-layer-plus">+</div>
+          </div>
+          <div class="a-layer-body">
+            <div class="a-layer-content">The specific fear beneath the line. Not backstory — a structural truth that shapes every choice the character makes, including what they will <strong>never say</strong>. Readers feel this before they can name it. When it's absent, they disengage. When it's present, they carry the character with them.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="anatomy-right">
+      <div class="t-eyebrow r">Why This Matters</div>
+      <div class="anatomy-explanation r">
+        <p>The writers whose characters readers can't forget — Tolstoy, Morrison, the writers of Breaking Bad — weren't following the rules more carefully than everyone else. They were working at a different layer.</p>
+        <div class="anatomy-pull">The character who truly breathes does the same thing real people do under pressure: they protect something. The substrate is what they're protecting.</div>
+        <p>Most craft instruction teaches you to write the surface. A few books gesture at the line. Almost none reach the substrate — because getting there requires a specific kind of questioning that craft books don't teach.</p>
+        <p>That questioning is what this course gives you. And once you have it, <strong>you can apply it to every character you write for the rest of your life.</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTRUCTOR — ORGANIC EARTH TONES -->
+<section class="instructor-wrap">
+  <div class="instructor-inner">
+    <div class="r">
+      <div class="instructor-card">
+        <div class="ins-name">Ted Baker</div>
+        <div class="ins-role">Behavioral Consultant · Course Author</div>
+        <div class="ins-stat"><span class="ins-stat-val">35</span><span class="ins-stat-desc">Years behavioral consulting</span></div>
+        <div class="ins-stat"><span class="ins-stat-val">20K+</span><span class="ins-stat-desc">People coached, U.S. &amp; Canada</span></div>
+        <div class="ins-stat"><span class="ins-stat-val">1</span><span class="ins-stat-desc">Novel in progress — using this method now</span></div>
+      </div>
+    </div>
+    <div class="ins-text r d1">
+      <div class="t-eyebrow" style="margin-bottom:16px;">Why This Course Exists</div>
+      <p>For thirty-five years, I watched how real people deflect, contradict themselves, hide what matters most, and reveal themselves through what they refuse to say. The changes that lasted were never the ones I imposed — they were the ones people discovered for themselves.</p>
+      <p>When I sat down to write my own novel, I hit the same wall every fiction writer knows. And then I realized: the thing I'd spent my career doing was <strong>exactly what fiction writers need.</strong> A Socratic partner. A tool that refuses your first answer because it knows the real answer is underneath it.</p>
+      <p>I'm not on a mountaintop. I'm still writing my first novel. I'm using this method right now.</p>
+      <div class="ins-quote">
+        <p>"What you're looking for is already there. You just need the right questions to discover it."</p>
+        <cite>— Ted Baker</cite>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CURRICULUM -->
+<section class="curric-wrap">
+  <div class="curric-inner">
+    <div class="t-eyebrow r">Course Curriculum</div>
+    <h2 class="t-display r" style="font-size:clamp(28px,4vw,52px);color:#fff;margin-top:14px;">Four sections. One <em class="gold-em">arc.</em></h2>
+    <p class="r t-muted" style="font-size:15px;max-width:480px;line-height:1.8;margin-top:12px;">Orient. Awareness. Diagnose. Apply. By the end of each section something changes — and you'll feel it.</p>
+    <div class="curric-grid">
+      <div class="curric-module cm-1 r"><div class="curric-module-accent"></div><p class="cm-num">Section 01 — Orientation</p><h3 class="cm-title">Why You're Here</h3><p class="cm-desc">Meet the method and what becomes possible once the technique is in your hands — in every novel, script, or story from here forward.</p><span class="cm-tag">3 lectures</span></div>
+      <div class="curric-module cm-2 r d1"><div class="curric-module-accent"></div><p class="cm-num">Section 02 — Awareness</p><h3 class="cm-title">Empty the Cup</h3><p class="cm-desc">Name the constructs you've been writing through. Meet the Socratic method in Walter White's final confession. Find the contradiction in your own character.</p><span class="cm-tag">3 lectures + assignments</span></div>
+      <div class="curric-module cm-3 r"><div class="curric-module-accent"></div><p class="cm-num">Section 03 — Diagnosis</p><h3 class="cm-title">The Substrate</h3><p class="cm-desc">What readers detect before they can name it. Why AI generates the average character — and how to turn it into a Socratic coach that reaches your real characters.</p><span class="cm-tag">3 lectures + resources</span></div>
+      <div class="curric-module cm-4 r d1"><div class="curric-module-accent"></div><p class="cm-num">Section 04 — Application</p><h3 class="cm-title">The Excavation</h3><p class="cm-desc">Configure your AI coach. Run a complete excavation on real dialogue. Name the substrate. Rewrite from the inside out. Leave with a method you own forever.</p><span class="cm-tag">3 lectures + live session</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTCOMES -->
+<section class="outcomes-wrap">
+  <div class="outcomes-inner">
+    <h2 class="outcomes-h2 r">What changes after<br><em>this course.</em></h2>
+    <div class="out-grid">
+      <div class="out-item r"><div class="out-check">✓</div><p><strong>Write dialogue</strong> and explain exactly why your character spoke that way — excavated, not decided.</p></div>
+      <div class="out-item r d1"><div class="out-check">✓</div><p><strong>Spot a hollow scene</strong> and repair it — by finding what the character is protecting underneath the words.</p></div>
+      <div class="out-item r d2"><div class="out-check">✓</div><p><strong>Voices so distinct</strong> you can cover the attribution and know who spoke. Silences that carry weight.</p></div>
+      <div class="out-item r"><div class="out-check">✓</div><p><strong>Use AI as a Socratic coach</strong> — asking questions that surface what you already know about your characters.</p></div>
+      <div class="out-item r d1"><div class="out-check">✓</div><p><strong>Find the substrate</strong> — the wound beneath the compensation — and write from that layer, every scene.</p></div>
+      <div class="out-item r d2"><div class="out-check">✓</div><p><strong>A method you own forever</strong> — not a trick, but a way of working that applies to every character you write.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOR WHO -->
+<section class="forwho-wrap">
+  <div class="forwho-inner">
+    <div class="t-eyebrow r">Who This Is For</div>
+    <h2 class="t-display r" style="font-size:clamp(28px,4vw,52px);color:#fff;margin-top:14px;">Right writer. <em class="gold-em">Right moment.</em></h2>
+    <div class="fw-grid">
+      <div class="fw-yes r">
+        <div class="fw-label">✦ &nbsp; This is for you</div>
+        <div class="fw-item"><em>→</em>You write fiction in any genre</div>
+        <div class="fw-item"><em>→</em>Characters work technically but don't breathe</div>
+        <div class="fw-item"><em>→</em>Every character sounds like the same voice — yours</div>
+        <div class="fw-item"><em>→</em>You can describe them but can't hear them</div>
+        <div class="fw-item"><em>→</em>The craft books haven't closed the gap</div>
+        <div class="fw-item"><em>→</em>You want AI to serve your writing — not replace you</div>
+      </div>
+      <div class="fw-no r d1">
+        <div class="fw-label">✗ &nbsp; This isn't for you</div>
+        <div class="fw-item"><em>✗</em>You want AI to write your characters for you</div>
+        <div class="fw-item"><em>✗</em>You're looking for a shortcut, not a method</div>
+        <div class="fw-item"><em>✗</em>You write non-fiction exclusively</div>
+        <div class="fw-item"><em>✗</em>You won't sit with a question past the first answer</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI COACH WIDGET -->
+<section class="coach-wrap" id="coach">
+  <div class="coach-inner">
+    <div class="coach-intro">
+      <div class="t-eyebrow r">Try the Method Now</div>
+      <h2 class="t-display r" style="font-size:clamp(26px,4vw,48px);color:#fff;margin-top:14px;">Talk to the <em class="gold-em">Character Coach</em></h2>
+      <p class="r">One character. One moment. See the method work before you decide anything.</p>
+    </div>
+    <div class="coach-shell r">
+      <div class="coach-header">
+        <div class="coach-header-l">
+          <div class="coach-avatar">✦</div>
+          <div>
+            <div class="coach-name-txt">The Character Coach</div>
+            <div class="coach-role-txt">Powered by Write Living Characters · Ted Baker</div>
+          </div>
+        </div>
+        <div class="coach-status-row">
+          <button class="coach-reset-btn" onclick="resetCoach()">↺ Reset</button>
+          <div class="coach-dot"></div>
+          <span class="coach-active-lbl">Active</span>
+        </div>
+      </div>
+      <div class="coach-msgs" id="coach-msgs"></div>
+      <div class="coach-chips" id="coach-chips">
+        <div class="chips-lbl">Where are you stuck?</div>
+        <div class="chips-row">
+          <button class="chip" onclick="sendChip(this)">My characters all sound the same</button>
+          <button class="chip" onclick="sendChip(this)">My dialogue feels flat</button>
+          <button class="chip" onclick="sendChip(this)">I can describe them but can't hear them</button>
+          <button class="chip" onclick="sendChip(this)">My protagonist feels hollow</button>
+        </div>
+      </div>
+      <div class="coach-input-wrap">
+        <div class="coach-input-row">
+          <textarea class="coach-textarea" id="coach-input" placeholder="Tell me about a character you're struggling with…" rows="1" onkeydown="coachKey(event)" oninput="coachResize(this)"></textarea>
+          <button class="coach-send" id="coach-send-btn" onclick="coachSend()">
+            <svg viewBox="0 0 24 24"><path d="M2 12L22 2L15 22L11 13L2 12Z"/></svg>
+          </button>
+        </div>
+        <div class="coach-foot-note">One character. One moment. That's all this conversation does.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA / ENROLL -->
+<section class="cta-wrap" id="enroll">
+  <div class="cta-inner">
+    <div class="cta-pre r"><span class="t-eyebrow">Enroll Today</span></div>
+    <h2 class="cta-h2 t-display r">They're already<br><em>inside you.</em></h2>
+    <p class="cta-body r">Your characters aren't absent. The complexity — the contradictions, the wounds, the gap between what they say and what they mean — <strong>is already there.</strong> You just haven't been asked the right questions yet.</p>
+    <div class="cta-typewriter r" aria-hidden="true">
+      <span class="tw-arrow">›</span>
+      <span class="tw-text" id="tw-text">Ready to write the character only you can write…</span>
+      <div class="tw-cursor"></div>
+    </div>
+    <div class="r">
+      <a href="#" class="btn-cta" id="enroll-btn">Enroll in Write Living Characters</a>
+      <p class="cta-note">Instant access · All genres · Direct instructor access · Yours for life</p>
+    </div>
+    <div class="trust-row r">
+      <div class="trust-item"><div class="trust-sym">✦</div><div class="trust-lbl">Instant access</div></div>
+      <div class="trust-item"><div class="trust-sym">✦</div><div class="trust-lbl">Any genre</div></div>
+      <div class="trust-item"><div class="trust-sym">✦</div><div class="trust-lbl">Direct instructor access</div></div>
+      <div class="trust-item"><div class="trust-sym">✦</div><div class="trust-lbl">Yours for life</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <span class="footer-brand">Write <em>Living</em> Characters · myaiwritingcoach.com</span>
+  <div class="footer-eco"><div class="eco-dot"></div><span>Lightweight · Sustainable · Fast</span></div>
+  <span class="footer-copy">© 2026 Ted Baker. All rights reserved.</span>
+</footer>
+
+<script>
+/* ── SCROLL REVEAL ── */
+var revEls=document.querySelectorAll('.r');
+var revObs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');revObs.unobserve(e.target);}});
+},{threshold:.07});
+revEls.forEach(function(el){revObs.observe(el);});
+
+/* ── DEPTH SCROLL ── */
+var curLayer=0,totalLayers=4;
+var pips=document.querySelectorAll('.depth-pip');
+function setLayerStyles(){
+  for(var i=0;i<totalLayers;i++){
+    var el=document.getElementById('dl'+i);
+    if(!el)continue;
+    if(i===curLayer){
+      el.style.opacity='1';el.style.transform='translateY(0) scale(1)';el.style.zIndex='10';
+    } else if(i<curLayer){
+      el.style.opacity='0';el.style.transform='translateY(-24px) scale(1.02)';el.style.zIndex='5';
+    } else {
+      var d=i-curLayer;
+      el.style.opacity='0';
+      el.style.transform='translateY('+(d*22)+'px) scale('+(1-d*.025)+')';
+      el.style.zIndex='5';
+    }
+    pips[i].classList.toggle('active',i===curLayer);
+  }
+}
+function goLayer(idx){curLayer=idx;setLayerStyles();}
+document.getElementById('depth-stage').addEventListener('click',function(e){
+  if(!e.target.closest('.depth-pip')&&curLayer<totalLayers-1){goLayer(curLayer+1);}
+});
+setLayerStyles();
+
+/* ── ANATOMY ── */
+function toggleA(id){
+  var el=document.getElementById(id);
+  var wasOpen=el.classList.contains('open');
+  ['al1','al2','al3'].forEach(function(lid){document.getElementById(lid).classList.remove('open');});
+  if(!wasOpen)el.classList.add('open');
+}
+
+/* ── TYPEWRITER ── */
+var phrases=[
+  'Ready to write the character only you can write\u2026',
+  'Ready to stop inventing and start excavating\u2026',
+  'Ready to find the wound beneath the words\u2026',
+  'Ready to hear your characters speak for themselves\u2026'
+];
+var tw=document.getElementById('tw-text');
+if(tw){
+  var pi=0,ci=0,del=false;
+  function twTick(){
+    var p=phrases[pi];
+    if(!del){ci++;tw.textContent=p.slice(0,ci);if(ci===p.length){del=true;setTimeout(twTick,2400);return;}}
+    else{ci--;tw.textContent=p.slice(0,ci);if(ci===0){del=false;pi=(pi+1)%phrases.length;setTimeout(twTick,450);return;}}
+    setTimeout(twTick,del?26:48);
+  }
+  setTimeout(twTick,1600);
+}
+
+/* ── AI COACH ── */
+var SYSTEM_PROMPT="You are the Character Coach for \"Write Living Characters: A Fiction Writer's Masterclass\" by Ted Baker.\n\nYOUR ROLE:\nYou are a Socratic writing coach. Your ONLY job is to help the writer surface ONE real truth about ONE character — then stop. You excavate one thing, completely. You do not keep going after that. You are a proof of concept, not a full solution.\n\nTHE CORE METHOD:\n- The answer is always inside the writer. Your role is to surface it through questions.\n- The first answer is almost never the real answer. The third or fourth answer is where truth lives.\n- Every character has a 'substrate' — a specific wound or fear that generates everything they do and say. You are looking for that one thing.\n- You never name the method, explain what you are doing, or teach the technique. The writer experiences the result. The course is where the framework lives.\n\nHOW YOU COACH:\n- Ask ONE question at a time. Never more than one.\n- Follow the specific detail — if they mention a name, a scene, a relationship, a word that carries weight — go there. Not the topic. The detail.\n- When they give a surface answer, stay on it. Ask: \"What's underneath that?\" or \"What does that look like specifically in this character's life?\"\n- When they use a general word — afraid, broken, lost, angry — ask them to show you what that looks like in one specific moment.\n- Never offer options, interpretations, suggestions, or analysis. Only ask.\n- Never write anything for the writer — no dialogue, no scenes, no descriptions, no backstory.\n- Never say \"Great answer\" or any form of validation.\n- Never summarize what they told you back to them.\n\nCONVERSATION STRUCTURE — THIS IS CRITICAL:\nYou have exactly 4-5 exchanges to find one real thing.\n\nExchanges 1-2: Get specific. Find the exact scene or moment. Refuse vague descriptions.\nExchanges 3-4: Go underneath. Find what they are protecting. Push past the second answer.\nExchange 5 — THE STOP: When you have found one real thing, name what just happened: \"You just found something you didn't have when you sat down.\" Then stop completely. Make the gap visible: say something like \"That took us a few minutes and we found the truth of one character in one moment. Think about how many characters are in your manuscript — every scene has this underneath it.\" Then output [SHOW_CTA] on its own line.\n\nTONE:\n- Warm but precise. 2-3 sentences maximum. One question. Always.\n- No bullet points. No lists. Prose only.\n- You sound like someone who has spent 35 years watching people discover things about themselves.";
+
+var coachHistory=[];
+var ctaVisible=false;
+
+var openMsg="Tell me about a character you're struggling with right now. Not their backstory — just the specific moment where they stop feeling real to you. One moment. One character.";
+
+function coachInit(){
+  coachHistory=[];ctaVisible=false;
+  var msgs=document.getElementById('coach-msgs');
+  msgs.innerHTML='';
+  var chips=document.getElementById('coach-chips');
+  if(chips)chips.style.display='block';
+  appendMsg('coach',openMsg);
+}
+
+function appendMsg(role,text){
+  if(text==='[SHOW_CTA]'){showCTA();return;}
+  if(text.includes('[SHOW_CTA]')){
+    var parts=text.split('[SHOW_CTA]');
+    if(parts[0].trim())appendMsgBubble(role,parts[0].trim());
+    showCTA();return;
+  }
+  appendMsgBubble(role,text);
+}
+
+function appendMsgBubble(role,text){
+  var msgs=document.getElementById('coach-msgs');
+  var row=document.createElement('div');
+  row.className='msg-row msg-'+role;
+  var bubble=document.createElement('div');
+  bubble.className='msg-bubble';
+  bubble.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');
+  row.appendChild(bubble);
+  msgs.appendChild(row);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function showCTA(){
+  if(ctaVisible)return;
+  ctaVisible=true;
+  var msgs=document.getElementById('coach-msgs');
+  var card=document.createElement('div');
+  card.className='cta-card';
+  card.innerHTML='<p>You just found the truth of <em>one</em> character in <em>one</em> moment. Think about how many characters are in your manuscript — every scene has this underneath it, still unexcavated.</p><p><em>Write Living Characters</em> teaches you to do this yourself, without this widget, for every character, every scene, for the rest of your writing life.</p><a href="#enroll" class="cta-card-btn">Get the Full Method →</a>';
+  msgs.appendChild(card);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function showTyping(){
+  var msgs=document.getElementById('coach-msgs');
+  var row=document.createElement('div');
+  row.className='msg-row msg-coach';row.id='typing-row';
+  var tw=document.createElement('div');
+  tw.className='typing-wrap';
+  tw.innerHTML='<div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>';
+  row.appendChild(tw);msgs.appendChild(row);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function removeTyping(){var el=document.getElementById('typing-row');if(el)el.remove();}
+
+async function coachSend(){
+  var input=document.getElementById('coach-input');
+  var text=input.value.trim();if(!text)return;
+  var chips=document.getElementById('coach-chips');
+  if(chips)chips.style.display='none';
+  appendMsgBubble('user',text);
+  input.value='';input.style.height='auto';
+  coachHistory.push({role:'user',content:text});
+  var btn=document.getElementById('coach-send-btn');
+  btn.disabled=true;showTyping();
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:SYSTEM_PROMPT,
+        messages:coachHistory
+      })
+    });
+    var data=await res.json();
+    removeTyping();
+    var reply=data.content&&data.content[0]&&data.content[0].text?data.content[0].text:'Something went wrong — please try again.';
+    coachHistory.push({role:'assistant',content:reply});
+    appendMsg('coach',reply);
+  }catch(err){removeTyping();appendMsgBubble('coach','Something went wrong with the connection. Please try again.');}
+  btn.disabled=false;
+  document.getElementById('coach-input').focus();
+}
+
+function sendChip(btn){
+  document.getElementById('coach-input').value=btn.textContent;
+  coachSend();
+}
+function coachKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();coachSend();}}
+function coachResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function resetCoach(){
+  var chips=document.getElementById('coach-chips');
+  if(chips)chips.style.display='block';
+  coachInit();
+}
+
+coachInit();
+
+/* ── IFRAME RESIZER (for systeme.io) ── */
+function sendHeight(){
+  var h=document.body.scrollHeight;
+  window.parent.postMessage({type:'wlc-height',height:h},'*');
+}
+window.addEventListener('load',sendHeight);
+window.addEventListener('resize',sendHeight);
+new MutationObserver(sendHeight).observe(document.body,{childList:true,subtree:true});
+</script>
+</body>
+</html>
