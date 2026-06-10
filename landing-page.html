@@ -7,7 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://fast.wistia.com/embed/ucrxgl0kd1.js" async></script>
+<script src="https://fast.wistia.com/player.js" async></script>
+<script src="https://fast.wistia.com/embed/ucrxgl0kd1.js" async type="module"></script>
+<style>wistia-player[media-id='ucrxgl0kd1']:not(:defined){background:center/contain no-repeat url('https://fast.wistia.com/embed/medias/ucrxgl0kd1/swatch');display:block;filter:blur(5px);padding-top:56.25%;}</style>
 <style>
 :root{
   --black:#080808;
@@ -65,22 +67,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--black);colo
   max-width:640px;
   margin:0 auto clamp(28px,4vw,44px);
 }
-.hero-meta-row{
-  display:flex;align-items:center;justify-content:center;
-  gap:clamp(20px,4vw,56px);
-  margin-bottom:clamp(28px,4vw,40px);
-  padding-bottom:clamp(24px,3.5vw,36px);
-  border-bottom:1px solid var(--border);
-  max-width:600px;margin-left:auto;margin-right:auto;
-}
-.hero-stat{text-align:center;}
-.hero-stat-n{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,48px);color:var(--white);line-height:1;margin-bottom:3px;}
-.hero-stat-l{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
-.hero-stat-div{width:1px;height:36px;background:rgba(255,255,255,.1);}
-.hero-cta-row{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;}
-.btn-hero{display:inline-block;background:var(--gold);color:var(--black);font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;padding:17px 52px;transition:all .22s;}
-.btn-hero:hover{background:var(--gold-lt);transform:translateY(-2px);}
-.hero-genre-pills{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:18px;}
+.hero-genre-pills{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:clamp(20px,3vw,32px);}
 .genre-pill{font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);padding:5px 10px;}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
@@ -102,9 +89,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--black);colo
 .video-container{
   position:relative;
   width:100%;
-  padding-bottom:56.25%;
-  background:var(--black3);
-  overflow:hidden;
+  background:transparent;
 }
 /* Wistia embed goes here */
 .wistia_embed{position:absolute;inset:0;width:100%;height:100%;}
@@ -406,23 +391,13 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--black);colo
   <h1 class="hero-h1 display">
     <span style="color:var(--white);">WRITE </span><span style="color:var(--sage-lt);">LIVING </span><span style="color:var(--terra-lt);">CHAR</span><span style="color:var(--gold-lt);">ACTERS</span>
   </h1>
-  <p class="hero-tagline">The method that turns flat characters into people readers carry with them.</p>
-  <div class="hero-meta-row">
-    <div class="hero-stat"><div class="hero-stat-n display">35</div><div class="hero-stat-l">Years consulting</div></div>
-    <div class="hero-stat-div"></div>
-    <div class="hero-stat"><div class="hero-stat-n display">20K+</div><div class="hero-stat-l">People coached</div></div>
-    <div class="hero-stat-div"></div>
-    <div class="hero-stat"><div class="hero-stat-n display">4</div><div class="hero-stat-l">Course sections</div></div>
-  </div>
-  <div class="hero-cta-row">
-    <a href="#enroll" class="btn-hero">Enroll Now</a>
-  </div>
   <div class="hero-genre-pills">
     <span class="genre-pill">Novelists</span>
     <span class="genre-pill">Screenwriters</span>
     <span class="genre-pill">Short story writers</span>
     <span class="genre-pill">Any genre</span>
   </div>
+  <p class="hero-tagline">The method that turns flat characters into people readers carry with them.</p>
 </section>
 
 <!-- VIDEO — FULL WIDTH -->
@@ -433,8 +408,8 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--black);colo
       <h2 class="display r" style="font-size:clamp(20px,3vw,36px);color:var(--white);margin-top:8px;">WHY THIS METHOD CHANGES EVERYTHING</h2>
     </div>
 
-    <div class="video-container r">
-      <div class="wistia_embed wistia_async_ucrxgl0kd1" style="position:absolute;inset:0;width:100%;height:100%;"></div>
+    <div class="video-container r" style="position:relative;width:100%;padding-bottom:0;background:transparent;">
+      <wistia-player media-id="ucrxgl0kd1" aspect="1.7777777777777777"></wistia-player>
     </div>
 
     <p class="video-caption r">35 years of behavioral consulting. One method. Every character you write from here forward.</p>
