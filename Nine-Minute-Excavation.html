@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Nine-Minute Excavation — STRATUM</title>
+<meta name="description" content="A free two-question Socratic mini-session for writers who only have a few minutes. Part of the Stratum Socratic Writing Method.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#080808;
+    --offwhite:#F5EFE0;
+    --clay:#C9A46C;
+    --sand:#E8DCC3;
+    --umber:#3B2F24;
+    --gold:#F5D78E;
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{
+    margin:0;
+    padding:0;
+    background:var(--black);
+    color:var(--offwhite);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  body{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:48px 20px 80px;
+  }
+
+  .wrap{
+    width:100%;
+    max-width:560px;
+  }
+
+  /* ---------- header ---------- */
+
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:56px;
+  }
+
+  .brand-mark{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:20px;
+    letter-spacing:.12em;
+    color:var(--clay);
+  }
+
+  .brand-sub{
+    font-size:11px;
+    letter-spacing:.08em;
+    color:var(--offwhite);
+    opacity:.45;
+    text-transform:uppercase;
+  }
+
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--clay);
+    margin:0 0 10px;
+  }
+
+  h1{
+    font-family:'Bebas Neue',sans-serif;
+    font-weight:400;
+    font-size:clamp(38px,7vw,54px);
+    letter-spacing:.01em;
+    line-height:1.02;
+    margin:0 0 18px;
+    color:var(--offwhite);
+  }
+
+  .lede{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:21px;
+    line-height:1.5;
+    color:var(--sand);
+    margin:0 0 44px;
+    max-width:46ch;
+  }
+
+  /* ---------- sequence marker ---------- */
+
+  .sequence{
+    display:flex;
+    gap:8px;
+    margin-bottom:28px;
+  }
+
+  .seq-dot{
+    flex:1;
+    height:2px;
+    background:rgba(245,239,224,.15);
+    position:relative;
+    overflow:hidden;
+  }
+
+  .seq-dot.done, .seq-dot.active{
+    background:var(--clay);
+  }
+
+  /* ---------- card ---------- */
+
+  .card{
+    background:var(--umber);
+    border-radius:2px;
+    padding:32px 28px;
+    margin-bottom:20px;
+  }
+
+  .card-label{
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--clay);
+    margin:0 0 16px;
+  }
+
+  /* time pills */
+
+  .pill-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:24px;
+  }
+
+  .pill{
+    flex:1;
+    background:transparent;
+    border:1px solid rgba(245,239,224,.25);
+    color:var(--offwhite);
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    font-weight:500;
+    padding:12px 0;
+    border-radius:2px;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+
+  .pill:hover{ border-color:var(--clay); }
+
+  .pill.selected{
+    border-color:var(--clay);
+    background:rgba(201,164,108,.14);
+    color:var(--gold);
+  }
+
+  label.field-label{
+    display:block;
+    font-size:13px;
+    color:var(--offwhite);
+    opacity:.75;
+    margin-bottom:10px;
+  }
+
+  textarea, input[type="text"]{
+    width:100%;
+    background:var(--black);
+    border:1px solid rgba(245,239,224,.2);
+    color:var(--offwhite);
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    padding:14px 16px;
+    border-radius:2px;
+    resize:vertical;
+    min-height:88px;
+  }
+
+  textarea:focus, input[type="text"]:focus{
+    outline:none;
+    border-color:var(--clay);
+  }
+
+  .helper{
+    font-size:12.5px;
+    color:var(--offwhite);
+    opacity:.4;
+    margin-top:8px;
+  }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--clay);
+    color:var(--black);
+    border:none;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    font-weight:600;
+    padding:14px 26px;
+    border-radius:2px;
+    cursor:pointer;
+    margin-top:22px;
+    transition:background .15s ease, opacity .15s ease;
+  }
+
+  .btn:hover{ background:var(--gold); }
+
+  .btn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+    background:var(--clay);
+  }
+
+  .btn-ghost{
+    background:transparent;
+    color:var(--clay);
+    border:1px solid var(--clay);
+  }
+
+  .btn-ghost:hover{ background:rgba(201,164,108,.12); color:var(--gold); border-color:var(--gold); }
+
+  /* ---------- coach question ---------- */
+
+  .question{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:24px;
+    line-height:1.4;
+    color:var(--gold);
+    margin:0 0 24px;
+  }
+
+  /* ---------- timer ---------- */
+
+  .timer-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:24px;
+  }
+
+  .timer-label{
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--offwhite);
+    opacity:.45;
+  }
+
+  .timer-clock{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:18px;
+    letter-spacing:.05em;
+    color:var(--clay);
+  }
+
+  .timer-bar{
+    height:2px;
+    background:rgba(245,239,224,.15);
+    margin-bottom:28px;
+    overflow:hidden;
+  }
+
+  .timer-bar-fill{
+    height:100%;
+    background:var(--clay);
+    width:100%;
+    transition:width 1s linear;
+  }
+
+  .timer-up .timer-bar-fill{ background:var(--gold); }
+  .timer-up .timer-clock{ color:var(--gold); }
+
+  /* ---------- loading ---------- */
+
+  .loading{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--offwhite);
+    opacity:.6;
+    font-size:14px;
+    margin-top:22px;
+  }
+
+  .dot-flash{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--clay);
+    animation:flash 1.1s infinite ease-in-out;
+  }
+  .dot-flash:nth-child(2){ animation-delay:.15s; }
+  .dot-flash:nth-child(3){ animation-delay:.3s; }
+
+  @keyframes flash{
+    0%,60%,100%{ opacity:.25; }
+    30%{ opacity:1; }
+  }
+
+  .error{
+    color:#E39B7A;
+    font-size:13.5px;
+    margin-top:16px;
+  }
+
+  /* ---------- closing ---------- */
+
+  .surfaced{
+    border-left:2px solid var(--clay);
+    padding-left:16px;
+    margin:0 0 20px;
+  }
+
+  .surfaced-q{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:17px;
+    color:var(--clay);
+    margin:0 0 6px;
+  }
+
+  .surfaced-a{
+    font-size:14.5px;
+    color:var(--offwhite);
+    opacity:.85;
+    line-height:1.5;
+    margin:0;
+  }
+
+  .close-line{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:22px;
+    line-height:1.5;
+    color:var(--gold);
+    margin:8px 0 32px;
+  }
+
+  .cta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    align-items:center;
+  }
+
+  .cta-note{
+    font-size:12.5px;
+    color:var(--offwhite);
+    opacity:.45;
+    margin-top:18px;
+  }
+
+  a{ color:var(--clay); }
+
+  .hidden{ display:none !important; }
+
+  @media (max-width:480px){
+    .card{ padding:26px 20px; }
+    .pill-row{ flex-direction:row; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="brand">
+    <span class="brand-mark">STRATUM</span>
+    <span class="brand-sub">Socratic Writing Method</span>
+  </div>
+
+  <p class="eyebrow">Free Excavation Tool</p>
+  <h1>The Nine-Minute<br>Excavation</h1>
+  <p class="lede">You don't need a free afternoon. You need one good question, held long enough to matter. Give it your stuck point and whatever minutes you actually have.</p>
+
+  <div class="sequence" id="sequence">
+    <div class="seq-dot active" data-step="1"></div>
+    <div class="seq-dot" data-step="2"></div>
+    <div class="seq-dot" data-step="3"></div>
+  </div>
+
+  <!-- STEP 1: setup -->
+  <section class="card" id="step1">
+    <p class="card-label">01 — Set the constraint</p>
+
+    <label class="field-label">How many minutes do you actually have?</label>
+    <div class="pill-row" id="minutePills">
+      <button type="button" class="pill" data-minutes="5">5 min</button>
+      <button type="button" class="pill" data-minutes="9">9 min</button>
+      <button type="button" class="pill" data-minutes="15">15 min</button>
+    </div>
+
+    <label class="field-label">Where are you stuck? One or two sentences — the scene, the character, the specific wall.</label>
+    <textarea id="stuckInput" placeholder="e.g. Emre just found proof his mentor lied to him for twenty years. I can't find the physical reality of the betrayal."></textarea>
+    <p class="helper">Real, unfinished, specific. Not a summary of the whole book.</p>
+
+    <button class="btn" id="beginBtn" disabled>Begin the excavation</button>
+    <div class="error hidden" id="step1Error"></div>
+  </section>
+
+  <!-- STEP 2: first question -->
+  <section class="card hidden" id="step2">
+    <p class="card-label">02 — First question</p>
+
+    <div class="timer-row">
+      <span class="timer-label">Time on the clock</span>
+      <span class="timer-clock" id="timerClock">00:00</span>
+    </div>
+    <div class="timer-bar"><div class="timer-bar-fill" id="timerFill"></div></div>
+
+    <p class="question" id="q1Text"></p>
+
+    <label class="field-label">Your answer — write it, don't polish it.</label>
+    <textarea id="a1Input"></textarea>
+
+    <button class="btn" id="a1Btn">What's underneath that?</button>
+    <div class="loading hidden" id="loading2"><span class="dot-flash"></span><span class="dot-flash"></span><span class="dot-flash"></span> listening</div>
+    <div class="error hidden" id="step2Error"></div>
+  </section>
+
+  <!-- STEP 3: follow-up -->
+  <section class="card hidden" id="step3">
+    <p class="card-label">03 — One layer deeper</p>
+    <p class="question" id="q2Text"></p>
+
+    <label class="field-label">Your answer.</label>
+    <textarea id="a2Input"></textarea>
+
+    <button class="btn" id="a2Btn">Surface it</button>
+    <div class="loading hidden" id="loading3"><span class="dot-flash"></span><span class="dot-flash"></span><span class="dot-flash"></span> listening</div>
+    <div class="error hidden" id="step3Error"></div>
+  </section>
+
+  <!-- STEP 4: closing -->
+  <section class="card hidden" id="step4">
+    <p class="card-label">What surfaced</p>
+
+    <div class="surfaced">
+      <p class="surfaced-q" id="recapQ1"></p>
+      <p class="surfaced-a" id="recapA1"></p>
+    </div>
+    <div class="surfaced">
+      <p class="surfaced-q" id="recapQ2"></p>
+      <p class="surfaced-a" id="recapA2"></p>
+    </div>
+
+    <p class="close-line">That's your nine minutes. Go write the scene — you already have what you need.</p>
+
+    <div class="cta-row">
+      <a class="btn" href="https://myaiwritingcoach.com" target="_blank" rel="noopener">See the full method</a>
+      <button class="btn btn-ghost" id="restartBtn">Run another excavation</button>
+    </div>
+    <p class="cta-note">This is a two-question sample of the Socratic Coach taught in Write Living Characters. The full method goes as deep as your character requires.</p>
+  </section>
+
+</div>
+
+<script>
+(function(){
+
+  var PROXY_URL = "https://stratum-proxy.tedbaker0207.workers.dev";
+  var MODEL = "claude-sonnet-4-5";
+
+  var SYSTEM_PROMPT_Q1 = "You are a Socratic writing coach speaking to a novelist who has only a few minutes available right now. " +
+    "Your only job is to ask exactly ONE short, sharp question about the specific stuck point they describe. " +
+    "Never explain, suggest, summarize, analyze, or write any content. Never offer options or examples. " +
+    "The question must be under 25 words, in plain language, and aimed at what the character has not yet admitted or felt in this moment. " +
+    "Respond with nothing but the question itself — no quotation marks, no preamble, no labels.";
+
+  var SYSTEM_PROMPT_Q2 = "You are a Socratic writing coach. The writer just answered your first question. " +
+    "This is your one and only follow-up. Ask exactly ONE question that pushes past their first answer, in the spirit of 'what's underneath that' — " +
+    "do not repeat the first question, do not summarize what they said, do not analyze or explain anything. " +
+    "The question must be under 25 words. Respond with nothing but the question itself — no quotation marks, no preamble, no labels. " +
+    "After this question you will stop; do not mention that.";
+
+  // ---- state ----
+  var state = { minutes: null, stuck: "", q1: "", a1: "", q2: "", a2: "" };
+  var timerInterval = null;
+
+  // ---- elements ----
+  var minutePills = document.querySelectorAll("#minutePills .pill");
+  var stuckInput = document.getElementById("stuckInput");
+  var beginBtn = document.getElementById("beginBtn");
+
+  var step1 = document.getElementById("step1");
+  var step2 = document.getElementById("step2");
+  var step3 = document.getElementById("step3");
+  var step4 = document.getElementById("step4");
+  var seqDots = document.querySelectorAll(".seq-dot");
+
+  function setSequence(activeStep){
+    seqDots.forEach(function(dot){
+      var s = parseInt(dot.getAttribute("data-step"), 10);
+      dot.classList.remove("active","done");
+      if(s < activeStep) dot.classList.add("done");
+      if(s === activeStep) dot.classList.add("active");
+    });
+  }
+
+  function showError(el, msg){
+    el.textContent = msg;
+    el.classList.remove("hidden");
+  }
+  function clearError(el){
+    el.textContent = "";
+    el.classList.add("hidden");
+  }
+
+  // ---- step 1: minute pills ----
+  minutePills.forEach(function(pill){
+    pill.addEventListener("click", function(){
+      minutePills.forEach(function(p){ p.classList.remove("selected"); });
+      pill.classList.add("selected");
+      state.minutes = parseInt(pill.getAttribute("data-minutes"), 10);
+      checkStep1Ready();
+    });
+  });
+
+  stuckInput.addEventListener("input", checkStep1Ready);
+
+  function checkStep1Ready(){
+    beginBtn.disabled = !(state.minutes && stuckInput.value.trim().length > 8);
+  }
+
+  // ---- API call helper ----
+  function askCoach(systemPrompt, messages, onSuccess, onError){
+    fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 200,
+        system: systemPrompt,
+        messages: messages
+      })
+    })
+    .then(function(res){
+      if(!res.ok) throw new Error("Request failed");
+      return res.json();
+    })
+    .then(function(data){
+      var textBlock = (data.content || []).find(function(b){ return b.type === "text"; });
+      if(!textBlock || !textBlock.text) throw new Error("Empty response");
+      onSuccess(textBlock.text.trim());
+    })
+    .catch(function(err){
+      onError(err);
+    });
+  }
+
+  // ---- step 1 -> step 2 ----
+  beginBtn.addEventListener("click", function(){
+    state.stuck = stuckInput.value.trim();
+    clearError(document.getElementById("step1Error"));
+    beginBtn.disabled = true;
+    beginBtn.textContent = "Thinking...";
+
+    var userMsg = "MY STUCK POINT: " + state.stuck + "\nTIME AVAILABLE: " + state.minutes + " minutes.\n\nAsk your first question now.";
+
+    askCoach(SYSTEM_PROMPT_Q1, [{ role:"user", content:userMsg }], function(question){
+      state.q1 = question;
+      document.getElementById("q1Text").textContent = question;
+      step1.classList.add("hidden");
+      step2.classList.remove("hidden");
+      setSequence(2);
+      startTimer(state.minutes);
+    }, function(){
+      beginBtn.disabled = false;
+      beginBtn.textContent = "Begin the excavation";
+      showError(document.getElementById("step1Error"), "Couldn't reach the coach just now. Please try again.");
+    });
+  });
+
+  // ---- timer ----
+  function startTimer(minutes){
+    var totalSeconds = minutes * 60;
+    var remaining = totalSeconds;
+    var clockEl = document.getElementById("timerClock");
+    var fillEl = document.getElementById("timerFill");
+    var barWrap = fillEl.parentElement;
+
+    function render(){
+      var m = Math.floor(Math.max(remaining,0) / 60);
+      var s = Math.max(remaining,0) % 60;
+      clockEl.textContent = (m < 10 ? "0"+m : m) + ":" + (s < 10 ? "0"+s : s);
+      fillEl.style.width = Math.max(0, (remaining/totalSeconds)*100) + "%";
+      if(remaining <= 0){
+        barWrap.classList.add("timer-up");
+        clockEl.textContent = "TIME'S UP";
+        clearInterval(timerInterval);
+      }
+    }
+    render();
+    clearInterval(timerInterval);
+    timerInterval = setInterval(function(){
+      remaining -= 1;
+      render();
+    }, 1000);
+  }
+
+  // ---- step 2 -> step 3 ----
+  document.getElementById("a1Btn").addEventListener("click", function(){
+    var answer = document.getElementById("a1Input").value.trim();
+    var errEl = document.getElementById("step2Error");
+    clearError(errEl);
+    if(answer.length < 3){
+      showError(errEl, "Write your answer first — even a rough one.");
+      return;
+    }
+    state.a1 = answer;
+
+    var btn = document.getElementById("a1Btn");
+    btn.disabled = true;
+    document.getElementById("loading2").classList.remove("hidden");
+
+    var setupMsg = "MY STUCK POINT: " + state.stuck + "\nTIME AVAILABLE: " + state.minutes + " minutes.\n\nAsk your first question now.";
+    var messages = [
+      { role:"user", content:setupMsg },
+      { role:"assistant", content:state.q1 },
+      { role:"user", content:state.a1 }
+    ];
+
+    askCoach(SYSTEM_PROMPT_Q2, messages, function(question){
+      state.q2 = question;
+      document.getElementById("q2Text").textContent = question;
+      step2.classList.add("hidden");
+      step3.classList.remove("hidden");
+      setSequence(3);
+      document.getElementById("loading2").classList.add("hidden");
+      btn.disabled = false;
+    }, function(){
+      document.getElementById("loading2").classList.add("hidden");
+      btn.disabled = false;
+      showError(errEl, "Couldn't reach the coach just now. Please try again.");
+    });
+  });
+
+  // ---- step 3 -> step 4 ----
+  document.getElementById("a2Btn").addEventListener("click", function(){
+    var answer = document.getElementById("a2Input").value.trim();
+    var errEl = document.getElementById("step3Error");
+    clearError(errEl);
+    if(answer.length < 3){
+      showError(errEl, "Write your answer first — even a rough one.");
+      return;
+    }
+    state.a2 = answer;
+    clearInterval(timerInterval);
+
+    document.getElementById("recapQ1").textContent = state.q1;
+    document.getElementById("recapA1").textContent = state.a1;
+    document.getElementById("recapQ2").textContent = state.q2;
+    document.getElementById("recapA2").textContent = state.a2;
+
+    step3.classList.add("hidden");
+    step4.classList.remove("hidden");
+    setSequence(4);
+  });
+
+  // ---- restart ----
+  document.getElementById("restartBtn").addEventListener("click", function(){
+    state = { minutes: null, stuck: "", q1: "", a1: "", q2: "", a2: "" };
+    clearInterval(timerInterval);
+    minutePills.forEach(function(p){ p.classList.remove("selected"); });
+    stuckInput.value = "";
+    document.getElementById("a1Input").value = "";
+    document.getElementById("a2Input").value = "";
+    beginBtn.disabled = true;
+    beginBtn.textContent = "Begin the excavation";
+    document.querySelector(".timer-bar").classList.remove("timer-up");
+    step4.classList.add("hidden");
+    step1.classList.remove("hidden");
+    setSequence(1);
+    window.scrollTo({ top:0, behavior:"smooth" });
+  });
+
+})();
+</script>
+
+</body>
+</html>
