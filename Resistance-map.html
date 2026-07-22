@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Resistance Map — STRATUM</title>
+<meta name="description" content="A free one-question excavation for writer's block. Part of the Stratum Socratic Writing Method.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#080808;
+    --offwhite:#F5EFE0;
+    --clay:#C9A46C;
+    --sand:#E8DCC3;
+    --umber:#3B2F24;
+    --gold:#F5D78E;
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{
+    margin:0;
+    padding:0;
+    background:var(--black);
+    color:var(--offwhite);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  body{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:48px 20px 80px;
+  }
+
+  .wrap{ width:100%; max-width:580px; }
+
+  /* ---------- header ---------- */
+
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:56px;
+  }
+  .brand-mark{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:20px;
+    letter-spacing:.12em;
+    color:var(--clay);
+  }
+  .brand-sub{
+    font-size:11px;
+    letter-spacing:.08em;
+    color:var(--offwhite);
+    opacity:.45;
+    text-transform:uppercase;
+  }
+
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--clay);
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:'Bebas Neue',sans-serif;
+    font-weight:400;
+    font-size:clamp(38px,7vw,54px);
+    letter-spacing:.01em;
+    line-height:1.02;
+    margin:0 0 18px;
+    color:var(--offwhite);
+  }
+  .lede{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:21px;
+    line-height:1.5;
+    color:var(--sand);
+    margin:0 0 44px;
+    max-width:48ch;
+  }
+
+  /* ---------- card ---------- */
+
+  .card{
+    background:var(--umber);
+    border-radius:2px;
+    padding:32px 28px;
+    margin-bottom:20px;
+  }
+  .card-label{
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--clay);
+    margin:0 0 20px;
+  }
+
+  /* ---------- pattern choices (step 1) ---------- */
+
+  .pattern-btn{
+    display:block;
+    width:100%;
+    text-align:left;
+    background:transparent;
+    border:1px solid rgba(245,239,224,.2);
+    color:var(--offwhite);
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    line-height:1.4;
+    padding:16px 18px;
+    border-radius:2px;
+    cursor:pointer;
+    margin-bottom:10px;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .pattern-btn:hover{ border-color:var(--clay); background:rgba(201,164,108,.08); }
+  .pattern-btn:disabled{ cursor:default; opacity:.55; }
+
+  /* ---------- the map (signature element) ---------- */
+
+  .map{
+    display:flex;
+    flex-direction:column;
+    gap:0;
+    margin-bottom:28px;
+  }
+  .map-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:9px 0;
+    position:relative;
+  }
+  .map-row:not(:last-child)::after{
+    content:"";
+    position:absolute;
+    left:5px;
+    top:26px;
+    width:1px;
+    height:22px;
+    background:rgba(245,239,224,.15);
+  }
+  .map-dot{
+    width:11px;
+    height:11px;
+    border-radius:50%;
+    border:1.5px solid rgba(245,239,224,.3);
+    flex-shrink:0;
+    background:transparent;
+    transition:all .2s ease;
+  }
+  .map-row.selected .map-dot{
+    background:var(--gold);
+    border-color:var(--gold);
+    box-shadow:0 0 0 4px rgba(245,215,142,.15);
+  }
+  .map-text{
+    font-size:13px;
+    color:var(--offwhite);
+    opacity:.4;
+    line-height:1.3;
+  }
+  .map-row.selected .map-text{
+    opacity:1;
+    color:var(--gold);
+    font-weight:500;
+  }
+
+  /* ---------- question / inputs ---------- */
+
+  .question{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:24px;
+    line-height:1.4;
+    color:var(--gold);
+    margin:0 0 24px;
+  }
+
+  label.field-label{
+    display:block;
+    font-size:13px;
+    color:var(--offwhite);
+    opacity:.75;
+    margin-bottom:10px;
+  }
+
+  textarea{
+    width:100%;
+    background:var(--black);
+    border:1px solid rgba(245,239,224,.2);
+    color:var(--offwhite);
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    padding:14px 16px;
+    border-radius:2px;
+    resize:vertical;
+    min-height:100px;
+  }
+  textarea:focus{ outline:none; border-color:var(--clay); }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--clay);
+    color:var(--black);
+    border:none;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    font-weight:600;
+    padding:14px 26px;
+    border-radius:2px;
+    cursor:pointer;
+    margin-top:20px;
+    transition:background .15s ease, opacity .15s ease;
+  }
+  .btn:hover{ background:var(--gold); }
+  .btn:disabled{ opacity:.5; cursor:not-allowed; background:var(--clay); }
+
+  .btn-ghost{
+    background:transparent;
+    color:var(--clay);
+    border:1px solid var(--clay);
+  }
+  .btn-ghost:hover{ background:rgba(201,164,108,.12); color:var(--gold); border-color:var(--gold); }
+
+  /* ---------- loading / error ---------- */
+
+  .loading{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--offwhite);
+    opacity:.6;
+    font-size:14px;
+    margin-top:22px;
+  }
+  .dot-flash{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--clay);
+    animation:flash 1.1s infinite ease-in-out;
+  }
+  .dot-flash:nth-child(2){ animation-delay:.15s; }
+  .dot-flash:nth-child(3){ animation-delay:.3s; }
+  @keyframes flash{ 0%,60%,100%{opacity:.25;} 30%{opacity:1;} }
+
+  .error{ color:#E39B7A; font-size:13.5px; margin-top:16px; }
+
+  /* ---------- closing ---------- */
+
+  .protecting-label{
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--clay);
+    margin:0 0 10px;
+  }
+  .protecting-line{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:24px;
+    line-height:1.5;
+    color:var(--gold);
+    margin:0 0 28px;
+  }
+  .your-answer{
+    border-left:2px solid var(--clay);
+    padding-left:16px;
+    margin:0 0 28px;
+    font-size:14.5px;
+    color:var(--offwhite);
+    opacity:.85;
+    line-height:1.5;
+  }
+  .cta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    align-items:center;
+  }
+  .cta-note{
+    font-size:12.5px;
+    color:var(--offwhite);
+    opacity:.45;
+    margin-top:18px;
+  }
+
+  a{ color:var(--clay); }
+  .hidden{ display:none !important; }
+
+  @media (max-width:480px){
+    .card{ padding:26px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="brand">
+    <span class="brand-mark">STRATUM</span>
+    <span class="brand-sub">Socratic Writing Method</span>
+  </div>
+
+  <p class="eyebrow">Free Excavation Tool</p>
+  <h1>The Resistance Map</h1>
+  <p class="lede">The block isn't the problem. It's a signal. Name its shape, and one question will find what it's protecting.</p>
+
+  <!-- STEP 1: choose pattern -->
+  <section class="card" id="step1">
+    <p class="card-label">Which shape does it take right now?</p>
+    <div id="patternList"></div>
+    <div class="error hidden" id="step1Error"></div>
+  </section>
+
+  <!-- STEP 2: the map + question -->
+  <section class="card hidden" id="step2">
+    <p class="card-label">The map</p>
+    <div class="map" id="mapDisplay"></div>
+
+    <p class="question" id="qText"></p>
+
+    <label class="field-label">Your answer — write it, don't polish it.</label>
+    <textarea id="answerInput"></textarea>
+
+    <button class="btn" id="answerBtn">Name what surfaced</button>
+    <div class="loading hidden" id="loading2"><span class="dot-flash"></span><span class="dot-flash"></span><span class="dot-flash"></span> listening</div>
+    <div class="error hidden" id="step2Error"></div>
+  </section>
+
+  <!-- STEP 3: closing -->
+  <section class="card hidden" id="step3">
+    <p class="protecting-label">What your resistance was protecting</p>
+    <p class="protecting-line" id="closingLine"></p>
+
+    <p class="protecting-label">What you wrote</p>
+    <p class="your-answer" id="recapAnswer"></p>
+
+    <div class="cta-row">
+      <a class="btn" href="https://myaiwritingcoach.com" target="_blank" rel="noopener">See the full method</a>
+      <button class="btn btn-ghost" id="restartBtn">Map a different block</button>
+    </div>
+    <p class="cta-note">This is a one-question sample of the Socratic Coach taught in Write Living Characters. The full method stays with a single block until it fully surfaces.</p>
+  </section>
+
+</div>
+
+<script>
+(function(){
+
+  var PROXY_URL = "https://stratum-proxy.tedbaker0207.workers.dev";
+  var MODEL = "claude-sonnet-4-5";
+
+  var PATTERNS = [
+    {
+      id: "words-wont-come",
+      label: "I know what should happen, but the words won't come",
+      focus: "This writer can see the scene clearly but can't get it onto the page. Ask ONE question aimed at the gap between the scene in their head and the scene on the page — specifically, what they're afraid the words will do to the version that currently only exists as possibility."
+    },
+    {
+      id: "dont-know-next",
+      label: "I don't know what happens next",
+      focus: "This writer says they don't know what happens next, but not-knowing is often a way to avoid deciding. Ask ONE question aimed at what deciding what happens next would close off or commit them to — not what could happen, but what they'd have to give up by choosing."
+    },
+    {
+      id: "feels-fake",
+      label: "Every option I imagine feels fake",
+      focus: "This writer has generated options but rejects all of them as false. Ask ONE question aimed at what a true option would expose — about the character, the story, or the writer themselves — that the fake ones conveniently avoid."
+    },
+    {
+      id: "keep-revising",
+      label: "I keep re-reading and revising instead of moving forward",
+      focus: "This writer loops backward into revision instead of advancing. Ask ONE question aimed at what moving forward would force them to accept as finished or decided — what does revising let them keep open that finishing would close."
+    },
+    {
+      id: "wont-open-file",
+      label: "I just don't want to open the file",
+      focus: "This writer is avoiding the manuscript itself, not a specific scene. Ask ONE question aimed at what opening the file would confront them with that has nothing to do with craft — what the file has come to represent."
+    }
+  ];
+
+  var SYSTEM_BASE = "You are a Socratic writing coach. A writer has identified the shape of what's blocking them. " +
+    "Your only job is to ask exactly ONE short, sharp question that goes underneath that block toward what it is protecting. " +
+    "Never explain, suggest, summarize, analyze, or offer options. The question must be under 25 words, in plain language. " +
+    "Respond with nothing but the question itself — no quotation marks, no preamble, no labels.\n\n";
+
+  var state = { patternId: null, question: "", answer: "" };
+
+  var step1 = document.getElementById("step1");
+  var step2 = document.getElementById("step2");
+  var step3 = document.getElementById("step3");
+  var patternList = document.getElementById("patternList");
+  var step1Error = document.getElementById("step1Error");
+
+  function showError(el, msg){ el.textContent = msg; el.classList.remove("hidden"); }
+  function clearError(el){ el.textContent = ""; el.classList.add("hidden"); }
+
+  // ---- render pattern choices ----
+  PATTERNS.forEach(function(p){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "pattern-btn";
+    btn.textContent = p.label;
+    btn.addEventListener("click", function(){ selectPattern(p, btn); });
+    patternList.appendChild(btn);
+  });
+
+  function renderMap(selectedId){
+    var mapEl = document.getElementById("mapDisplay");
+    mapEl.innerHTML = "";
+    PATTERNS.forEach(function(p){
+      var row = document.createElement("div");
+      row.className = "map-row" + (p.id === selectedId ? " selected" : "");
+      var dot = document.createElement("div");
+      dot.className = "map-dot";
+      var text = document.createElement("div");
+      text.className = "map-text";
+      text.textContent = p.label;
+      row.appendChild(dot);
+      row.appendChild(text);
+      mapEl.appendChild(row);
+    });
+  }
+
+  function askCoach(systemPrompt, userMsg, onSuccess, onError){
+    fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 200,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMsg }]
+      })
+    })
+    .then(function(res){
+      if(!res.ok) throw new Error("Request failed");
+      return res.json();
+    })
+    .then(function(data){
+      var textBlock = (data.content || []).find(function(b){ return b.type === "text"; });
+      if(!textBlock || !textBlock.text) throw new Error("Empty response");
+      onSuccess(textBlock.text.trim());
+    })
+    .catch(function(err){ onError(err); });
+  }
+
+  function selectPattern(pattern, clickedBtn){
+    clearError(step1Error);
+    state.patternId = pattern.id;
+
+    var allBtns = patternList.querySelectorAll(".pattern-btn");
+    allBtns.forEach(function(b){ b.disabled = true; });
+    clickedBtn.textContent = "Reading this one...";
+
+    var systemPrompt = SYSTEM_BASE + pattern.focus;
+    var userMsg = "The pattern I picked: \"" + pattern.label + "\". Ask your one question now.";
+
+    askCoach(systemPrompt, userMsg, function(question){
+      state.question = question;
+      document.getElementById("qText").textContent = question;
+      renderMap(pattern.id);
+      step1.classList.add("hidden");
+      step2.classList.remove("hidden");
+    }, function(){
+      allBtns.forEach(function(b){ b.disabled = false; });
+      clickedBtn.textContent = pattern.label;
+      showError(step1Error, "Couldn't reach the coach just now. Please try again.");
+    });
+  }
+
+  // ---- step 2 -> step 3 ----
+  document.getElementById("answerBtn").addEventListener("click", function(){
+    var answer = document.getElementById("answerInput").value.trim();
+    var errEl = document.getElementById("step2Error");
+    clearError(errEl);
+    if(answer.length < 3){
+      showError(errEl, "Write your answer first — even a rough one.");
+      return;
+    }
+    state.answer = answer;
+
+    var btn = document.getElementById("answerBtn");
+    btn.disabled = true;
+    document.getElementById("loading2").classList.remove("hidden");
+
+    var pattern = PATTERNS.find(function(p){ return p.id === state.patternId; });
+    var closingSystem = "You are a Socratic writing coach. The writer answered your question about what their block is protecting. " +
+      "Reflect back, in ONE sentence under 22 words, what their resistance appears to be protecting — name it as a fear or a stake, not a description of their behavior. " +
+      "Do not repeat their exact words back. Do not offer advice or next steps. Respond with nothing but that one sentence — no quotation marks, no preamble.";
+    var closingUserMsg = "Pattern: \"" + pattern.label + "\"\nQuestion asked: \"" + state.question + "\"\nTheir answer: \"" + state.answer + "\"\n\nName what it's protecting.";
+
+    askCoach(closingSystem, closingUserMsg, function(line){
+      document.getElementById("closingLine").textContent = line;
+      document.getElementById("recapAnswer").textContent = state.answer;
+      step2.classList.add("hidden");
+      step3.classList.remove("hidden");
+      document.getElementById("loading2").classList.add("hidden");
+      btn.disabled = false;
+    }, function(){
+      document.getElementById("loading2").classList.add("hidden");
+      btn.disabled = false;
+      showError(errEl, "Couldn't reach the coach just now. Please try again.");
+    });
+  });
+
+  // ---- restart ----
+  document.getElementById("restartBtn").addEventListener("click", function(){
+    state = { patternId: null, question: "", answer: "" };
+    var allBtns = patternList.querySelectorAll(".pattern-btn");
+    allBtns.forEach(function(b, i){ b.disabled = false; b.textContent = PATTERNS[i].label; });
+    document.getElementById("answerInput").value = "";
+    step3.classList.add("hidden");
+    step1.classList.remove("hidden");
+    window.scrollTo({ top:0, behavior:"smooth" });
+  });
+
+})();
+</script>
+
+</body>
+</html>
