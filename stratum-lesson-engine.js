@@ -314,22 +314,37 @@
     mount(container, div);
   }
 
-  // Renders inline on the page inside a bordered, scrollable box under a
-  // labeled bar showing the document's title. Not a download, not a new tab.
+  // Renders inline on the page as a COLLAPSED bordered accordion. The labeled
+  // title bar is the toggle. Not a download, not a new-tab link.
   // Only called when the lesson config actually has a resource.
   function buildResource(container, resource) {
     if (!resource || !resource.title) return;
 
-    var wrap = el('div', 'lec-resource');
-    mount(wrap, el('div', 'lec-resource-bar', resource.title));
+    var details = el('details', 'lec-resource');
+    details.id = 'lecResource';
+
+    mount(details, el('summary', 'lec-resource-bar', resource.title));
 
     var body = el('div', 'lec-resource-body');
     // Resource content is authored by Ted through the admin panel, not by
-    // students, so trusted HTML is allowed here for formatting.
-    body.innerHTML = resource.html || escapeHtml(resource.text || '');
-    mount(wrap, body);
+    // students, so trusted HTML is allowed. Plain text from the panel is
+    // split into paragraphs so it does not render as one solid block.
+    body.innerHTML = resource.html || textToParagraphs(resource.text || '');
+    mount(details, body);
 
-    mount(container, wrap);
+    mount(container, details);
+  }
+
+  // Blank lines separate paragraphs; single newlines become line breaks.
+  function textToParagraphs(text) {
+    var blocks = String(text).replace(/\r\n/g, '\n').split(/\n\s*\n/);
+    var out = '';
+    for (var i = 0; i < blocks.length; i++) {
+      var block = blocks[i].trim();
+      if (!block) continue;
+      out += '<p>' + escapeHtml(block).replace(/\n/g, '<br>') + '</p>';
+    }
+    return out;
   }
 
   /* ==========================================================
