@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stratum Lesson Admin</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', Arial, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 100px;
+    color: #222;
+    background: #faf8f4;
+  }
+  h1 {
+    font-family: 'Bebas Neue', Arial, sans-serif;
+    font-size: 30px;
+    letter-spacing: .04em;
+    color: #281e16;
+    margin: 0 0 4px;
+  }
+  .sub { color: #8a7a5e; font-size: 13px; margin-bottom: 28px; }
+
+  /* AUTH BAR */
+  #authBar {
+    background: #fff;
+    border: 1px solid #e2d9c4;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  #authBar input {
+    flex: 1;
+    padding: 9px 10px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+  }
+  #authBar button, .btn {
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', Arial, sans-serif;
+    background: #3B2F24;
+    color: #F5EFE0;
+    border: none;
+    cursor: pointer;
+  }
+  #authBar button:hover, .btn:hover { background: #5a4535; }
+  .btn.secondary { background: #fff; color: #3B2F24; border: 1px solid #3B2F24; }
+  .btn.secondary:hover { background: #f5f0e6; }
+  .btn.danger { background: #fff; color: #b3261e; border: 1px solid #b3261e; }
+  .btn.danger:hover { background: #fdecea; }
+  #authStatus { font-size: 12.5px; color: #b3261e; }
+  #authStatus.ok { color: #2e7d32; }
+
+  #panel { display: none; }
+
+  /* TOOLBAR */
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: #fff;
+    border: 1px solid #e2d9c4;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+  .toolbar select {
+    padding: 8px 10px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    min-width: 240px;
+  }
+  .toolbar .spacer { flex: 1; }
+  #saveStatus { font-size: 12.5px; color: #666; font-style: italic; }
+  #saveStatus.ok { color: #2e7d32; font-style: normal; }
+  #saveStatus.err { color: #b3261e; font-style: normal; }
+
+  /* SECTIONS */
+  .card {
+    background: #fff;
+    border: 1px solid #e2d9c4;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #8a6630;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #3B2F24;
+    margin-bottom: 3px;
+  }
+  .field .hint {
+    display: block;
+    font-size: 11px;
+    color: #8a7a5e;
+    font-style: italic;
+    margin-bottom: 5px;
+  }
+  .field input[type="text"],
+  .field textarea {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #ccc;
+    line-height: 1.4;
+  }
+  .field textarea { resize: vertical; }
+  .row2 { display: flex; gap: 16px; }
+  .row2 .field { flex: 1; }
+
+  /* AREAS */
+  .area-block {
+    border: 1px solid #e2d9c4;
+    background: #fbf8f1;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .area-block-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .area-block-head input {
+    flex: 1;
+    font-weight: 600;
+  }
+  .area-num {
+    font-size: 11px;
+    color: #8a7a5e;
+    min-width: 16px;
+  }
+  .remove-btn {
+    background: none;
+    border: none;
+    color: #b3261e;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+  .remove-btn:hover { text-decoration: underline; }
+  .add-btn {
+    background: none;
+    border: 1px dashed #8a7a5e;
+    color: #8a7a5e;
+    padding: 8px;
+    width: 100%;
+    text-align: center;
+    font-size: 12.5px;
+    cursor: pointer;
+  }
+  .add-btn:hover { background: #f5f0e6; color: #000; }
+
+  /* RESOURCE TOGGLE */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: #3B2F24;
+    margin-bottom: 12px;
+  }
+  #resourceFields.disabled { opacity: .4; pointer-events: none; }
+
+  /* TRANSLATIONS */
+  .lang-block {
+    border: 1px solid #e2d9c4;
+    background: #fbf8f1;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .lang-block-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 700;
+    font-size: 12.5px;
+    color: #3B2F24;
+  }
+  .add-lang-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .add-lang-row select { flex: 1; padding: 8px; font-size: 13px; }
+
+  details.json-preview { margin-top: 20px; }
+  details.json-preview summary {
+    cursor: pointer;
+    font-size: 12px;
+    color: #8a7a5e;
+    padding: 6px 0;
+  }
+  details.json-preview pre {
+    background: #f5f0e6;
+    padding: 12px;
+    font-size: 11px;
+    max-height: 300px;
+    overflow: auto;
+    white-space: pre-wrap;
+  }
+</style>
+</head>
+<body>
+
+<h1>Stratum Lesson Admin</h1>
+<div class="sub">Enter or edit any lesson's coaching content. Saves go straight to the database &mdash; the live lesson page picks up changes on next load.</div>
+
+<div id="authBar">
+  <input type="password" id="adminKeyInput" placeholder="Paste your admin key" />
+  <button id="unlockBtn" type="button">Unlock</button>
+  <span id="authStatus"></span>
+</div>
+
+<div id="panel">
+
+  <div class="toolbar">
+    <select id="lessonSelect"></select>
+    <button class="btn secondary" id="loadBtn" type="button">Load</button>
+    <button class="btn secondary" id="newLessonBtn" type="button">+ New Lesson</button>
+    <div class="spacer"></div>
+    <span id="saveStatus"></span>
+    <button class="btn" id="saveBtn" type="button">Save Lesson</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Lesson identity</div>
+    <div class="row2">
+      <div class="field">
+        <label for="fLessonId">Lesson ID</label>
+        <span class="hint">e.g. 1.1, 2.3, 4.2</span>
+        <input type="text" id="fLessonId" placeholder="1.1" />
+      </div>
+      <div class="field">
+        <label for="fNextLessonLabel">Next lesson label</label>
+        <span class="hint">Used in the coach's closing message</span>
+        <input type="text" id="fNextLessonLabel" placeholder="Lecture 1.2" />
+      </div>
+    </div>
+    <div class="field">
+      <label for="fScopeNote">Scope note</label>
+      <span class="hint">How the coach refers to this lesson internally &mdash; e.g. "Lecture 2.1 - Empty Your Cup"</span>
+      <input type="text" id="fScopeNote" placeholder="Lecture 1.1 - Welcome and What to Expect" />
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Video</div>
+    <div class="field">
+      <label for="fMediaId">Wistia media ID</label>
+      <input type="text" id="fMediaId" placeholder="0owdas4mfp" />
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Lecture transcript</div>
+    <div class="field">
+      <textarea id="fTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Resource</div>
+    <div class="toggle-row">
+      <input type="checkbox" id="fHasResource" />
+      <label for="fHasResource" style="margin:0;">This lesson has a resource</label>
+    </div>
+    <div id="resourceFields" class="disabled">
+      <div class="field">
+        <label for="fResourceTitle">Resource title</label>
+        <span class="hint">Shown on the labeled bar above the resource content</span>
+        <input type="text" id="fResourceTitle" placeholder="Empty Your Cup &mdash; White Paper" />
+      </div>
+      <div class="field">
+        <label for="fResourceText">Resource content</label>
+        <span class="hint">Plain text &mdash; renders inline on the lecture page</span>
+        <textarea id="fResourceText" rows="6"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Reflection framework &mdash; areas</div>
+    <div id="areasList"></div>
+    <button class="add-btn" id="addAreaBtn" type="button">+ Add area</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Calibration examples</div>
+    <div class="field">
+      <span class="hint">One per line. Shown to the coach only, never to the student.</span>
+      <textarea id="fCalibration" rows="4"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Greeting</div>
+    <div class="field">
+      <label for="fGreetingFresh">First-time greeting</label>
+      <span class="hint">Shown instantly, before the student has been asked their name</span>
+      <textarea id="fGreetingFresh" rows="3"></textarea>
+    </div>
+    <div class="field">
+      <label for="fGreetingKnown">Returning-student greeting</label>
+      <span class="hint">Use the literal text {name} where the student's name should appear</span>
+      <textarea id="fGreetingKnown" rows="3"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Greeting translations (optional)</div>
+    <div class="field">
+      <span class="hint">Lessons without a translation for a language fall back to English automatically &mdash; these do not need to be filled in before launch.</span>
+    </div>
+    <div id="translationsList"></div>
+    <div class="add-lang-row">
+      <select id="addLangSelect"></select>
+      <button class="btn secondary" id="addLangBtn" type="button">+ Add language</button>
+    </div>
+  </div>
+
+  <details class="json-preview">
+    <summary>View raw config JSON (for reference / debugging)</summary>
+    <pre id="jsonPreview"></pre>
+  </details>
+
+</div>
+
+<script>
+var PROXY_URL = 'https://stratum-proxy.tedbaker0207.workers.dev';
+var ADMIN_KEY_STORAGE = 'stratum_admin_key';
+
+var LANGUAGES = [
+  'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch',
+  'Chinese', 'Japanese', 'Korean', 'Arabic', 'Hindi', 'Russian'
+];
+
+var adminKey = '';
+var areaCounter = 0;
+
+/* ---------------------------------------------------------
+   AUTH
+   --------------------------------------------------------- */
+
+var authInput = document.getElementById('adminKeyInput');
+var authStatus = document.getElementById('authStatus');
+var panel = document.getElementById('panel');
+
+var savedKey = localStorage.getItem(ADMIN_KEY_STORAGE);
+if (savedKey) authInput.value = savedKey;
+
+document.getElementById('unlockBtn').addEventListener('click', unlock);
+
+function unlock() {
+  var key = authInput.value.trim();
+  if (!key) { authStatus.textContent = 'Enter a key first.'; authStatus.className = ''; return; }
+
+  authStatus.textContent = 'Checking...';
+  authStatus.className = '';
+
+  fetch(PROXY_URL + '/lesson-configs', {
+    headers: { 'X-Stratum-Admin-Key': key }
+  })
+    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+    .then(function (result) {
+      if (result.status === 200) {
+        adminKey = key;
+        localStorage.setItem(ADMIN_KEY_STORAGE, key);
+        authStatus.textContent = 'Unlocked.';
+        authStatus.className = 'ok';
+        panel.style.display = 'block';
+        populateLessonSelect(result.data.lessons || []);
+      } else {
+        authStatus.textContent = 'Key rejected. Check it matches STRATUM_ADMIN_KEY on the Worker.';
+        authStatus.className = '';
+      }
+    })
+    .catch(function () {
+      authStatus.textContent = 'Network error - could not reach the Worker.';
+      authStatus.className = '';
+    });
+}
+
+/* ---------------------------------------------------------
+   LESSON SELECTOR
+   --------------------------------------------------------- */
+
+var lessonSelect = document.getElementById('lessonSelect');
+
+function populateLessonSelect(lessons) {
+  lessonSelect.innerHTML = '';
+  if (lessons.length === 0) {
+    var opt = document.createElement('option');
+    opt.textContent = 'No lessons saved yet';
+    opt.value = '';
+    lessonSelect.appendChild(opt);
+    return;
+  }
+  lessons.forEach(function (l) {
+    var opt = document.createElement('option');
+    opt.value = l.lesson_id;
+    opt.textContent = l.lesson_id + '  (updated ' + (l.updated_at || 'unknown') + ')';
+    lessonSelect.appendChild(opt);
+  });
+}
+
+document.getElementById('loadBtn').addEventListener('click', function () {
+  var id = lessonSelect.value;
+  if (!id) return;
+  loadLesson(id);
+});
+
+document.getElementById('newLessonBtn').addEventListener('click', function () {
+  var id = prompt('New lesson ID (e.g. 1.2):');
+  if (!id) return;
+  clearForm();
+  document.getElementById('fLessonId').value = id.trim();
+});
+
+function loadLesson(lessonId) {
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.known) { alert('No config found for ' + lessonId + ' yet.'); return; }
+      fillForm(d.config);
+    })
+    .catch(function () { alert('Could not load that lesson.'); });
+}
+
+/* ---------------------------------------------------------
+   AREAS (reflection framework)
+   --------------------------------------------------------- */
+
+var areasList = document.getElementById('areasList');
+
+function addAreaBlock(title, instructions) {
+  areaCounter++;
+  var id = 'area_' + areaCounter;
+
+  var block = document.createElement('div');
+  block.className = 'area-block';
+  block.dataset.id = id;
+
+  var head = document.createElement('div');
+  head.className = 'area-block-head';
+
+  var num = document.createElement('span');
+  num.className = 'area-num';
+  head.appendChild(num);
+
+  var titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.className = 'area-title';
+  titleInput.placeholder = 'AREA TITLE';
+  titleInput.value = title || '';
+  head.appendChild(titleInput);
+
+  var removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'remove-btn';
+  removeBtn.textContent = 'Remove';
+  removeBtn.addEventListener('click', function () {
+    block.remove();
+    renumberAreas();
+  });
+  head.appendChild(removeBtn);
+
+  block.appendChild(head);
+
+  var instrTextarea = document.createElement('textarea');
+  instrTextarea.className = 'area-instructions';
+  instrTextarea.rows = 3;
+  instrTextarea.placeholder = 'Instructions for the coach on drawing out this area...';
+  instrTextarea.value = instructions || '';
+  block.appendChild(instrTextarea);
+
+  areasList.appendChild(block);
+  renumberAreas();
+}
+
+function renumberAreas() {
+  var blocks = areasList.querySelectorAll('.area-block');
+  blocks.forEach(function (b, i) {
+    b.querySelector('.area-num').textContent = (i + 1);
+  });
+}
+
+document.getElementById('addAreaBtn').addEventListener('click', function () {
+  addAreaBlock('', '');
+});
+
+/* ---------------------------------------------------------
+   RESOURCE TOGGLE
+   --------------------------------------------------------- */
+
+var hasResourceCb = document.getElementById('fHasResource');
+var resourceFields = document.getElementById('resourceFields');
+
+hasResourceCb.addEventListener('change', function () {
+  resourceFields.className = hasResourceCb.checked ? '' : 'disabled';
+});
+
+/* ---------------------------------------------------------
+   TRANSLATIONS
+   --------------------------------------------------------- */
+
+var translationsList = document.getElementById('translationsList');
+var addLangSelect = document.getElementById('addLangSelect');
+
+function refreshAddLangOptions() {
+  var existing = Array.prototype.map.call(
+    translationsList.querySelectorAll('.lang-block'),
+    function (b) { return b.dataset.lang; }
+  );
+  addLangSelect.innerHTML = '';
+  LANGUAGES.filter(function (l) { return existing.indexOf(l) === -1; }).forEach(function (l) {
+    var opt = document.createElement('option');
+    opt.value = l;
+    opt.textContent = l;
+    addLangSelect.appendChild(opt);
+  });
+}
+
+function addLangBlock(lang, fresh, known) {
+  var block = document.createElement('div');
+  block.className = 'lang-block';
+  block.dataset.lang = lang;
+
+  var head = document.createElement('div');
+  head.className = 'lang-block-head';
+  head.appendChild(document.createTextNode(lang));
+
+  var removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'remove-btn';
+  removeBtn.textContent = 'Remove';
+  removeBtn.addEventListener('click', function () {
+    block.remove();
+    refreshAddLangOptions();
+  });
+  head.appendChild(removeBtn);
+  block.appendChild(head);
+
+  var freshField = document.createElement('div');
+  freshField.className = 'field';
+  var freshLabel = document.createElement('label');
+  freshLabel.textContent = 'Fresh greeting';
+  freshField.appendChild(freshLabel);
+  var freshTa = document.createElement('textarea');
+  freshTa.className = 'lang-fresh';
+  freshTa.rows = 2;
+  freshTa.value = fresh || '';
+  freshField.appendChild(freshTa);
+  block.appendChild(freshField);
+
+  var knownField = document.createElement('div');
+  knownField.className = 'field';
+  var knownLabel = document.createElement('label');
+  knownLabel.textContent = 'Returning-student greeting (use {name})';
+  knownField.appendChild(knownLabel);
+  var knownTa = document.createElement('textarea');
+  knownTa.className = 'lang-known';
+  knownTa.rows = 2;
+  knownTa.value = known || '';
+  knownField.appendChild(knownTa);
+  block.appendChild(knownField);
+
+  translationsList.appendChild(block);
+  refreshAddLangOptions();
+}
+
+document.getElementById('addLangBtn').addEventListener('click', function () {
+  var lang = addLangSelect.value;
+  if (!lang) return;
+  addLangBlock(lang, '', '');
+});
+
+/* ---------------------------------------------------------
+   FORM <-> CONFIG OBJECT
+   --------------------------------------------------------- */
+
+function clearForm() {
+  document.getElementById('fLessonId').value = '';
+  document.getElementById('fNextLessonLabel').value = '';
+  document.getElementById('fScopeNote').value = '';
+  document.getElementById('fMediaId').value = '';
+  document.getElementById('fTranscript').value = '';
+  document.getElementById('fHasResource').checked = false;
+  resourceFields.className = 'disabled';
+  document.getElementById('fResourceTitle').value = '';
+  document.getElementById('fResourceText').value = '';
+  areasList.innerHTML = '';
+  document.getElementById('fCalibration').value = '';
+  document.getElementById('fGreetingFresh').value = '';
+  document.getElementById('fGreetingKnown').value = '';
+  translationsList.innerHTML = '';
+  refreshAddLangOptions();
+  updateJsonPreview();
+}
+
+function fillForm(config) {
+  clearForm();
+
+  document.getElementById('fLessonId').value = config.lessonId || '';
+  document.getElementById('fNextLessonLabel').value = config.nextLessonLabel || '';
+  document.getElementById('fScopeNote').value = config.scopeNote || '';
+  document.getElementById('fMediaId').value = (config.video && config.video.mediaId) || '';
+  document.getElementById('fTranscript').value = config.transcript || '';
+
+  if (config.resource && config.resource.title) {
+    document.getElementById('fHasResource').checked = true;
+    resourceFields.className = '';
+    document.getElementById('fResourceTitle').value = config.resource.title || '';
+    document.getElementById('fResourceText').value = config.resource.text || '';
+  }
+
+  var rf = config.reflectionFramework || {};
+  (rf.areas || []).forEach(function (a) { addAreaBlock(a.title, a.instructions); });
+  document.getElementById('fCalibration').value = (rf.calibrationExamples || []).join('\n');
+
+  var g = config.greeting || {};
+  document.getElementById('fGreetingFresh').value = g.fresh || '';
+  document.getElementById('fGreetingKnown').value = g.knownTemplate || '';
+
+  var translations = g.translations || {};
+  Object.keys(translations).forEach(function (lang) {
+    addLangBlock(lang, translations[lang].fresh, translations[lang].known);
+  });
+
+  updateJsonPreview();
+}
+
+function collectConfig() {
+  var areas = [];
+  areasList.querySelectorAll('.area-block').forEach(function (b) {
+    var title = b.querySelector('.area-title').value.trim();
+    var instructions = b.querySelector('.area-instructions').value.trim();
+    if (title || instructions) areas.push({ title: title, instructions: instructions });
+  });
+
+  var calibrationExamples = document.getElementById('fCalibration').value
+    .split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+
+  var translations = {};
+  translationsList.querySelectorAll('.lang-block').forEach(function (b) {
+    var lang = b.dataset.lang;
+    var fresh = b.querySelector('.lang-fresh').value.trim();
+    var known = b.querySelector('.lang-known').value.trim();
+    if (fresh || known) translations[lang] = { fresh: fresh, known: known };
+  });
+
+  var hasResource = document.getElementById('fHasResource').checked;
+
+  return {
+    lessonId: document.getElementById('fLessonId').value.trim(),
+    scopeNote: document.getElementById('fScopeNote').value.trim(),
+    nextLessonLabel: document.getElementById('fNextLessonLabel').value.trim(),
+    video: { mediaId: document.getElementById('fMediaId').value.trim() },
+    transcript: document.getElementById('fTranscript').value.trim(),
+    resource: hasResource ? {
+      title: document.getElementById('fResourceTitle').value.trim(),
+      text: document.getElementById('fResourceText').value.trim()
+    } : null,
+    reflectionFramework: {
+      areas: areas,
+      calibrationExamples: calibrationExamples
+    },
+    greeting: {
+      fresh: document.getElementById('fGreetingFresh').value.trim(),
+      knownTemplate: document.getElementById('fGreetingKnown').value.trim(),
+      translations: translations
+    }
+  };
+}
+
+function updateJsonPreview() {
+  document.getElementById('jsonPreview').textContent = JSON.stringify(collectConfig(), null, 2);
+}
+
+/* Live-update the preview on any input, lightly debounced */
+var previewTimer = null;
+panel.addEventListener('input', function () {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(updateJsonPreview, 300);
+});
+panel.addEventListener('change', updateJsonPreview);
+
+/* ---------------------------------------------------------
+   SAVE
+   --------------------------------------------------------- */
+
+var saveStatus = document.getElementById('saveStatus');
+
+document.getElementById('saveBtn').addEventListener('click', function () {
+  var config = collectConfig();
+
+  if (!config.lessonId) {
+    saveStatus.textContent = 'Lesson ID is required.';
+    saveStatus.className = 'err';
+    return;
+  }
+  if (!config.video.mediaId) {
+    saveStatus.textContent = 'Video media ID is required.';
+    saveStatus.className = 'err';
+    return;
+  }
+
+  saveStatus.textContent = 'Saving...';
+  saveStatus.className = '';
+
+  fetch(PROXY_URL + '/lesson-config', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Stratum-Admin-Key': adminKey
+    },
+    body: JSON.stringify({ lessonId: config.lessonId, config: config })
+  })
+    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+    .then(function (result) {
+      if (result.status === 200 && result.data && result.data.ok) {
+        saveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + new Date().toLocaleTimeString() + '.';
+        saveStatus.className = 'ok';
+        refreshLessonList();
+      } else {
+        saveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
+        saveStatus.className = 'err';
+      }
+    })
+    .catch(function (e) {
+      saveStatus.textContent = 'Network error: ' + e.message;
+      saveStatus.className = 'err';
+    });
+});
+
+function refreshLessonList() {
+  fetch(PROXY_URL + '/lesson-configs', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { populateLessonSelect(d.lessons || []); })
+    .catch(function () {});
+}
+
+/* ---------------------------------------------------------
+   INIT
+   --------------------------------------------------------- */
+
+refreshAddLangOptions();
+if (savedKey) unlock();
+</script>
+
+</body>
+</html>
