@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Upload Lesson 1.1 Config</title>
+<style>
+  body{font-family:Arial,sans-serif;max-width:640px;margin:60px auto;padding:0 20px;color:#222;}
+  h1{font-size:20px;}
+  p{font-size:14px;line-height:1.6;color:#555;}
+  input{width:100%;padding:10px;font-size:14px;margin:10px 0;box-sizing:border-box;border:1px solid #ccc;}
+  button{padding:12px 24px;font-size:14px;font-weight:600;background:#3B2F24;color:#F5EFE0;border:none;cursor:pointer;}
+  button:hover{background:#5a4535;}
+  button:disabled{opacity:.5;cursor:default;}
+  #status{margin-top:16px;font-size:14px;white-space:pre-wrap;}
+  #status.ok{color:#2e7d32;}
+  #status.err{color:#b3261e;}
+  pre{background:#f5f0e6;padding:12px;font-size:11px;max-height:200px;overflow:auto;}
+</style>
+</head>
+<body>
+
+<h1>One-time uploader &mdash; Lesson 1.1 config</h1>
+<p>This page has Lesson 1.1's config baked in below. Enter your admin key once (it will be remembered in this browser), then click Upload. This writes directly to the <code>lesson_configs</code> table via the Worker.</p>
+
+<label for="adminKey"><strong>Admin key</strong></label>
+<input type="password" id="adminKey" placeholder="Paste your X-Stratum-Admin-Key" />
+
+<button id="uploadBtn" type="button">Upload Lesson 1.1 Config</button>
+
+<div id="status"></div>
+
+<p><strong>What's being uploaded (for reference):</strong></p>
+<pre id="preview"></pre>
+
+<script>
+var PROXY_URL = 'https://stratum-proxy.tedbaker0207.workers.dev';
+var LESSON_ID = '1.1';
+var CONFIG = {"lessonId": "1.1", "scopeNote": "Lecture 1.1 - Welcome and What to Expect", "nextLessonLabel": "Lecture 1.2", "video": {"mediaId": "0owdas4mfp"}, "resource": null, "transcript": "You know the moment. You finish a scene. You read it back. And something inside you whispers: flat. The dialogue works. The plot moves. But the character? A puppet reciting lines. Or maybe every character you write starts to blur. The mother. The detective. The villain. Same voice. Yours. You finish a scene, read it back, and realize the words are there - but the people aren't. There's a way across that gap. A way of pulling truth out of your character instead of pasting cleverness onto them. I'm Ted Baker, and this course is Write Living Characters. It's not a tip sheet. Not a list of tropes. It's a method for writing characters who pierce readers - characters they carry with them long after the book is closed. It's for fiction writers - novelists, short story writers, screenwriters - in any genre. For anyone who cares more about characters who feel alive than characters who merely perform on the page. The method goes back to Socrates. A way of asking questions that makes people discover what they already have inside. Writers have used it - deliberately or accidentally - for centuries. You've seen it in the novels that changed you. The films you still quote. The shows where one character lived in your head for a week after the credits rolled. Those characters weren't accidents. They were excavated. And once you know how - you can do it too. In my consulting practice, I taught how real human beings deflect, contradict themselves, hide what matters most, and reveal themselves through what they refuse to say. And then I began writing my own novel - and I realized something every writer eventually learns: the character who truly breathes does the same thing. I'm going to show you how - step by step, with real examples, real scenes, using your own work. By the end of this course, you'll be able to write a line of dialogue and explain exactly why your character spoke that way. You'll spot a hollow scene - and know how to repair it. You'll write characters whose voices are distinct, whose silences carry weight, whose contradictions feel like the contradictions of real people. And you'll have a method you can apply for the rest of your writing life. If something in you just sat up straighter - good. And every lesson in this course ends the same way - with a conversation. When the video's over, you'll sit down with your Excavation Coach, built on my method and trained to ask the way I'd ask. It won't write a line of your story. It won't hand you an answer. It'll ask the one question that gets you to the answer you already have but haven't said out loud yet. That conversation is where the real work happens. Let's take this journey together.", "reflectionFramework": {"areas": [{"title": "THE SCENE THAT WHISPERED \"FLAT\"", "instructions": "The lecture opens with that moment: finishing a scene, reading it back, and something inside whispering \"flat\" - the dialogue works, the plot moves, but the character is a puppet reciting lines rather than a person living them. Ask if there's a scene from their own past writing that ever did that to them. Get them to actually describe what happened - not just \"yeah, that happens to me,\" but a specific scene, a specific character, what it felt like to read it back."}, {"title": "WHAT THEY FELT HEARING THE PROMISE", "instructions": "The lecture promises a complete method that can change how they write characters for the rest of their life. Ask what they felt when they heard that - specifically feeling, not verdict. You are not asking whether they believe it works. You are asking what happened in them when they heard a claim that big. Hope, skepticism, both at once, something else entirely - let them find their own words for it."}, {"title": "WHAT ACTUALLY BROUGHT THEM HERE", "instructions": "Something brought them to this course. Ask what it was - and push gently past the reason they'd put in a bio, toward the real one. The one still there after the enthusiasm of signing up wears off."}], "calibrationExamples": ["On the scene that whispered \"flat\": a writer recalling two characters who were supposed to argue, but the dialogue came out stiff and forced, not like real people talking - realizing they were pushing plot forward without letting the characters speak naturally.", "On hearing the promise of the method: something between hope and suspicion - having heard promises like this before, waiting for a reason not to trust it, but noticing something sat up before they'd decided to let it.", "On what brought them here: writing for years and still feeling like their characters are people they invented instead of people they've actually heard."]}, "greeting": {"fresh": "Hey - that lecture just ended, so I'm still right here with you.\n\nBefore we get into it, I'd like to actually know who I'm talking to. What's your name?", "knownTemplate": "Hey {name} - that lecture just ended, so I'm still right here with you.\n\nThat opening scene - the one where something inside you whispers flat. Has that ever happened to you? A specific scene, a specific character - where you read it back and felt that?", "translations": {"Spanish": {"fresh": "Oye, esa lección acaba de terminar, así que sigo aquí contigo.\n\nAntes de continuar, me gustaría saber con quién estoy hablando. ¿Cómo te llamas?", "known": "Oye {name}, esa lección acaba de terminar, así que sigo aquí contigo.\n\nEsa escena inicial, la que hace que algo dentro de ti susurre \"plano\". ¿Te ha pasado alguna vez? Una escena concreta, un personaje concreto, donde la releíste y sentiste eso."}, "French": {"fresh": "Salut, la leçon vient de se terminer, alors je suis toujours là avec toi.\n\nAvant d'aller plus loin, j'aimerais savoir à qui je parle. Comment tu t'appelles ?", "known": "Salut {name}, la leçon vient de se terminer, alors je suis toujours là avec toi.\n\nCette scène d'ouverture, celle où quelque chose en toi murmure \"fade\". Est-ce que ça t'est déjà arrivé ? Une scène précise, un personnage précis, où tu l'as relue et tu as ressenti ça."}, "German": {"fresh": "Hey, die Lektion ist gerade zu Ende gegangen, also bin ich noch hier bei dir.\n\nBevor wir loslegen, würde ich gern wissen, mit wem ich spreche. Wie heißt du?", "known": "Hey {name}, die Lektion ist gerade zu Ende gegangen, also bin ich noch hier bei dir.\n\nDiese Anfangsszene - die, bei der etwas in dir \"flach\" flüstert. Ist dir das schon mal passiert? Eine bestimmte Szene, eine bestimmte Figur, bei der du sie noch einmal gelesen und das gespürt hast."}, "Italian": {"fresh": "Ciao, quella lezione è appena finita, quindi sono ancora qui con te.\n\nPrima di iniziare, mi piacerebbe sapere con chi sto parlando. Come ti chiami?", "known": "Ciao {name}, quella lezione è appena finita, quindi sono ancora qui con te.\n\nQuella scena d'apertura, quella in cui qualcosa dentro di te sussurra \"piatto\". Ti è mai successo? Una scena precisa, un personaggio preciso, in cui l'hai riletta e hai sentito proprio quello."}, "Portuguese": {"fresh": "Olá, essa aula acabou de terminar, então ainda estou aqui com você.\n\nAntes de começarmos, eu gostaria de saber com quem estou falando. Qual é o seu nome?", "known": "Olá {name}, essa aula acabou de terminar, então ainda estou aqui com você.\n\nAquela cena inicial, aquela em que algo dentro de você sussurra \"sem vida\". Isso já aconteceu com você? Uma cena específica, um personagem específico, em que você releu e sentiu isso."}, "Dutch": {"fresh": "Hé, die les is net afgelopen, dus ik ben er nog steeds voor je.\n\nVoordat we beginnen, wil ik graag weten met wie ik praat. Hoe heet je?", "known": "Hé {name}, die les is net afgelopen, dus ik ben er nog steeds voor je.\n\nDie openingsscène, de scène waarbij iets in je fluistert \"vlak\". Is je dat weleens overkomen? Een specifieke scène, een specifiek personage, waarbij je het teruglas en dat voelde."}, "Chinese": {"fresh": "嘿，那节课刚结束，我还在这儿陪着你。\n\n在我们开始之前，我想知道我在和谁说话。你叫什么名字？", "known": "嘿 {name}，那节课刚结束，我还在这儿陪着你。\n\n那个开场的场景——就是内心某处轻声说\"平淡\"的那一刻。你有过这种经历吗？一个具体的场景，一个具体的角色，你重读时感受到了这一点。"}, "Japanese": {"fresh": "やあ、ちょうどレッスンが終わったところだね。まだここに一緒にいるよ。\n\n本題に入る前に、誰と話しているのか知りたいな。お名前は？", "known": "やあ {name}、ちょうどレッスンが終わったところだね。まだここに一緒にいるよ。\n\nあの冒頭のシーン——心の中で何かが「平坦だ」とささやいた瞬間。そんな経験はある？具体的なシーン、具体的なキャラクターで、読み返してそう感じた瞬間。"}, "Korean": {"fresh": "안녕하세요, 방금 강의가 끝났으니 아직 여기서 함께 있어요.\n\n본격적으로 시작하기 전에, 제가 누구와 이야기하고 있는지 알고 싶어요. 이름이 어떻게 되세요?", "known": "안녕하세요 {name}, 방금 강의가 끝났으니 아직 여기서 함께 있어요.\n\n그 오프닝 장면 있잖아요, 마음속 무언가가 \"밋밋하다\"고 속삭이는 순간이요. 그런 경험 있으셨나요? 구체적인 장면, 구체적인 캐릭터로, 다시 읽었을 때 그렇게 느꼈던 순간이요."}, "Arabic": {"fresh": "مرحبًا، انتهى الدرس للتو، وما زلت هنا معك.\n\nقبل أن نبدأ، أود أن أعرف مع من أتحدث. ما اسمك؟", "known": "مرحبًا {name}، انتهى الدرس للتو، وما زلت هنا معك.\n\nتلك المشهد الافتتاحي، ذلك الذي يهمس فيه شيء بداخلك بكلمة \"باهت\". هل حدث لك ذلك من قبل؟ مشهد محدد، شخصية محددة، حيث أعدت قراءته وشعرت بذلك."}, "Hindi": {"fresh": "अरे, वह लेक्चर अभी खत्म हुआ है, तो मैं अभी भी यहाँ आपके साथ हूँ।\n\nआगे बढ़ने से पहले, मैं जानना चाहूँगा कि मैं किससे बात कर रहा हूँ। आपका नाम क्या है?", "known": "अरे {name}, वह लेक्चर अभी खत्म हुआ है, तो मैं अभी भी यहाँ आपके साथ हूँ।\n\nवह शुरुआती दृश्य - जहाँ आपके अंदर कुछ \"फीका\" फुसफुसाता है। क्या कभी आपके साथ ऐसा हुआ है? कोई खास दृश्य, कोई खास किरदार, जहाँ आपने उसे दोबारा पढ़ा और यही महसूस किया।"}, "Russian": {"fresh": "Привет, урок только что закончился, так что я всё ещё здесь, с тобой.\n\nПрежде чем мы начнём, я хотел бы узнать, с кем говорю. Как тебя зовут?", "known": "Привет, {name}, урок только что закончился, так что я всё ещё здесь, с тобой.\n\nТа вступительная сцена - та, где что-то внутри тебя шепчет \"плоско\". Такое когда-нибудь случалось с тобой? Конкретная сцена, конкретный персонаж, когда ты перечитал и почувствовал именно это."}}}};
+
+var keyInput = document.getElementById('adminKey');
+var btn = document.getElementById('uploadBtn');
+var status = document.getElementById('status');
+
+var savedKey = localStorage.getItem('stratum_admin_key_temp');
+if (savedKey) keyInput.value = savedKey;
+
+document.getElementById('preview').textContent = JSON.stringify(CONFIG, null, 2);
+
+btn.addEventListener('click', function () {
+  var key = keyInput.value.trim();
+  if (!key) {
+    status.textContent = 'Enter your admin key first.';
+    status.className = 'err';
+    return;
+  }
+  localStorage.setItem('stratum_admin_key_temp', key);
+
+  btn.disabled = true;
+  status.textContent = 'Uploading...';
+  status.className = '';
+
+  fetch(PROXY_URL + '/lesson-config', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Stratum-Admin-Key': key
+    },
+    body: JSON.stringify({ lessonId: LESSON_ID, config: CONFIG })
+  })
+    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+    .then(function (result) {
+      btn.disabled = false;
+      if (result.status === 200 && result.data && result.data.ok) {
+        status.textContent = 'Success. Lesson ' + result.data.lessonId + ' config saved to the database.';
+        status.className = 'ok';
+      } else if (result.status === 401) {
+        status.textContent = 'Unauthorized - the admin key was rejected. Double check it matches STRATUM_ADMIN_KEY on the Worker.';
+        status.className = 'err';
+      } else {
+        status.textContent = 'Error: ' + JSON.stringify(result.data);
+        status.className = 'err';
+      }
+    })
+    .catch(function (e) {
+      btn.disabled = false;
+      status.textContent = 'Network error: ' + e.message;
+      status.className = 'err';
+    });
+});
+</script>
+
+</body>
+</html>
