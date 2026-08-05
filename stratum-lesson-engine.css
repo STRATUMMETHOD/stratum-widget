@@ -276,18 +276,32 @@ wistia-transcript { display: block; }
   margin: 0 0 14px;
   text-align: left;
 }
+.lec-resource summary::-webkit-details-marker { display: none; }
 .lec-resource-bar {
+  cursor: pointer;
+  list-style: none;
   padding: 10px 14px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: .09em;
   text-transform: uppercase;
   color: #8a6630;
-  border-bottom: 1px solid #e2d9c4;
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: color .2s ease;
 }
+.lec-resource-bar::before {
+  content: '\25B8';
+  font-size: 11px;
+  display: inline-block;
+  transition: transform .18s ease;
+}
+.lec-resource[open] .lec-resource-bar {
+  border-bottom: 1px solid #e2d9c4;
+}
+.lec-resource[open] .lec-resource-bar::before { transform: rotate(90deg); }
+.lec-resource-bar:hover { color: #000; }
 .lec-resource-body {
   padding: 14px;
   max-height: 420px;
