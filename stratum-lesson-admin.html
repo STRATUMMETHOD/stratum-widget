@@ -200,6 +200,31 @@
     color: #8a6630;
     text-decoration: underline;
   }
+  .pdf-url-row {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #ccc;
+  }
+  .pdf-url-prefix {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 12px;
+    color: #8a7a5e;
+    background: #f5f0e6;
+    border-right: 1px solid #ccc;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .pdf-url-row input {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: 'Inter', Arial, sans-serif;
+    border: none;
+    min-width: 0;
+  }
+  .pdf-url-row input:focus { outline: none; }
 
   /* TRANSLATIONS */
   .lang-block {
@@ -313,9 +338,12 @@
         <textarea id="fResourceText" rows="6"></textarea>
       </div>
       <div class="field pdf-url-field">
-        <label for="fResourcePdfUrl">Resource PDF</label>
-        <span class="hint">GitHub Pages URL to a hosted PDF &mdash; renders as a STRATUM download button on the lesson page. Optional &mdash; works independently of the text content above.</span>
-        <input type="text" id="fResourcePdfUrl" placeholder="https://stratummethod.github.io/stratum-widget/your-file.pdf" />
+        <label for="fResourcePdfFilename">Resource PDF</label>
+        <span class="hint">Just the file name &mdash; the file must already be uploaded to the stratum-widget GitHub repo. Renders as a STRATUM download button on the lesson page. Optional &mdash; works independently of the text content above.</span>
+        <div class="pdf-url-row">
+          <span class="pdf-url-prefix">https://stratummethod.github.io/stratum-widget/</span>
+          <input type="text" id="fResourcePdfFilename" placeholder="Training Your Coach.pdf" />
+        </div>
         <div class="pdf-preview" id="pdfPreview"></div>
       </div>
     </div>
@@ -554,19 +582,41 @@ hasResourceCb.addEventListener('change', function () {
    PDF URL PREVIEW
    --------------------------------------------------------- */
 
-var pdfUrlInput = document.getElementById('fResourcePdfUrl');
+var PDF_BASE_URL = 'https://stratummethod.github.io/stratum-widget/';
+var pdfFilenameInput = document.getElementById('fResourcePdfFilename');
 var pdfPreview  = document.getElementById('pdfPreview');
 
-pdfUrlInput.addEventListener('input', function () {
-  var url = pdfUrlInput.value.trim();
-  if (url && url.toLowerCase().endsWith('.pdf')) {
+function buildPdfUrl(filename) {
+  var name = (filename || '').trim();
+  if (!name) return '';
+  return PDF_BASE_URL + encodeURIComponent(name);
+}
+
+// Strips the known base URL back off a stored full URL so the field can
+// show just the filename. Falls back to showing the raw value if a config
+// was saved before this field existed, or points somewhere else.
+function filenameFromPdfUrl(url) {
+  if (!url) return '';
+  if (url.indexOf(PDF_BASE_URL) === 0) {
+    try { return decodeURIComponent(url.slice(PDF_BASE_URL.length)); }
+    catch (e) { return url.slice(PDF_BASE_URL.length); }
+  }
+  return url;
+}
+
+function updatePdfPreview() {
+  var name = pdfFilenameInput.value.trim();
+  if (name && name.toLowerCase().endsWith('.pdf')) {
+    var url = buildPdfUrl(name);
     pdfPreview.innerHTML = 'Preview: <a href="' + url + '" target="_blank" rel="noopener">Open PDF</a>';
-  } else if (url) {
-    pdfPreview.textContent = 'URL should end in .pdf';
+  } else if (name) {
+    pdfPreview.textContent = 'File name should end in .pdf';
   } else {
     pdfPreview.textContent = '';
   }
-});
+}
+
+pdfFilenameInput.addEventListener('input', updatePdfPreview);
 
 /* ---------------------------------------------------------
    TRANSLATIONS
@@ -657,7 +707,7 @@ function clearForm() {
   resourceFields.className = 'disabled';
   document.getElementById('fResourceTitle').value = '';
   document.getElementById('fResourceText').value = '';
-  document.getElementById('fResourcePdfUrl').value = '';
+  pdfFilenameInput.value = '';
   pdfPreview.textContent = '';
   areasList.innerHTML = '';
   document.getElementById('fCoachingApproach').value = '';
@@ -684,10 +734,8 @@ function fillForm(config) {
     document.getElementById('fResourceTitle').value = config.resource.title || '';
     document.getElementById('fResourceText').value = config.resource.text || '';
     var pdfUrl = config.resource.pdfUrl || '';
-    document.getElementById('fResourcePdfUrl').value = pdfUrl;
-    if (pdfUrl) {
-      pdfPreview.innerHTML = 'Preview: <a href="' + pdfUrl + '" target="_blank" rel="noopener">Open PDF</a>';
-    }
+    pdfFilenameInput.value = filenameFromPdfUrl(pdfUrl);
+    updatePdfPreview();
   }
 
   var rf = config.reflectionFramework || {};
@@ -727,7 +775,7 @@ function collectConfig() {
   });
 
   var hasResource = document.getElementById('fHasResource').checked;
-  var pdfUrl = document.getElementById('fResourcePdfUrl').value.trim();
+  var pdfUrl = buildPdfUrl(pdfFilenameInput.value);
 
   return {
     lessonId: document.getElementById('fLessonId').value.trim(),
