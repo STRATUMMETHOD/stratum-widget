@@ -260,6 +260,87 @@
     overflow: auto;
     white-space: pre-wrap;
   }
+
+  /* CONTINUITY ASSISTANT */
+  .continuity-card {
+    background: #fff;
+    border: 1px solid #e2d9c4;
+    border-left: 3px solid #8a6630;
+    padding: 20px 22px;
+    margin-bottom: 20px;
+  }
+  .continuity-desc {
+    font-size: 12.5px;
+    color: #5c4d38;
+    line-height: 1.6;
+    margin-bottom: 14px;
+    max-width: 68ch;
+  }
+  .continuity-load-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  #continuityStatus {
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+  }
+  #continuityStatus.ok { color: #2e7d32; font-style: normal; }
+  #continuityStatus.err { color: #b3261e; font-style: normal; }
+  .continuity-chat {
+    display: none;
+  }
+  .continuity-chat.active { display: block; }
+  #continuityMessages {
+    background: #fbf8f1;
+    border: 1px solid #e2d9c4;
+    padding: 14px;
+    max-height: 420px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+  }
+  .continuity-msg {
+    margin-bottom: 14px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .continuity-msg:last-child { margin-bottom: 0; }
+  .continuity-msg-role {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .continuity-msg.user .continuity-msg-role { color: #3B2F24; }
+  .continuity-msg.assistant .continuity-msg-role { color: #8a6630; }
+  .continuity-msg-text {
+    color: #222;
+    white-space: pre-wrap;
+  }
+  .continuity-empty {
+    color: #aaa;
+    font-style: italic;
+    font-size: 12.5px;
+  }
+  .continuity-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .continuity-input-row textarea {
+    flex: 1;
+    padding: 9px 11px;
+    font-size: 13px;
+    font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #ccc;
+    resize: vertical;
+    min-height: 44px;
+    max-height: 160px;
+  }
 </style>
 </head>
 <body>
@@ -282,6 +363,24 @@
     <div class="spacer"></div>
     <span id="saveStatus"></span>
     <button class="btn" id="saveBtn" type="button">Save Lesson</button>
+  </div>
+
+  <div class="continuity-card">
+    <div class="card-title">Course Continuity Assistant</div>
+    <div class="continuity-desc">Loads every saved lesson &mdash; transcripts, resources, and reflection frameworks &mdash; into one coach with full-course knowledge. Use it to check for continuity between lessons, or to help draft new content that fits what's already been taught.</div>
+    <div class="continuity-load-row">
+      <button class="btn secondary" id="continuityLoadBtn" type="button">Load All Lessons</button>
+      <span id="continuityStatus"></span>
+    </div>
+    <div class="continuity-chat" id="continuityChat">
+      <div id="continuityMessages">
+        <div class="continuity-empty">No messages yet. Ask a question below.</div>
+      </div>
+      <div class="continuity-input-row">
+        <textarea id="continuityInput" placeholder="e.g. Does Lesson 4 reference anything not yet covered by Lesson 3?"></textarea>
+        <button class="btn" id="continuitySendBtn" type="button">Ask</button>
+      </div>
+    </div>
   </div>
 
   <div class="card">
@@ -617,6 +716,211 @@ function updatePdfPreview() {
 }
 
 pdfFilenameInput.addEventListener('input', updatePdfPreview);
+
+/* ---------------------------------------------------------
+   COURSE CONTINUITY ASSISTANT
+   -----------------------------------------------------------
+   Pulls every saved lesson's config and compiles it into one
+   system prompt so Ted can ask cross-lesson questions - check
+   for continuity, repeated ideas, gaps, or draft new content
+   that fits what's already been taught. Independent of
+   whichever single lesson is loaded in the form below.
+   --------------------------------------------------------- */
+
+var CONTINUITY_MODEL = 'claude-sonnet-4-5';
+var continuityLoadBtn = document.getElementById('continuityLoadBtn');
+var continuityStatus = document.getElementById('continuityStatus');
+var continuityChat = document.getElementById('continuityChat');
+var continuityMessages = document.getElementById('continuityMessages');
+var continuityInput = document.getElementById('continuityInput');
+var continuitySendBtn = document.getElementById('continuitySendBtn');
+
+var continuityContext = null;   // compiled text block of all lessons, once loaded
+var continuityHistory = [];     // [{role, content}, ...] for this chat session
+var continuityBusy = false;
+
+continuityLoadBtn.addEventListener('click', loadAllLessonsForContinuity);
+continuitySendBtn.addEventListener('click', sendContinuityMessage);
+continuityInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendContinuityMessage();
+  }
+});
+
+function loadAllLessonsForContinuity() {
+  continuityLoadBtn.disabled = true;
+  continuityStatus.textContent = 'Fetching lesson list...';
+  continuityStatus.className = '';
+
+  fetch(PROXY_URL + '/lesson-configs', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var lessons = (d.lessons || []).map(function (l) { return l.lesson_id; });
+      if (lessons.length === 0) {
+        continuityStatus.textContent = 'No saved lessons found.';
+        continuityStatus.className = 'err';
+        continuityLoadBtn.disabled = false;
+        return;
+      }
+
+      continuityStatus.textContent = 'Loading 0 of ' + lessons.length + ' lessons...';
+
+      var configs = [];
+      var loaded = 0;
+
+      // Sequential rather than parallel - keeps the status count accurate
+      // and is plenty fast for a course-sized lesson list.
+      function loadNext(i) {
+        if (i >= lessons.length) {
+          continuityContext = compileContinuityContext(configs);
+          continuityStatus.textContent = 'Loaded ' + configs.length + ' of ' + lessons.length + ' lessons.';
+          continuityStatus.className = 'ok';
+          continuityLoadBtn.disabled = false;
+          continuityLoadBtn.textContent = 'Reload All Lessons';
+          continuityChat.className = 'continuity-chat active';
+          return;
+        }
+        fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessons[i]))
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d && d.known && d.config) configs.push(d.config);
+            loaded++;
+            continuityStatus.textContent = 'Loading ' + loaded + ' of ' + lessons.length + ' lessons...';
+            loadNext(i + 1);
+          })
+          .catch(function () {
+            loaded++;
+            loadNext(i + 1);
+          });
+      }
+
+      loadNext(0);
+    })
+    .catch(function () {
+      continuityStatus.textContent = 'Could not reach the Worker.';
+      continuityStatus.className = 'err';
+      continuityLoadBtn.disabled = false;
+    });
+}
+
+// Sorts lessons numerically by ID (1.1, 1.2, 2.1...) so the assistant sees
+// the course in the order students experience it, not save order.
+function compileContinuityContext(configs) {
+  configs.sort(function (a, b) {
+    return String(a.lessonId).localeCompare(String(b.lessonId), undefined, { numeric: true });
+  });
+
+  return configs.map(function (c) {
+    var block = 'LESSON ' + (c.lessonId || '?') + ' - ' + (c.scopeNote || '(no scope note)') + '\n';
+
+    if (c.transcript) {
+      block += '\nTRANSCRIPT:\n' + c.transcript + '\n';
+    }
+
+    if (c.resource && c.resource.title) {
+      block += '\nRESOURCE (' + c.resource.title + '):\n' + (c.resource.text || '') + '\n';
+    }
+
+    var rf = c.reflectionFramework || {};
+    if (rf.areas && rf.areas.length) {
+      block += '\nREFLECTION AREAS:\n';
+      rf.areas.forEach(function (a, i) {
+        block += (i + 1) + '. ' + a.title + ' - ' + a.instructions + '\n';
+      });
+    }
+
+    if (rf.coachingApproach) {
+      block += '\nCOACHING APPROACH:\n' + rf.coachingApproach + '\n';
+    }
+
+    if (rf.calibrationExamples && rf.calibrationExamples.length) {
+      block += '\nCALIBRATION EXAMPLES:\n' + rf.calibrationExamples.map(function (e) { return '- ' + e; }).join('\n') + '\n';
+    }
+
+    return block;
+  }).join('\n' + '='.repeat(60) + '\n\n');
+}
+
+function buildContinuitySystemPrompt() {
+  return 'You are helping Ted Baker, the creator of the STRATUM course, review his own course content. ' +
+    'Below is the complete content of every lesson currently saved in the course, in student order. ' +
+    'Ted will ask you questions to check continuity between lessons (repeated ideas, gaps, contradictions, ' +
+    'terminology drift) or to help draft new material that fits the established voice, methodology, and ' +
+    'sequencing. Answer directly and specifically, citing lesson IDs when relevant. This is an internal ' +
+    'working conversation, not a student-facing one - be candid and analytical rather than encouraging.\n\n' +
+    'FULL COURSE CONTENT:\n\n' + continuityContext;
+}
+
+function renderContinuityMessages() {
+  continuityMessages.innerHTML = '';
+  if (continuityHistory.length === 0) {
+    var empty = document.createElement('div');
+    empty.className = 'continuity-empty';
+    empty.textContent = 'No messages yet. Ask a question below.';
+    continuityMessages.appendChild(empty);
+    return;
+  }
+  continuityHistory.forEach(function (m) {
+    var row = document.createElement('div');
+    row.className = 'continuity-msg ' + m.role;
+
+    var role = document.createElement('span');
+    role.className = 'continuity-msg-role';
+    role.textContent = m.role === 'assistant' ? 'Assistant' : 'You';
+    row.appendChild(role);
+
+    var text = document.createElement('div');
+    text.className = 'continuity-msg-text';
+    text.textContent = m.content;
+    row.appendChild(text);
+
+    continuityMessages.appendChild(row);
+  });
+  continuityMessages.scrollTop = continuityMessages.scrollHeight;
+}
+
+function sendContinuityMessage() {
+  if (continuityBusy || !continuityContext) return;
+  var val = continuityInput.value.trim();
+  if (!val) return;
+
+  continuityHistory.push({ role: 'user', content: val });
+  continuityInput.value = '';
+  renderContinuityMessages();
+
+  continuityBusy = true;
+  continuitySendBtn.disabled = true;
+  continuitySendBtn.textContent = 'Thinking...';
+
+  fetch(PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: CONTINUITY_MODEL,
+      max_tokens: 1500,
+      system: buildContinuitySystemPrompt(),
+      messages: continuityHistory
+    })
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      data = data || {};
+      var block = (data.content || []).find(function (b) { return b.type === 'text'; });
+      var text = block ? block.text : 'Something went wrong - try asking again.';
+      continuityHistory.push({ role: 'assistant', content: text });
+      renderContinuityMessages();
+    })
+    .catch(function () {
+      continuityHistory.push({ role: 'assistant', content: 'Network error - could not reach the model. Try again.' });
+      renderContinuityMessages();
+    })
+    .finally(function () {
+      continuityBusy = false;
+      continuitySendBtn.disabled = false;
+      continuitySendBtn.textContent = 'Ask';
+    });
+}
 
 /* ---------------------------------------------------------
    TRANSLATIONS
