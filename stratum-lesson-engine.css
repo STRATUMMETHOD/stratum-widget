@@ -320,6 +320,36 @@ wistia-transcript { display: block; }
 }
 .lec-resource-body p { margin: 0 0 12px; }
 
+/* PDF download button — sits below any text content in the resource body.
+   Independent of text: renders alone if no text.text is present. Uses the
+   same dark-umber action-button treatment as Notes/Tasks/Project buttons
+   elsewhere on the page, so it reads as a native action rather than a
+   bolted-on element. */
+.lec-resource-pdf {
+  margin-top: 4px;
+}
+.lec-resource-body > .lec-resource-pdf:first-child {
+  margin-top: 0;
+}
+.lec-resource-pdf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: #3B2F24;
+  color: #F5EFE0;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: background-color .2s ease;
+}
+.lec-resource-pdf-btn:hover { background-color: #5a4535; }
+.lec-resource-pdf-btn svg { flex-shrink: 0; }
+
 /* ============================================================
    6. TAB BAR + PANELS
    ============================================================ */
