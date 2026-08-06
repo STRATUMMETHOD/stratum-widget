@@ -317,6 +317,9 @@
   // Renders inline on the page as a COLLAPSED bordered accordion. The labeled
   // title bar is the toggle. Not a download, not a new-tab link.
   // Only called when the lesson config actually has a resource.
+  // If resource.pdfUrl is present, a STRATUM-styled download button is
+  // rendered below the text content. Both text and PDF are independently
+  // optional — either or both may be present.
   function buildResource(container, resource) {
     if (!resource || !resource.title) return;
 
@@ -326,12 +329,53 @@
     mount(details, el('summary', 'lec-resource-bar', resource.title));
 
     var body = el('div', 'lec-resource-body');
-    // Resource content is authored by Ted through the admin panel, not by
-    // students, so trusted HTML is allowed. Plain text from the panel is
-    // split into paragraphs so it does not render as one solid block.
-    body.innerHTML = resource.html || textToParagraphs(resource.text || '');
-    mount(details, body);
 
+    // Plain text content — only rendered when present.
+    if (resource.text && resource.text.trim()) {
+      body.innerHTML = resource.html || textToParagraphs(resource.text);
+    }
+
+    // PDF download button — only rendered when a URL is present.
+    if (resource.pdfUrl && resource.pdfUrl.trim()) {
+      var pdfWrap = el('div', 'lec-resource-pdf');
+
+      var pdfBtn = document.createElement('a');
+      pdfBtn.className = 'lec-resource-pdf-btn';
+      pdfBtn.href = resource.pdfUrl;
+      pdfBtn.target = '_blank';
+      pdfBtn.rel = 'noopener';
+
+      // Download icon SVG
+      var iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      iconSvg.setAttribute('viewBox', '0 0 24 24');
+      iconSvg.setAttribute('width', '14');
+      iconSvg.setAttribute('height', '14');
+      iconSvg.setAttribute('fill', 'none');
+      iconSvg.setAttribute('stroke', 'currentColor');
+      iconSvg.setAttribute('stroke-width', '2');
+      iconSvg.setAttribute('stroke-linecap', 'round');
+      iconSvg.setAttribute('stroke-linejoin', 'round');
+      iconSvg.setAttribute('aria-hidden', 'true');
+      var pathLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      pathLine.setAttribute('x1', '12'); pathLine.setAttribute('y1', '3');
+      pathLine.setAttribute('x2', '12'); pathLine.setAttribute('y2', '15');
+      iconSvg.appendChild(pathLine);
+      var pathArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+      pathArrow.setAttribute('points', '7 10 12 15 17 10');
+      iconSvg.appendChild(pathArrow);
+      var pathBase = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      pathBase.setAttribute('x1', '5'); pathBase.setAttribute('y1', '21');
+      pathBase.setAttribute('x2', '19'); pathBase.setAttribute('y2', '21');
+      iconSvg.appendChild(pathBase);
+
+      pdfBtn.appendChild(iconSvg);
+      pdfBtn.appendChild(document.createTextNode('\u00A0 Download PDF'));
+
+      mount(pdfWrap, pdfBtn);
+      mount(body, pdfWrap);
+    }
+
+    mount(details, body);
     mount(container, details);
   }
 
@@ -1046,13 +1090,6 @@
       'THE LECTURE THEY JUST WATCHED (' + LESSON.scopeNote + '):\n"""\n' + LESSON.transcript + '\n"""'
     ];
 
-    // RESOURCE DOCUMENT - only present for Section 2+ lessons. This is the
-    // same document the student can read inline on the page. The coach gets
-    // it too, so it understands and can naturally draw on any concepts,
-    // frameworks, or techniques taught in it - but it must never recite or
-    // quote from it verbatim. The student can already read it themselves;
-    // reciting it would be redundant at best and breaks the "AI asks, never
-    // answers" rule at worst.
     if (LESSON.resource && LESSON.resource.title) {
       parts.push(
         'RESOURCE DOCUMENT THE STUDENT CAN READ ON THIS PAGE (' + LESSON.resource.title + '):\n"""\n' +
@@ -1065,11 +1102,6 @@
       'WHAT THIS CONVERSATION IS FOR:\nThis single, continuous, natural conversation IS the ' + LESSON.scopeNote + ' reflection. It replaces a written reflection form. Your job is to walk this student through the areas below - in whatever order the conversation naturally takes, based on what they say and ask. Do not treat these as a rigid checklist to march through in order. Follow threads. Let one answer lead somewhere before pivoting. But you are responsible for making sure, by the end, all of them have been genuinely explored:\n\n' + areas
     );
 
-    // COACHING APPROACH - private instructor guidance, written by Ted
-    // specifically for how the AI should conduct THIS lesson's session.
-    // Optional: most lessons will not need this. Never shown to the student
-    // and never drawn from a student-facing document - this is where Ted
-    // puts direction he wants the coach to have but does not want published.
     if (LESSON.reflectionFramework.coachingApproach) {
       parts.push(
         'COACHING APPROACH FOR THIS LESSON - PRIVATE, NEVER SHOWN OR REFERENCED TO THE STUDENT:\n' +
@@ -1111,8 +1143,6 @@
     not_sure: 'They are not yet sure what they most need help seeing. Do not push them to decide right now - let it surface naturally as the conversation goes.'
   };
 
-  // Read fresh on every send rather than cached once, so a mid-lesson edit to
-  // the My Project tab takes effect on the coach's very next reply.
   function buildProjectContextBlock() {
     var v = {};
     Object.keys(PROJ_KEYS).forEach(function (k) { v[k] = lsGet(PROJ_KEYS[k]) || ''; });
@@ -1141,11 +1171,6 @@
       }
     }
 
-    // LANGUAGE - separate from the project-fields guard above, since a student
-    // may have set only their language preference and nothing else. The hidden
-    // tags stay in English on purpose: [NAME: ...] and [REFLECTION_COMPLETE]
-    // are parsed by exact string match in this file, and [SUMMARY: ...] is read
-    // by the instructor for internal course records, not shown to the student.
     if (v.language) {
       block += '\n\nLANGUAGE: This student has selected ' + v.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + v.language + ' - every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically in ' + v.language + ', not as a literal word-for-word translation. Exception: keep the [NAME: ...] tag, the [SUMMARY: ...] tag, and the [REFLECTION_COMPLETE] tag exactly in their English bracket format as instructed elsewhere in this prompt - only the name inside the NAME tag should reflect what the student actually typed, and the sentence inside the SUMMARY tag must always be written in English regardless of ' + v.language + ', because it is read by the instructor, not the student.';
     }
@@ -1328,16 +1353,7 @@
   }
 
   /* ----------------------------------------------------------
-     PERSISTENCE - D1 first, localStorage as fallback/cache
-     ----------------------------------------------------------
-     D1 is the source of truth so a student who starts a
-     reflection on one device and opens the same lesson on
-     another picks up the SAME conversationId rather than being
-     handed a new one. That matters beyond convenience: the
-     Worker claims a session the first time a conversationId is
-     seen, so recovering the same id on a second device
-     continues the existing session instead of silently
-     spending a second one from the student's pool.
+     PERSISTENCE
      ---------------------------------------------------------- */
 
   function persist() {
@@ -1372,7 +1388,6 @@
     studentName = saved.studentName || '';
     reflectionComplete = !!saved.reflectionComplete;
 
-    // index 0 is the silent primer - never shown
     for (var i = 1; i < conversationHistory.length; i++) {
       var m = conversationHistory[i];
       var shown = m.role === 'assistant' ? extractTags(m.content).text : m.content;
@@ -1455,7 +1470,6 @@
     var name = studentName || 'Student';
     var body = '';
 
-    // slice(2) drops the silent primer and the static opening greeting
     conversationHistory.slice(2).forEach(function (msg) {
       var content = msg.content;
       if (msg.role === 'assistant') {
@@ -1521,7 +1535,6 @@
       messages: conversationHistory
     };
 
-    // Only attach metering metadata when we actually know who this is.
     if (STUDENT_ID) {
       body.stratum = {
         studentId: STUDENT_ID,
@@ -1603,14 +1616,6 @@
 
   /* ----------------------------------------------------------
      BOOT
-     ----------------------------------------------------------
-     The message array must open with a user turn - the API
-     rejects a leading assistant message. So a silent primer
-     user turn goes in first, then the greeting as a real
-     assistant turn. The model sees that it already greeted the
-     student, which is what stops it asking for the name twice.
-     Neither the primer nor the greeting appears in the
-     downloaded document.
      ---------------------------------------------------------- */
 
   function bootConversation() {
@@ -1619,8 +1624,6 @@
 
       if (saved) {
         hydrateFromSaved(saved);
-        // Whichever source won, make sure both agree - covers the case where
-        // D1 had nothing yet but localStorage did.
         persist();
         loadBalance();
         return;
@@ -1652,9 +1655,6 @@
 
   /* ==========================================================
      INITIALISATION
-     ----------------------------------------------------------
-     A lesson page provides window.STRATUM_LESSON_ID and a
-     container div. Everything else is fetched and built here.
      ========================================================== */
 
   function showFatalError(container, message) {
@@ -1673,12 +1673,10 @@
     buildTranscript(container, LESSON.video.mediaId);
     buildContactLine(container);
 
-    // Only renders when the lesson actually has one - Section 1 has none.
     buildResource(container, LESSON.resource);
 
     buildTabs(container);
 
-    // My Project opens by default.
     var defaultBtn = document.getElementById('defaultOpen');
     if (defaultBtn) defaultBtn.click();
   }
@@ -1708,7 +1706,6 @@
         }
         LESSON = d.config;
 
-        // Defensive defaults so a partially-filled config still renders.
         LESSON.scopeNote = LESSON.scopeNote || ('Lecture ' + LESSON_ID);
         LESSON.nextLessonLabel = LESSON.nextLessonLabel || 'the next lecture';
         LESSON.transcript = LESSON.transcript || '';
@@ -1729,11 +1726,6 @@
 
   /* ==========================================================
      FLUSH ON EXIT
-     ----------------------------------------------------------
-     Pushes any pending debounced Notes/Tasks save immediately
-     when the student navigates away or backgrounds the tab, so
-     a save that hasn't hit its 2s debounce window yet isn't
-     lost. keepalive lets the request survive page unload.
      ========================================================== */
 
   window.addEventListener('pagehide', function () {
