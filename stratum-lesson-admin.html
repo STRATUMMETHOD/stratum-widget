@@ -183,6 +183,24 @@
   }
   #resourceFields.disabled { opacity: .4; pointer-events: none; }
 
+  /* PDF URL field styling */
+  .pdf-url-field {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #e2d9c4;
+  }
+  .pdf-url-field .pdf-preview {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #8a7a5e;
+    font-style: italic;
+    min-height: 16px;
+  }
+  .pdf-url-field .pdf-preview a {
+    color: #8a6630;
+    text-decoration: underline;
+  }
+
   /* TRANSLATIONS */
   .lang-block {
     border: 1px solid #e2d9c4;
@@ -293,6 +311,12 @@
         <label for="fResourceText">Resource content</label>
         <span class="hint">Plain text &mdash; renders inline on the lecture page</span>
         <textarea id="fResourceText" rows="6"></textarea>
+      </div>
+      <div class="field pdf-url-field">
+        <label for="fResourcePdfUrl">Resource PDF</label>
+        <span class="hint">GitHub Pages URL to a hosted PDF &mdash; renders as a STRATUM download button on the lesson page. Optional &mdash; works independently of the text content above.</span>
+        <input type="text" id="fResourcePdfUrl" placeholder="https://stratummethod.github.io/stratum-widget/your-file.pdf" />
+        <div class="pdf-preview" id="pdfPreview"></div>
       </div>
     </div>
   </div>
@@ -527,6 +551,24 @@ hasResourceCb.addEventListener('change', function () {
 });
 
 /* ---------------------------------------------------------
+   PDF URL PREVIEW
+   --------------------------------------------------------- */
+
+var pdfUrlInput = document.getElementById('fResourcePdfUrl');
+var pdfPreview  = document.getElementById('pdfPreview');
+
+pdfUrlInput.addEventListener('input', function () {
+  var url = pdfUrlInput.value.trim();
+  if (url && url.toLowerCase().endsWith('.pdf')) {
+    pdfPreview.innerHTML = 'Preview: <a href="' + url + '" target="_blank" rel="noopener">Open PDF</a>';
+  } else if (url) {
+    pdfPreview.textContent = 'URL should end in .pdf';
+  } else {
+    pdfPreview.textContent = '';
+  }
+});
+
+/* ---------------------------------------------------------
    TRANSLATIONS
    --------------------------------------------------------- */
 
@@ -615,6 +657,8 @@ function clearForm() {
   resourceFields.className = 'disabled';
   document.getElementById('fResourceTitle').value = '';
   document.getElementById('fResourceText').value = '';
+  document.getElementById('fResourcePdfUrl').value = '';
+  pdfPreview.textContent = '';
   areasList.innerHTML = '';
   document.getElementById('fCoachingApproach').value = '';
   document.getElementById('fCalibration').value = '';
@@ -639,6 +683,11 @@ function fillForm(config) {
     resourceFields.className = '';
     document.getElementById('fResourceTitle').value = config.resource.title || '';
     document.getElementById('fResourceText').value = config.resource.text || '';
+    var pdfUrl = config.resource.pdfUrl || '';
+    document.getElementById('fResourcePdfUrl').value = pdfUrl;
+    if (pdfUrl) {
+      pdfPreview.innerHTML = 'Preview: <a href="' + pdfUrl + '" target="_blank" rel="noopener">Open PDF</a>';
+    }
   }
 
   var rf = config.reflectionFramework || {};
@@ -678,6 +727,7 @@ function collectConfig() {
   });
 
   var hasResource = document.getElementById('fHasResource').checked;
+  var pdfUrl = document.getElementById('fResourcePdfUrl').value.trim();
 
   return {
     lessonId: document.getElementById('fLessonId').value.trim(),
@@ -687,7 +737,8 @@ function collectConfig() {
     transcript: document.getElementById('fTranscript').value.trim(),
     resource: hasResource ? {
       title: document.getElementById('fResourceTitle').value.trim(),
-      text: document.getElementById('fResourceText').value.trim()
+      text: document.getElementById('fResourceText').value.trim(),
+      pdfUrl: pdfUrl || null
     } : null,
     reflectionFramework: {
       areas: areas,
