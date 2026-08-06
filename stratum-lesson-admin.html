@@ -100,6 +100,39 @@
     justify-content: space-between;
   }
 
+  /* ACCORDION (details/summary cards) */
+  .card { padding: 0; }
+  .card > summary.card-title {
+    margin-bottom: 0;
+    padding: 20px 22px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+  .card > summary.card-title::-webkit-details-marker { display: none; }
+  .card > summary.card-title::before {
+    content: '\25B8';
+    display: inline-block;
+    font-size: 11px;
+    margin-right: 8px;
+    transition: transform .15s ease;
+    flex-shrink: 0;
+  }
+  .card[open] > summary.card-title::before { transform: rotate(90deg); }
+  .card[open] > summary.card-title { border-bottom: 1px solid #e2d9c4; }
+  .card-body { padding: 18px 22px 20px; }
+  .card > summary.card-title:hover { color: #000; }
+
+  #accordionBar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  #accordionBar button {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
   .field { margin-bottom: 14px; }
   .field:last-child { margin-bottom: 0; }
   .field label {
@@ -183,49 +216,6 @@
   }
   #resourceFields.disabled { opacity: .4; pointer-events: none; }
 
-  /* PDF URL field styling */
-  .pdf-url-field {
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid #e2d9c4;
-  }
-  .pdf-url-field .pdf-preview {
-    margin-top: 6px;
-    font-size: 11px;
-    color: #8a7a5e;
-    font-style: italic;
-    min-height: 16px;
-  }
-  .pdf-url-field .pdf-preview a {
-    color: #8a6630;
-    text-decoration: underline;
-  }
-  .pdf-url-row {
-    display: flex;
-    align-items: stretch;
-    border: 1px solid #ccc;
-  }
-  .pdf-url-prefix {
-    display: flex;
-    align-items: center;
-    padding: 0 8px;
-    font-size: 12px;
-    color: #8a7a5e;
-    background: #f5f0e6;
-    border-right: 1px solid #ccc;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .pdf-url-row input {
-    flex: 1;
-    padding: 8px 10px;
-    font-size: 13px;
-    font-family: 'Inter', Arial, sans-serif;
-    border: none;
-    min-width: 0;
-  }
-  .pdf-url-row input:focus { outline: none; }
-
   /* TRANSLATIONS */
   .lang-block {
     border: 1px solid #e2d9c4;
@@ -260,87 +250,6 @@
     overflow: auto;
     white-space: pre-wrap;
   }
-
-  /* CONTINUITY ASSISTANT */
-  .continuity-card {
-    background: #fff;
-    border: 1px solid #e2d9c4;
-    border-left: 3px solid #8a6630;
-    padding: 20px 22px;
-    margin-bottom: 20px;
-  }
-  .continuity-desc {
-    font-size: 12.5px;
-    color: #5c4d38;
-    line-height: 1.6;
-    margin-bottom: 14px;
-    max-width: 68ch;
-  }
-  .continuity-load-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  #continuityStatus {
-    font-size: 12px;
-    color: #666;
-    font-style: italic;
-  }
-  #continuityStatus.ok { color: #2e7d32; font-style: normal; }
-  #continuityStatus.err { color: #b3261e; font-style: normal; }
-  .continuity-chat {
-    display: none;
-  }
-  .continuity-chat.active { display: block; }
-  #continuityMessages {
-    background: #fbf8f1;
-    border: 1px solid #e2d9c4;
-    padding: 14px;
-    max-height: 420px;
-    overflow-y: auto;
-    margin-bottom: 12px;
-  }
-  .continuity-msg {
-    margin-bottom: 14px;
-    font-size: 13px;
-    line-height: 1.6;
-  }
-  .continuity-msg:last-child { margin-bottom: 0; }
-  .continuity-msg-role {
-    display: block;
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
-  .continuity-msg.user .continuity-msg-role { color: #3B2F24; }
-  .continuity-msg.assistant .continuity-msg-role { color: #8a6630; }
-  .continuity-msg-text {
-    color: #222;
-    white-space: pre-wrap;
-  }
-  .continuity-empty {
-    color: #aaa;
-    font-style: italic;
-    font-size: 12.5px;
-  }
-  .continuity-input-row {
-    display: flex;
-    gap: 10px;
-    align-items: flex-end;
-  }
-  .continuity-input-row textarea {
-    flex: 1;
-    padding: 9px 11px;
-    font-size: 13px;
-    font-family: 'Inter', Arial, sans-serif;
-    border: 1px solid #ccc;
-    resize: vertical;
-    min-height: 44px;
-    max-height: 160px;
-  }
 </style>
 </head>
 <body>
@@ -365,26 +274,14 @@
     <button class="btn" id="saveBtn" type="button">Save Lesson</button>
   </div>
 
-  <div class="continuity-card">
-    <div class="card-title">Course Continuity Assistant</div>
-    <div class="continuity-desc">Loads every saved lesson &mdash; transcripts, resources, and reflection frameworks &mdash; into one coach with full-course knowledge. Use it to check for continuity between lessons, or to help draft new content that fits what's already been taught.</div>
-    <div class="continuity-load-row">
-      <button class="btn secondary" id="continuityLoadBtn" type="button">Load All Lessons</button>
-      <span id="continuityStatus"></span>
-    </div>
-    <div class="continuity-chat" id="continuityChat">
-      <div id="continuityMessages">
-        <div class="continuity-empty">No messages yet. Ask a question below.</div>
-      </div>
-      <div class="continuity-input-row">
-        <textarea id="continuityInput" placeholder="e.g. Does Lesson 4 reference anything not yet covered by Lesson 3?"></textarea>
-        <button class="btn" id="continuitySendBtn" type="button">Ask</button>
-      </div>
-    </div>
+  <div id="accordionBar">
+    <button class="btn secondary" id="expandAllBtn" type="button">Expand all</button>
+    <button class="btn secondary" id="collapseAllBtn" type="button">Collapse all</button>
   </div>
 
-  <div class="card">
-    <div class="card-title">Lesson identity</div>
+  <details class="card" data-group="open" open>
+    <summary class="card-title">Lesson identity</summary>
+    <div class="card-body">
     <div class="row2">
       <div class="field">
         <label for="fLessonId">Lesson ID</label>
@@ -403,24 +300,30 @@
       <input type="text" id="fScopeNote" placeholder="Lecture 1.1 - Welcome and What to Expect" />
     </div>
   </div>
+  </details>
 
-  <div class="card">
-    <div class="card-title">Video</div>
+  <details class="card" data-group="open" open>
+    <summary class="card-title">Video</summary>
+    <div class="card-body">
     <div class="field">
       <label for="fMediaId">Wistia media ID</label>
       <input type="text" id="fMediaId" placeholder="0owdas4mfp" />
     </div>
   </div>
+  </details>
 
-  <div class="card">
-    <div class="card-title">Lecture transcript</div>
+  <details class="card" data-group="open" open>
+    <summary class="card-title">Lecture transcript</summary>
+    <div class="card-body">
     <div class="field">
       <textarea id="fTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
     </div>
   </div>
+  </details>
 
-  <div class="card">
-    <div class="card-title">Resource</div>
+  <details class="card" data-group="plain">
+    <summary class="card-title">Resource</summary>
+    <div class="card-body">
     <div class="toggle-row">
       <input type="checkbox" id="fHasResource" />
       <label for="fHasResource" style="margin:0;">This lesson has a resource</label>
@@ -436,42 +339,41 @@
         <span class="hint">Plain text &mdash; renders inline on the lecture page</span>
         <textarea id="fResourceText" rows="6"></textarea>
       </div>
-      <div class="field pdf-url-field">
-        <label for="fResourcePdfFilename">Resource PDF</label>
-        <span class="hint">Just the file name &mdash; the file must already be uploaded to the stratum-widget GitHub repo. Renders as a STRATUM download button on the lesson page. Optional &mdash; works independently of the text content above.</span>
-        <div class="pdf-url-row">
-          <span class="pdf-url-prefix">https://stratummethod.github.io/stratum-widget/</span>
-          <input type="text" id="fResourcePdfFilename" placeholder="Training Your Coach.pdf" />
-        </div>
-        <div class="pdf-preview" id="pdfPreview"></div>
-      </div>
     </div>
   </div>
+  </details>
 
-  <div class="card">
-    <div class="card-title">Reflection framework &mdash; areas</div>
+  <details class="card" data-group="auto">
+    <summary class="card-title">Reflection framework &mdash; areas</summary>
+    <div class="card-body">
     <div id="areasList"></div>
     <button class="add-btn" id="addAreaBtn" type="button">+ Add area</button>
   </div>
+  </details>
 
-  <div class="card">
-    <div class="card-title">Coaching approach (coach-only)</div>
+  <details class="card" data-group="auto">
+    <summary class="card-title">Coaching approach (coach-only)</summary>
+    <div class="card-body">
     <div class="field">
       <span class="hint">Private instructional guidance for the AI on how to conduct THIS lesson's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student, and separate from the resource document. Optional &mdash; most lessons will not need this.</span>
       <textarea id="fCoachingApproach" rows="5"></textarea>
     </div>
   </div>
+  </details>
 
-  <div class="card">
-    <div class="card-title">Calibration examples</div>
+  <details class="card" data-group="auto">
+    <summary class="card-title">Calibration examples</summary>
+    <div class="card-body">
     <div class="field">
       <span class="hint">One per line. Shown to the coach only, never to the student.</span>
       <textarea id="fCalibration" rows="4"></textarea>
     </div>
   </div>
+  </details>
 
-  <div class="card">
-    <div class="card-title">Greeting</div>
+  <details class="card" data-group="plain">
+    <summary class="card-title">Greeting</summary>
+    <div class="card-body">
     <div class="field">
       <label for="fGreetingFresh">First-time greeting</label>
       <span class="hint">Shown instantly, before the student has been asked their name</span>
@@ -483,9 +385,11 @@
       <textarea id="fGreetingKnown" rows="3"></textarea>
     </div>
   </div>
+  </details>
 
-  <div class="card">
-    <div class="card-title">Greeting translations (optional)</div>
+  <details class="card" data-group="plain">
+    <summary class="card-title">Greeting translations (optional)</summary>
+    <div class="card-body">
     <div class="field">
       <span class="hint">Lessons without a translation for a language fall back to English automatically &mdash; these do not need to be filled in before launch.</span>
     </div>
@@ -495,6 +399,7 @@
       <button class="btn secondary" id="addLangBtn" type="button">+ Add language</button>
     </div>
   </div>
+  </details>
 
   <details class="json-preview">
     <summary>View raw config JSON (for reference / debugging)</summary>
@@ -671,256 +576,29 @@ document.getElementById('addAreaBtn').addEventListener('click', function () {
    --------------------------------------------------------- */
 
 var hasResourceCb = document.getElementById('fHasResource');
+
+// ACCORDION -- expand/collapse all, and auto-expand "auto" group cards
+// (Reflection areas, Coaching approach, Calibration examples) the moment
+// the user starts typing in them, so drafting never fights the UI.
+document.getElementById('expandAllBtn').addEventListener('click', function () {
+  document.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
+});
+document.getElementById('collapseAllBtn').addEventListener('click', function () {
+  document.querySelectorAll('details.card').forEach(function (d) { d.open = false; });
+});
+document.querySelectorAll('details.card[data-group="auto"]').forEach(function (card) {
+  card.addEventListener('input', function () {
+    if (!card.open) card.open = true;
+  });
+  card.addEventListener('focusin', function () {
+    if (!card.open) card.open = true;
+  });
+});
 var resourceFields = document.getElementById('resourceFields');
 
 hasResourceCb.addEventListener('change', function () {
   resourceFields.className = hasResourceCb.checked ? '' : 'disabled';
 });
-
-/* ---------------------------------------------------------
-   PDF URL PREVIEW
-   --------------------------------------------------------- */
-
-var PDF_BASE_URL = 'https://stratummethod.github.io/stratum-widget/';
-var pdfFilenameInput = document.getElementById('fResourcePdfFilename');
-var pdfPreview  = document.getElementById('pdfPreview');
-
-function buildPdfUrl(filename) {
-  var name = (filename || '').trim();
-  if (!name) return '';
-  return PDF_BASE_URL + encodeURIComponent(name);
-}
-
-// Strips the known base URL back off a stored full URL so the field can
-// show just the filename. Falls back to showing the raw value if a config
-// was saved before this field existed, or points somewhere else.
-function filenameFromPdfUrl(url) {
-  if (!url) return '';
-  if (url.indexOf(PDF_BASE_URL) === 0) {
-    try { return decodeURIComponent(url.slice(PDF_BASE_URL.length)); }
-    catch (e) { return url.slice(PDF_BASE_URL.length); }
-  }
-  return url;
-}
-
-function updatePdfPreview() {
-  var name = pdfFilenameInput.value.trim();
-  if (name && name.toLowerCase().endsWith('.pdf')) {
-    var url = buildPdfUrl(name);
-    pdfPreview.innerHTML = 'Preview: <a href="' + url + '" target="_blank" rel="noopener">Open PDF</a>';
-  } else if (name) {
-    pdfPreview.textContent = 'File name should end in .pdf';
-  } else {
-    pdfPreview.textContent = '';
-  }
-}
-
-pdfFilenameInput.addEventListener('input', updatePdfPreview);
-
-/* ---------------------------------------------------------
-   COURSE CONTINUITY ASSISTANT
-   -----------------------------------------------------------
-   Pulls every saved lesson's config and compiles it into one
-   system prompt so Ted can ask cross-lesson questions - check
-   for continuity, repeated ideas, gaps, or draft new content
-   that fits what's already been taught. Independent of
-   whichever single lesson is loaded in the form below.
-   --------------------------------------------------------- */
-
-var CONTINUITY_MODEL = 'claude-sonnet-4-5';
-var continuityLoadBtn = document.getElementById('continuityLoadBtn');
-var continuityStatus = document.getElementById('continuityStatus');
-var continuityChat = document.getElementById('continuityChat');
-var continuityMessages = document.getElementById('continuityMessages');
-var continuityInput = document.getElementById('continuityInput');
-var continuitySendBtn = document.getElementById('continuitySendBtn');
-
-var continuityContext = null;   // compiled text block of all lessons, once loaded
-var continuityHistory = [];     // [{role, content}, ...] for this chat session
-var continuityBusy = false;
-
-continuityLoadBtn.addEventListener('click', loadAllLessonsForContinuity);
-continuitySendBtn.addEventListener('click', sendContinuityMessage);
-continuityInput.addEventListener('keydown', function (e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendContinuityMessage();
-  }
-});
-
-function loadAllLessonsForContinuity() {
-  continuityLoadBtn.disabled = true;
-  continuityStatus.textContent = 'Fetching lesson list...';
-  continuityStatus.className = '';
-
-  fetch(PROXY_URL + '/lesson-configs', { headers: { 'X-Stratum-Admin-Key': adminKey } })
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      var lessons = (d.lessons || []).map(function (l) { return l.lesson_id; });
-      if (lessons.length === 0) {
-        continuityStatus.textContent = 'No saved lessons found.';
-        continuityStatus.className = 'err';
-        continuityLoadBtn.disabled = false;
-        return;
-      }
-
-      continuityStatus.textContent = 'Loading 0 of ' + lessons.length + ' lessons...';
-
-      var configs = [];
-      var loaded = 0;
-
-      // Sequential rather than parallel - keeps the status count accurate
-      // and is plenty fast for a course-sized lesson list.
-      function loadNext(i) {
-        if (i >= lessons.length) {
-          continuityContext = compileContinuityContext(configs);
-          continuityStatus.textContent = 'Loaded ' + configs.length + ' of ' + lessons.length + ' lessons.';
-          continuityStatus.className = 'ok';
-          continuityLoadBtn.disabled = false;
-          continuityLoadBtn.textContent = 'Reload All Lessons';
-          continuityChat.className = 'continuity-chat active';
-          return;
-        }
-        fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessons[i]))
-          .then(function (r) { return r.json(); })
-          .then(function (d) {
-            if (d && d.known && d.config) configs.push(d.config);
-            loaded++;
-            continuityStatus.textContent = 'Loading ' + loaded + ' of ' + lessons.length + ' lessons...';
-            loadNext(i + 1);
-          })
-          .catch(function () {
-            loaded++;
-            loadNext(i + 1);
-          });
-      }
-
-      loadNext(0);
-    })
-    .catch(function () {
-      continuityStatus.textContent = 'Could not reach the Worker.';
-      continuityStatus.className = 'err';
-      continuityLoadBtn.disabled = false;
-    });
-}
-
-// Sorts lessons numerically by ID (1.1, 1.2, 2.1...) so the assistant sees
-// the course in the order students experience it, not save order.
-function compileContinuityContext(configs) {
-  configs.sort(function (a, b) {
-    return String(a.lessonId).localeCompare(String(b.lessonId), undefined, { numeric: true });
-  });
-
-  return configs.map(function (c) {
-    var block = 'LESSON ' + (c.lessonId || '?') + ' - ' + (c.scopeNote || '(no scope note)') + '\n';
-
-    if (c.transcript) {
-      block += '\nTRANSCRIPT:\n' + c.transcript + '\n';
-    }
-
-    if (c.resource && c.resource.title) {
-      block += '\nRESOURCE (' + c.resource.title + '):\n' + (c.resource.text || '') + '\n';
-    }
-
-    var rf = c.reflectionFramework || {};
-    if (rf.areas && rf.areas.length) {
-      block += '\nREFLECTION AREAS:\n';
-      rf.areas.forEach(function (a, i) {
-        block += (i + 1) + '. ' + a.title + ' - ' + a.instructions + '\n';
-      });
-    }
-
-    if (rf.coachingApproach) {
-      block += '\nCOACHING APPROACH:\n' + rf.coachingApproach + '\n';
-    }
-
-    if (rf.calibrationExamples && rf.calibrationExamples.length) {
-      block += '\nCALIBRATION EXAMPLES:\n' + rf.calibrationExamples.map(function (e) { return '- ' + e; }).join('\n') + '\n';
-    }
-
-    return block;
-  }).join('\n' + '='.repeat(60) + '\n\n');
-}
-
-function buildContinuitySystemPrompt() {
-  return 'You are helping Ted Baker, the creator of the STRATUM course, review his own course content. ' +
-    'Below is the complete content of every lesson currently saved in the course, in student order. ' +
-    'Ted will ask you questions to check continuity between lessons (repeated ideas, gaps, contradictions, ' +
-    'terminology drift) or to help draft new material that fits the established voice, methodology, and ' +
-    'sequencing. Answer directly and specifically, citing lesson IDs when relevant. This is an internal ' +
-    'working conversation, not a student-facing one - be candid and analytical rather than encouraging.\n\n' +
-    'FULL COURSE CONTENT:\n\n' + continuityContext;
-}
-
-function renderContinuityMessages() {
-  continuityMessages.innerHTML = '';
-  if (continuityHistory.length === 0) {
-    var empty = document.createElement('div');
-    empty.className = 'continuity-empty';
-    empty.textContent = 'No messages yet. Ask a question below.';
-    continuityMessages.appendChild(empty);
-    return;
-  }
-  continuityHistory.forEach(function (m) {
-    var row = document.createElement('div');
-    row.className = 'continuity-msg ' + m.role;
-
-    var role = document.createElement('span');
-    role.className = 'continuity-msg-role';
-    role.textContent = m.role === 'assistant' ? 'Assistant' : 'You';
-    row.appendChild(role);
-
-    var text = document.createElement('div');
-    text.className = 'continuity-msg-text';
-    text.textContent = m.content;
-    row.appendChild(text);
-
-    continuityMessages.appendChild(row);
-  });
-  continuityMessages.scrollTop = continuityMessages.scrollHeight;
-}
-
-function sendContinuityMessage() {
-  if (continuityBusy || !continuityContext) return;
-  var val = continuityInput.value.trim();
-  if (!val) return;
-
-  continuityHistory.push({ role: 'user', content: val });
-  continuityInput.value = '';
-  renderContinuityMessages();
-
-  continuityBusy = true;
-  continuitySendBtn.disabled = true;
-  continuitySendBtn.textContent = 'Thinking...';
-
-  fetch(PROXY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: CONTINUITY_MODEL,
-      max_tokens: 1500,
-      system: buildContinuitySystemPrompt(),
-      messages: continuityHistory
-    })
-  })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      data = data || {};
-      var block = (data.content || []).find(function (b) { return b.type === 'text'; });
-      var text = block ? block.text : 'Something went wrong - try asking again.';
-      continuityHistory.push({ role: 'assistant', content: text });
-      renderContinuityMessages();
-    })
-    .catch(function () {
-      continuityHistory.push({ role: 'assistant', content: 'Network error - could not reach the model. Try again.' });
-      renderContinuityMessages();
-    })
-    .finally(function () {
-      continuityBusy = false;
-      continuitySendBtn.disabled = false;
-      continuitySendBtn.textContent = 'Ask';
-    });
-}
 
 /* ---------------------------------------------------------
    TRANSLATIONS
@@ -1011,8 +689,6 @@ function clearForm() {
   resourceFields.className = 'disabled';
   document.getElementById('fResourceTitle').value = '';
   document.getElementById('fResourceText').value = '';
-  pdfFilenameInput.value = '';
-  pdfPreview.textContent = '';
   areasList.innerHTML = '';
   document.getElementById('fCoachingApproach').value = '';
   document.getElementById('fCalibration').value = '';
@@ -1037,9 +713,6 @@ function fillForm(config) {
     resourceFields.className = '';
     document.getElementById('fResourceTitle').value = config.resource.title || '';
     document.getElementById('fResourceText').value = config.resource.text || '';
-    var pdfUrl = config.resource.pdfUrl || '';
-    pdfFilenameInput.value = filenameFromPdfUrl(pdfUrl);
-    updatePdfPreview();
   }
 
   var rf = config.reflectionFramework || {};
@@ -1079,7 +752,6 @@ function collectConfig() {
   });
 
   var hasResource = document.getElementById('fHasResource').checked;
-  var pdfUrl = buildPdfUrl(pdfFilenameInput.value);
 
   return {
     lessonId: document.getElementById('fLessonId').value.trim(),
@@ -1089,8 +761,7 @@ function collectConfig() {
     transcript: document.getElementById('fTranscript').value.trim(),
     resource: hasResource ? {
       title: document.getElementById('fResourceTitle').value.trim(),
-      text: document.getElementById('fResourceText').value.trim(),
-      pdfUrl: pdfUrl || null
+      text: document.getElementById('fResourceText').value.trim()
     } : null,
     reflectionFramework: {
       areas: areas,
