@@ -808,7 +808,15 @@ function appendSystemNote(text) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
   return div;
 }
-
+function extractReplyText(data) {
+  if (!data) return null;
+  if (typeof data.reply === 'string') return data.reply;
+  if (Array.isArray(data.content)) {
+    var block = data.content.filter(function (c) { return c.type === 'text'; })[0];
+    if (block && block.text) return block.text;
+  }
+  return null;
+}
 function sendChatMessage() {
   var text = chatInput.value.trim();
   if (!text) return;
