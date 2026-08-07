@@ -1670,10 +1670,9 @@
     refreshExcavationRecord();
 
     buildVideo(container, LESSON.video.mediaId);
+    buildResource(container, LESSON.resource);
     buildTranscript(container, LESSON.video.mediaId);
     buildContactLine(container);
-
-    buildResource(container, LESSON.resource);
 
     buildTabs(container);
 
