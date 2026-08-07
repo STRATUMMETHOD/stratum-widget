@@ -280,6 +280,21 @@
   </div>
 
   <details class="card" data-group="open" open>
+    <summary class="card-title">Tier content</summary>
+    <div class="card-body">
+    <span class="hint" style="display:block;margin-bottom:10px;">Controls which field groups show below. Purely an editing convenience &mdash; a lesson can have both, and unchecking one here does not delete its saved content.</span>
+    <div class="toggle-row">
+      <input type="checkbox" id="fHasGuided" checked />
+      <label for="fHasGuided" style="margin:0;">Guided / Mastery &mdash; AI Excavation Coach session</label>
+    </div>
+    <div class="toggle-row">
+      <input type="checkbox" id="fHasEssentials" />
+      <label for="fHasEssentials" style="margin:0;">Essentials &mdash; self-guided, Jotform exercise + reflection</label>
+    </div>
+  </div>
+  </details>
+
+  <details class="card" data-group="open" open>
     <summary class="card-title">Lesson identity</summary>
     <div class="card-body">
     <div class="row2">
@@ -339,10 +354,22 @@
         <span class="hint">Plain text &mdash; renders inline on the lecture page</span>
         <textarea id="fResourceText" rows="6"></textarea>
       </div>
+      <div class="toggle-row">
+        <input type="checkbox" id="fHasPdf" />
+        <label for="fHasPdf" style="margin:0;">This resource includes a PDF (displays inline, no click needed)</label>
+      </div>
+      <div id="pdfFields" class="disabled">
+        <div class="field">
+          <label for="fResourcePdfUrl">PDF URL</label>
+          <span class="hint">Direct link to the PDF file &mdash; e.g. hosted on GitHub Pages</span>
+          <input type="text" id="fResourcePdfUrl" placeholder="https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf" />
+        </div>
+      </div>
     </div>
   </div>
   </details>
 
+  <div id="guidedCardGroup">
   <details class="card" data-group="auto">
     <summary class="card-title">Reflection framework &mdash; areas</summary>
     <div class="card-body">
@@ -400,6 +427,26 @@
     </div>
   </div>
   </details>
+  </div>
+
+  <div id="essentialsCardGroup">
+  <details class="card" data-group="plain">
+    <summary class="card-title">Essentials &mdash; Jotform tabs</summary>
+    <div class="card-body">
+    <span class="hint" style="display:block;margin-bottom:10px;">Video, transcript, and resource above are shared with Guided/Mastery. These two fields are Essentials-only: the self-guided lesson page shows an Exercise tab and a Reflection tab, each embedding the matching Jotform form.</span>
+    <div class="field">
+      <label for="fExerciseFormId">Exercise &mdash; Jotform form ID</label>
+      <span class="hint">From the form's Jotform URL or share settings</span>
+      <input type="text" id="fExerciseFormId" placeholder="241234567890123" />
+    </div>
+    <div class="field">
+      <label for="fReflectionFormId">Reflection &mdash; Jotform form ID</label>
+      <span class="hint">From the form's Jotform URL or share settings</span>
+      <input type="text" id="fReflectionFormId" placeholder="241234567890124" />
+    </div>
+  </div>
+  </details>
+  </div>
 
   <details class="json-preview">
     <summary>View raw config JSON (for reference / debugging)</summary>
@@ -601,6 +648,36 @@ hasResourceCb.addEventListener('change', function () {
 });
 
 /* ---------------------------------------------------------
+   PDF TOGGLE (inside Resource)
+   --------------------------------------------------------- */
+
+var hasPdfCb = document.getElementById('fHasPdf');
+var pdfFields = document.getElementById('pdfFields');
+
+hasPdfCb.addEventListener('change', function () {
+  pdfFields.className = hasPdfCb.checked ? '' : 'disabled';
+});
+
+/* ---------------------------------------------------------
+   TIER TOGGLES — editing-convenience visibility only, does not
+   affect what gets saved. A lesson can have both Guided and
+   Essentials content regardless of which boxes are checked here.
+   --------------------------------------------------------- */
+
+var hasGuidedCb = document.getElementById('fHasGuided');
+var hasEssentialsCb = document.getElementById('fHasEssentials');
+var guidedCardGroup = document.getElementById('guidedCardGroup');
+var essentialsCardGroup = document.getElementById('essentialsCardGroup');
+
+function syncTierVisibility() {
+  guidedCardGroup.style.display = hasGuidedCb.checked ? '' : 'none';
+  essentialsCardGroup.style.display = hasEssentialsCb.checked ? '' : 'none';
+}
+hasGuidedCb.addEventListener('change', syncTierVisibility);
+hasEssentialsCb.addEventListener('change', syncTierVisibility);
+syncTierVisibility();
+
+/* ---------------------------------------------------------
    TRANSLATIONS
    --------------------------------------------------------- */
 
@@ -689,6 +766,14 @@ function clearForm() {
   resourceFields.className = 'disabled';
   document.getElementById('fResourceTitle').value = '';
   document.getElementById('fResourceText').value = '';
+  document.getElementById('fHasPdf').checked = false;
+  pdfFields.className = 'disabled';
+  document.getElementById('fResourcePdfUrl').value = '';
+  document.getElementById('fExerciseFormId').value = '';
+  document.getElementById('fReflectionFormId').value = '';
+  hasGuidedCb.checked = true;
+  hasEssentialsCb.checked = false;
+  syncTierVisibility();
   areasList.innerHTML = '';
   document.getElementById('fCoachingApproach').value = '';
   document.getElementById('fCalibration').value = '';
@@ -713,12 +798,27 @@ function fillForm(config) {
     resourceFields.className = '';
     document.getElementById('fResourceTitle').value = config.resource.title || '';
     document.getElementById('fResourceText').value = config.resource.text || '';
+    if (config.resource.pdfUrl) {
+      document.getElementById('fHasPdf').checked = true;
+      pdfFields.className = '';
+      document.getElementById('fResourcePdfUrl').value = config.resource.pdfUrl;
+    }
   }
+
+  var ess = config.essentials || {};
+  document.getElementById('fExerciseFormId').value = ess.exerciseFormId || '';
+  document.getElementById('fReflectionFormId').value = ess.reflectionFormId || '';
 
   var rf = config.reflectionFramework || {};
   (rf.areas || []).forEach(function (a) { addAreaBlock(a.title, a.instructions); });
   document.getElementById('fCoachingApproach').value = rf.coachingApproach || '';
   document.getElementById('fCalibration').value = (rf.calibrationExamples || []).join('\n');
+
+  // Tier checkboxes reflect what this lesson actually has, so returning to
+  // an edit shows the right groups open without Ted re-deciding each time.
+  hasGuidedCb.checked = !!(rf.areas && rf.areas.length);
+  hasEssentialsCb.checked = !!(ess.exerciseFormId || ess.reflectionFormId);
+  syncTierVisibility();
 
   var g = config.greeting || {};
   document.getElementById('fGreetingFresh').value = g.fresh || '';
@@ -752,6 +852,18 @@ function collectConfig() {
   });
 
   var hasResource = document.getElementById('fHasResource').checked;
+  var hasPdf = document.getElementById('fHasPdf').checked;
+
+  var resourceObj = null;
+  if (hasResource) {
+    resourceObj = {
+      title: document.getElementById('fResourceTitle').value.trim(),
+      text: document.getElementById('fResourceText').value.trim()
+    };
+    if (hasPdf) {
+      resourceObj.pdfUrl = document.getElementById('fResourcePdfUrl').value.trim();
+    }
+  }
 
   return {
     lessonId: document.getElementById('fLessonId').value.trim(),
@@ -759,10 +871,11 @@ function collectConfig() {
     nextLessonLabel: document.getElementById('fNextLessonLabel').value.trim(),
     video: { mediaId: document.getElementById('fMediaId').value.trim() },
     transcript: document.getElementById('fTranscript').value.trim(),
-    resource: hasResource ? {
-      title: document.getElementById('fResourceTitle').value.trim(),
-      text: document.getElementById('fResourceText').value.trim()
-    } : null,
+    resource: resourceObj,
+    essentials: {
+      exerciseFormId: document.getElementById('fExerciseFormId').value.trim(),
+      reflectionFormId: document.getElementById('fReflectionFormId').value.trim()
+    },
     reflectionFramework: {
       areas: areas,
       coachingApproach: document.getElementById('fCoachingApproach').value.trim(),
