@@ -22,7 +22,6 @@
   }
   .sub { color: #8a7a5e; font-size: 13px; margin-bottom: 28px; }
 
-  /* AUTH BAR */
   #authBar {
     background: #fff;
     border: 1px solid #e2d9c4;
@@ -58,7 +57,6 @@
 
   #panel { display: none; }
 
-  /* TOP-LEVEL TABS — Lesson Editor / Course Assistant */
   .top-tabs {
     display: flex;
     gap: 4px;
@@ -82,7 +80,39 @@
   .top-tab:hover { color: #3B2F24; }
   .top-tab.active { color: #3B2F24; border-bottom-color: #8a6630; }
 
-  /* TOOLBAR */
+  .sub-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ece2cc;
+  }
+  .sub-tab {
+    background: none;
+    border: none;
+    padding: 8px 14px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: #a99878;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    font-family: 'Inter', Arial, sans-serif;
+  }
+  .sub-tab:hover { color: #3B2F24; }
+  .sub-tab.active { color: #3B2F24; border-bottom-color: #C9A46C; }
+
+  #dashboardView {
+    background: #fff;
+    border: 1px solid #e2d9c4;
+    padding: 60px 22px;
+    text-align: center;
+    color: #a99878;
+    font-size: 13px;
+    font-style: italic;
+  }
+
   .toolbar {
     display: flex;
     gap: 10px;
@@ -100,11 +130,10 @@
     min-width: 240px;
   }
   .toolbar .spacer { flex: 1; }
-  #saveStatus { font-size: 12.5px; color: #666; font-style: italic; }
-  #saveStatus.ok { color: #2e7d32; font-style: normal; }
-  #saveStatus.err { color: #b3261e; font-style: normal; }
+  .save-status { font-size: 12.5px; color: #666; font-style: italic; }
+  .save-status.ok { color: #2e7d32; font-style: normal; }
+  .save-status.err { color: #b3261e; font-style: normal; }
 
-  /* SECTIONS */
   .card {
     background: #fff;
     border: 1px solid #e2d9c4;
@@ -124,7 +153,6 @@
     justify-content: space-between;
   }
 
-  /* ACCORDION (details/summary cards) */
   .card { padding: 0; }
   .card > summary.card-title {
     margin-bottom: 0;
@@ -147,12 +175,12 @@
   .card-body { padding: 18px 22px 20px; }
   .card > summary.card-title:hover { color: #000; }
 
-  #accordionBar {
+  .accordion-bar {
     display: flex;
     gap: 10px;
     margin-bottom: 16px;
   }
-  #accordionBar button {
+  .accordion-bar button {
     font-size: 12px;
     padding: 6px 12px;
   }
@@ -186,7 +214,6 @@
   .row2 { display: flex; gap: 16px; }
   .row2 .field { flex: 1; }
 
-  /* AREAS */
   .area-block {
     border: 1px solid #e2d9c4;
     background: #fbf8f1;
@@ -229,7 +256,6 @@
   }
   .add-btn:hover { background: #f5f0e6; color: #000; }
 
-  /* RESOURCE TOGGLE */
   .toggle-row {
     display: flex;
     align-items: center;
@@ -238,9 +264,8 @@
     color: #3B2F24;
     margin-bottom: 12px;
   }
-  #resourceFields.disabled { opacity: .4; pointer-events: none; }
+  .resource-fields.disabled { opacity: .4; pointer-events: none; }
 
-  /* TRANSLATIONS */
   .lang-block {
     border: 1px solid #e2d9c4;
     background: #fbf8f1;
@@ -275,7 +300,6 @@
     white-space: pre-wrap;
   }
 
-  /* COURSE ASSISTANT — chat UI */
   #courseAssistantView .card { padding: 0; margin-bottom: 0; }
   .chat-window { display: flex; flex-direction: column; height: 540px; }
   .chat-messages {
@@ -363,218 +387,306 @@
 <div id="panel">
 
   <div class="top-tabs">
-    <button class="top-tab active" id="tabLessonEditorBtn" type="button">Lesson Editor</button>
-    <button class="top-tab" id="tabCourseAssistantBtn" type="button">Course Assistant</button>
+    <button class="top-tab" id="tabDashboardBtn" type="button">Dashboard</button>
+    <button class="top-tab active" id="tabGuidedBtn" type="button">Guided</button>
+    <button class="top-tab" id="tabEssentialsBtn" type="button">Essentials</button>
   </div>
 
-  <div id="lessonEditorView">
-
-  <div class="toolbar">
-    <select id="lessonSelect"></select>
-    <button class="btn secondary" id="loadBtn" type="button">Load</button>
-    <button class="btn secondary" id="newLessonBtn" type="button">+ New Lesson</button>
-    <div class="spacer"></div>
-    <span id="saveStatus"></span>
-    <button class="btn" id="saveBtn" type="button">Save Lesson</button>
+  <div id="dashboardView" style="display:none;">
+    Dashboard &mdash; nothing here yet.
   </div>
 
-  <div id="accordionBar">
-    <button class="btn secondary" id="expandAllBtn" type="button">Expand all</button>
-    <button class="btn secondary" id="collapseAllBtn" type="button">Collapse all</button>
-  </div>
+  <div id="guidedView">
 
-  <details class="card" data-group="open" open>
-    <summary class="card-title">Tier content</summary>
-    <div class="card-body">
-    <span class="hint" style="display:block;margin-bottom:10px;">Controls which field groups show below. Purely an editing convenience &mdash; a lesson can have both, and unchecking one here does not delete its saved content.</span>
-    <div class="toggle-row">
-      <input type="checkbox" id="fHasGuided" checked />
-      <label for="fHasGuided" style="margin:0;">Guided / Mastery &mdash; AI Excavation Coach session</label>
+    <div class="sub-tabs">
+      <button class="sub-tab active" id="tabLessonEditorBtn" type="button">Lesson Editor</button>
+      <button class="sub-tab" id="tabCourseAssistantBtn" type="button">Course Assistant</button>
     </div>
-    <div class="toggle-row">
-      <input type="checkbox" id="fHasEssentials" />
-      <label for="fHasEssentials" style="margin:0;">Essentials &mdash; self-guided, Jotform exercise + reflection</label>
-    </div>
-  </div>
-  </details>
 
-  <details class="card" data-group="open" open>
-    <summary class="card-title">Lesson identity</summary>
-    <div class="card-body">
-    <div class="row2">
-      <div class="field">
-        <label for="fLessonId">Lesson ID</label>
-        <span class="hint">e.g. 1.1, 2.3, 4.2</span>
-        <input type="text" id="fLessonId" placeholder="1.1" />
+    <div id="lessonEditorView">
+
+      <div class="toolbar">
+        <select id="gLessonSelect"></select>
+        <button class="btn secondary" id="gLoadBtn" type="button">Load</button>
+        <button class="btn secondary" id="gNewLessonBtn" type="button">+ New Lesson</button>
+        <div class="spacer"></div>
+        <span class="save-status" id="gSaveStatus"></span>
+        <button class="btn" id="gSaveBtn" type="button">Save Lesson</button>
       </div>
-      <div class="field">
-        <label for="fNextLessonLabel">Next lesson label</label>
-        <span class="hint">Used in the coach's closing message</span>
-        <input type="text" id="fNextLessonLabel" placeholder="Lecture 1.2" />
-      </div>
-    </div>
-    <div class="field">
-      <label for="fScopeNote">Scope note</label>
-      <span class="hint">How the coach refers to this lesson internally &mdash; e.g. "Lecture 2.1 - Empty Your Cup"</span>
-      <input type="text" id="fScopeNote" placeholder="Lecture 1.1 - Welcome and What to Expect" />
-    </div>
-  </div>
-  </details>
 
-  <details class="card" data-group="open" open>
-    <summary class="card-title">Video</summary>
-    <div class="card-body">
-    <div class="field">
-      <label for="fMediaId">Wistia media ID</label>
-      <input type="text" id="fMediaId" placeholder="0owdas4mfp" />
-    </div>
-  </div>
-  </details>
+      <div class="accordion-bar">
+        <button class="btn secondary" id="gExpandAllBtn" type="button">Expand all</button>
+        <button class="btn secondary" id="gCollapseAllBtn" type="button">Collapse all</button>
+      </div>
 
-  <details class="card" data-group="open" open>
-    <summary class="card-title">Lecture transcript</summary>
-    <div class="card-body">
-    <div class="field">
-      <textarea id="fTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
-    </div>
-  </div>
-  </details>
-
-  <details class="card" data-group="plain">
-    <summary class="card-title">Resource</summary>
-    <div class="card-body">
-    <div class="toggle-row">
-      <input type="checkbox" id="fHasResource" />
-      <label for="fHasResource" style="margin:0;">This lesson has a resource</label>
-    </div>
-    <div id="resourceFields" class="disabled">
-      <div class="field">
-        <label for="fResourceTitle">Resource title</label>
-        <span class="hint">Shown on the labeled bar above the resource content</span>
-        <input type="text" id="fResourceTitle" placeholder="Empty Your Cup &mdash; White Paper" />
-      </div>
-      <div class="field">
-        <label for="fResourceText">Resource content</label>
-        <span class="hint">Plain text &mdash; renders inline on the lecture page</span>
-        <textarea id="fResourceText" rows="6"></textarea>
-      </div>
-      <div class="toggle-row">
-        <input type="checkbox" id="fHasPdf" />
-        <label for="fHasPdf" style="margin:0;">This resource includes a PDF (displays inline, no click needed)</label>
-      </div>
-      <div id="pdfFields" class="disabled">
+      <details class="card" data-group="open" open>
+        <summary class="card-title">Lesson identity</summary>
+        <div class="card-body">
+        <div class="row2">
+          <div class="field">
+            <label for="gLessonId">Lesson ID</label>
+            <span class="hint">e.g. 1.1, 2.3, 4.2</span>
+            <input type="text" id="gLessonId" placeholder="1.1" />
+          </div>
+          <div class="field">
+            <label for="gNextLessonLabel">Next lesson label</label>
+            <span class="hint">Used in the coach's closing message</span>
+            <input type="text" id="gNextLessonLabel" placeholder="Lecture 1.2" />
+          </div>
+        </div>
         <div class="field">
-          <label for="fResourcePdfUrl">PDF URL</label>
-          <span class="hint">Direct link to the PDF file &mdash; e.g. hosted on GitHub Pages</span>
-          <input type="text" id="fResourcePdfUrl" placeholder="https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf" />
+          <label for="gScopeNote">Scope note</label>
+          <span class="hint">How the coach refers to this lesson internally &mdash; e.g. "Lecture 2.1 - Empty Your Cup"</span>
+          <input type="text" id="gScopeNote" placeholder="Lecture 1.1 - Welcome and What to Expect" />
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="open" open>
+        <summary class="card-title">Video</summary>
+        <div class="card-body">
+        <div class="field">
+          <label for="gMediaId">Wistia media ID</label>
+          <input type="text" id="gMediaId" placeholder="0owdas4mfp" />
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="open" open>
+        <summary class="card-title">Lecture transcript</summary>
+        <div class="card-body">
+        <div class="field">
+          <textarea id="gTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="plain">
+        <summary class="card-title">Resource</summary>
+        <div class="card-body">
+        <div class="toggle-row">
+          <input type="checkbox" id="gHasResource" />
+          <label for="gHasResource" style="margin:0;">This lesson has a resource</label>
+        </div>
+        <div id="gResourceFields" class="resource-fields disabled">
+          <div class="field">
+            <label for="gResourceTitle">Resource title</label>
+            <span class="hint">Shown on the labeled bar above the resource content</span>
+            <input type="text" id="gResourceTitle" placeholder="Empty Your Cup &mdash; White Paper" />
+          </div>
+          <div class="field">
+            <label for="gResourceText">Resource content</label>
+            <span class="hint">Plain text &mdash; renders inline on the lecture page</span>
+            <textarea id="gResourceText" rows="6"></textarea>
+          </div>
+          <div class="toggle-row">
+            <input type="checkbox" id="gHasPdf" />
+            <label for="gHasPdf" style="margin:0;">This resource includes a PDF (displays inline, no click needed)</label>
+          </div>
+          <div id="gPdfFields" class="resource-fields disabled">
+            <div class="field">
+              <label for="gResourcePdfUrl">PDF URL</label>
+              <span class="hint">Direct link to the PDF file &mdash; e.g. hosted on GitHub Pages</span>
+              <input type="text" id="gResourcePdfUrl" placeholder="https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf" />
+            </div>
+          </div>
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="auto">
+        <summary class="card-title">Reflection framework &mdash; areas</summary>
+        <div class="card-body">
+        <div id="gAreasList"></div>
+        <button class="add-btn" id="gAddAreaBtn" type="button">+ Add area</button>
+      </div>
+      </details>
+
+      <details class="card" data-group="auto">
+        <summary class="card-title">Coaching approach (coach-only)</summary>
+        <div class="card-body">
+        <div class="field">
+          <span class="hint">Private instructional guidance for the AI on how to conduct THIS lesson's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student, and separate from the resource document. Optional &mdash; most lessons will not need this.</span>
+          <textarea id="gCoachingApproach" rows="5"></textarea>
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="auto">
+        <summary class="card-title">Calibration examples</summary>
+        <div class="card-body">
+        <div class="field">
+          <span class="hint">One per line. Shown to the coach only, never to the student.</span>
+          <textarea id="gCalibration" rows="4"></textarea>
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="plain">
+        <summary class="card-title">Greeting</summary>
+        <div class="card-body">
+        <div class="field">
+          <label for="gGreetingFresh">First-time greeting</label>
+          <span class="hint">Shown instantly, before the student has been asked their name</span>
+          <textarea id="gGreetingFresh" rows="3"></textarea>
+        </div>
+        <div class="field">
+          <label for="gGreetingKnown">Returning-student greeting</label>
+          <span class="hint">Use the literal text {name} where the student's name should appear</span>
+          <textarea id="gGreetingKnown" rows="3"></textarea>
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="plain">
+        <summary class="card-title">Greeting translations (optional)</summary>
+        <div class="card-body">
+        <div class="field">
+          <span class="hint">Lessons without a translation for a language fall back to English automatically &mdash; these do not need to be filled in before launch.</span>
+        </div>
+        <div id="gTranslationsList"></div>
+        <div class="add-lang-row">
+          <select id="gAddLangSelect"></select>
+          <button class="btn secondary" id="gAddLangBtn" type="button">+ Add language</button>
+        </div>
+      </div>
+      </details>
+
+      <details class="json-preview">
+        <summary>View raw config JSON (for reference / debugging)</summary>
+        <pre id="gJsonPreview"></pre>
+      </details>
+
+    </div>
+
+    <div id="courseAssistantView" style="display:none;">
+      <div class="card">
+        <div class="chat-window">
+          <div class="chat-messages" id="chatMessages">
+            <div class="chat-empty" id="chatEmptyState">Ask about continuity across Guided lessons &mdash; tone, repeated questions, whether a reflection area overlaps one already covered elsewhere. This reads your saved Guided lesson configs; it doesn't write to them. Essentials lessons have no AI coach, so they aren't part of this corpus.</div>
+          </div>
+          <div class="chat-options-row">
+            <input type="checkbox" id="chatIncludeTranscripts" />
+            <label for="chatIncludeTranscripts">Include full transcripts &amp; resource text (slower, more context)</label>
+          </div>
+          <div class="chat-input-row">
+            <textarea id="chatInput" rows="2" placeholder="e.g. Does 3.2's reflection overlap with anything in 2.2?"></textarea>
+            <button class="btn" id="chatSendBtn" type="button">Send</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  </details>
 
-  <div id="guidedCardGroup">
-  <details class="card" data-group="auto">
-    <summary class="card-title">Reflection framework &mdash; areas</summary>
-    <div class="card-body">
-    <div id="areasList"></div>
-    <button class="add-btn" id="addAreaBtn" type="button">+ Add area</button>
   </div>
-  </details>
 
-  <details class="card" data-group="auto">
-    <summary class="card-title">Coaching approach (coach-only)</summary>
-    <div class="card-body">
-    <div class="field">
-      <span class="hint">Private instructional guidance for the AI on how to conduct THIS lesson's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student, and separate from the resource document. Optional &mdash; most lessons will not need this.</span>
-      <textarea id="fCoachingApproach" rows="5"></textarea>
+  <div id="essentialsView" style="display:none;">
+
+    <div class="toolbar">
+      <select id="eLessonSelect"></select>
+      <button class="btn secondary" id="eLoadBtn" type="button">Load</button>
+      <button class="btn secondary" id="eNewLessonBtn" type="button">+ New Lesson</button>
+      <div class="spacer"></div>
+      <span class="save-status" id="eSaveStatus"></span>
+      <button class="btn" id="eSaveBtn" type="button">Save Lesson</button>
     </div>
-  </div>
-  </details>
 
-  <details class="card" data-group="auto">
-    <summary class="card-title">Calibration examples</summary>
-    <div class="card-body">
-    <div class="field">
-      <span class="hint">One per line. Shown to the coach only, never to the student.</span>
-      <textarea id="fCalibration" rows="4"></textarea>
-    </div>
-  </div>
-  </details>
-
-  <details class="card" data-group="plain">
-    <summary class="card-title">Greeting</summary>
-    <div class="card-body">
-    <div class="field">
-      <label for="fGreetingFresh">First-time greeting</label>
-      <span class="hint">Shown instantly, before the student has been asked their name</span>
-      <textarea id="fGreetingFresh" rows="3"></textarea>
-    </div>
-    <div class="field">
-      <label for="fGreetingKnown">Returning-student greeting</label>
-      <span class="hint">Use the literal text {name} where the student's name should appear</span>
-      <textarea id="fGreetingKnown" rows="3"></textarea>
-    </div>
-  </div>
-  </details>
-
-  <details class="card" data-group="plain">
-    <summary class="card-title">Greeting translations (optional)</summary>
-    <div class="card-body">
-    <div class="field">
-      <span class="hint">Lessons without a translation for a language fall back to English automatically &mdash; these do not need to be filled in before launch.</span>
-    </div>
-    <div id="translationsList"></div>
-    <div class="add-lang-row">
-      <select id="addLangSelect"></select>
-      <button class="btn secondary" id="addLangBtn" type="button">+ Add language</button>
-    </div>
-  </div>
-  </details>
-  </div>
-
-  <div id="essentialsCardGroup">
-  <details class="card" data-group="plain">
-    <summary class="card-title">Essentials &mdash; Jotform tabs</summary>
-    <div class="card-body">
-    <span class="hint" style="display:block;margin-bottom:10px;">Video, transcript, and resource above are shared with Guided/Mastery. These two fields are Essentials-only: the self-guided lesson page shows an Exercise tab and a Reflection tab, each embedding the matching Jotform form.</span>
-    <div class="field">
-      <label for="fExerciseFormId">Exercise &mdash; Jotform form ID</label>
-      <span class="hint">From the form's Jotform URL or share settings</span>
-      <input type="text" id="fExerciseFormId" placeholder="241234567890123" />
-    </div>
-    <div class="field">
-      <label for="fReflectionFormId">Reflection &mdash; Jotform form ID</label>
-      <span class="hint">From the form's Jotform URL or share settings</span>
-      <input type="text" id="fReflectionFormId" placeholder="241234567890124" />
-    </div>
-  </div>
-  </details>
-  </div>
-
-  <details class="json-preview">
-    <summary>View raw config JSON (for reference / debugging)</summary>
-    <pre id="jsonPreview"></pre>
-  </details>
-
-  </div>
-
-  <div id="courseAssistantView" style="display:none;">
-    <div class="card">
-      <div class="chat-window">
-        <div class="chat-messages" id="chatMessages">
-          <div class="chat-empty" id="chatEmptyState">Ask about continuity across lessons &mdash; tone, repeated questions, whether a reflection area overlaps one already covered elsewhere. This reads your saved lesson configs; it doesn't write to them.</div>
+    <details class="card" data-group="open" open>
+      <summary class="card-title">Lesson identity</summary>
+      <div class="card-body">
+      <div class="row2">
+        <div class="field">
+          <label for="eLessonId">Lesson ID</label>
+          <span class="hint">e.g. 1.1, 2.3, 4.2</span>
+          <input type="text" id="eLessonId" placeholder="1.1" />
         </div>
-        <div class="chat-options-row">
-          <input type="checkbox" id="chatIncludeTranscripts" />
-          <label for="chatIncludeTranscripts">Include full transcripts &amp; resource text (slower, more context)</label>
+        <div class="field">
+          <label for="eNextLessonLabel">Next lesson label</label>
+          <span class="hint">Shown on the page as the link to the next lesson</span>
+          <input type="text" id="eNextLessonLabel" placeholder="Lecture 1.2" />
         </div>
-        <div class="chat-input-row">
-          <textarea id="chatInput" rows="2" placeholder="e.g. Does 3.2's reflection overlap with anything in 2.2?"></textarea>
-          <button class="btn" id="chatSendBtn" type="button">Send</button>
+      </div>
+      <div class="field">
+        <label for="eScopeNote">Scope note</label>
+        <span class="hint">Internal reference label for this lesson</span>
+        <input type="text" id="eScopeNote" placeholder="Lecture 1.1 - Welcome and What to Expect" />
+      </div>
+    </div>
+    </details>
+
+    <details class="card" data-group="open" open>
+      <summary class="card-title">Video</summary>
+      <div class="card-body">
+      <div class="field">
+        <label for="eMediaId">Wistia media ID</label>
+        <input type="text" id="eMediaId" placeholder="0owdas4mfp" />
+      </div>
+    </div>
+    </details>
+
+    <details class="card" data-group="open" open>
+      <summary class="card-title">Lecture transcript</summary>
+      <div class="card-body">
+      <div class="field">
+        <textarea id="eTranscript" rows="6" placeholder="Full transcript text shown on the lecture page..."></textarea>
+      </div>
+    </div>
+    </details>
+
+    <details class="card" data-group="plain">
+      <summary class="card-title">Resource</summary>
+      <div class="card-body">
+      <div class="toggle-row">
+        <input type="checkbox" id="eHasResource" />
+        <label for="eHasResource" style="margin:0;">This lesson has a resource</label>
+      </div>
+      <div id="eResourceFields" class="resource-fields disabled">
+        <div class="field">
+          <label for="eResourceTitle">Resource title</label>
+          <span class="hint">Shown on the labeled bar above the resource content</span>
+          <input type="text" id="eResourceTitle" placeholder="Empty Your Cup &mdash; White Paper" />
+        </div>
+        <div class="field">
+          <label for="eResourceText">Resource content</label>
+          <span class="hint">Plain text &mdash; renders inline on the lecture page</span>
+          <textarea id="eResourceText" rows="6"></textarea>
+        </div>
+        <div class="toggle-row">
+          <input type="checkbox" id="eHasPdf" />
+          <label for="eHasPdf" style="margin:0;">This resource includes a PDF (displays inline, no click needed)</label>
+        </div>
+        <div id="ePdfFields" class="resource-fields disabled">
+          <div class="field">
+            <label for="eResourcePdfUrl">PDF URL</label>
+            <span class="hint">Direct link to the PDF file &mdash; e.g. hosted on GitHub Pages</span>
+            <input type="text" id="eResourcePdfUrl" placeholder="https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf" />
+          </div>
         </div>
       </div>
     </div>
+    </details>
+
+    <details class="card" data-group="open" open>
+      <summary class="card-title">Essentials &mdash; Jotform tabs</summary>
+      <div class="card-body">
+      <span class="hint" style="display:block;margin-bottom:10px;">The self-guided lesson page shows an Exercise tab and a Reflection tab, each embedding the matching Jotform form. There is no AI coach on Essentials pages.</span>
+      <div class="field">
+        <label for="eExerciseFormId">Exercise &mdash; Jotform form ID</label>
+        <span class="hint">From the form's Jotform URL or share settings</span>
+        <input type="text" id="eExerciseFormId" placeholder="241234567890123" />
+      </div>
+      <div class="field">
+        <label for="eReflectionFormId">Reflection &mdash; Jotform form ID</label>
+        <span class="hint">From the form's Jotform URL or share settings</span>
+        <input type="text" id="eReflectionFormId" placeholder="241234567890124" />
+      </div>
+    </div>
+    </details>
+
+    <details class="json-preview">
+      <summary>View raw config JSON (for reference / debugging)</summary>
+      <pre id="eJsonPreview"></pre>
+    </details>
+
   </div>
 
 </div>
@@ -589,11 +701,7 @@ var LANGUAGES = [
 ];
 
 var adminKey = '';
-var areaCounter = 0;
-
-/* ---------------------------------------------------------
-   AUTH
-   --------------------------------------------------------- */
+var gAreaCounter = 0;
 
 var authInput = document.getElementById('adminKeyInput');
 var authStatus = document.getElementById('authStatus');
@@ -611,7 +719,7 @@ function unlock() {
   authStatus.textContent = 'Checking...';
   authStatus.className = '';
 
-  fetch(PROXY_URL + '/lesson-configs', {
+  fetch(PROXY_URL + '/lesson-configs?tier=guided', {
     headers: { 'X-Stratum-Admin-Key': key }
   })
     .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
@@ -622,7 +730,8 @@ function unlock() {
         authStatus.textContent = 'Unlocked.';
         authStatus.className = 'ok';
         panel.style.display = 'block';
-        populateLessonSelect(result.data.lessons || []);
+        populateSelect(gLessonSelect, result.data.lessons || []);
+        refreshEssentialsList();
       } else {
         authStatus.textContent = 'Key rejected. Check it matches STRATUM_ADMIN_KEY on the Worker.';
         authStatus.className = '';
@@ -634,9 +743,25 @@ function unlock() {
     });
 }
 
-/* ---------------------------------------------------------
-   TOP-LEVEL TABS
-   --------------------------------------------------------- */
+var tabDashboardBtn = document.getElementById('tabDashboardBtn');
+var tabGuidedBtn = document.getElementById('tabGuidedBtn');
+var tabEssentialsBtn = document.getElementById('tabEssentialsBtn');
+var dashboardView = document.getElementById('dashboardView');
+var guidedView = document.getElementById('guidedView');
+var essentialsView = document.getElementById('essentialsView');
+
+function showTopTab(which) {
+  tabDashboardBtn.className = 'top-tab' + (which === 'dashboard' ? ' active' : '');
+  tabGuidedBtn.className = 'top-tab' + (which === 'guided' ? ' active' : '');
+  tabEssentialsBtn.className = 'top-tab' + (which === 'essentials' ? ' active' : '');
+  dashboardView.style.display = which === 'dashboard' ? '' : 'none';
+  guidedView.style.display = which === 'guided' ? '' : 'none';
+  essentialsView.style.display = which === 'essentials' ? '' : 'none';
+}
+
+tabDashboardBtn.addEventListener('click', function () { showTopTab('dashboard'); });
+tabGuidedBtn.addEventListener('click', function () { showTopTab('guided'); });
+tabEssentialsBtn.addEventListener('click', function () { showTopTab('essentials'); });
 
 var tabLessonEditorBtn = document.getElementById('tabLessonEditorBtn');
 var tabCourseAssistantBtn = document.getElementById('tabCourseAssistantBtn');
@@ -644,22 +769,18 @@ var lessonEditorView = document.getElementById('lessonEditorView');
 var courseAssistantView = document.getElementById('courseAssistantView');
 
 tabLessonEditorBtn.addEventListener('click', function () {
-  tabLessonEditorBtn.className = 'top-tab active';
-  tabCourseAssistantBtn.className = 'top-tab';
+  tabLessonEditorBtn.className = 'sub-tab active';
+  tabCourseAssistantBtn.className = 'sub-tab';
   lessonEditorView.style.display = '';
   courseAssistantView.style.display = 'none';
 });
 
 tabCourseAssistantBtn.addEventListener('click', function () {
-  tabCourseAssistantBtn.className = 'top-tab active';
-  tabLessonEditorBtn.className = 'top-tab';
+  tabCourseAssistantBtn.className = 'sub-tab active';
+  tabLessonEditorBtn.className = 'sub-tab';
   courseAssistantView.style.display = '';
   lessonEditorView.style.display = 'none';
 });
-
-/* ---------------------------------------------------------
-   COURSE ASSISTANT — chat
-   --------------------------------------------------------- */
 
 var chatHistory = [];
 var chatMessages = document.getElementById('chatMessages');
@@ -740,61 +861,59 @@ chatInput.addEventListener('keydown', function (e) {
   }
 });
 
-/* ---------------------------------------------------------
-   LESSON SELECTOR
-   --------------------------------------------------------- */
-
-var lessonSelect = document.getElementById('lessonSelect');
-
-function populateLessonSelect(lessons) {
-  lessonSelect.innerHTML = '';
-  if (lessons.length === 0) {
+function populateSelect(selectEl, lessons) {
+  selectEl.innerHTML = '';
+  if (!lessons || lessons.length === 0) {
     var opt = document.createElement('option');
     opt.textContent = 'No lessons saved yet';
     opt.value = '';
-    lessonSelect.appendChild(opt);
+    selectEl.appendChild(opt);
     return;
   }
   lessons.forEach(function (l) {
     var opt = document.createElement('option');
     opt.value = l.lesson_id;
     opt.textContent = l.lesson_id + '  (updated ' + (l.updated_at || 'unknown') + ')';
-    lessonSelect.appendChild(opt);
+    selectEl.appendChild(opt);
   });
 }
 
-document.getElementById('loadBtn').addEventListener('click', function () {
-  var id = lessonSelect.value;
+var gLessonSelect = document.getElementById('gLessonSelect');
+var gAreasList = document.getElementById('gAreasList');
+var gResourceFields = document.getElementById('gResourceFields');
+var gPdfFields = document.getElementById('gPdfFields');
+var gHasResourceCb = document.getElementById('gHasResource');
+var gHasPdfCb = document.getElementById('gHasPdf');
+var gTranslationsList = document.getElementById('gTranslationsList');
+var gAddLangSelect = document.getElementById('gAddLangSelect');
+var gSaveStatus = document.getElementById('gSaveStatus');
+
+document.getElementById('gLoadBtn').addEventListener('click', function () {
+  var id = gLessonSelect.value;
   if (!id) return;
-  loadLesson(id);
+  loadGuidedLesson(id);
 });
 
-document.getElementById('newLessonBtn').addEventListener('click', function () {
-  var id = prompt('New lesson ID (e.g. 1.2):');
+document.getElementById('gNewLessonBtn').addEventListener('click', function () {
+  var id = prompt('New Guided lesson ID (e.g. 1.2):');
   if (!id) return;
-  clearForm();
-  document.getElementById('fLessonId').value = id.trim();
+  clearGuidedForm();
+  document.getElementById('gLessonId').value = id.trim();
 });
 
-function loadLesson(lessonId) {
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId))
+function loadGuidedLesson(lessonId) {
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided')
     .then(function (r) { return r.json(); })
     .then(function (d) {
-      if (!d || !d.known) { alert('No config found for ' + lessonId + ' yet.'); return; }
-      fillForm(d.config);
+      if (!d || !d.known) { alert('No Guided config found for ' + lessonId + ' yet.'); return; }
+      fillGuidedForm(d.config);
     })
     .catch(function () { alert('Could not load that lesson.'); });
 }
 
-/* ---------------------------------------------------------
-   AREAS (reflection framework)
-   --------------------------------------------------------- */
-
-var areasList = document.getElementById('areasList');
-
-function addAreaBlock(title, instructions) {
-  areaCounter++;
-  var id = 'area_' + areaCounter;
+function gAddAreaBlock(title, instructions) {
+  gAreaCounter++;
+  var id = 'garea_' + gAreaCounter;
 
   var block = document.createElement('div');
   block.className = 'area-block';
@@ -820,7 +939,7 @@ function addAreaBlock(title, instructions) {
   removeBtn.textContent = 'Remove';
   removeBtn.addEventListener('click', function () {
     block.remove();
-    renumberAreas();
+    gRenumberAreas();
   });
   head.appendChild(removeBtn);
 
@@ -833,37 +952,28 @@ function addAreaBlock(title, instructions) {
   instrTextarea.value = instructions || '';
   block.appendChild(instrTextarea);
 
-  areasList.appendChild(block);
-  renumberAreas();
+  gAreasList.appendChild(block);
+  gRenumberAreas();
 }
 
-function renumberAreas() {
-  var blocks = areasList.querySelectorAll('.area-block');
+function gRenumberAreas() {
+  var blocks = gAreasList.querySelectorAll('.area-block');
   blocks.forEach(function (b, i) {
     b.querySelector('.area-num').textContent = (i + 1);
   });
 }
 
-document.getElementById('addAreaBtn').addEventListener('click', function () {
-  addAreaBlock('', '');
+document.getElementById('gAddAreaBtn').addEventListener('click', function () {
+  gAddAreaBlock('', '');
 });
 
-/* ---------------------------------------------------------
-   RESOURCE TOGGLE
-   --------------------------------------------------------- */
-
-var hasResourceCb = document.getElementById('fHasResource');
-
-// ACCORDION -- expand/collapse all, and auto-expand "auto" group cards
-// (Reflection areas, Coaching approach, Calibration examples) the moment
-// the user starts typing in them, so drafting never fights the UI.
-document.getElementById('expandAllBtn').addEventListener('click', function () {
-  document.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
+document.getElementById('gExpandAllBtn').addEventListener('click', function () {
+  lessonEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
 });
-document.getElementById('collapseAllBtn').addEventListener('click', function () {
-  document.querySelectorAll('details.card').forEach(function (d) { d.open = false; });
+document.getElementById('gCollapseAllBtn').addEventListener('click', function () {
+  lessonEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = false; });
 });
-document.querySelectorAll('details.card[data-group="auto"]').forEach(function (card) {
+lessonEditorView.querySelectorAll('details.card[data-group="auto"]').forEach(function (card) {
   card.addEventListener('input', function () {
     if (!card.open) card.open = true;
   });
@@ -871,64 +981,29 @@ document.querySelectorAll('details.card[data-group="auto"]').forEach(function (c
     if (!card.open) card.open = true;
   });
 });
-var resourceFields = document.getElementById('resourceFields');
 
-hasResourceCb.addEventListener('change', function () {
-  resourceFields.className = hasResourceCb.checked ? '' : 'disabled';
+gHasResourceCb.addEventListener('change', function () {
+  gResourceFields.className = 'resource-fields' + (gHasResourceCb.checked ? '' : ' disabled');
+});
+gHasPdfCb.addEventListener('change', function () {
+  gPdfFields.className = 'resource-fields' + (gHasPdfCb.checked ? '' : ' disabled');
 });
 
-/* ---------------------------------------------------------
-   PDF TOGGLE (inside Resource)
-   --------------------------------------------------------- */
-
-var hasPdfCb = document.getElementById('fHasPdf');
-var pdfFields = document.getElementById('pdfFields');
-
-hasPdfCb.addEventListener('change', function () {
-  pdfFields.className = hasPdfCb.checked ? '' : 'disabled';
-});
-
-/* ---------------------------------------------------------
-   TIER TOGGLES — editing-convenience visibility only, does not
-   affect what gets saved. A lesson can have both Guided and
-   Essentials content regardless of which boxes are checked here.
-   --------------------------------------------------------- */
-
-var hasGuidedCb = document.getElementById('fHasGuided');
-var hasEssentialsCb = document.getElementById('fHasEssentials');
-var guidedCardGroup = document.getElementById('guidedCardGroup');
-var essentialsCardGroup = document.getElementById('essentialsCardGroup');
-
-function syncTierVisibility() {
-  guidedCardGroup.style.display = hasGuidedCb.checked ? '' : 'none';
-  essentialsCardGroup.style.display = hasEssentialsCb.checked ? '' : 'none';
-}
-hasGuidedCb.addEventListener('change', syncTierVisibility);
-hasEssentialsCb.addEventListener('change', syncTierVisibility);
-syncTierVisibility();
-
-/* ---------------------------------------------------------
-   TRANSLATIONS
-   --------------------------------------------------------- */
-
-var translationsList = document.getElementById('translationsList');
-var addLangSelect = document.getElementById('addLangSelect');
-
-function refreshAddLangOptions() {
+function gRefreshAddLangOptions() {
   var existing = Array.prototype.map.call(
-    translationsList.querySelectorAll('.lang-block'),
+    gTranslationsList.querySelectorAll('.lang-block'),
     function (b) { return b.dataset.lang; }
   );
-  addLangSelect.innerHTML = '';
+  gAddLangSelect.innerHTML = '';
   LANGUAGES.filter(function (l) { return existing.indexOf(l) === -1; }).forEach(function (l) {
     var opt = document.createElement('option');
     opt.value = l;
     opt.textContent = l;
-    addLangSelect.appendChild(opt);
+    gAddLangSelect.appendChild(opt);
   });
 }
 
-function addLangBlock(lang, fresh, known) {
+function gAddLangBlock(lang, fresh, known) {
   var block = document.createElement('div');
   block.className = 'lang-block';
   block.dataset.lang = lang;
@@ -943,7 +1018,7 @@ function addLangBlock(lang, fresh, known) {
   removeBtn.textContent = 'Remove';
   removeBtn.addEventListener('click', function () {
     block.remove();
-    refreshAddLangOptions();
+    gRefreshAddLangOptions();
   });
   head.appendChild(removeBtn);
   block.appendChild(head);
@@ -972,187 +1047,159 @@ function addLangBlock(lang, fresh, known) {
   knownField.appendChild(knownTa);
   block.appendChild(knownField);
 
-  translationsList.appendChild(block);
-  refreshAddLangOptions();
+  gTranslationsList.appendChild(block);
+  gRefreshAddLangOptions();
 }
 
-document.getElementById('addLangBtn').addEventListener('click', function () {
-  var lang = addLangSelect.value;
+document.getElementById('gAddLangBtn').addEventListener('click', function () {
+  var lang = gAddLangSelect.value;
   if (!lang) return;
-  addLangBlock(lang, '', '');
+  gAddLangBlock(lang, '', '');
 });
 
-/* ---------------------------------------------------------
-   FORM <-> CONFIG OBJECT
-   --------------------------------------------------------- */
-
-function clearForm() {
-  document.getElementById('fLessonId').value = '';
-  document.getElementById('fNextLessonLabel').value = '';
-  document.getElementById('fScopeNote').value = '';
-  document.getElementById('fMediaId').value = '';
-  document.getElementById('fTranscript').value = '';
-  document.getElementById('fHasResource').checked = false;
-  resourceFields.className = 'disabled';
-  document.getElementById('fResourceTitle').value = '';
-  document.getElementById('fResourceText').value = '';
-  document.getElementById('fHasPdf').checked = false;
-  pdfFields.className = 'disabled';
-  document.getElementById('fResourcePdfUrl').value = '';
-  document.getElementById('fExerciseFormId').value = '';
-  document.getElementById('fReflectionFormId').value = '';
-  hasGuidedCb.checked = true;
-  hasEssentialsCb.checked = false;
-  syncTierVisibility();
-  areasList.innerHTML = '';
-  document.getElementById('fCoachingApproach').value = '';
-  document.getElementById('fCalibration').value = '';
-  document.getElementById('fGreetingFresh').value = '';
-  document.getElementById('fGreetingKnown').value = '';
-  translationsList.innerHTML = '';
-  refreshAddLangOptions();
-  updateJsonPreview();
+function clearGuidedForm() {
+  document.getElementById('gLessonId').value = '';
+  document.getElementById('gNextLessonLabel').value = '';
+  document.getElementById('gScopeNote').value = '';
+  document.getElementById('gMediaId').value = '';
+  document.getElementById('gTranscript').value = '';
+  gHasResourceCb.checked = false;
+  gResourceFields.className = 'resource-fields disabled';
+  document.getElementById('gResourceTitle').value = '';
+  document.getElementById('gResourceText').value = '';
+  gHasPdfCb.checked = false;
+  gPdfFields.className = 'resource-fields disabled';
+  document.getElementById('gResourcePdfUrl').value = '';
+  gAreasList.innerHTML = '';
+  document.getElementById('gCoachingApproach').value = '';
+  document.getElementById('gCalibration').value = '';
+  document.getElementById('gGreetingFresh').value = '';
+  document.getElementById('gGreetingKnown').value = '';
+  gTranslationsList.innerHTML = '';
+  gRefreshAddLangOptions();
+  updateGuidedJsonPreview();
 }
 
-function fillForm(config) {
-  clearForm();
+function fillGuidedForm(config) {
+  clearGuidedForm();
 
-  document.getElementById('fLessonId').value = config.lessonId || '';
-  document.getElementById('fNextLessonLabel').value = config.nextLessonLabel || '';
-  document.getElementById('fScopeNote').value = config.scopeNote || '';
-  document.getElementById('fMediaId').value = (config.video && config.video.mediaId) || '';
-  document.getElementById('fTranscript').value = config.transcript || '';
+  document.getElementById('gLessonId').value = config.lessonId || '';
+  document.getElementById('gNextLessonLabel').value = config.nextLessonLabel || '';
+  document.getElementById('gScopeNote').value = config.scopeNote || '';
+  document.getElementById('gMediaId').value = (config.video && config.video.mediaId) || '';
+  document.getElementById('gTranscript').value = config.transcript || '';
 
   if (config.resource && config.resource.title) {
-    document.getElementById('fHasResource').checked = true;
-    resourceFields.className = '';
-    document.getElementById('fResourceTitle').value = config.resource.title || '';
-    document.getElementById('fResourceText').value = config.resource.text || '';
+    gHasResourceCb.checked = true;
+    gResourceFields.className = 'resource-fields';
+    document.getElementById('gResourceTitle').value = config.resource.title || '';
+    document.getElementById('gResourceText').value = config.resource.text || '';
     if (config.resource.pdfUrl) {
-      document.getElementById('fHasPdf').checked = true;
-      pdfFields.className = '';
-      document.getElementById('fResourcePdfUrl').value = config.resource.pdfUrl;
+      gHasPdfCb.checked = true;
+      gPdfFields.className = 'resource-fields';
+      document.getElementById('gResourcePdfUrl').value = config.resource.pdfUrl;
     }
   }
 
-  var ess = config.essentials || {};
-  document.getElementById('fExerciseFormId').value = ess.exerciseFormId || '';
-  document.getElementById('fReflectionFormId').value = ess.reflectionFormId || '';
-
   var rf = config.reflectionFramework || {};
-  (rf.areas || []).forEach(function (a) { addAreaBlock(a.title, a.instructions); });
-  document.getElementById('fCoachingApproach').value = rf.coachingApproach || '';
-  document.getElementById('fCalibration').value = (rf.calibrationExamples || []).join('\n');
-
-  // Tier checkboxes reflect what this lesson actually has, so returning to
-  // an edit shows the right groups open without Ted re-deciding each time.
-  hasGuidedCb.checked = !!(rf.areas && rf.areas.length);
-  hasEssentialsCb.checked = !!(ess.exerciseFormId || ess.reflectionFormId);
-  syncTierVisibility();
+  (rf.areas || []).forEach(function (a) { gAddAreaBlock(a.title, a.instructions); });
+  document.getElementById('gCoachingApproach').value = rf.coachingApproach || '';
+  document.getElementById('gCalibration').value = (rf.calibrationExamples || []).join('\n');
 
   var g = config.greeting || {};
-  document.getElementById('fGreetingFresh').value = g.fresh || '';
-  document.getElementById('fGreetingKnown').value = g.knownTemplate || '';
+  document.getElementById('gGreetingFresh').value = g.fresh || '';
+  document.getElementById('gGreetingKnown').value = g.knownTemplate || '';
 
   var translations = g.translations || {};
   Object.keys(translations).forEach(function (lang) {
-    addLangBlock(lang, translations[lang].fresh, translations[lang].known);
+    gAddLangBlock(lang, translations[lang].fresh, translations[lang].known);
   });
 
-  updateJsonPreview();
+  updateGuidedJsonPreview();
 }
 
-function collectConfig() {
+function collectGuidedConfig() {
   var areas = [];
-  areasList.querySelectorAll('.area-block').forEach(function (b) {
+  gAreasList.querySelectorAll('.area-block').forEach(function (b) {
     var title = b.querySelector('.area-title').value.trim();
     var instructions = b.querySelector('.area-instructions').value.trim();
     if (title || instructions) areas.push({ title: title, instructions: instructions });
   });
 
-  var calibrationExamples = document.getElementById('fCalibration').value
+  var calibrationExamples = document.getElementById('gCalibration').value
     .split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
 
   var translations = {};
-  translationsList.querySelectorAll('.lang-block').forEach(function (b) {
+  gTranslationsList.querySelectorAll('.lang-block').forEach(function (b) {
     var lang = b.dataset.lang;
     var fresh = b.querySelector('.lang-fresh').value.trim();
     var known = b.querySelector('.lang-known').value.trim();
     if (fresh || known) translations[lang] = { fresh: fresh, known: known };
   });
 
-  var hasResource = document.getElementById('fHasResource').checked;
-  var hasPdf = document.getElementById('fHasPdf').checked;
+  var hasResource = gHasResourceCb.checked;
+  var hasPdf = gHasPdfCb.checked;
 
   var resourceObj = null;
   if (hasResource) {
     resourceObj = {
-      title: document.getElementById('fResourceTitle').value.trim(),
-      text: document.getElementById('fResourceText').value.trim()
+      title: document.getElementById('gResourceTitle').value.trim(),
+      text: document.getElementById('gResourceText').value.trim()
     };
     if (hasPdf) {
-      resourceObj.pdfUrl = document.getElementById('fResourcePdfUrl').value.trim();
+      resourceObj.pdfUrl = document.getElementById('gResourcePdfUrl').value.trim();
     }
   }
 
   return {
-    lessonId: document.getElementById('fLessonId').value.trim(),
-    scopeNote: document.getElementById('fScopeNote').value.trim(),
-    nextLessonLabel: document.getElementById('fNextLessonLabel').value.trim(),
-    video: { mediaId: document.getElementById('fMediaId').value.trim() },
-    transcript: document.getElementById('fTranscript').value.trim(),
+    lessonId: document.getElementById('gLessonId').value.trim(),
+    tier: 'guided',
+    scopeNote: document.getElementById('gScopeNote').value.trim(),
+    nextLessonLabel: document.getElementById('gNextLessonLabel').value.trim(),
+    video: { mediaId: document.getElementById('gMediaId').value.trim() },
+    transcript: document.getElementById('gTranscript').value.trim(),
     resource: resourceObj,
-    essentials: {
-      exerciseFormId: document.getElementById('fExerciseFormId').value.trim(),
-      reflectionFormId: document.getElementById('fReflectionFormId').value.trim()
-    },
+    essentials: { exerciseFormId: '', reflectionFormId: '' },
     reflectionFramework: {
       areas: areas,
-      coachingApproach: document.getElementById('fCoachingApproach').value.trim(),
+      coachingApproach: document.getElementById('gCoachingApproach').value.trim(),
       calibrationExamples: calibrationExamples
     },
     greeting: {
-      fresh: document.getElementById('fGreetingFresh').value.trim(),
-      knownTemplate: document.getElementById('fGreetingKnown').value.trim(),
+      fresh: document.getElementById('gGreetingFresh').value.trim(),
+      knownTemplate: document.getElementById('gGreetingKnown').value.trim(),
       translations: translations
     }
   };
 }
 
-function updateJsonPreview() {
-  document.getElementById('jsonPreview').textContent = JSON.stringify(collectConfig(), null, 2);
+function updateGuidedJsonPreview() {
+  document.getElementById('gJsonPreview').textContent = JSON.stringify(collectGuidedConfig(), null, 2);
 }
 
-/* Live-update the preview on any input, lightly debounced */
-var previewTimer = null;
-panel.addEventListener('input', function () {
-  clearTimeout(previewTimer);
-  previewTimer = setTimeout(updateJsonPreview, 300);
+var gPreviewTimer = null;
+lessonEditorView.addEventListener('input', function () {
+  clearTimeout(gPreviewTimer);
+  gPreviewTimer = setTimeout(updateGuidedJsonPreview, 300);
 });
-panel.addEventListener('change', updateJsonPreview);
+lessonEditorView.addEventListener('change', updateGuidedJsonPreview);
 
-/* ---------------------------------------------------------
-   SAVE
-   --------------------------------------------------------- */
-
-var saveStatus = document.getElementById('saveStatus');
-
-document.getElementById('saveBtn').addEventListener('click', function () {
-  var config = collectConfig();
+document.getElementById('gSaveBtn').addEventListener('click', function () {
+  var config = collectGuidedConfig();
 
   if (!config.lessonId) {
-    saveStatus.textContent = 'Lesson ID is required.';
-    saveStatus.className = 'err';
+    gSaveStatus.textContent = 'Lesson ID is required.';
+    gSaveStatus.className = 'save-status err';
     return;
   }
   if (!config.video.mediaId) {
-    saveStatus.textContent = 'Video media ID is required.';
-    saveStatus.className = 'err';
+    gSaveStatus.textContent = 'Video media ID is required.';
+    gSaveStatus.className = 'save-status err';
     return;
   }
 
-  saveStatus.textContent = 'Saving...';
-  saveStatus.className = '';
+  gSaveStatus.textContent = 'Saving...';
+  gSaveStatus.className = 'save-status';
 
   fetch(PROXY_URL + '/lesson-config', {
     method: 'POST',
@@ -1160,37 +1207,208 @@ document.getElementById('saveBtn').addEventListener('click', function () {
       'Content-Type': 'application/json',
       'X-Stratum-Admin-Key': adminKey
     },
-    body: JSON.stringify({ lessonId: config.lessonId, config: config })
+    body: JSON.stringify({ lessonId: config.lessonId, tier: 'guided', config: config })
   })
     .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
     .then(function (result) {
       if (result.status === 200 && result.data && result.data.ok) {
-        saveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + new Date().toLocaleTimeString() + '.';
-        saveStatus.className = 'ok';
-        refreshLessonList();
+        gSaveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + new Date().toLocaleTimeString() + '.';
+        gSaveStatus.className = 'save-status ok';
+        refreshGuidedList();
       } else {
-        saveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
-        saveStatus.className = 'err';
+        gSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
+        gSaveStatus.className = 'save-status err';
       }
     })
     .catch(function (e) {
-      saveStatus.textContent = 'Network error: ' + e.message;
-      saveStatus.className = 'err';
+      gSaveStatus.textContent = 'Network error: ' + e.message;
+      gSaveStatus.className = 'save-status err';
     });
 });
 
-function refreshLessonList() {
-  fetch(PROXY_URL + '/lesson-configs', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+function refreshGuidedList() {
+  fetch(PROXY_URL + '/lesson-configs?tier=guided', { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
-    .then(function (d) { populateLessonSelect(d.lessons || []); })
+    .then(function (d) { populateSelect(gLessonSelect, d.lessons || []); })
     .catch(function () {});
 }
 
-/* ---------------------------------------------------------
-   INIT
-   --------------------------------------------------------- */
+var eLessonSelect = document.getElementById('eLessonSelect');
+var eResourceFields = document.getElementById('eResourceFields');
+var ePdfFields = document.getElementById('ePdfFields');
+var eHasResourceCb = document.getElementById('eHasResource');
+var eHasPdfCb = document.getElementById('eHasPdf');
+var eSaveStatus = document.getElementById('eSaveStatus');
 
-refreshAddLangOptions();
+document.getElementById('eLoadBtn').addEventListener('click', function () {
+  var id = eLessonSelect.value;
+  if (!id) return;
+  loadEssentialsLesson(id);
+});
+
+document.getElementById('eNewLessonBtn').addEventListener('click', function () {
+  var id = prompt('New Essentials lesson ID (e.g. 1.2):');
+  if (!id) return;
+  clearEssentialsForm();
+  document.getElementById('eLessonId').value = id.trim();
+});
+
+function loadEssentialsLesson(lessonId) {
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=essentials')
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.known) { alert('No Essentials config found for ' + lessonId + ' yet.'); return; }
+      fillEssentialsForm(d.config);
+    })
+    .catch(function () { alert('Could not load that lesson.'); });
+}
+
+eHasResourceCb.addEventListener('change', function () {
+  eResourceFields.className = 'resource-fields' + (eHasResourceCb.checked ? '' : ' disabled');
+});
+eHasPdfCb.addEventListener('change', function () {
+  ePdfFields.className = 'resource-fields' + (eHasPdfCb.checked ? '' : ' disabled');
+});
+
+function clearEssentialsForm() {
+  document.getElementById('eLessonId').value = '';
+  document.getElementById('eNextLessonLabel').value = '';
+  document.getElementById('eScopeNote').value = '';
+  document.getElementById('eMediaId').value = '';
+  document.getElementById('eTranscript').value = '';
+  eHasResourceCb.checked = false;
+  eResourceFields.className = 'resource-fields disabled';
+  document.getElementById('eResourceTitle').value = '';
+  document.getElementById('eResourceText').value = '';
+  eHasPdfCb.checked = false;
+  ePdfFields.className = 'resource-fields disabled';
+  document.getElementById('eResourcePdfUrl').value = '';
+  document.getElementById('eExerciseFormId').value = '';
+  document.getElementById('eReflectionFormId').value = '';
+  updateEssentialsJsonPreview();
+}
+
+function fillEssentialsForm(config) {
+  clearEssentialsForm();
+
+  document.getElementById('eLessonId').value = config.lessonId || '';
+  document.getElementById('eNextLessonLabel').value = config.nextLessonLabel || '';
+  document.getElementById('eScopeNote').value = config.scopeNote || '';
+  document.getElementById('eMediaId').value = (config.video && config.video.mediaId) || '';
+  document.getElementById('eTranscript').value = config.transcript || '';
+
+  if (config.resource && config.resource.title) {
+    eHasResourceCb.checked = true;
+    eResourceFields.className = 'resource-fields';
+    document.getElementById('eResourceTitle').value = config.resource.title || '';
+    document.getElementById('eResourceText').value = config.resource.text || '';
+    if (config.resource.pdfUrl) {
+      eHasPdfCb.checked = true;
+      ePdfFields.className = 'resource-fields';
+      document.getElementById('eResourcePdfUrl').value = config.resource.pdfUrl;
+    }
+  }
+
+  var ess = config.essentials || {};
+  document.getElementById('eExerciseFormId').value = ess.exerciseFormId || '';
+  document.getElementById('eReflectionFormId').value = ess.reflectionFormId || '';
+
+  updateEssentialsJsonPreview();
+}
+
+function collectEssentialsConfig() {
+  var hasResource = eHasResourceCb.checked;
+  var hasPdf = eHasPdfCb.checked;
+
+  var resourceObj = null;
+  if (hasResource) {
+    resourceObj = {
+      title: document.getElementById('eResourceTitle').value.trim(),
+      text: document.getElementById('eResourceText').value.trim()
+    };
+    if (hasPdf) {
+      resourceObj.pdfUrl = document.getElementById('eResourcePdfUrl').value.trim();
+    }
+  }
+
+  return {
+    lessonId: document.getElementById('eLessonId').value.trim(),
+    tier: 'essentials',
+    scopeNote: document.getElementById('eScopeNote').value.trim(),
+    nextLessonLabel: document.getElementById('eNextLessonLabel').value.trim(),
+    video: { mediaId: document.getElementById('eMediaId').value.trim() },
+    transcript: document.getElementById('eTranscript').value.trim(),
+    resource: resourceObj,
+    essentials: {
+      exerciseFormId: document.getElementById('eExerciseFormId').value.trim(),
+      reflectionFormId: document.getElementById('eReflectionFormId').value.trim()
+    },
+    reflectionFramework: { areas: [], coachingApproach: '', calibrationExamples: [] },
+    greeting: { fresh: '', knownTemplate: '', translations: {} }
+  };
+}
+
+function updateEssentialsJsonPreview() {
+  document.getElementById('eJsonPreview').textContent = JSON.stringify(collectEssentialsConfig(), null, 2);
+}
+
+var ePreviewTimer = null;
+essentialsView.addEventListener('input', function () {
+  clearTimeout(ePreviewTimer);
+  ePreviewTimer = setTimeout(updateEssentialsJsonPreview, 300);
+});
+essentialsView.addEventListener('change', updateEssentialsJsonPreview);
+
+document.getElementById('eSaveBtn').addEventListener('click', function () {
+  var config = collectEssentialsConfig();
+
+  if (!config.lessonId) {
+    eSaveStatus.textContent = 'Lesson ID is required.';
+    eSaveStatus.className = 'save-status err';
+    return;
+  }
+  if (!config.video.mediaId) {
+    eSaveStatus.textContent = 'Video media ID is required.';
+    eSaveStatus.className = 'save-status err';
+    return;
+  }
+
+  eSaveStatus.textContent = 'Saving...';
+  eSaveStatus.className = 'save-status';
+
+  fetch(PROXY_URL + '/lesson-config', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Stratum-Admin-Key': adminKey
+    },
+    body: JSON.stringify({ lessonId: config.lessonId, tier: 'essentials', config: config })
+  })
+    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+    .then(function (result) {
+      if (result.status === 200 && result.data && result.data.ok) {
+        eSaveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + new Date().toLocaleTimeString() + '.';
+        eSaveStatus.className = 'save-status ok';
+        refreshEssentialsList();
+      } else {
+        eSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
+        eSaveStatus.className = 'save-status err';
+      }
+    })
+    .catch(function (e) {
+      eSaveStatus.textContent = 'Network error: ' + e.message;
+      eSaveStatus.className = 'save-status err';
+    });
+});
+
+function refreshEssentialsList() {
+  fetch(PROXY_URL + '/lesson-configs?tier=essentials', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { populateSelect(eLessonSelect, d.lessons || []); })
+    .catch(function () {});
+}
+
+gRefreshAddLangOptions();
 if (savedKey) unlock();
 </script>
 
