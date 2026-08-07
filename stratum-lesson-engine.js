@@ -317,9 +317,9 @@
   // Renders inline on the page as a COLLAPSED bordered accordion. The labeled
   // title bar is the toggle. Not a download, not a new-tab link.
   // Only called when the lesson config actually has a resource.
-  // If resource.pdfUrl is present, a STRATUM-styled download button is
-  // rendered below the text content. Both text and PDF are independently
-  // optional — either or both may be present.
+  // If resource.pdfUrl is present, the PDF renders INLINE via iframe - no
+  // click required. Both text and PDF are independently optional - either
+  // or both may be present, text (if any) appears above the PDF.
   function buildResource(container, resource) {
     if (!resource || !resource.title) return;
 
@@ -335,43 +335,28 @@
       body.innerHTML = resource.html || textToParagraphs(resource.text);
     }
 
-    // PDF download button — only rendered when a URL is present.
+    // Inline PDF — only rendered when a URL is present. Most browsers'
+    // built-in PDF viewer renders inside the iframe with no click needed;
+    // the link beneath is a fallback for the few that don't.
     if (resource.pdfUrl && resource.pdfUrl.trim()) {
       var pdfWrap = el('div', 'lec-resource-pdf');
 
-      var pdfBtn = document.createElement('a');
-      pdfBtn.className = 'lec-resource-pdf-btn';
-      pdfBtn.href = resource.pdfUrl;
-      pdfBtn.target = '_blank';
-      pdfBtn.rel = 'noopener';
+      var frame = document.createElement('iframe');
+      frame.className = 'lec-resource-pdf-frame';
+      frame.src = resource.pdfUrl;
+      frame.setAttribute('title', resource.title + ' (PDF)');
+      mount(pdfWrap, frame);
 
-      // Download icon SVG
-      var iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      iconSvg.setAttribute('viewBox', '0 0 24 24');
-      iconSvg.setAttribute('width', '14');
-      iconSvg.setAttribute('height', '14');
-      iconSvg.setAttribute('fill', 'none');
-      iconSvg.setAttribute('stroke', 'currentColor');
-      iconSvg.setAttribute('stroke-width', '2');
-      iconSvg.setAttribute('stroke-linecap', 'round');
-      iconSvg.setAttribute('stroke-linejoin', 'round');
-      iconSvg.setAttribute('aria-hidden', 'true');
-      var pathLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      pathLine.setAttribute('x1', '12'); pathLine.setAttribute('y1', '3');
-      pathLine.setAttribute('x2', '12'); pathLine.setAttribute('y2', '15');
-      iconSvg.appendChild(pathLine);
-      var pathArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-      pathArrow.setAttribute('points', '7 10 12 15 17 10');
-      iconSvg.appendChild(pathArrow);
-      var pathBase = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      pathBase.setAttribute('x1', '5'); pathBase.setAttribute('y1', '21');
-      pathBase.setAttribute('x2', '19'); pathBase.setAttribute('y2', '21');
-      iconSvg.appendChild(pathBase);
+      var fallback = el('div', 'lec-resource-pdf-fallback');
+      fallback.appendChild(document.createTextNode("PDF not displaying? "));
+      var fallbackLink = document.createElement('a');
+      fallbackLink.href = resource.pdfUrl;
+      fallbackLink.target = '_blank';
+      fallbackLink.rel = 'noopener';
+      fallbackLink.textContent = 'Open it in a new tab';
+      mount(fallback, fallbackLink);
+      mount(pdfWrap, fallback);
 
-      pdfBtn.appendChild(iconSvg);
-      pdfBtn.appendChild(document.createTextNode('\u00A0 Download PDF'));
-
-      mount(pdfWrap, pdfBtn);
       mount(body, pdfWrap);
     }
 
@@ -389,6 +374,79 @@
       out += '<p>' + escapeHtml(block).replace(/\n/g, '<br>') + '</p>';
     }
     return out;
+  }
+
+  /* ==========================================================
+     ESSENTIALS TIER — JOTFORM TABS
+     ----------------------------------------------------------
+     Essentials lesson pages set window.STRATUM_TIER = "essentials"
+     before loading this engine. They skip the AI coach entirely -
+     no session metering, no My Project/Notes/Tasks, no D1 chat
+     traffic. Just two tabs, each embedding a Jotform form by ID
+     from this lesson's config (LESSON.essentials.exerciseFormId /
+     reflectionFormId). Guided/Mastery pages never call this - they
+     go through buildTabs() below exactly as before.
+     ========================================================== */
+
+  function buildEssentialsTabs(container) {
+    var TABS_E = [
+      { id: 'Exercise',   label: 'Exercise',   formId: LESSON.essentials && LESSON.essentials.exerciseFormId },
+      { id: 'Reflection', label: 'Reflection', formId: LESSON.essentials && LESSON.essentials.reflectionFormId }
+    ];
+
+    var bar = el('div', 'tab');
+    TABS_E.forEach(function (tab, index) {
+      var btn = el('button', 'tablinks', tab.label);
+      btn.type = 'button';
+      btn.addEventListener('click', function (evt) { openTab(evt, tab.id); });
+      if (index === 0) btn.id = 'defaultOpen';
+      mount(bar, btn);
+    });
+    mount(container, bar);
+
+    TABS_E.forEach(function (tab) {
+      var panel = el('div', 'tabcontent');
+      panel.id = tab.id;
+      buildJotformTab(panel, tab.formId, tab.label);
+      mount(container, panel);
+    });
+  }
+
+  // Jotform's embed handler script auto-resizes the iframe to fit the form's
+  // actual height once it loads, rather than leaving a fixed-height box with
+  // its own inner scrollbar. Loaded once, shared across both tabs.
+  function buildJotformTab(panel, formId, label) {
+    if (!formId) {
+      mount(panel, el('p', null,
+        'This ' + label.toLowerCase() + ' has not been set up yet. Check back soon, or let Ted know.'));
+      return;
+    }
+
+    var wrap = el('div', 'jf-embed-wrap');
+    var iframeId = 'JotFormIFrame-' + formId;
+
+    var iframe = document.createElement('iframe');
+    iframe.id = iframeId;
+    iframe.title = label;
+    iframe.src = 'https://form.jotform.com/' + formId;
+    iframe.className = 'jf-embed-frame';
+    iframe.setAttribute('allow', 'geolocation; microphone; camera');
+    mount(wrap, iframe);
+    mount(panel, wrap);
+
+    loadScriptOnce('https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js');
+
+    // The handler script loads async — poll briefly for it, then attach.
+    var tries = 0;
+    var poll = setInterval(function () {
+      tries++;
+      if (window.jotformEmbedHandler) {
+        window.jotformEmbedHandler("iframe[id='" + iframeId + "']", 'https://form.jotform.com/');
+        clearInterval(poll);
+      } else if (tries > 20) {
+        clearInterval(poll); // handler never loaded - iframe still works, just fixed-height
+      }
+    }, 250);
   }
 
   /* ==========================================================
@@ -1666,15 +1724,25 @@
   }
 
   function buildLessonPage(container) {
-    buildExcavationRecordShell(container);
-    refreshExcavationRecord();
+    var tier = window.STRATUM_TIER || 'guided';
+
+    // Coaching Sessions widget tracks AI-coach completions - meaningless on
+    // an Essentials page, which has no AI coach at all.
+    if (tier !== 'essentials') {
+      buildExcavationRecordShell(container);
+      refreshExcavationRecord();
+    }
 
     buildVideo(container, LESSON.video.mediaId);
     buildResource(container, LESSON.resource);
     buildTranscript(container, LESSON.video.mediaId);
     buildContactLine(container);
 
-    buildTabs(container);
+    if (tier === 'essentials') {
+      buildEssentialsTabs(container);
+    } else {
+      buildTabs(container);
+    }
 
     var defaultBtn = document.getElementById('defaultOpen');
     if (defaultBtn) defaultBtn.click();
