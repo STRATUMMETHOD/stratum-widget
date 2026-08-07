@@ -835,8 +835,8 @@ function sendChatMessage() {
     .then(function (result) {
       if (thinkingNote) thinkingNote.remove();
       if (result.status === 200) {
-        var reply = (result.data && (result.data.reply || result.data.message || result.data.text))
-          || 'Received a 200 but no recognizable reply field. Raw response: ' + JSON.stringify(result.data);
+       var reply = extractReplyText(result.data)
+        || 'Received a 200 but no recognizable reply field. Raw response: ' + JSON.stringify(result.data);
         appendChatMessage('assistant', reply);
         chatHistory.push({ role: 'assistant', content: reply });
       } else {
