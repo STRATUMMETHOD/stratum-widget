@@ -58,6 +58,30 @@
 
   #panel { display: none; }
 
+  /* TOP-LEVEL TABS — Lesson Editor / Course Assistant */
+  .top-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid #e2d9c4;
+  }
+  .top-tab {
+    background: none;
+    border: none;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: #8a7a5e;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    font-family: 'Inter', Arial, sans-serif;
+  }
+  .top-tab:hover { color: #3B2F24; }
+  .top-tab.active { color: #3B2F24; border-bottom-color: #8a6630; }
+
   /* TOOLBAR */
   .toolbar {
     display: flex;
@@ -250,6 +274,79 @@
     overflow: auto;
     white-space: pre-wrap;
   }
+
+  /* COURSE ASSISTANT — chat UI */
+  #courseAssistantView .card { padding: 0; margin-bottom: 0; }
+  .chat-window { display: flex; flex-direction: column; height: 540px; }
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #fff;
+  }
+  .chat-msg {
+    max-width: 80%;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+  .chat-msg.user {
+    align-self: flex-end;
+    background: #3B2F24;
+    color: #F5EFE0;
+  }
+  .chat-msg.assistant {
+    align-self: flex-start;
+    background: #fbf8f1;
+    border: 1px solid #e2d9c4;
+    color: #222;
+  }
+  .chat-msg.system-note {
+    align-self: center;
+    font-size: 11.5px;
+    color: #8a7a5e;
+    font-style: italic;
+    background: none;
+    padding: 4px 0;
+  }
+  .chat-empty {
+    align-self: center;
+    font-size: 12.5px;
+    color: #8a7a5e;
+    text-align: center;
+    max-width: 420px;
+    margin: auto;
+    line-height: 1.6;
+  }
+  .chat-options-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px 0;
+    font-size: 11.5px;
+    color: #8a7a5e;
+    border-top: 1px solid #e2d9c4;
+  }
+  .chat-input-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px 16px;
+    background: #fbf8f1;
+  }
+  .chat-input-row textarea {
+    flex: 1;
+    padding: 9px 10px;
+    font-size: 13px;
+    font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #ccc;
+    resize: none;
+    line-height: 1.4;
+  }
+  .chat-input-row button:disabled { opacity: .5; cursor: default; }
 </style>
 </head>
 <body>
@@ -264,6 +361,13 @@
 </div>
 
 <div id="panel">
+
+  <div class="top-tabs">
+    <button class="top-tab active" id="tabLessonEditorBtn" type="button">Lesson Editor</button>
+    <button class="top-tab" id="tabCourseAssistantBtn" type="button">Course Assistant</button>
+  </div>
+
+  <div id="lessonEditorView">
 
   <div class="toolbar">
     <select id="lessonSelect"></select>
@@ -453,6 +557,26 @@
     <pre id="jsonPreview"></pre>
   </details>
 
+  </div>
+
+  <div id="courseAssistantView" style="display:none;">
+    <div class="card">
+      <div class="chat-window">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-empty" id="chatEmptyState">Ask about continuity across lessons &mdash; tone, repeated questions, whether a reflection area overlaps one already covered elsewhere. This reads your saved lesson configs; it doesn't write to them.</div>
+        </div>
+        <div class="chat-options-row">
+          <input type="checkbox" id="chatIncludeTranscripts" />
+          <label for="chatIncludeTranscripts">Include full transcripts &amp; resource text (slower, more context)</label>
+        </div>
+        <div class="chat-input-row">
+          <textarea id="chatInput" rows="2" placeholder="e.g. Does 3.2's reflection overlap with anything in 2.2?"></textarea>
+          <button class="btn" id="chatSendBtn" type="button">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -509,6 +633,112 @@ function unlock() {
       authStatus.className = '';
     });
 }
+
+/* ---------------------------------------------------------
+   TOP-LEVEL TABS
+   --------------------------------------------------------- */
+
+var tabLessonEditorBtn = document.getElementById('tabLessonEditorBtn');
+var tabCourseAssistantBtn = document.getElementById('tabCourseAssistantBtn');
+var lessonEditorView = document.getElementById('lessonEditorView');
+var courseAssistantView = document.getElementById('courseAssistantView');
+
+tabLessonEditorBtn.addEventListener('click', function () {
+  tabLessonEditorBtn.className = 'top-tab active';
+  tabCourseAssistantBtn.className = 'top-tab';
+  lessonEditorView.style.display = '';
+  courseAssistantView.style.display = 'none';
+});
+
+tabCourseAssistantBtn.addEventListener('click', function () {
+  tabCourseAssistantBtn.className = 'top-tab active';
+  tabLessonEditorBtn.className = 'top-tab';
+  courseAssistantView.style.display = '';
+  lessonEditorView.style.display = 'none';
+});
+
+/* ---------------------------------------------------------
+   COURSE ASSISTANT — chat
+   --------------------------------------------------------- */
+
+var chatHistory = [];
+var chatMessages = document.getElementById('chatMessages');
+var chatEmptyState = document.getElementById('chatEmptyState');
+var chatInput = document.getElementById('chatInput');
+var chatSendBtn = document.getElementById('chatSendBtn');
+var chatIncludeTranscripts = document.getElementById('chatIncludeTranscripts');
+
+function appendChatMessage(role, text) {
+  if (chatEmptyState) { chatEmptyState.remove(); chatEmptyState = null; }
+  var div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return div;
+}
+
+function appendSystemNote(text) {
+  if (chatEmptyState) { chatEmptyState.remove(); chatEmptyState = null; }
+  var div = document.createElement('div');
+  div.className = 'chat-msg system-note';
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return div;
+}
+
+function sendChatMessage() {
+  var text = chatInput.value.trim();
+  if (!text) return;
+  if (!adminKey) { appendSystemNote('Unlock the panel first.'); return; }
+
+  appendChatMessage('user', text);
+  chatHistory.push({ role: 'user', content: text });
+  chatInput.value = '';
+  chatSendBtn.disabled = true;
+  var thinkingNote = appendSystemNote('Thinking...');
+
+  fetch(PROXY_URL + '/admin/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Stratum-Admin-Key': adminKey
+    },
+    body: JSON.stringify({
+      message: text,
+      history: chatHistory.slice(0, -1),
+      includeTranscripts: chatIncludeTranscripts.checked
+    })
+  })
+    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+    .then(function (result) {
+      if (thinkingNote) thinkingNote.remove();
+      if (result.status === 200) {
+        var reply = (result.data && (result.data.reply || result.data.message || result.data.text))
+          || 'Received a 200 but no recognizable reply field. Raw response: ' + JSON.stringify(result.data);
+        appendChatMessage('assistant', reply);
+        chatHistory.push({ role: 'assistant', content: reply });
+      } else {
+        appendSystemNote('Error ' + result.status + ': ' + JSON.stringify(result.data));
+      }
+    })
+    .catch(function (e) {
+      if (thinkingNote) thinkingNote.remove();
+      appendSystemNote('Network error: ' + e.message);
+    })
+    .finally(function () {
+      chatSendBtn.disabled = false;
+    });
+}
+
+chatSendBtn.addEventListener('click', sendChatMessage);
+chatInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+});
 
 /* ---------------------------------------------------------
    LESSON SELECTOR
