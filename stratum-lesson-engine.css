@@ -619,7 +619,8 @@ button.download-btn:hover { background-color: #5a4535; }
 .srx-wrap * { box-sizing: border-box; }
 
 .srx-chat {
-  background: var(--srx-black);
+  background: #ffffff;
+  border: 1px solid #ccc;
   border-radius: 16px;
   padding: 24px 18px;
   min-height: 420px;
@@ -661,9 +662,9 @@ button.download-btn:hover { background-color: #5a4535; }
   white-space: pre-wrap;
 }
 .srx-row.assistant .srx-bubble {
-  background: #16120f;
-  color: var(--srx-offwhite);
-  border: 1px solid #2a2118;
+  background: #F5EFE0;
+  color: #281e16;
+  border: 1px solid #e2d9c4;
   border-bottom-left-radius: 4px;
 }
 .srx-row.user .srx-bubble {
@@ -708,7 +709,7 @@ button.download-btn:hover { background-color: #5a4535; }
   height: 46px;
   border-radius: 12px;
   border: none;
-  background: var(--srx-black);
+  background: var(--srx-umber);
   color: var(--srx-gold);
   cursor: pointer;
   display: flex;
@@ -755,7 +756,7 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 .srx-dc-btn {
   display: inline-block;
-  background: var(--srx-black);
+  background: var(--srx-umber);
   color: var(--srx-gold);
   font-family: 'Inter', sans-serif;
   font-weight: 600;
@@ -770,7 +771,7 @@ button.download-btn:hover { background-color: #5a4535; }
 .srx-dc-btn:hover { background: var(--srx-umber); }
 
 .srx-exhausted-card {
-  background: #16120f;
+  background: var(--srx-umber);
   border: 1px solid var(--srx-clay);
   border-radius: 14px;
   padding: 20px 22px;
@@ -805,7 +806,7 @@ button.download-btn:hover { background-color: #5a4535; }
   height: 64px;
   border-radius: 50%;
   border: none;
-  background: var(--srx-black);
+  background: var(--srx-umber);
   color: var(--srx-gold);
   cursor: pointer;
   display: flex;
