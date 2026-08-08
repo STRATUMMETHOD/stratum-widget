@@ -54,6 +54,14 @@
   var NOTES_KEY = 'wlfc_notes';
   var TRACKER_KEY = 'systemeCourseTasks';
 
+  // The durable identity cookie this engine now owns and controls, as
+  // opposed to sio_u_public (systeme.io's own cookie, confirmed by their
+  // support to be session-scoped and not safe to rely on long-term). Once
+  // this cookie exists on a device, that device never needs to resolve
+  // identity again.
+  var STRATUM_SID_COOKIE = 'stratum_sid';
+  var STRATUM_SID_MAX_AGE = 60 * 60 * 24 * 365 * 2; // ~2 years
+
   // Runtime state, populated once the lesson config arrives.
   var LESSON = null;       // the fetched lesson config object
   var LESSON_ID = null;
@@ -71,6 +79,13 @@
       if (eq > -1 && kv.slice(0, eq) === name) return decodeURIComponent(kv.slice(eq + 1));
     }
     return null;
+  }
+
+  function setCookie(name, value, maxAgeSeconds) {
+    try {
+      document.cookie = name + '=' + encodeURIComponent(value) +
+        '; path=/; max-age=' + maxAgeSeconds + '; SameSite=Lax';
+    } catch (e) {}
   }
 
   function readSessionValue(key) {
@@ -124,20 +139,79 @@
   }
 
   // The gate condition every non-Project tab checks before it will render.
-  // Currently checks the LOCAL cache only - this is intentional and matches
-  // where the identity-resolution project currently stands (see engine
-  // header notes / project memory): a durable, cross-device identity (a
-  // Worker-issued UUID resolved via the student's email against systeme.io's
-  // contact API) has NOT been built yet. Until it is, "confirmed" means
-  // "this browser has a saved, valid-looking email" - a student on a new
-  // device or a cleared cache will be asked again. That's expected at this
-  // stage, not a bug.
+  // A durable stratum_sid cookie is treated as proof on its own - it only
+  // ever gets set after a successful resolveIdentity() call, so its mere
+  // presence means this device has already been through that once.
+  // Otherwise, falls back to whatever email this browser has cached
+  // locally - true the moment a student types a valid one, even before
+  // resolution against systeme.io completes.
   function isEmailConfirmed() {
+    if (readCookie(STRATUM_SID_COOKIE)) return true;
     return isValidEmail(lsGet(PROJ_KEYS.email));
   }
 
   var STUDENT_ID = readCookie('sio_u_public');
   var STUDENT_EMAIL = readSessionValue('email');
+
+  /* ----------------------------------------------------------
+     DURABLE IDENTITY RESOLUTION
+     ----------------------------------------------------------
+     Replaces reliance on sio_u_public as the database key.
+     systeme.io support confirmed that cookie is session-scoped,
+     not a stable per-account id - it can change on logout/login,
+     device change, cookie clear, or expiry, silently orphaning
+     everything keyed against it.
+
+     ensureDurableIdentity() is the fix: called once per page load
+     (and once more immediately after a fresh email confirmation),
+     it resolves in one of three ways -
+
+       1. A stratum_sid cookie already exists on this device -
+          use it directly, no network call, done.
+       2. No cookie yet, but a confirmed email is available - call
+          the Worker's /resolve-identity endpoint, which resolves
+          that email to a durable systeme.io contact id and hands
+          back a permanent student_id. Set it as a first-party
+          cookie so this device never has to ask again.
+       3. Neither exists yet - STUDENT_ID stays on its legacy
+          fallback (whatever sio_u_public currently reads, or
+          null) until a student confirms an email.
+
+     Failure to resolve (network error, systeme.io unreachable) is
+     silent by design here - the student is not blocked from using
+     the site, they simply stay on the legacy fallback until the
+     next successful attempt.
+     ---------------------------------------------------------- */
+
+  function ensureDurableIdentity() {
+    var existing = readCookie(STRATUM_SID_COOKIE);
+    if (existing) {
+      STUDENT_ID = existing;
+      return Promise.resolve();
+    }
+
+    var email = lsGet(PROJ_KEYS.email);
+    if (!isValidEmail(email)) {
+      return Promise.resolve(); // nothing to resolve yet
+    }
+
+    return fetch(PROXY_URL + '/resolve-identity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok && d.stratumId) {
+          STUDENT_ID = d.stratumId;
+          setCookie(STRATUM_SID_COOKIE, d.stratumId, STRATUM_SID_MAX_AGE);
+        }
+        // Any other response (contact_not_found, systeme_api_error, etc.)
+        // - stay on whatever STUDENT_ID already was. Nothing to surface to
+        // the student here; the site keeps working on the legacy fallback.
+      })
+      .catch(function () { /* network failure - stay on legacy fallback */ });
+  }
 
   /* ==========================================================
      DOM HELPERS
@@ -406,7 +480,8 @@
      traffic. Just two tabs, each embedding a Jotform form by ID
      from this lesson's config (LESSON.essentials.exerciseFormId /
      reflectionFormId). Guided/Mastery pages never call this - they
-     go through buildTabs() below exactly as before.
+     go through buildTabs() below exactly as before. Essentials
+     never touches identity resolution at all.
      ========================================================== */
 
   function buildEssentialsTabs(container) {
@@ -481,9 +556,7 @@
      their real content until isEmailConfirmed() is true. Until
      then they show a short gate message with a button that jumps
      to My Project. This guarantees nothing is ever saved under
-     an identity we can't later reconnect to the student - see
-     the isEmailConfirmed() comment above for what "confirmed"
-     currently means and its known limitation.
+     an identity we can't later reconnect to the student.
      ========================================================== */
 
   var TABS = [
@@ -531,8 +604,9 @@
   }
 
   // Called once, right after a student confirms a valid email for the
-  // first time in this browser. Builds the real content into whichever
-  // gated panels are still waiting, replacing their gate message in place.
+  // first time in this browser (and once identity resolution for that
+  // email has finished, so gated panels build against the final id
+  // rather than a fallback that's about to change under them).
   function unlockGatedTabs() {
     Object.keys(gatedPending).forEach(function (tabId) {
       var entry = gatedPending[tabId];
@@ -919,7 +993,8 @@
      Email is the one required field here — every other field
      stays optional exactly as before. It's required because it
      is the trigger that unlocks My Notes, My Tasks, and My Coach
-     (see the GATING note above buildTabs()).
+     AND the trigger for durable identity resolution (see
+     ensureDurableIdentity() above).
      ========================================================== */
 
   var PROJECT_FIELDS = [
@@ -1140,7 +1215,7 @@
     // Email is the one field with a second possible source: systeme.io's own
     // session value, used only as a starting guess when nothing has been
     // saved here yet. It is never trusted as a confirmed identity signal —
-    // see isEmailConfirmed() — only as a convenience prefill.
+    // only as a convenience prefill.
     if (!cached.email && STUDENT_EMAIL) cached.email = STUDENT_EMAIL;
     fillProjectForm(cached);
 
@@ -1162,12 +1237,6 @@
         eachProjectSpec(function (spec) {
           lsSet(PROJ_KEYS[spec.key], merged[spec.key] || '');
         });
-        // D1 may confirm an email this browser didn't have cached yet
-        // (e.g. localStorage was cleared but STUDENT_ID cookie survived).
-        // If that just flipped confirmation to true, unlock the gated tabs.
-        if (isEmailConfirmed() && Object.keys(gatedPending).length) {
-          unlockGatedTabs();
-        }
       })
       .catch(function () { /* local cache already shown - fail quietly */ });
   }
@@ -1199,12 +1268,24 @@
       lsSet(PROJ_KEYS[spec.key], fields[spec.key]);
     });
 
-    // First time this browser has a confirmed email - unlock My Notes,
-    // My Tasks, and My Coach immediately, no reload required.
+    // First time this browser has a confirmed email - resolve it to a
+    // durable identity BEFORE unlocking the gated tabs, so they build
+    // against the final student_id rather than a fallback that's about
+    // to change under them mid-session.
     if (!wasConfirmedBefore && isEmailConfirmed()) {
-      unlockGatedTabs();
+      statusEl.textContent = 'Confirming…';
+      statusEl.className = 'proj-status';
+      ensureDurableIdentity().then(function () {
+        unlockGatedTabs();
+        finishProjectSave(fields, statusEl, btn);
+      });
+      return;
     }
 
+    finishProjectSave(fields, statusEl, btn);
+  }
+
+  function finishProjectSave(fields, statusEl, btn) {
     if (!STUDENT_ID) {
       statusEl.textContent = 'Saved on this device.';
       statusEl.className = 'proj-status ok';
@@ -1858,13 +1939,12 @@
   function buildLessonPage(container) {
     var tier = window.STRATUM_TIER || 'guided';
 
-    // Coaching Sessions widget tracks AI-coach completions - meaningless on
-    // an Essentials page, which has no AI coach at all.
     if (tier !== 'essentials') {
       buildExcavationRecordShell(container);
-      refreshExcavationRecord();
     }
 
+    // Video, resource, and transcript don't depend on identity - they
+    // render immediately rather than waiting on ensureDurableIdentity().
     buildVideo(container, LESSON.video.mediaId);
     buildResource(container, LESSON.resource);
     buildTranscript(container, LESSON.video.mediaId);
@@ -1872,12 +1952,21 @@
 
     if (tier === 'essentials') {
       buildEssentialsTabs(container);
-    } else {
-      buildTabs(container);
+      var defaultBtnE = document.getElementById('defaultOpen');
+      if (defaultBtnE) defaultBtnE.click();
+      return;
     }
 
-    var defaultBtn = document.getElementById('defaultOpen');
-    if (defaultBtn) defaultBtn.click();
+    // Everything identity-dependent - the Coaching Sessions widget and all
+    // four tabs - waits for identity resolution to settle first, so they
+    // build against the final student_id rather than a fallback that
+    // might change out from under them a moment later.
+    ensureDurableIdentity().then(function () {
+      refreshExcavationRecord();
+      buildTabs(container);
+      var defaultBtn = document.getElementById('defaultOpen');
+      if (defaultBtn) defaultBtn.click();
+    });
   }
 
   function init() {
