@@ -177,18 +177,8 @@
           fallback (whatever sio_u_public currently reads, or
           null) until a student confirms an email.
 
-     IMPORTANT - NOT YET LIVE SERVER-SIDE: /resolve-identity does
-     not exist as a route on the Worker as of this build. Calling
-     it would fall through the Worker's routing to the legacy AI
-     chat proxy at the bottom of worker.js, silently sending
-     {email: "..."} to Anthropic's API as a malformed chat request
-     - a wasted paid call, swallowed by this function's own catch,
-     invisible to everyone. RESOLVE_IDENTITY_ENABLED below is the
-     guard against that: leave it false until the real endpoint is
-     built and deployed, then flip it to true. Until then this
-     function intentionally no-ops past step 1 - students still
-     get gated tab access on a confirmed local email exactly as
-     before, they just don't yet get true cross-device identity.
+     RESOLVE_IDENTITY_ENABLED is true - the real /resolve-identity
+     endpoint is live on the Worker.
      ---------------------------------------------------------- */
 
   var RESOLVE_IDENTITY_ENABLED = true;
@@ -564,7 +554,6 @@
      ----------------------------------------------------------
      Tabs are for things you DO (interactive, stateful).
      The page itself is for things you READ.
-     Four tabs only - they must not wrap to two lines on mobile.
 
      GATING: My Notes, My Tasks, and My Coach will not render
      their real content until isEmailConfirmed() is true. Until
@@ -573,7 +562,7 @@
      an identity we can't later reconnect to the student.
      ========================================================== */
 
- var TABS = [
+  var TABS = [
     { id: 'Project',  label: 'My Project', build: buildProjectTab },
     { id: 'Notes',    label: 'My Notes',   build: buildNotesTab },
     { id: 'Tasks',    label: 'My Tasks',   build: buildTasksTab },
@@ -1030,7 +1019,18 @@
     link.download = 'MyCourseTasks.txt';
     link.click();
   }
-function buildContactTab(panel) {
+
+  /* ==========================================================
+     CONTACT TAB
+     ----------------------------------------------------------
+     Embeds Ted's existing JotForm general-inquiry form as-is.
+     He plans to edit the form's fields (e.g. a Ted/Support
+     recipient dropdown) later inside JotForm itself - nothing
+     about that requires a change here, since this just embeds
+     whatever the live form ID currently renders.
+     ========================================================== */
+
+  function buildContactTab(panel) {
     var wrap = el('div', 'jf-embed-wrap');
     var iframe = document.createElement('iframe');
     iframe.id = 'JotFormIFrame-261614223369860';
@@ -1049,7 +1049,14 @@ function buildContactTab(panel) {
     var poll = setInterval(function () {
       tries++;
       if (window.jotformEmbedHandler) {
-        window.jotformEmbedHandler("iframe[id='JotFormIFrame-261614223369860']",
+        window.jotformEmbedHandler("iframe[id='JotFormIFrame-261614223369860']", 'https://form.jotform.com/');
+        clearInterval(poll);
+      } else if (tries > 20) {
+        clearInterval(poll);
+      }
+    }, 250);
+  }
+
   /* ==========================================================
      MY PROJECT TAB
      ----------------------------------------------------------
@@ -1340,10 +1347,7 @@ function buildContactTab(panel) {
     // First time this browser has a confirmed email - resolve it to a
     // durable identity BEFORE unlocking the gated tabs, so they build
     // against the final student_id rather than a fallback that's about
-    // to change under them mid-session. (Currently a no-op past the
-    // stratum_sid-cookie check, per RESOLVE_IDENTITY_ENABLED above -
-    // still correct to await it here so this code needs no changes
-    // once the real endpoint goes live.)
+    // to change under them mid-session.
     if (!wasConfirmedBefore && isEmailConfirmed()) {
       statusEl.textContent = 'Confirming…';
       statusEl.className = 'proj-status';
