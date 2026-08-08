@@ -36,6 +36,7 @@
   // localStorage keys. Shared with the coach so the My Project tab and the
   // coaching session stay in sync without any direct JS coupling.
   var PROJ_KEYS = {
+    email:          'wlfc_project_email',
     studentName:    'wlfc_student_name',
     type:           'wlfc_project_type',
     genre:          'wlfc_project_genre',
@@ -113,6 +114,26 @@
   // asterisk or newline inside, so it cannot eat a stray "3 * 4".
   function stripAsteriskEmphasis(text) {
     return String(text).replace(/\*([^*\n]+)\*/g, '$1');
+  }
+
+  // Deliberately simple - this is a gate for "did they type something
+  // email-shaped", not a full RFC 5322 validator. Good enough to catch
+  // typos and blank submissions without being pedantic about edge cases.
+  function isValidEmail(str) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(str || '').trim());
+  }
+
+  // The gate condition every non-Project tab checks before it will render.
+  // Currently checks the LOCAL cache only - this is intentional and matches
+  // where the identity-resolution project currently stands (see engine
+  // header notes / project memory): a durable, cross-device identity (a
+  // Worker-issued UUID resolved via the student's email against systeme.io's
+  // contact API) has NOT been built yet. Until it is, "confirmed" means
+  // "this browser has a saved, valid-looking email" - a student on a new
+  // device or a cleared cache will be asked again. That's expected at this
+  // stage, not a bug.
+  function isEmailConfirmed() {
+    return isValidEmail(lsGet(PROJ_KEYS.email));
   }
 
   var STUDENT_ID = readCookie('sio_u_public');
@@ -455,6 +476,14 @@
      Tabs are for things you DO (interactive, stateful).
      The page itself is for things you READ.
      Four tabs only - they must not wrap to two lines on mobile.
+
+     GATING: My Notes, My Tasks, and My Coach will not render
+     their real content until isEmailConfirmed() is true. Until
+     then they show a short gate message with a button that jumps
+     to My Project. This guarantees nothing is ever saved under
+     an identity we can't later reconnect to the student - see
+     the isEmailConfirmed() comment above for what "confirmed"
+     currently means and its known limitation.
      ========================================================== */
 
   var TABS = [
@@ -464,12 +493,62 @@
     { id: 'Coaching', label: 'My Coach',   build: buildCoachTab }
   ];
 
+  var GATED_TAB_IDS = ['Notes', 'Tasks', 'Coaching'];
+
+  // Tabs that were gated at build time. Keyed by tab id so
+  // unlockGatedTabs() can find and build their real content the moment
+  // email is confirmed, without a page reload.
+  var gatedPending = {};
+
+  // Placeholder styling only — stratum-lesson-engine.css was not available
+  // when this was built, so this uses plain inline styles rather than the
+  // real brand CSS. Functionally correct, visually generic. Fold this into
+  // the real stylesheet (a .proj-gate rule set) once that file is in hand.
+  function buildGatePanel(panel, tab) {
+    var box = el('div', 'proj-gate');
+    box.style.cssText = 'padding:36px 20px;text-align:center;max-width:420px;margin:0 auto;';
+
+    var title = el('div', null, 'Add your email first');
+    title.style.cssText = 'font-weight:700;font-size:16px;margin-bottom:8px;';
+    mount(box, title);
+
+    var text = el('p', null,
+      'This makes sure your ' + tab.label.replace('My ', '').toLowerCase() +
+      ' actually stays with you. Add your email on the My Project tab, then come straight back.');
+    text.style.cssText = 'margin:0 0 18px;opacity:.75;line-height:1.5;';
+    mount(box, text);
+
+    var btn = el('button', null, 'Go to My Project');
+    btn.type = 'button';
+    btn.style.cssText = 'padding:10px 22px;cursor:pointer;font-weight:600;';
+    btn.addEventListener('click', function () {
+      var projectBtn = document.querySelector('.tablinks[data-tab="Project"]');
+      if (projectBtn) projectBtn.click();
+    });
+    mount(box, btn);
+
+    mount(panel, box);
+  }
+
+  // Called once, right after a student confirms a valid email for the
+  // first time in this browser. Builds the real content into whichever
+  // gated panels are still waiting, replacing their gate message in place.
+  function unlockGatedTabs() {
+    Object.keys(gatedPending).forEach(function (tabId) {
+      var entry = gatedPending[tabId];
+      entry.panel.innerHTML = '';
+      entry.build(entry.panel);
+    });
+    gatedPending = {};
+  }
+
   function buildTabs(container) {
     var bar = el('div', 'tab');
 
     TABS.forEach(function (tab, index) {
       var btn = el('button', 'tablinks', tab.label);
       btn.type = 'button';
+      btn.dataset.tab = tab.id;
       btn.addEventListener('click', function (evt) { openTab(evt, tab.id); });
       if (index === 0) btn.id = 'defaultOpen';
       mount(bar, btn);
@@ -480,7 +559,14 @@
     TABS.forEach(function (tab) {
       var panel = el('div', 'tabcontent');
       panel.id = tab.id;
-      tab.build(panel);
+
+      if (GATED_TAB_IDS.indexOf(tab.id) !== -1 && !isEmailConfirmed()) {
+        buildGatePanel(panel, tab);
+        gatedPending[tab.id] = { panel: panel, build: tab.build };
+      } else {
+        tab.build(panel);
+      }
+
       mount(container, panel);
     });
   }
@@ -829,9 +915,20 @@
      message it sends, so saving here takes effect immediately
      without any direct JS coupling between the two. D1 is the
      source of truth; localStorage is a fast local cache.
+
+     Email is the one required field here — every other field
+     stays optional exactly as before. It's required because it
+     is the trigger that unlocks My Notes, My Tasks, and My Coach
+     (see the GATING note above buildTabs()).
      ========================================================== */
 
   var PROJECT_FIELDS = [
+    {
+      key: 'email', id: 'projEmail', type: 'email', maxLength: 120, required: true,
+      label: 'Your email',
+      hint: 'Required — this is what keeps your notes, tasks, and coaching history with you.',
+      placeholder: 'you@example.com'
+    },
     {
       key: 'studentName', id: 'projStudentName', type: 'text', maxLength: 60,
       label: 'Your first name',
@@ -946,7 +1043,7 @@
   function buildProjectField(spec) {
     var field = el('div', 'proj-field');
 
-    var label = el('label', 'proj-label', spec.label);
+    var label = el('label', 'proj-label', spec.label + (spec.required ? ' *' : ''));
     label.setAttribute('for', spec.id);
     mount(field, label);
 
@@ -968,6 +1065,12 @@
       input.className = 'proj-textarea';
       if (spec.maxLength) input.maxLength = spec.maxLength;
       if (spec.placeholder) input.placeholder = spec.placeholder;
+    } else if (spec.type === 'email') {
+      input = document.createElement('input');
+      input.type = 'email';
+      input.className = 'proj-input';
+      if (spec.maxLength) input.maxLength = spec.maxLength;
+      if (spec.placeholder) input.placeholder = spec.placeholder;
     } else {
       input = document.createElement('input');
       input.type = 'text';
@@ -975,6 +1078,7 @@
       if (spec.maxLength) input.maxLength = spec.maxLength;
       if (spec.placeholder) input.placeholder = spec.placeholder;
     }
+    if (spec.required) input.required = true;
     input.id = spec.id;
     mount(field, input);
 
@@ -1033,6 +1137,11 @@
     eachProjectSpec(function (spec) {
       cached[spec.key] = lsGet(PROJ_KEYS[spec.key]) || '';
     });
+    // Email is the one field with a second possible source: systeme.io's own
+    // session value, used only as a starting guess when nothing has been
+    // saved here yet. It is never trusted as a confirmed identity signal —
+    // see isEmailConfirmed() — only as a convenience prefill.
+    if (!cached.email && STUDENT_EMAIL) cached.email = STUDENT_EMAIL;
     fillProjectForm(cached);
 
     if (!STUDENT_ID) return;
@@ -1048,10 +1157,17 @@
         // value blank out a name that's already known locally.
         var merged = Object.assign({}, d);
         if (!merged.studentName) merged.studentName = lsGet(PROJ_KEYS.studentName) || '';
+        if (!merged.email) merged.email = lsGet(PROJ_KEYS.email) || '';
         fillProjectForm(merged);
         eachProjectSpec(function (spec) {
           lsSet(PROJ_KEYS[spec.key], merged[spec.key] || '');
         });
+        // D1 may confirm an email this browser didn't have cached yet
+        // (e.g. localStorage was cleared but STUDENT_ID cookie survived).
+        // If that just flipped confirmation to true, unlock the gated tabs.
+        if (isEmailConfirmed() && Object.keys(gatedPending).length) {
+          unlockGatedTabs();
+        }
       })
       .catch(function () { /* local cache already shown - fail quietly */ });
   }
@@ -1067,11 +1183,27 @@
       fields[spec.key] = (spec.type === 'select') ? value : value.trim();
     });
 
+    if (!isValidEmail(fields.email)) {
+      statusEl.textContent = 'Please enter a valid email address to continue.';
+      statusEl.className = 'proj-status err';
+      var emailNode = document.getElementById('projEmail');
+      if (emailNode) emailNode.focus();
+      return;
+    }
+
+    var wasConfirmedBefore = isEmailConfirmed();
+
     // Save locally right away regardless of network - the coach can use it
     // this session even if the server write is still in flight or fails.
     eachProjectSpec(function (spec) {
       lsSet(PROJ_KEYS[spec.key], fields[spec.key]);
     });
+
+    // First time this browser has a confirmed email - unlock My Notes,
+    // My Tasks, and My Coach immediately, no reload required.
+    if (!wasConfirmedBefore && isEmailConfirmed()) {
+      unlockGatedTabs();
+    }
 
     if (!STUDENT_ID) {
       statusEl.textContent = 'Saved on this device.';
