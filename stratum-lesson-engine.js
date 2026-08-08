@@ -191,7 +191,7 @@
      before, they just don't yet get true cross-device identity.
      ---------------------------------------------------------- */
 
-  var RESOLVE_IDENTITY_ENABLED = false;
+  var RESOLVE_IDENTITY_ENABLED = true;
 
   function ensureDurableIdentity() {
     var existing = readCookie(STRATUM_SID_COOKIE);
