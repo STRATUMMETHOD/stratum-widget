@@ -573,11 +573,12 @@
      an identity we can't later reconnect to the student.
      ========================================================== */
 
-  var TABS = [
+ var TABS = [
     { id: 'Project',  label: 'My Project', build: buildProjectTab },
     { id: 'Notes',    label: 'My Notes',   build: buildNotesTab },
     { id: 'Tasks',    label: 'My Tasks',   build: buildTasksTab },
-    { id: 'Coaching', label: 'My Coach',   build: buildCoachTab }
+    { id: 'Coaching', label: 'My Coach',   build: buildCoachTab },
+    { id: 'Contact',  label: 'Contact',    build: buildContactTab }
   ];
 
   var GATED_TAB_IDS = ['Notes', 'Tasks', 'Coaching'];
@@ -1029,7 +1030,26 @@
     link.download = 'MyCourseTasks.txt';
     link.click();
   }
+function buildContactTab(panel) {
+    var wrap = el('div', 'jf-embed-wrap');
+    var iframe = document.createElement('iframe');
+    iframe.id = 'JotFormIFrame-261614223369860';
+    iframe.title = 'General Inquiry Contact Form';
+    iframe.setAttribute('onload', 'window.parent.scrollTo(0,0)');
+    iframe.setAttribute('allowtransparency', 'true');
+    iframe.setAttribute('allow', 'geolocation; microphone; camera; fullscreen; payment');
+    iframe.src = 'https://form.jotform.com/261614223369860';
+    iframe.style.cssText = 'min-width:100%;max-width:100%;height:539px;border:none;';
+    iframe.scrolling = 'no';
+    mount(wrap, iframe);
+    mount(panel, wrap);
 
+    loadScriptOnce('https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js');
+    var tries = 0;
+    var poll = setInterval(function () {
+      tries++;
+      if (window.jotformEmbedHandler) {
+        window.jotformEmbedHandler("iframe[id='JotFormIFrame-261614223369860']",
   /* ==========================================================
      MY PROJECT TAB
      ----------------------------------------------------------
