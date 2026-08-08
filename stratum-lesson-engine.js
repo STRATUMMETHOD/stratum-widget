@@ -177,17 +177,31 @@
           fallback (whatever sio_u_public currently reads, or
           null) until a student confirms an email.
 
-     Failure to resolve (network error, systeme.io unreachable) is
-     silent by design here - the student is not blocked from using
-     the site, they simply stay on the legacy fallback until the
-     next successful attempt.
+     IMPORTANT - NOT YET LIVE SERVER-SIDE: /resolve-identity does
+     not exist as a route on the Worker as of this build. Calling
+     it would fall through the Worker's routing to the legacy AI
+     chat proxy at the bottom of worker.js, silently sending
+     {email: "..."} to Anthropic's API as a malformed chat request
+     - a wasted paid call, swallowed by this function's own catch,
+     invisible to everyone. RESOLVE_IDENTITY_ENABLED below is the
+     guard against that: leave it false until the real endpoint is
+     built and deployed, then flip it to true. Until then this
+     function intentionally no-ops past step 1 - students still
+     get gated tab access on a confirmed local email exactly as
+     before, they just don't yet get true cross-device identity.
      ---------------------------------------------------------- */
+
+  var RESOLVE_IDENTITY_ENABLED = false;
 
   function ensureDurableIdentity() {
     var existing = readCookie(STRATUM_SID_COOKIE);
     if (existing) {
       STUDENT_ID = existing;
       return Promise.resolve();
+    }
+
+    if (!RESOLVE_IDENTITY_ENABLED) {
+      return Promise.resolve(); // endpoint not live yet - stay on legacy fallback
     }
 
     var email = lsGet(PROJ_KEYS.email);
@@ -683,6 +697,7 @@
 
     ta.value = lsGet(NOTES_KEY) || '';
     ta.addEventListener('input', function () {
+      notesDirty = true;
       lsSet(NOTES_KEY, ta.value);
       saveNotesToD1();
     });
@@ -690,22 +705,45 @@
     loadNotesFromD1();
   }
 
+  // Two guards work together here to prevent the exact bug that lost real
+  // student data during testing: a fast reload (hard refresh, quick nav
+  // away) could fire the pagehide/visibilitychange flush before the initial
+  // GET from D1 had resolved. The textarea was still empty at that moment -
+  // not because the student cleared it, but because their real content
+  // hadn't arrived yet - and the flush pushed that emptiness to the server,
+  // overwriting what was actually there.
+  //
+  // notesLoadedFromD1 becomes true only once we've genuinely heard back
+  // from the server about what's really saved (success OR a real "known:
+  // false" response - either way we now know the truth). notesDirty
+  // becomes true the moment the student actually types something. A save
+  // or flush is only allowed once at least one of those is true - so an
+  // untouched, not-yet-loaded textarea can never be mistaken for
+  // intentionally-cleared content.
+  var notesLoadedFromD1 = false;
+  var notesDirty = false;
+
   function loadNotesFromD1() {
-    if (!STUDENT_ID) return;
+    if (!STUDENT_ID) { notesLoadedFromD1 = true; return; }
     fetch(PROXY_URL + '/notes?studentId=' + encodeURIComponent(STUDENT_ID))
       .then(function (r) { return r.json(); })
       .then(function (d) {
+        notesLoadedFromD1 = true;
         if (!d || !d.known) return;
         var field = document.getElementById('studentNotes');
         if (!field) return;
         field.value = d.text || '';
         lsSet(NOTES_KEY, d.text || '');
       })
-      .catch(function () { /* local cache already shown - fail quietly */ });
+      .catch(function () { /* local cache already shown - fail quietly. Deliberately do
+        NOT set notesLoadedFromD1 true here: if the fetch failed we genuinely don't
+        know what's on the server, so a pagehide flush stays blocked unless the
+        student has actively typed something (notesDirty) this session. */ });
   }
 
   var saveNotesToD1 = debounce(function () {
     if (!STUDENT_ID) return;
+    if (!notesLoadedFromD1 && !notesDirty) return;
     var field = document.getElementById('studentNotes');
     if (!field) return;
     fetch(PROXY_URL + '/notes', {
@@ -717,6 +755,7 @@
 
   function flushNotesToD1() {
     if (!STUDENT_ID) return;
+    if (!notesLoadedFromD1 && !notesDirty) return;
     var field = document.getElementById('studentNotes');
     if (!field) return;
     try {
@@ -807,20 +846,28 @@
   }
 
   function saveTasks(tasks) {
+    tasksDirty = true;
     lsSet(TRACKER_KEY, JSON.stringify(tasks));
     saveTasksToD1();
   }
 
+  // Same guard pattern as Notes above - see the comment there for why
+  // these two flags exist.
+  var tasksLoadedFromD1 = false;
+  var tasksDirty = false;
+
   function loadTasksFromD1() {
-    if (!STUDENT_ID) return;
+    if (!STUDENT_ID) { tasksLoadedFromD1 = true; return; }
     fetch(PROXY_URL + '/tasks?studentId=' + encodeURIComponent(STUDENT_ID))
       .then(function (r) { return r.json(); })
       .then(function (d) {
+        tasksLoadedFromD1 = true;
         if (!d || !d.known) return;
         lsSet(TRACKER_KEY, JSON.stringify(d.tasks || []));
         renderTracker();
       })
-      .catch(function () { /* local cache already shown - fail quietly */ });
+      .catch(function () { /* local cache already shown - fail quietly. Deliberately do
+        NOT set tasksLoadedFromD1 true here - same reasoning as notes. */ });
   }
 
   // Hooked into saveTasks() rather than each individual action, so add,
@@ -828,6 +875,7 @@
   // automatically through their existing saveTasks() call.
   var saveTasksToD1 = debounce(function () {
     if (!STUDENT_ID) return;
+    if (!tasksLoadedFromD1 && !tasksDirty) return;
     fetch(PROXY_URL + '/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -837,6 +885,7 @@
 
   function flushTasksToD1() {
     if (!STUDENT_ID) return;
+    if (!tasksLoadedFromD1 && !tasksDirty) return;
     try {
       fetch(PROXY_URL + '/tasks', {
         method: 'POST',
@@ -1271,7 +1320,10 @@
     // First time this browser has a confirmed email - resolve it to a
     // durable identity BEFORE unlocking the gated tabs, so they build
     // against the final student_id rather than a fallback that's about
-    // to change under them mid-session.
+    // to change under them mid-session. (Currently a no-op past the
+    // stratum_sid-cookie check, per RESOLVE_IDENTITY_ENABLED above -
+    // still correct to await it here so this code needs no changes
+    // once the real endpoint goes live.)
     if (!wasConfirmedBefore && isEmailConfirmed()) {
       statusEl.textContent = 'Confirming…';
       statusEl.className = 'proj-status';
