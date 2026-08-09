@@ -23,7 +23,6 @@
   var PROXY_URL = 'https://stratum-proxy.tedbaker0207.workers.dev';
   var MODEL = 'claude-sonnet-4-5';
   var CONTACT_EMAIL = 'ted@thestratummethod.com';
-  var CONTACT_WHATSAPP = 'https://wa.me/50684192287';
 
   // Section groupings for the Coaching Sessions summary widget.
   var EXCREC_GROUPS = [
@@ -109,10 +108,6 @@
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  // Collapses rapid-fire saves (every keystroke for Notes, every add/toggle/
-  // delete for Tasks) into a single network call after the student pauses.
-  // localStorage still writes instantly at the call site for responsiveness -
-  // this only governs the push to D1.
   function debounce(fn, delay) {
     var t = null;
     return function () {
@@ -122,29 +117,14 @@
     };
   }
 
-  // SAFETY NET - independent of whether the model follows the no-asterisks
-  // instruction in the system prompt. Strips *word* style emphasis down to
-  // plain text so a slip never reaches the screen as literal asterisks.
-  // Deliberately narrow: only matches a single pair around text with no
-  // asterisk or newline inside, so it cannot eat a stray "3 * 4".
   function stripAsteriskEmphasis(text) {
     return String(text).replace(/\*([^*\n]+)\*/g, '$1');
   }
 
-  // Deliberately simple - this is a gate for "did they type something
-  // email-shaped", not a full RFC 5322 validator. Good enough to catch
-  // typos and blank submissions without being pedantic about edge cases.
   function isValidEmail(str) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(str || '').trim());
   }
 
-  // The gate condition every non-Project tab checks before it will render.
-  // A durable stratum_sid cookie is treated as proof on its own - it only
-  // ever gets set after a successful resolveIdentity() call, so its mere
-  // presence means this device has already been through that once.
-  // Otherwise, falls back to whatever email this browser has cached
-  // locally - true the moment a student types a valid one, even before
-  // resolution against systeme.io completes.
   function isEmailConfirmed() {
     if (readCookie(STRATUM_SID_COOKIE)) return true;
     return isValidEmail(lsGet(PROJ_KEYS.email));
@@ -155,30 +135,6 @@
 
   /* ----------------------------------------------------------
      DURABLE IDENTITY RESOLUTION
-     ----------------------------------------------------------
-     Replaces reliance on sio_u_public as the database key.
-     systeme.io support confirmed that cookie is session-scoped,
-     not a stable per-account id - it can change on logout/login,
-     device change, cookie clear, or expiry, silently orphaning
-     everything keyed against it.
-
-     ensureDurableIdentity() is the fix: called once per page load
-     (and once more immediately after a fresh email confirmation),
-     it resolves in one of three ways -
-
-       1. A stratum_sid cookie already exists on this device -
-          use it directly, no network call, done.
-       2. No cookie yet, but a confirmed email is available - call
-          the Worker's /resolve-identity endpoint, which resolves
-          that email to a durable systeme.io contact id and hands
-          back a permanent student_id. Set it as a first-party
-          cookie so this device never has to ask again.
-       3. Neither exists yet - STUDENT_ID stays on its legacy
-          fallback (whatever sio_u_public currently reads, or
-          null) until a student confirms an email.
-
-     RESOLVE_IDENTITY_ENABLED is true - the real /resolve-identity
-     endpoint is live on the Worker.
      ---------------------------------------------------------- */
 
   var RESOLVE_IDENTITY_ENABLED = true;
@@ -191,12 +147,12 @@
     }
 
     if (!RESOLVE_IDENTITY_ENABLED) {
-      return Promise.resolve(); // endpoint not live yet - stay on legacy fallback
+      return Promise.resolve();
     }
 
     var email = lsGet(PROJ_KEYS.email);
     if (!isValidEmail(email)) {
-      return Promise.resolve(); // nothing to resolve yet
+      return Promise.resolve();
     }
 
     return fetch(PROXY_URL + '/resolve-identity', {
@@ -210,11 +166,8 @@
           STUDENT_ID = d.stratumId;
           setCookie(STRATUM_SID_COOKIE, d.stratumId, STRATUM_SID_MAX_AGE);
         }
-        // Any other response (contact_not_found, systeme_api_error, etc.)
-        // - stay on whatever STUDENT_ID already was. Nothing to surface to
-        // the student here; the site keeps working on the legacy fallback.
       })
-      .catch(function () { /* network failure - stay on legacy fallback */ });
+      .catch(function () {});
   }
 
   /* ==========================================================
@@ -235,13 +188,6 @@
 
   /* ==========================================================
      COACHING SESSIONS SUMMARY WIDGET
-     ----------------------------------------------------------
-     Four always-visible section labels, each showing a small
-     fixed-size checkmark tile for every lesson completed in
-     that section so far. Sections with zero completions still
-     show their label and reserve the same row height, but no
-     tiles. Hovering a tile reveals the summary that was
-     carried forward from that session.
      ========================================================== */
 
   function buildExcavationRecordShell(container) {
@@ -263,14 +209,9 @@
 
     EXCREC_GROUPS.forEach(function (group) {
       var groupDiv = el('div', 'excrec-group');
-
-      // Section label - always visible, always its own subtle colored pill,
-      // never conditional on whether anything in this section is complete.
       var labelDiv = el('div', 'excrec-group-label excrec-pill-' + group.key, group.label);
       mount(groupDiv, labelDiv);
 
-      // Tile row - reserves height even when empty; only renders a tile for
-      // lessons this student has actually completed.
       var rowDiv = el('div', 'strata-group');
 
       group.lessons.forEach(function (lesson) {
@@ -304,22 +245,17 @@
       .catch(function () { renderExcavationRecordFrom({}); });
   }
 
-  // Exposed so the coach can trigger a live redraw right after a lesson
-  // completes, without requiring a page refresh.
   window.STRATUM_refreshExcavationRecord = refreshExcavationRecord;
 
   /* ==========================================================
-     VIDEO + TRANSCRIPT + CONTACT + RESOURCE
+     VIDEO + TRANSCRIPT + CONTACT LINE + RESOURCE
      ========================================================== */
 
   function buildVideo(container, mediaId) {
-    // Wistia's player.js and transcript.js each load exactly once per page.
-    // The per-media embed script is separate and loads per video.
     loadScriptOnce('https://fast.wistia.com/player.js');
     loadScriptOnce('https://fast.wistia.com/assets/external/transcript.js');
     loadModuleOnce('https://fast.wistia.com/embed/' + mediaId + '.js');
 
-    // Placeholder styling while the custom element is still undefined.
     var style = document.createElement('style');
     style.textContent =
       "wistia-player[media-id='" + mediaId + "']:not(:defined){" +
@@ -353,6 +289,7 @@
   function buildTranscript(container, mediaId) {
     var details = el('details', 'lec-transcript');
     details.id = 'lecTranscript';
+    details.open = true;
 
     var summary = el('summary', null, 'Read the transcript');
     mount(details, summary);
@@ -374,23 +311,18 @@
     mount(details, body);
     mount(container, details);
 
-    // The Wistia transcript is a web component that measures itself on render.
-    // Inside a closed <details> it has no box to measure, so on first open we
-    // nudge it with a resize event. If nothing has rendered a couple of seconds
-    // later, the media has no generated transcript in Wistia yet - show the
-    // fallback line rather than an empty panel.
-    details.addEventListener('toggle', function () {
-      if (!details.open) return;
-      window.dispatchEvent(new Event('resize'));
-      setTimeout(function () {
-        var t = details.querySelector('wistia-transcript');
-        var fb = document.getElementById('lecTranscriptFallback');
-        if (!t || !fb) return;
-        fb.style.display = (t.offsetHeight < 24) ? 'block' : 'none';
-      }, 2500);
-    });
+    window.dispatchEvent(new Event('resize'));
+    setTimeout(function () {
+      var t = details.querySelector('wistia-transcript');
+      var fb = document.getElementById('lecTranscriptFallback');
+      if (!t || !fb) return;
+      fb.style.display = (t.offsetHeight < 24) ? 'block' : 'none';
+    }, 2500);
   }
 
+  // Kept for Essentials pages, which still show this muted line. Guided/
+  // Mastery pages no longer call this - Contact is a real top-level
+  // destination now, so the line was redundant. WhatsApp dropped entirely.
   function buildContactLine(container) {
     var div = el('div', 'lec-contact');
     div.appendChild(document.createTextNode('Stuck? '));
@@ -402,41 +334,32 @@
     mail.rel = 'noopener';
     mount(div, mail);
 
-    div.appendChild(document.createTextNode(' \u00B7 '));
-
-    var wa = el('a', null, 'WhatsApp');
-    wa.href = CONTACT_WHATSAPP;
-    wa.target = '_blank';
-    wa.rel = 'noopener';
-    mount(div, wa);
-
     mount(container, div);
   }
 
-  // Renders inline on the page as a COLLAPSED bordered accordion. The labeled
-  // title bar is the toggle. Not a download, not a new-tab link.
-  // Only called when the lesson config actually has a resource.
-  // If resource.pdfUrl is present, the PDF renders INLINE via iframe - no
-  // click required. Both text and PDF are independently optional - either
-  // or both may be present, text (if any) appears above the PDF.
+  // Renders inline as a COLLAPSED bordered accordion. If no resource exists
+  // for this lesson, shows a plain fallback line rather than rendering
+  // nothing - this is now a dedicated sub-nav destination ("Lesson
+  // Resources"), so a silently blank panel would look broken.
   function buildResource(container, resource) {
-    if (!resource || !resource.title) return;
+    if (!resource || !resource.title) {
+      mount(container, el('p', 'lec-resource-empty',
+        'No resource has been added for this lesson yet.'));
+      return;
+    }
 
     var details = el('details', 'lec-resource');
     details.id = 'lecResource';
+    details.open = true;
 
     mount(details, el('summary', 'lec-resource-bar', resource.title));
 
     var body = el('div', 'lec-resource-body');
 
-    // Plain text content — only rendered when present.
     if (resource.text && resource.text.trim()) {
       body.innerHTML = resource.html || textToParagraphs(resource.text);
     }
 
-    // Inline PDF — only rendered when a URL is present. Most browsers'
-    // built-in PDF viewer renders inside the iframe with no click needed;
-    // the link beneath is a fallback for the few that don't.
     if (resource.pdfUrl && resource.pdfUrl.trim()) {
       var pdfWrap = el('div', 'lec-resource-pdf');
 
@@ -463,7 +386,6 @@
     mount(container, details);
   }
 
-  // Blank lines separate paragraphs; single newlines become line breaks.
   function textToParagraphs(text) {
     var blocks = String(text).replace(/\r\n/g, '\n').split(/\n\s*\n/);
     var out = '';
@@ -476,16 +398,7 @@
   }
 
   /* ==========================================================
-     ESSENTIALS TIER — JOTFORM TABS
-     ----------------------------------------------------------
-     Essentials lesson pages set window.STRATUM_TIER = "essentials"
-     before loading this engine. They skip the AI coach entirely -
-     no session metering, no My Project/Notes/Tasks, no D1 chat
-     traffic. Just two tabs, each embedding a Jotform form by ID
-     from this lesson's config (LESSON.essentials.exerciseFormId /
-     reflectionFormId). Guided/Mastery pages never call this - they
-     go through buildTabs() below exactly as before. Essentials
-     never touches identity resolution at all.
+     ESSENTIALS TIER — JOTFORM TABS (unchanged)
      ========================================================== */
 
   function buildEssentialsTabs(container) {
@@ -498,7 +411,7 @@
     TABS_E.forEach(function (tab, index) {
       var btn = el('button', 'tablinks', tab.label);
       btn.type = 'button';
-      btn.addEventListener('click', function (evt) { openTab(evt, tab.id); });
+      btn.addEventListener('click', function (evt) { openEssentialsTab(evt, tab.id); });
       if (index === 0) btn.id = 'defaultOpen';
       mount(bar, btn);
     });
@@ -512,9 +425,17 @@
     });
   }
 
-  // Jotform's embed handler script auto-resizes the iframe to fit the form's
-  // actual height once it loads, rather than leaving a fixed-height box with
-  // its own inner scrollbar. Loaded once, shared across both tabs.
+  function openEssentialsTab(evt, tabName) {
+    var panels = document.getElementsByClassName('tabcontent');
+    for (var i = 0; i < panels.length; i++) panels[i].style.display = 'none';
+    var links = document.getElementsByClassName('tablinks');
+    for (var j = 0; j < links.length; j++) {
+      links[j].className = links[j].className.replace(' active', '');
+    }
+    document.getElementById(tabName).style.display = 'block';
+    evt.currentTarget.className += ' active';
+  }
+
   function buildJotformTab(panel, formId, label) {
     if (!formId) {
       mount(panel, el('p', null,
@@ -536,7 +457,6 @@
 
     loadScriptOnce('https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js');
 
-    // The handler script loads async — poll briefly for it, then attach.
     var tries = 0;
     var poll = setInterval(function () {
       tries++;
@@ -544,122 +464,228 @@
         window.jotformEmbedHandler("iframe[id='" + iframeId + "']", 'https://form.jotform.com/');
         clearInterval(poll);
       } else if (tries > 20) {
-        clearInterval(poll); // handler never loaded - iframe still works, just fixed-height
+        clearInterval(poll);
       }
     }, 250);
   }
 
   /* ==========================================================
-     TAB STRUCTURE
+     PERSISTENT SHELL — Guided / Mastery only
      ----------------------------------------------------------
-     Tabs are for things you DO (interactive, stateful).
-     The page itself is for things you READ.
+     Three top-level destinations, left-justified, no logo (the
+     systeme.io theme header already shows one - this nav lives
+     entirely inside #stratum-lesson, below it):
 
-     GATING: My Notes, My Tasks, and My Coach will not render
-     their real content until isEmailConfirmed() is true. Until
-     then they show a short gate message with a button that jumps
-     to My Project. This guarantees nothing is ever saved under
-     an identity we can't later reconnect to the student.
+       THIS LESSON (default) - sub-nav: Video & Transcript
+       (default) | Lesson Resources | Coaching (gated)
+
+       DASHBOARD - Progress card (the existing Coaching Sessions
+       widget, now framed as a card instead of floating free at
+       the top of the page), Notes + Tasks side by side (each
+       gated independently), My Project full-width below
+       (never gated - it's what unlocks the other two).
+
+       CONTACT - the JotForm embed, no sub-nav.
+
+     GATING: Coaching, Notes, and Tasks each register themselves
+     via registerGated() at build time. If email isn't confirmed
+     yet, a gate message renders in their place with a button
+     that jumps to My Project on the Dashboard and scrolls it
+     into view. The moment email is confirmed, unlockGatedTabs()
+     rebuilds all three in place - no reload.
      ========================================================== */
 
-  var TABS = [
-    { id: 'Project',  label: 'My Project', build: buildProjectTab },
-    { id: 'Notes',    label: 'My Notes',   build: buildNotesTab },
-    { id: 'Tasks',    label: 'My Tasks',   build: buildTasksTab },
-    { id: 'Coaching', label: 'My Coach',   build: buildCoachTab },
-    { id: 'Contact',  label: 'Contact',    build: buildContactTab }
-  ];
+  var TOP_SECTIONS = ['ThisLesson', 'Dashboard', 'Contact'];
+  var SUB_SECTIONS = ['VideoTranscript', 'Resources', 'Coaching'];
 
-  var GATED_TAB_IDS = ['Notes', 'Tasks', 'Coaching'];
+  var gatedPending = {}; // key -> { panel, build }
 
-  // Tabs that were gated at build time. Keyed by tab id so
-  // unlockGatedTabs() can find and build their real content the moment
-  // email is confirmed, without a page reload.
-  var gatedPending = {};
-
-  // Placeholder styling only — stratum-lesson-engine.css was not available
-  // when this was built, so this uses plain inline styles rather than the
-  // real brand CSS. Functionally correct, visually generic. Fold this into
-  // the real stylesheet (a .proj-gate rule set) once that file is in hand.
-  function buildGatePanel(panel, tab) {
-    var box = el('div', 'proj-gate');
-    box.style.cssText = 'padding:36px 20px;text-align:center;max-width:420px;margin:0 auto;';
-
-    var title = el('div', null, 'Add your email first');
-    title.style.cssText = 'font-weight:700;font-size:16px;margin-bottom:8px;';
-    mount(box, title);
-
-    var text = el('p', null,
-      'This makes sure your ' + tab.label.replace('My ', '').toLowerCase() +
-      ' actually stays with you. Add your email on the My Project tab, then come straight back.');
-    text.style.cssText = 'margin:0 0 18px;opacity:.75;line-height:1.5;';
-    mount(box, text);
-
-    var btn = el('button', null, 'Go to My Project');
-    btn.type = 'button';
-    btn.style.cssText = 'padding:10px 22px;cursor:pointer;font-weight:600;';
-    btn.addEventListener('click', function () {
-      var projectBtn = document.querySelector('.tablinks[data-tab="Project"]');
-      if (projectBtn) projectBtn.click();
-    });
-    mount(box, btn);
-
-    mount(panel, box);
+  function registerGated(key, panel, buildFn) {
+    if (isEmailConfirmed()) {
+      buildFn(panel);
+    } else {
+      buildGatePanel(panel, key);
+      gatedPending[key] = { panel: panel, build: buildFn };
+    }
   }
 
-  // Called once, right after a student confirms a valid email for the
-  // first time in this browser (and once identity resolution for that
-  // email has finished, so gated panels build against the final id
-  // rather than a fallback that's about to change under them).
   function unlockGatedTabs() {
-    Object.keys(gatedPending).forEach(function (tabId) {
-      var entry = gatedPending[tabId];
+    Object.keys(gatedPending).forEach(function (key) {
+      var entry = gatedPending[key];
       entry.panel.innerHTML = '';
       entry.build(entry.panel);
     });
     gatedPending = {};
   }
 
-  function buildTabs(container) {
-    var bar = el('div', 'tab');
+  var GATE_COPY = {
+    coaching: 'your coaching session',
+    notes: 'your notes',
+    tasks: 'your tasks'
+  };
 
-    TABS.forEach(function (tab, index) {
-      var btn = el('button', 'tablinks', tab.label);
-      btn.type = 'button';
-      btn.dataset.tab = tab.id;
-      btn.addEventListener('click', function (evt) { openTab(evt, tab.id); });
-      if (index === 0) btn.id = 'defaultOpen';
-      mount(bar, btn);
-    });
+  function buildGatePanel(panel, key) {
+    var box = el('div', 'proj-gate');
 
-    mount(container, bar);
+    mount(box, el('div', 'proj-gate-title', 'Add your email first'));
 
-    TABS.forEach(function (tab) {
-      var panel = el('div', 'tabcontent');
-      panel.id = tab.id;
+    var text = el('p', 'proj-gate-text',
+      'This makes sure ' + (GATE_COPY[key] || 'this') +
+      ' actually stays with you. Add your email on My Project, then come straight back.');
+    mount(box, text);
 
-      if (GATED_TAB_IDS.indexOf(tab.id) !== -1 && !isEmailConfirmed()) {
-        buildGatePanel(panel, tab);
-        gatedPending[tab.id] = { panel: panel, build: tab.build };
-      } else {
-        tab.build(panel);
-      }
+    var btn = el('button', 'proj-gate-btn', 'Go to My Project');
+    btn.type = 'button';
+    btn.addEventListener('click', goToProject);
+    mount(box, btn);
 
-      mount(container, panel);
+    mount(panel, box);
+  }
+
+  function goToProject() {
+    showTopSection('Dashboard');
+    var target = document.getElementById('dashProjectSection');
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function showTopSection(sectionId) {
+    TOP_SECTIONS.forEach(function (s) {
+      var panel = document.getElementById('section' + s);
+      if (panel) panel.style.display = (s === sectionId) ? '' : 'none';
+      var btn = document.querySelector('.toplink[data-section="' + s + '"]');
+      if (btn) btn.className = 'toplink' + (s === sectionId ? ' active' : '');
     });
   }
 
-  function openTab(evt, tabName) {
-    var panels = document.getElementsByClassName('tabcontent');
-    for (var i = 0; i < panels.length; i++) panels[i].style.display = 'none';
+  function showSubSection(subId) {
+    SUB_SECTIONS.forEach(function (s) {
+      var panel = document.getElementById('sub' + s);
+      if (panel) panel.style.display = (s === subId) ? '' : 'none';
+      var btn = document.querySelector('.sublink[data-sub="' + s + '"]');
+      if (btn) btn.className = 'sublink' + (s === subId ? ' active' : '');
+    });
+  }
 
-    var links = document.getElementsByClassName('tablinks');
-    for (var j = 0; j < links.length; j++) {
-      links[j].className = links[j].className.replace(' active', '');
-    }
+  function buildShell(container) {
+    var nav = el('div', 'stratum-topnav');
+    TOP_SECTIONS.forEach(function (s, i) {
+      var label = s === 'ThisLesson' ? 'This Lesson' : s;
+      var btn = el('button', 'toplink' + (i === 0 ? ' active' : ''), label);
+      btn.type = 'button';
+      btn.dataset.section = s;
+      btn.addEventListener('click', function () { showTopSection(s); });
+      mount(nav, btn);
+    });
+    mount(container, nav);
 
-    document.getElementById(tabName).style.display = 'block';
-    evt.currentTarget.className += ' active';
+    var thisLessonSection = el('div', 'stratum-section');
+    thisLessonSection.id = 'sectionThisLesson';
+    buildThisLessonSection(thisLessonSection);
+    mount(container, thisLessonSection);
+
+    var dashboardSection = el('div', 'stratum-section');
+    dashboardSection.id = 'sectionDashboard';
+    dashboardSection.style.display = 'none';
+    buildDashboardSection(dashboardSection);
+    mount(container, dashboardSection);
+
+    var contactSection = el('div', 'stratum-section');
+    contactSection.id = 'sectionContact';
+    contactSection.style.display = 'none';
+    buildContactTab(contactSection);
+    mount(container, contactSection);
+  }
+
+  function buildThisLessonSection(container) {
+    var subnav = el('div', 'stratum-subnav');
+    var subLabels = { VideoTranscript: 'Video & Transcript', Resources: 'Lesson Resources', Coaching: 'Coaching' };
+    SUB_SECTIONS.forEach(function (s, i) {
+      var btn = el('button', 'sublink' + (i === 0 ? ' active' : ''), subLabels[s]);
+      btn.type = 'button';
+      btn.dataset.sub = s;
+      btn.addEventListener('click', function () { showSubSection(s); });
+      mount(subnav, btn);
+    });
+    mount(container, subnav);
+
+    var videoPanel = el('div', 'stratum-subsection');
+    videoPanel.id = 'subVideoTranscript';
+    buildVideo(videoPanel, LESSON.video.mediaId);
+    buildTranscript(videoPanel, LESSON.video.mediaId);
+    mount(container, videoPanel);
+
+    var resourcePanel = el('div', 'stratum-subsection');
+    resourcePanel.id = 'subResources';
+    resourcePanel.style.display = 'none';
+    buildResource(resourcePanel, LESSON.resource);
+    mount(container, resourcePanel);
+
+    var coachPanel = el('div', 'stratum-subsection');
+    coachPanel.id = 'subCoaching';
+    coachPanel.style.display = 'none';
+    registerGated('coaching', coachPanel, buildCoachTab);
+    mount(container, coachPanel);
+  }
+
+  function buildDashboardSection(container) {
+    var progressCard = el('div', 'dash-card dash-progress');
+    buildExcavationRecordShell(progressCard);
+    mount(container, progressCard);
+    refreshExcavationRecord();
+
+    var grid = el('div', 'dash-grid');
+
+    var notesCard = el('div', 'dash-card');
+    registerGated('notes', notesCard, buildNotesTab);
+    mount(grid, notesCard);
+
+    var tasksCard = el('div', 'dash-card');
+    registerGated('tasks', tasksCard, buildTasksTab);
+    mount(grid, tasksCard);
+
+    mount(container, grid);
+
+    var projectCard = el('div', 'dash-card dash-project');
+    projectCard.id = 'dashProjectSection';
+    buildProjectTab(projectCard);
+    mount(container, projectCard);
+  }
+
+  /* ==========================================================
+     CONTACT — JotForm embed
+     ----------------------------------------------------------
+     Embeds Ted's existing general-inquiry form as-is. He plans
+     to edit the form's fields (e.g. a Ted/Support recipient
+     dropdown) later inside JotForm itself - nothing here needs
+     to change for that, since this just embeds whatever the
+     live form ID currently renders.
+     ========================================================== */
+
+  function buildContactTab(panel) {
+    var wrap = el('div', 'jf-embed-wrap');
+    var iframe = document.createElement('iframe');
+    iframe.id = 'JotFormIFrame-261614223369860';
+    iframe.title = 'General Inquiry Contact Form';
+    iframe.setAttribute('onload', 'window.parent.scrollTo(0,0)');
+    iframe.setAttribute('allowtransparency', 'true');
+    iframe.setAttribute('allow', 'geolocation; microphone; camera; fullscreen; payment');
+    iframe.src = 'https://form.jotform.com/261614223369860';
+    iframe.style.cssText = 'min-width:100%;max-width:100%;height:539px;border:none;';
+    iframe.scrolling = 'no';
+    mount(wrap, iframe);
+    mount(panel, wrap);
+
+    loadScriptOnce('https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js');
+    var tries = 0;
+    var poll = setInterval(function () {
+      tries++;
+      if (window.jotformEmbedHandler) {
+        window.jotformEmbedHandler("iframe[id='JotFormIFrame-261614223369860']", 'https://form.jotform.com/');
+        clearInterval(poll);
+      } else if (tries > 20) {
+        clearInterval(poll);
+      }
+    }, 250);
   }
 
   /* ==========================================================
@@ -695,21 +721,6 @@
     loadNotesFromD1();
   }
 
-  // Two guards work together here to prevent the exact bug that lost real
-  // student data during testing: a fast reload (hard refresh, quick nav
-  // away) could fire the pagehide/visibilitychange flush before the initial
-  // GET from D1 had resolved. The textarea was still empty at that moment -
-  // not because the student cleared it, but because their real content
-  // hadn't arrived yet - and the flush pushed that emptiness to the server,
-  // overwriting what was actually there.
-  //
-  // notesLoadedFromD1 becomes true only once we've genuinely heard back
-  // from the server about what's really saved (success OR a real "known:
-  // false" response - either way we now know the truth). notesDirty
-  // becomes true the moment the student actually types something. A save
-  // or flush is only allowed once at least one of those is true - so an
-  // untouched, not-yet-loaded textarea can never be mistaken for
-  // intentionally-cleared content.
   var notesLoadedFromD1 = false;
   var notesDirty = false;
 
@@ -725,10 +736,7 @@
         field.value = d.text || '';
         lsSet(NOTES_KEY, d.text || '');
       })
-      .catch(function () { /* local cache already shown - fail quietly. Deliberately do
-        NOT set notesLoadedFromD1 true here: if the fetch failed we genuinely don't
-        know what's on the server, so a pagehide flush stays blocked unless the
-        student has actively typed something (notesDirty) this session. */ });
+      .catch(function () {});
   }
 
   var saveNotesToD1 = debounce(function () {
@@ -740,7 +748,7 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId: STUDENT_ID, text: field.value })
-    }).catch(function () { /* localStorage already has it - sync is best-effort */ });
+    }).catch(function () {});
   }, 2000);
 
   function flushNotesToD1() {
@@ -841,8 +849,6 @@
     saveTasksToD1();
   }
 
-  // Same guard pattern as Notes above - see the comment there for why
-  // these two flags exist.
   var tasksLoadedFromD1 = false;
   var tasksDirty = false;
 
@@ -856,13 +862,9 @@
         lsSet(TRACKER_KEY, JSON.stringify(d.tasks || []));
         renderTracker();
       })
-      .catch(function () { /* local cache already shown - fail quietly. Deliberately do
-        NOT set tasksLoadedFromD1 true here - same reasoning as notes. */ });
+      .catch(function () {});
   }
 
-  // Hooked into saveTasks() rather than each individual action, so add,
-  // toggle, delete, clear-completed and reset all get the debounced D1 push
-  // automatically through their existing saveTasks() call.
   var saveTasksToD1 = debounce(function () {
     if (!STUDENT_ID) return;
     if (!tasksLoadedFromD1 && !tasksDirty) return;
@@ -870,7 +872,7 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId: STUDENT_ID, tasks: loadTasks() })
-    }).catch(function () { /* localStorage already has it - sync is best-effort */ });
+    }).catch(function () {});
   }, 2000);
 
   function flushTasksToD1() {
@@ -886,8 +888,6 @@
     } catch (e) {}
   }
 
-  // isoDate is "YYYY-MM-DD" from the date input - parse as local, not UTC,
-  // so "Aug 10" doesn't shift to Aug 9 for anyone west of UTC.
   function formatDueDate(isoDate) {
     var parts = isoDate.split('-');
     var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
@@ -1021,56 +1021,7 @@
   }
 
   /* ==========================================================
-     CONTACT TAB
-     ----------------------------------------------------------
-     Embeds Ted's existing JotForm general-inquiry form as-is.
-     He plans to edit the form's fields (e.g. a Ted/Support
-     recipient dropdown) later inside JotForm itself - nothing
-     about that requires a change here, since this just embeds
-     whatever the live form ID currently renders.
-     ========================================================== */
-
-  function buildContactTab(panel) {
-    var wrap = el('div', 'jf-embed-wrap');
-    var iframe = document.createElement('iframe');
-    iframe.id = 'JotFormIFrame-261614223369860';
-    iframe.title = 'General Inquiry Contact Form';
-    iframe.setAttribute('onload', 'window.parent.scrollTo(0,0)');
-    iframe.setAttribute('allowtransparency', 'true');
-    iframe.setAttribute('allow', 'geolocation; microphone; camera; fullscreen; payment');
-    iframe.src = 'https://form.jotform.com/261614223369860';
-    iframe.style.cssText = 'min-width:100%;max-width:100%;height:539px;border:none;';
-    iframe.scrolling = 'no';
-    mount(wrap, iframe);
-    mount(panel, wrap);
-
-    loadScriptOnce('https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js');
-    var tries = 0;
-    var poll = setInterval(function () {
-      tries++;
-      if (window.jotformEmbedHandler) {
-        window.jotformEmbedHandler("iframe[id='JotFormIFrame-261614223369860']", 'https://form.jotform.com/');
-        clearInterval(poll);
-      } else if (tries > 20) {
-        clearInterval(poll);
-      }
-    }, 250);
-  }
-
-  /* ==========================================================
-     MY PROJECT TAB
-     ----------------------------------------------------------
-     localStorage is the shared channel between this tab and the
-     coach: the coach reads these same keys fresh on every
-     message it sends, so saving here takes effect immediately
-     without any direct JS coupling between the two. D1 is the
-     source of truth; localStorage is a fast local cache.
-
-     Email is the one required field here — every other field
-     stays optional exactly as before. It's required because it
-     is the trigger that unlocks My Notes, My Tasks, and My Coach
-     AND the trigger for durable identity resolution (see
-     ensureDurableIdentity() above).
+     MY PROJECT — never gated, this is what unlocks the rest
      ========================================================== */
 
   var PROJECT_FIELDS = [
@@ -1283,29 +1234,19 @@
   }
 
   function loadProjectFields() {
-    // Instant fill from local cache so the form never opens empty on a repeat visit.
     var cached = {};
     eachProjectSpec(function (spec) {
       cached[spec.key] = lsGet(PROJ_KEYS[spec.key]) || '';
     });
-    // Email is the one field with a second possible source: systeme.io's own
-    // session value, used only as a starting guess when nothing has been
-    // saved here yet. It is never trusted as a confirmed identity signal —
-    // only as a convenience prefill.
     if (!cached.email && STUDENT_EMAIL) cached.email = STUDENT_EMAIL;
     fillProjectForm(cached);
 
     if (!STUDENT_ID) return;
 
-    // Then reconcile against D1, in case this student edited from another device.
     fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(STUDENT_ID))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || !d.known) return;
-        // If the coach already learned this student's name mid-conversation
-        // (via the [NAME: ...] tag) but that name was never explicitly saved
-        // through My Project, D1 won't have it yet. Don't let an empty D1
-        // value blank out a name that's already known locally.
         var merged = Object.assign({}, d);
         if (!merged.studentName) merged.studentName = lsGet(PROJ_KEYS.studentName) || '';
         if (!merged.email) merged.email = lsGet(PROJ_KEYS.email) || '';
@@ -1314,7 +1255,7 @@
           lsSet(PROJ_KEYS[spec.key], merged[spec.key] || '');
         });
       })
-      .catch(function () { /* local cache already shown - fail quietly */ });
+      .catch(function () {});
   }
 
   function saveProjectFields() {
@@ -1338,16 +1279,10 @@
 
     var wasConfirmedBefore = isEmailConfirmed();
 
-    // Save locally right away regardless of network - the coach can use it
-    // this session even if the server write is still in flight or fails.
     eachProjectSpec(function (spec) {
       lsSet(PROJ_KEYS[spec.key], fields[spec.key]);
     });
 
-    // First time this browser has a confirmed email - resolve it to a
-    // durable identity BEFORE unlocking the gated tabs, so they build
-    // against the final student_id rather than a fallback that's about
-    // to change under them mid-session.
     if (!wasConfirmedBefore && isEmailConfirmed()) {
       statusEl.textContent = 'Confirming…';
       statusEl.className = 'proj-status';
@@ -1396,7 +1331,7 @@
   }
 
   /* ==========================================================
-     MY COACH TAB — THE EXCAVATION COACH
+     MY COACH — THE EXCAVATION COACH
      ========================================================== */
 
   var conversationHistory = [];
@@ -1407,16 +1342,6 @@
   var busy = false;
 
   var chatEl, formEl, inputEl, sendBtn, meterEl;
-
-  /* ----------------------------------------------------------
-     SYSTEM PROMPT ASSEMBLY
-     ----------------------------------------------------------
-     Universal coaching behaviour lives here and applies to
-     every lesson. Lesson-specific material (transcript,
-     reflection areas, calibration examples) comes from the
-     fetched config. Change coaching behaviour once here and
-     every lesson inherits it.
-     ---------------------------------------------------------- */
 
   function buildSystemPrompt() {
     var areas = (LESSON.reflectionFramework.areas || []).map(function (area, i) {
@@ -1477,10 +1402,6 @@
     return parts.join('\n\n');
   }
 
-  /* ----------------------------------------------------------
-     PROJECT CONTEXT + LANGUAGE
-     ---------------------------------------------------------- */
-
   var FOCUS_GUIDANCE = {
     character_depth: 'They specifically want to know whether their character feels real rather than constructed. When character work comes up, that means leaning toward substrate and compensation - what the character is protecting - rather than staying on surface traits.',
     dialogue: 'They specifically want to know whether their dialogue sounds authentic. When dialogue work comes up, that means leaning toward what is being left unsaid, and whether lines read as protection rather than direct statement.',
@@ -1525,10 +1446,6 @@
     return block;
   }
 
-  /* ----------------------------------------------------------
-     GREETING SELECTION
-     ---------------------------------------------------------- */
-
   function getGreetingText(language, knownName) {
     var g = LESSON.greeting || {};
     var translations = g.translations || {};
@@ -1543,10 +1460,6 @@
     if (table && table.fresh) return table.fresh;
     return g.fresh || "Hey - that lecture just ended, so I'm still right here with you.\n\nBefore we get into it, I'd like to actually know who I'm talking to. What's your name?";
   }
-
-  /* ----------------------------------------------------------
-     CHAT UI
-     ---------------------------------------------------------- */
 
   function buildCoachTab(panel) {
     var bleed = el('div', 'syio-bleed');
@@ -1669,10 +1582,6 @@
     };
   }
 
-  /* ----------------------------------------------------------
-     SESSION BALANCE
-     ---------------------------------------------------------- */
-
   function renderMeter(remaining, allowed) {
     if (remaining == null || allowed == null) { meterEl.textContent = ''; return; }
     meterEl.textContent = remaining <= 0
@@ -1685,7 +1594,7 @@
     fetch(PROXY_URL + '/balance?studentId=' + encodeURIComponent(STUDENT_ID))
       .then(function (r) { return r.json(); })
       .then(function (d) { if (d && d.metered) renderMeter(d.remaining, d.allowed); })
-      .catch(function () { /* balance is cosmetic - stay quiet */ });
+      .catch(function () {});
   }
 
   function reportLessonComplete(summaryText) {
@@ -1696,12 +1605,8 @@
       body: JSON.stringify({ studentId: STUDENT_ID, lesson: LESSON_ID, summary: summaryText || null })
     })
       .then(function () { refreshExcavationRecord(); })
-      .catch(function () { /* record update is cosmetic - fail quietly */ });
+      .catch(function () {});
   }
-
-  /* ----------------------------------------------------------
-     PERSISTENCE
-     ---------------------------------------------------------- */
 
   function persist() {
     lsSet(STORE_KEY, JSON.stringify({
@@ -1726,7 +1631,7 @@
         studentName: studentName,
         reflectionComplete: reflectionComplete
       })
-    }).catch(function () { /* localStorage already has it - sync is best-effort */ });
+    }).catch(function () {});
   }
 
   function hydrateFromSaved(saved) {
@@ -1769,10 +1674,6 @@
       .catch(function () { return null; });
   }
 
-  /* ----------------------------------------------------------
-     CARDS
-     ---------------------------------------------------------- */
-
   function showDownloadCard() {
     var card = el('div', 'srx-download-card');
     mount(card, el('div', 'srx-dc-title', 'YOUR REFLECTION IS READY'));
@@ -1802,10 +1703,6 @@
     scrollToBottom();
     meterEl.textContent = 'No coaching sessions remaining';
   }
-
-  /* ----------------------------------------------------------
-     WORD EXPORT
-     ---------------------------------------------------------- */
 
   var LT = String.fromCharCode(60);
   var GT = String.fromCharCode(62);
@@ -1861,10 +1758,6 @@
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
-
-  /* ----------------------------------------------------------
-     SENDING
-     ---------------------------------------------------------- */
 
   function setBusy(state) {
     busy = state;
@@ -1961,10 +1854,6 @@
     sendToClaude();
   }
 
-  /* ----------------------------------------------------------
-     BOOT
-     ---------------------------------------------------------- */
-
   function bootConversation() {
     fetchTranscriptFromD1().then(function (remote) {
       var saved = remote || restoreLocal();
@@ -2015,33 +1904,22 @@
   function buildLessonPage(container) {
     var tier = window.STRATUM_TIER || 'guided';
 
-    if (tier !== 'essentials') {
-      buildExcavationRecordShell(container);
-    }
-
-    // Video, resource, and transcript don't depend on identity - they
-    // render immediately rather than waiting on ensureDurableIdentity().
-    buildVideo(container, LESSON.video.mediaId);
-    buildResource(container, LESSON.resource);
-    buildTranscript(container, LESSON.video.mediaId);
-    buildContactLine(container);
-
     if (tier === 'essentials') {
+      buildVideo(container, LESSON.video.mediaId);
+      buildResource(container, LESSON.resource);
+      buildTranscript(container, LESSON.video.mediaId);
+      buildContactLine(container);
       buildEssentialsTabs(container);
       var defaultBtnE = document.getElementById('defaultOpen');
       if (defaultBtnE) defaultBtnE.click();
       return;
     }
 
-    // Everything identity-dependent - the Coaching Sessions widget and all
-    // four tabs - waits for identity resolution to settle first, so they
-    // build against the final student_id rather than a fallback that
-    // might change out from under them a moment later.
+    // Guided / Mastery - waits for identity resolution to settle before
+    // building the shell, so gated sections build against the final
+    // student_id rather than a fallback that might change under them.
     ensureDurableIdentity().then(function () {
-      refreshExcavationRecord();
-      buildTabs(container);
-      var defaultBtn = document.getElementById('defaultOpen');
-      if (defaultBtn) defaultBtn.click();
+      buildShell(container);
     });
   }
 
@@ -2087,10 +1965,6 @@
         showFatalError(container, "Couldn't load this lesson right now. Please refresh the page, and if it keeps happening, let Ted know.");
       });
   }
-
-  /* ==========================================================
-     FLUSH ON EXIT
-     ========================================================== */
 
   window.addEventListener('pagehide', function () {
     flushNotesToD1();
