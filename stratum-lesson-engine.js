@@ -32,6 +32,16 @@
     { key: 'application', label: 'Application', lessons: ['4.1', '4.2', '4.3'] }
   ];
 
+  // Optional display titles for the Excavation Record rows. Leave a value empty
+  // and that row simply reads "Lecture 2.1". Fill one in and it reads
+  // "Lecture 2.1 - Empty Your Cup". Nothing else needs to change.
+  var LESSON_TITLES = {
+    '1.1': '', '1.2': '', '1.3': '',
+    '2.1': '', '2.2': '', '2.3': '',
+    '3.1': '', '3.2': '', '3.3': '',
+    '4.1': '', '4.2': '', '4.3': ''
+  };
+
   // localStorage keys. Shared with the coach so the My Project tab and the
   // coaching session stay in sync without any direct JS coupling.
   var PROJ_KEYS = {
@@ -187,19 +197,46 @@
   }
 
   /* ==========================================================
-     COACHING SESSIONS SUMMARY WIDGET
+     EXCAVATION RECORD
+     ----------------------------------------------------------
+     A plain expandable list of all twelve lessons and the
+     summary each completed coaching session left behind. This
+     is deliberately NOT a progress display - no counts, no
+     checkmarks, no status colour. A lesson with no session
+     recorded simply says so, in the same neutral weight as
+     every other row.
      ========================================================== */
 
   function buildExcavationRecordShell(container) {
     var wrap = el('div', 'excrec');
     wrap.id = 'excrec';
-    mount(wrap, el('div', 'excrec-title', 'Coaching Sessions'));
+    mount(wrap, el('div', 'excrec-title', 'Excavation Record'));
     mount(wrap, el('div', 'excrec-sub',
-      'The following is a summary of your completed coaching sessions. Hover over a lesson for a review of the session.'));
+      'Each coaching session you finish leaves a summary here, and that summary carries forward to the next lesson\u2019s coach. Select a lesson to read what surfaced.'));
     var groups = el('div', 'excrec-groups');
     groups.id = 'excrecGroups';
     mount(wrap, groups);
     mount(container, wrap);
+  }
+
+  function excrecLabel(lesson) {
+    var title = LESSON_TITLES[lesson];
+    return title ? ('Lecture ' + lesson + ' \u2014 ' + title) : ('Lecture ' + lesson);
+  }
+
+  function closeExcrecRow(row) {
+    row.className = 'excrec-row';
+    var body = row.querySelector('.excrec-row-body');
+    if (body) body.style.display = 'none';
+    var btn = row.querySelector('.excrec-row-btn');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }
+
+  function collapseOtherExcrecRows(keepRow) {
+    var open = document.querySelectorAll('.excrec-row.is-open');
+    Array.prototype.forEach.call(open, function (row) {
+      if (row !== keepRow) closeExcrecRow(row);
+    });
   }
 
   function renderExcavationRecordFrom(completionsByLesson) {
@@ -209,26 +246,63 @@
 
     EXCREC_GROUPS.forEach(function (group) {
       var groupDiv = el('div', 'excrec-group');
-      var labelDiv = el('div', 'excrec-group-label excrec-pill-' + group.key, group.label);
-      mount(groupDiv, labelDiv);
+      mount(groupDiv, el('div', 'excrec-group-label', group.label));
 
-      var rowDiv = el('div', 'strata-group');
+      var list = el('div', 'excrec-list');
 
       group.lessons.forEach(function (lesson) {
-        if (!Object.prototype.hasOwnProperty.call(completionsByLesson, lesson)) return;
+        var hasSession = Object.prototype.hasOwnProperty.call(completionsByLesson, lesson);
+        var row = el('div', 'excrec-row');
 
-        var tile = el('div', 'stratum excrec-tile-' + group.key);
+        if (!hasSession) {
+          var empty = el('div', 'excrec-row-empty');
+          mount(empty, el('span', 'excrec-row-label', excrecLabel(lesson)));
+          mount(empty, el('span', 'excrec-row-note', 'No session recorded'));
+          mount(row, empty);
+          mount(list, row);
+          return;
+        }
 
-        var tip = el('div', 'excrec-tooltip');
-        mount(tip, el('div', 'excrec-tooltip-lecture', 'Lecture ' + lesson));
-        tip.appendChild(document.createTextNode(completionsByLesson[lesson] || 'Completed.'));
-        mount(tile, tip);
+        var summary = completionsByLesson[lesson] || '';
 
-        mount(tile, el('div', 'stratum-check', '\u2713'));
-        mount(rowDiv, tile);
+        var btn = el('button', 'excrec-row-btn');
+        btn.type = 'button';
+        btn.setAttribute('aria-expanded', 'false');
+        mount(btn, el('span', 'excrec-row-label', excrecLabel(lesson)));
+        mount(btn, el('span', 'excrec-row-caret', '\u203A'));
+
+        var body = el('div', 'excrec-row-body');
+        body.style.display = 'none';
+
+        // Body text is only written into the DOM the first time the row is
+        // opened. The summaries themselves all arrive in the single
+        // /completions payload, so there is no second network call here.
+        var bodyBuilt = false;
+
+        btn.addEventListener('click', function () {
+          var wasOpen = row.className.indexOf('is-open') !== -1;
+          collapseOtherExcrecRows(row);
+
+          if (wasOpen) { closeExcrecRow(row); return; }
+
+          if (!bodyBuilt) {
+            body.innerHTML = summary
+              ? textToParagraphs(summary)
+              : '<p>This session is recorded, but no summary was saved for it.</p>';
+            bodyBuilt = true;
+          }
+
+          row.className = 'excrec-row is-open';
+          body.style.display = 'block';
+          btn.setAttribute('aria-expanded', 'true');
+        });
+
+        mount(row, btn);
+        mount(row, body);
+        mount(list, row);
       });
 
-      mount(groupDiv, rowDiv);
+      mount(groupDiv, list);
       mount(groupsEl, groupDiv);
     });
   }
@@ -693,12 +767,6 @@
      ========================================================== */
 
   function buildNotesTab(panel) {
-    var h = el('h3');
-    var strong = el('strong');
-    mount(strong, el('em', null,
-      'Your notes are saved to your account and available on any device you sign in from. Download a copy any time.'));
-    mount(h, strong);
-    mount(panel, h);
 
     var ta = document.createElement('textarea');
     ta.id = 'studentNotes';
@@ -780,10 +848,6 @@
      ========================================================== */
 
   function buildTasksTab(panel) {
-    var h = el('h3', 'tracker-notice');
-    mount(h, el('em', null,
-      'Your tasks are saved to your account and available on any device you sign in from. Download a copy any time.'));
-    mount(panel, h);
 
     var count = el('div', 'tracker-count');
     count.id = 'trackerCount';
@@ -1188,10 +1252,6 @@
   }
 
   function buildProjectTab(panel) {
-    var h = el('h3', 'tracker-notice');
-    mount(h, el('em', null,
-      "This information is saved to your account and carries forward to every lesson's coach — so it already knows your project by the time you get there. Update it any time your story changes."));
-    mount(panel, h);
 
     PROJECT_FIELDS.forEach(function (spec) {
       if (spec.row) {
