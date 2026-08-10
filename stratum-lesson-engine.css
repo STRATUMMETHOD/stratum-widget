@@ -50,8 +50,12 @@
 .excrec-group { margin: 0 0 18px; }
 .excrec-group:last-child { margin-bottom: 0; }
 
-/* Section label — quiet type, no pill, no colour coding. Nothing here
-   should read as a status indicator. */
+/* Section label — now the <summary> of a collapsible section, closed by
+   default. The Record is reference material; leaving all four open pushes
+   the rest of the Dashboard off the screen. Styling stays deliberately
+   quiet: no pill, no colour coding, no count. Nothing here should read as
+   a status indicator — a closed section says nothing about whether work
+   inside it is done. */
 .excrec-group-label {
   font-family: 'Inter', sans-serif;
   font-weight: 600;
@@ -59,11 +63,31 @@
   letter-spacing: .12em;
   text-transform: uppercase;
   color: #8a7a5e;
-  margin: 0 0 6px;
+  margin: 0;
+  padding: 9px 2px;
   text-align: left !important;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #e6ddc9;
+  transition: color .2s ease;
 }
+.excrec-group-label::-webkit-details-marker { display: none; }
+.excrec-group-label::before {
+  content: '\25B8';
+  font-size: 10px;
+  line-height: 1;
+  display: inline-block;
+  transition: transform .18s ease;
+}
+.excrec-group[open] > .excrec-group-label::before { transform: rotate(90deg); }
+.excrec-group-label:hover { color: #281e16; }
 
-.excrec-list { border-top: 1px solid #e6ddc9; }
+/* Border now comes from the summary above, so the list itself doesn't add
+   a second line directly beneath it when the section opens. */
+.excrec-list { border-top: 0; }
 .excrec-row { border-bottom: 1px solid #e6ddc9; }
 
 /* Completed row — the whole row is the control. */
@@ -243,11 +267,11 @@ wistia-transcript { display: block; }
 
 .lec-resource {
   border: 1px solid #e2d9c4;
-  background: #fbf8f1;
   font-family: 'Inter', Arial, sans-serif;
   margin: 0 0 14px;
   text-align: left;
 }
+.lec-resource:last-child { margin-bottom: 0; }
 .lec-resource summary::-webkit-details-marker { display: none; }
 .lec-resource-bar {
   cursor: pointer;
@@ -291,6 +315,51 @@ wistia-transcript { display: block; }
   margin: 0 0 8px;
 }
 .lec-resource-body p { margin: 0 0 12px; }
+
+/* PDF dropdown body. The embedded document supplies its own scrollbar, so
+   this variant drops the 420px cap and the overflow the text body uses —
+   otherwise the page renders a scrollbar inside a scrollbar. Padding is
+   trimmed so the document sits close to the frame edge. */
+.lec-resource-body--pdf {
+  max-height: none;
+  overflow: visible;
+  padding: 10px;
+}
+
+/* The embedded PDF itself. NOTE: this class was assigned in the engine JS
+   but had no rule here at all, so the iframe fell back to the HTML default
+   of 300x150 with a border — the cramped double-scrollbar box. Height is
+   viewport-relative so the document fills most of the screen on a laptop
+   without overflowing a short one; the floor keeps it readable regardless. */
+.lec-resource-pdf-frame {
+  display: block;
+  width: 100%;
+  height: 75vh;
+  min-height: 520px;
+  border: 0;
+  background: #ffffff;
+}
+
+/* Fallback line beneath the embed. Was also unstyled, which is why the link
+   rendered in the browser's default purple instead of clay. */
+.lec-resource-pdf-fallback {
+  margin: 10px 2px 2px;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6f6353;
+}
+.lec-resource-pdf-fallback a {
+  color: #8a6630;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(138, 102, 48, .35);
+  transition: color .2s ease, border-color .2s ease;
+}
+.lec-resource-pdf-fallback a:hover {
+  color: #281e16;
+  border-bottom-color: #281e16;
+}
 
 /* PDF download button — sits below any text content in the resource body.
    Independent of text: renders alone if no text.text is present. Uses the
