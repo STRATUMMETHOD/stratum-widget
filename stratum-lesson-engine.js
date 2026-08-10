@@ -245,8 +245,13 @@
     groupsEl.innerHTML = '';
 
     EXCREC_GROUPS.forEach(function (group) {
-      var groupDiv = el('div', 'excrec-group');
-      mount(groupDiv, el('div', 'excrec-group-label', group.label));
+      // Each section is a <details> with NO open attribute, so all four start
+      // closed. The Record is reference material a student goes looking for,
+      // not a status board — leaving it expanded buries the rest of the
+      // Dashboard. Note this stays true even for sections holding completed
+      // sessions: a closed bar deliberately signals nothing about progress.
+      var groupDiv = el('details', 'excrec-group');
+      mount(groupDiv, el('summary', 'excrec-group-label', group.label));
 
       var list = el('div', 'excrec-list');
 
@@ -422,25 +427,57 @@
       return;
     }
 
-    var details = el('details', 'lec-resource');
-    details.id = 'lecResource';
-    details.open = true;
+    // The written intro and the embedded document are now TWO independent
+    // dropdowns rather than one containing both, so a student can collapse
+    // the intro and keep the document open (or the reverse). Each renders
+    // only if its content exists — a lesson with a PDF and no intro text
+    // shows one dropdown, not an empty one above it.
+    var hasText = !!(resource.text && resource.text.trim());
+    var hasPdf = !!(resource.pdfUrl && resource.pdfUrl.trim());
 
-    mount(details, el('summary', 'lec-resource-bar', resource.title));
-
-    var body = el('div', 'lec-resource-body');
-
-    if (resource.text && resource.text.trim()) {
-      body.innerHTML = resource.html || textToParagraphs(resource.text);
+    if (!hasText && !hasPdf) {
+      mount(container, el('p', 'lec-resource-empty',
+        'No resource has been added for this lesson yet.'));
+      return;
     }
 
-    if (resource.pdfUrl && resource.pdfUrl.trim()) {
+    if (hasText) {
+      var textDetails = el('details', 'lec-resource');
+      textDetails.id = 'lecResource';
+      textDetails.open = true;
+
+      mount(textDetails, el('summary', 'lec-resource-bar', resource.title));
+
+      var textBody = el('div', 'lec-resource-body');
+      textBody.innerHTML = resource.html || textToParagraphs(resource.text);
+
+      mount(textDetails, textBody);
+      mount(container, textDetails);
+    }
+
+    if (hasPdf) {
+      // Falls back to the shared resource title when no separate pdfTitle is
+      // set on the lesson config, so existing lessons keep working untouched.
+      var pdfLabel = (resource.pdfTitle && resource.pdfTitle.trim())
+        ? resource.pdfTitle
+        : resource.title;
+
+      var pdfDetails = el('details', 'lec-resource');
+      pdfDetails.id = 'lecResourcePdf';
+      pdfDetails.open = true;
+
+      mount(pdfDetails, el('summary', 'lec-resource-bar', pdfLabel));
+
+      // The --pdf modifier drops the text body's 420px scroll cap. The
+      // embedded document scrolls itself; capping the wrapper as well
+      // produces a scrollbar inside a scrollbar.
+      var pdfBody = el('div', 'lec-resource-body lec-resource-body--pdf');
       var pdfWrap = el('div', 'lec-resource-pdf');
 
       var frame = document.createElement('iframe');
       frame.className = 'lec-resource-pdf-frame';
       frame.src = resource.pdfUrl;
-      frame.setAttribute('title', resource.title + ' (PDF)');
+      frame.setAttribute('title', pdfLabel + ' (PDF)');
       mount(pdfWrap, frame);
 
       var fallback = el('div', 'lec-resource-pdf-fallback');
@@ -453,11 +490,10 @@
       mount(fallback, fallbackLink);
       mount(pdfWrap, fallback);
 
-      mount(body, pdfWrap);
+      mount(pdfBody, pdfWrap);
+      mount(pdfDetails, pdfBody);
+      mount(container, pdfDetails);
     }
-
-    mount(details, body);
-    mount(container, details);
   }
 
   function textToParagraphs(text) {
