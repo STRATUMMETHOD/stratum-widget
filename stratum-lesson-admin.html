@@ -409,6 +409,7 @@
         <select id="gLessonSelect"></select>
         <button class="btn secondary" id="gLoadBtn" type="button">Load</button>
         <button class="btn secondary" id="gNewLessonBtn" type="button">+ New Lesson</button>
+        <button class="btn danger" id="gDeleteBtn" type="button">Delete Lesson</button>
         <div class="spacer"></div>
         <span class="save-status" id="gSaveStatus"></span>
         <button class="btn" id="gSaveBtn" type="button">Save Lesson</button>
@@ -585,6 +586,7 @@
       <select id="eLessonSelect"></select>
       <button class="btn secondary" id="eLoadBtn" type="button">Load</button>
       <button class="btn secondary" id="eNewLessonBtn" type="button">+ New Lesson</button>
+      <button class="btn danger" id="eDeleteBtn" type="button">Delete Lesson</button>
       <div class="spacer"></div>
       <span class="save-status" id="eSaveStatus"></span>
       <button class="btn" id="eSaveBtn" type="button">Save Lesson</button>
@@ -1240,6 +1242,36 @@ function refreshGuidedList() {
     .catch(function () {});
 }
 
+document.getElementById('gDeleteBtn').addEventListener('click', function () {
+  var id = gLessonSelect.value || document.getElementById('gLessonId').value.trim();
+  if (!id) { gSaveStatus.textContent = 'No lesson selected.'; gSaveStatus.className = 'save-status err'; return; }
+  if (!confirm('Delete Guided lesson "' + id + '"? This cannot be undone.')) return;
+
+  gSaveStatus.textContent = 'Deleting...';
+  gSaveStatus.className = 'save-status';
+
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=guided', {
+    method: 'DELETE',
+    headers: { 'X-Stratum-Admin-Key': adminKey }
+  })
+    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+    .then(function (result) {
+      if (result.status === 200 && result.data && result.data.ok) {
+        gSaveStatus.textContent = 'Deleted ' + id + '.';
+        gSaveStatus.className = 'save-status ok';
+        clearGuidedForm();
+        refreshGuidedList();
+      } else {
+        gSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
+        gSaveStatus.className = 'save-status err';
+      }
+    })
+    .catch(function (e) {
+      gSaveStatus.textContent = 'Network error: ' + e.message;
+      gSaveStatus.className = 'save-status err';
+    });
+});
+
 var eLessonSelect = document.getElementById('eLessonSelect');
 var eResourceFields = document.getElementById('eResourceFields');
 var ePdfFields = document.getElementById('ePdfFields');
@@ -1414,6 +1446,36 @@ function refreshEssentialsList() {
     .then(function (d) { populateSelect(eLessonSelect, d.lessons || []); })
     .catch(function () {});
 }
+
+document.getElementById('eDeleteBtn').addEventListener('click', function () {
+  var id = eLessonSelect.value || document.getElementById('eLessonId').value.trim();
+  if (!id) { eSaveStatus.textContent = 'No lesson selected.'; eSaveStatus.className = 'save-status err'; return; }
+  if (!confirm('Delete Essentials lesson "' + id + '"? This cannot be undone.')) return;
+
+  eSaveStatus.textContent = 'Deleting...';
+  eSaveStatus.className = 'save-status';
+
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=essentials', {
+    method: 'DELETE',
+    headers: { 'X-Stratum-Admin-Key': adminKey }
+  })
+    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+    .then(function (result) {
+      if (result.status === 200 && result.data && result.data.ok) {
+        eSaveStatus.textContent = 'Deleted ' + id + '.';
+        eSaveStatus.className = 'save-status ok';
+        clearEssentialsForm();
+        refreshEssentialsList();
+      } else {
+        eSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
+        eSaveStatus.className = 'save-status err';
+      }
+    })
+    .catch(function (e) {
+      eSaveStatus.textContent = 'Network error: ' + e.message;
+      eSaveStatus.className = 'save-status err';
+    });
+});
 
 gRefreshAddLangOptions();
 if (savedKey) unlock();
