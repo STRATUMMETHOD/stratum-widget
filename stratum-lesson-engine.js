@@ -511,39 +511,29 @@
      ESSENTIALS TIER — JOTFORM TABS (unchanged)
      ========================================================== */
 
-  function buildEssentialsTabs(container) {
+  // Exercise and Reflection each render as their own collapsed bordered
+  // dropdown (same visual language as the Resource accordions), rather
+  // than as tabs. Both open independently; a student can have either,
+  // neither, or both open at once.
+  function buildEssentialsDropdowns(container) {
     var TABS_E = [
       { id: 'Exercise',   label: 'Exercise',   formId: LESSON.essentials && LESSON.essentials.exerciseFormId },
       { id: 'Reflection', label: 'Reflection', formId: LESSON.essentials && LESSON.essentials.reflectionFormId }
     ];
 
-    var bar = el('div', 'tab');
-    TABS_E.forEach(function (tab, index) {
-      var btn = el('button', 'tablinks', tab.label);
-      btn.type = 'button';
-      btn.addEventListener('click', function (evt) { openEssentialsTab(evt, tab.id); });
-      if (index === 0) btn.id = 'defaultOpen';
-      mount(bar, btn);
-    });
-    mount(container, bar);
-
     TABS_E.forEach(function (tab) {
-      var panel = el('div', 'tabcontent');
-      panel.id = tab.id;
-      buildJotformTab(panel, tab.formId, tab.label);
-      mount(container, panel);
-    });
-  }
+      var details = el('details', 'lec-resource');
+      details.id = 'lecEssentials' + tab.id;
+      details.open = true;
 
-  function openEssentialsTab(evt, tabName) {
-    var panels = document.getElementsByClassName('tabcontent');
-    for (var i = 0; i < panels.length; i++) panels[i].style.display = 'none';
-    var links = document.getElementsByClassName('tablinks');
-    for (var j = 0; j < links.length; j++) {
-      links[j].className = links[j].className.replace(' active', '');
-    }
-    document.getElementById(tabName).style.display = 'block';
-    evt.currentTarget.className += ' active';
+      mount(details, el('summary', 'lec-resource-bar', tab.label));
+
+      var body = el('div', 'lec-resource-body lec-resource-body--pdf');
+      buildJotformTab(body, tab.formId, tab.label);
+
+      mount(details, body);
+      mount(container, details);
+    });
   }
 
   function buildJotformTab(panel, formId, label) {
@@ -2002,12 +1992,10 @@
 
     if (tier === 'essentials') {
       buildVideo(container, LESSON.video.mediaId);
-      buildResource(container, LESSON.resource);
       buildTranscript(container, LESSON.video.mediaId);
+      buildResource(container, LESSON.resource);
       buildContactLine(container);
-      buildEssentialsTabs(container);
-      var defaultBtnE = document.getElementById('defaultOpen');
-      if (defaultBtnE) defaultBtnE.click();
+      buildEssentialsDropdowns(container);
       return;
     }
 
