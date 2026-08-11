@@ -361,6 +361,19 @@ wistia-transcript { display: block; }
   border-bottom-color: #281e16;
 }
 
+/* Jotform embeds (Essentials Exercise/Reflection dropdowns). Unstyled
+   previously, so the iframe fell back to the HTML default of 300x150 until
+   Jotform's resize script loaded — often invisible/cut off. A generous
+   min-height keeps it usable immediately; jotformEmbedHandler then resizes
+   it to the form's real height via postMessage. */
+.jf-embed-wrap { width: 100%; }
+.jf-embed-frame {
+  display: block;
+  width: 100%;
+  min-height: 800px;
+  border: none;
+}
+
 /* PDF download button — sits below any text content in the resource body.
    Independent of text: renders alone if no text.text is present. Uses the
    same dark-umber action-button treatment as Notes/Tasks/Project buttons
