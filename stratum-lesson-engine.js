@@ -2023,7 +2023,8 @@
 
     STORE_KEY = 'wlfc_coach_' + LESSON_ID.replace(/\./g, '_');
 
-    fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(LESSON_ID))
+    var tier = window.STRATUM_TIER || 'guided';
+    fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(LESSON_ID) + '&tier=' + encodeURIComponent(tier))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || !d.known || !d.config) {
