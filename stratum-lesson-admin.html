@@ -235,6 +235,15 @@
     color: #8a7a5e;
     min-width: 16px;
   }
+  .area-instructions {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #ccc;
+    line-height: 1.4;
+    resize: vertical;
+  }
   .remove-btn {
     background: none;
     border: none;
@@ -486,6 +495,11 @@
           </div>
           <div id="gPdfFields" class="resource-fields disabled">
             <div class="field">
+              <label for="gResourcePdfTitle">Document title</label>
+              <span class="hint">Shown on the labeled bar above the embedded PDF</span>
+              <input type="text" id="gResourcePdfTitle" placeholder="Excavation Field Guide" />
+            </div>
+            <div class="field">
               <label for="gResourcePdfUrl">PDF URL</label>
               <span class="hint">Direct link to the PDF file &mdash; e.g. hosted on GitHub Pages</span>
               <input type="text" id="gResourcePdfUrl" placeholder="https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf" />
@@ -504,7 +518,7 @@
       </details>
 
       <details class="card" data-group="auto">
-        <summary class="card-title">Coaching approach (coach-only)</summary>
+        <summary class="card-title">Coaching approach</summary>
         <div class="card-body">
         <div class="field">
           <span class="hint">Private instructional guidance for the AI on how to conduct THIS lesson's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student, and separate from the resource document. Optional &mdash; most lessons will not need this.</span>
@@ -657,6 +671,11 @@
           <label for="eHasPdf" style="margin:0;">This resource includes a PDF (displays inline, no click needed)</label>
         </div>
         <div id="ePdfFields" class="resource-fields disabled">
+          <div class="field">
+            <label for="eResourcePdfTitle">Document title</label>
+            <span class="hint">Shown on the labeled bar above the embedded PDF</span>
+            <input type="text" id="eResourcePdfTitle" placeholder="Excavation Field Guide" />
+          </div>
           <div class="field">
             <label for="eResourcePdfUrl">PDF URL</label>
             <span class="hint">Direct link to the PDF file &mdash; e.g. hosted on GitHub Pages</span>
@@ -956,7 +975,7 @@ function gAddAreaBlock(title, instructions) {
 
   var instrTextarea = document.createElement('textarea');
   instrTextarea.className = 'area-instructions';
-  instrTextarea.rows = 3;
+  instrTextarea.rows = 5;
   instrTextarea.placeholder = 'Instructions for the coach on drawing out this area...';
   instrTextarea.value = instructions || '';
   block.appendChild(instrTextarea);
@@ -1078,6 +1097,7 @@ function clearGuidedForm() {
   document.getElementById('gResourceText').value = '';
   gHasPdfCb.checked = false;
   gPdfFields.className = 'resource-fields disabled';
+  document.getElementById('gResourcePdfTitle').value = '';
   document.getElementById('gResourcePdfUrl').value = '';
   gAreasList.innerHTML = '';
   document.getElementById('gCoachingApproach').value = '';
@@ -1106,6 +1126,7 @@ function fillGuidedForm(config) {
     if (config.resource.pdfUrl) {
       gHasPdfCb.checked = true;
       gPdfFields.className = 'resource-fields';
+      document.getElementById('gResourcePdfTitle').value = config.resource.pdfTitle || '';
       document.getElementById('gResourcePdfUrl').value = config.resource.pdfUrl;
     }
   }
@@ -1156,6 +1177,7 @@ function collectGuidedConfig() {
       text: document.getElementById('gResourceText').value.trim()
     };
     if (hasPdf) {
+      resourceObj.pdfTitle = document.getElementById('gResourcePdfTitle').value.trim();
       resourceObj.pdfUrl = document.getElementById('gResourcePdfUrl').value.trim();
     }
   }
@@ -1321,6 +1343,7 @@ function clearEssentialsForm() {
   document.getElementById('eResourceText').value = '';
   eHasPdfCb.checked = false;
   ePdfFields.className = 'resource-fields disabled';
+  document.getElementById('eResourcePdfTitle').value = '';
   document.getElementById('eResourcePdfUrl').value = '';
   document.getElementById('eExerciseFormId').value = '';
   document.getElementById('eReflectionFormId').value = '';
@@ -1344,6 +1367,7 @@ function fillEssentialsForm(config) {
     if (config.resource.pdfUrl) {
       eHasPdfCb.checked = true;
       ePdfFields.className = 'resource-fields';
+      document.getElementById('eResourcePdfTitle').value = config.resource.pdfTitle || '';
       document.getElementById('eResourcePdfUrl').value = config.resource.pdfUrl;
     }
   }
@@ -1366,6 +1390,7 @@ function collectEssentialsConfig() {
       text: document.getElementById('eResourceText').value.trim()
     };
     if (hasPdf) {
+      resourceObj.pdfTitle = document.getElementById('eResourcePdfTitle').value.trim();
       resourceObj.pdfUrl = document.getElementById('eResourcePdfUrl').value.trim();
     }
   }
