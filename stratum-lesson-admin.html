@@ -547,14 +547,9 @@
         <summary class="card-title">Greeting</summary>
         <div class="card-body">
         <div class="field">
-          <label for="gGreetingFresh">First-time greeting</label>
-          <span class="hint">Shown instantly, before the student has been asked their name</span>
+          <label for="gGreetingFresh">Greeting</label>
+          <span class="hint">Shown instantly when the student opens Coaching, before the session begins</span>
           <textarea id="gGreetingFresh" rows="3"></textarea>
-        </div>
-        <div class="field">
-          <label for="gGreetingKnown">Returning-student greeting</label>
-          <span class="hint">Use the literal text {name} where the student's name should appear</span>
-          <textarea id="gGreetingKnown" rows="3"></textarea>
         </div>
       </div>
       </details>
@@ -1108,7 +1103,7 @@ function gRefreshAddLangOptions() {
   });
 }
 
-function gAddLangBlock(lang, fresh, known) {
+function gAddLangBlock(lang, fresh) {
   var block = document.createElement('div');
   block.className = 'lang-block';
   block.dataset.lang = lang;
@@ -1131,7 +1126,7 @@ function gAddLangBlock(lang, fresh, known) {
   var freshField = document.createElement('div');
   freshField.className = 'field';
   var freshLabel = document.createElement('label');
-  freshLabel.textContent = 'Fresh greeting';
+  freshLabel.textContent = 'Greeting';
   freshField.appendChild(freshLabel);
   var freshTa = document.createElement('textarea');
   freshTa.className = 'lang-fresh';
@@ -1139,18 +1134,6 @@ function gAddLangBlock(lang, fresh, known) {
   freshTa.value = fresh || '';
   freshField.appendChild(freshTa);
   block.appendChild(freshField);
-
-  var knownField = document.createElement('div');
-  knownField.className = 'field';
-  var knownLabel = document.createElement('label');
-  knownLabel.textContent = 'Returning-student greeting (use {name})';
-  knownField.appendChild(knownLabel);
-  var knownTa = document.createElement('textarea');
-  knownTa.className = 'lang-known';
-  knownTa.rows = 2;
-  knownTa.value = known || '';
-  knownField.appendChild(knownTa);
-  block.appendChild(knownField);
 
   gTranslationsList.appendChild(block);
   gRefreshAddLangOptions();
@@ -1179,7 +1162,6 @@ function clearGuidedForm() {
   document.getElementById('gCoachingApproach').value = '';
   document.getElementById('gCalibration').value = '';
   document.getElementById('gGreetingFresh').value = '';
-  document.getElementById('gGreetingKnown').value = '';
   gTranslationsList.innerHTML = '';
   gRefreshAddLangOptions();
   updateGuidedJsonPreview();
@@ -1223,11 +1205,10 @@ function fillGuidedForm(config) {
 
   var g = config.greeting || {};
   document.getElementById('gGreetingFresh').value = g.fresh || '';
-  document.getElementById('gGreetingKnown').value = g.knownTemplate || '';
 
   var translations = g.translations || {};
   Object.keys(translations).forEach(function (lang) {
-    gAddLangBlock(lang, translations[lang].fresh, translations[lang].known);
+    gAddLangBlock(lang, translations[lang].fresh);
   });
 
   updateGuidedJsonPreview();
@@ -1248,8 +1229,7 @@ function collectGuidedConfig() {
   gTranslationsList.querySelectorAll('.lang-block').forEach(function (b) {
     var lang = b.dataset.lang;
     var fresh = b.querySelector('.lang-fresh').value.trim();
-    var known = b.querySelector('.lang-known').value.trim();
-    if (fresh || known) translations[lang] = { fresh: fresh, known: known };
+    if (fresh) translations[lang] = { fresh: fresh };
   });
 
   var pdfs = [];
@@ -1285,7 +1265,6 @@ function collectGuidedConfig() {
     },
     greeting: {
       fresh: document.getElementById('gGreetingFresh').value.trim(),
-      knownTemplate: document.getElementById('gGreetingKnown').value.trim(),
       translations: translations
     }
   };
@@ -1562,7 +1541,7 @@ function collectEssentialsConfig() {
       reflectionFormId: document.getElementById('eReflectionFormId').value.trim()
     },
     reflectionFramework: { areas: [], coachingApproach: '', calibrationExamples: [] },
-    greeting: { fresh: '', knownTemplate: '', translations: {} }
+    greeting: { fresh: '', translations: {} }
   };
 }
 
