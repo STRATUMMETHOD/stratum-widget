@@ -375,7 +375,7 @@
 
     var body = el('div', 'lec-transcript-body');
     mount(body, el('p', 'lec-transcript-hint',
-      'Click any word to jump straight to that point in the video.'));
+      'Click any word to sync to video.'));
 
     var fallback = el('p', 'lec-transcript-fallback',
       'The transcript for this lecture is still being prepared. In the meantime, captions are available from the CC button in the player.');
