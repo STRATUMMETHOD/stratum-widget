@@ -499,11 +499,43 @@
      ESSENTIALS TIER — JOTFORM TABS (unchanged)
      ========================================================== */
 
+  // Renders the collapsed, default-closed intro block used both at the top
+  // of the Guided Coaching tab and above the Essentials Exercise/Reflection
+  // forms. Falls back to a legacy resource.title/resource.text pair for
+  // lessons saved before this field existed, so nothing silently vanishes
+  // before it's re-saved via the admin panel.
+  function getCoachingIntro() {
+    if (LESSON.coachingIntro && LESSON.coachingIntro.title) return LESSON.coachingIntro;
+    if (LESSON.resource && LESSON.resource.title && LESSON.resource.text) return LESSON.resource;
+    return null;
+  }
+
+  function buildCoachingIntro(container) {
+    var intro = getCoachingIntro();
+    if (!intro) return;
+
+    var details = el('details', 'lec-resource');
+    details.id = 'lecCoachingIntro';
+    // Default closed - it shouldn't compete with the coaching session (or,
+    // on Essentials, the Exercise/Reflection forms) for the student's first
+    // glance.
+
+    mount(details, el('summary', 'lec-resource-bar', intro.title));
+
+    var body = el('div', 'lec-resource-body');
+    body.innerHTML = intro.html || textToParagraphs(intro.text || '');
+    mount(details, body);
+
+    mount(container, details);
+  }
+
   // Exercise and Reflection each render as their own collapsed bordered
   // dropdown (same visual language as the Resource accordions), rather
   // than as tabs. Both open independently; a student can have either,
   // neither, or both open at once.
   function buildEssentialsDropdowns(container) {
+    buildCoachingIntro(container);
+
     var TABS_E = [
       { id: 'Exercise',   label: 'Exercise',   formId: LESSON.essentials && LESSON.essentials.exerciseFormId },
       { id: 'Reflection', label: 'Reflection', formId: LESSON.essentials && LESSON.essentials.reflectionFormId }
@@ -1436,9 +1468,7 @@
       'THE LECTURE THEY JUST WATCHED (' + LESSON.scopeNote + '):\n"""\n' + LESSON.transcript + '\n"""'
     ];
 
-    var coachingIntro = (LESSON.coachingIntro && LESSON.coachingIntro.title)
-      ? LESSON.coachingIntro
-      : (LESSON.resource && LESSON.resource.title && LESSON.resource.text ? LESSON.resource : null);
+    var coachingIntro = getCoachingIntro();
 
     if (coachingIntro) {
       parts.push(
@@ -1540,29 +1570,7 @@
   }
 
   function buildCoachTab(panel) {
-    // A lesson saved before the coaching-intro split kept this text under
-    // resource.title/resource.text. If coachingIntro hasn't been re-saved
-    // yet via the admin panel, fall back to that legacy pair so the text
-    // doesn't silently disappear from the page.
-    var intro = (LESSON.coachingIntro && LESSON.coachingIntro.title)
-      ? LESSON.coachingIntro
-      : (LESSON.resource && LESSON.resource.title && LESSON.resource.text ? LESSON.resource : null);
-
-    if (intro) {
-      var introDetails = el('details', 'lec-resource');
-      introDetails.id = 'lecCoachingIntro';
-      // Default closed - this sits at the top of the Coaching tab, above
-      // the chat itself, and should not compete with the conversation for
-      // the student's first glance.
-
-      mount(introDetails, el('summary', 'lec-resource-bar', intro.title));
-
-      var introBody = el('div', 'lec-resource-body');
-      introBody.innerHTML = intro.html || textToParagraphs(intro.text || '');
-      mount(introDetails, introBody);
-
-      mount(panel, introDetails);
-    }
+    buildCoachingIntro(panel);
 
     var bleed = el('div', 'syio-bleed');
     var wrap = el('div', 'srx-wrap');
@@ -1621,10 +1629,6 @@
   function addMessage(role, text) {
     var row = el('div', 'srx-row ' + role);
 
-    var avatar = el('div', 'srx-avatar',
-      role === 'assistant' ? 'TB' : (studentName ? studentName.charAt(0).toUpperCase() : 'Y'));
-    mount(row, avatar);
-
     var bubble = el('div', 'srx-bubble', text);
     mount(row, bubble);
 
@@ -1636,7 +1640,6 @@
 
   function showTyping() {
     typingRow = el('div', 'srx-row assistant');
-    mount(typingRow, el('div', 'srx-avatar', 'TB'));
 
     var bubble = el('div', 'srx-bubble');
     var dots = el('div', 'srx-typing');
