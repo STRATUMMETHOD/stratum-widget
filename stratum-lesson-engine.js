@@ -416,84 +416,72 @@
     mount(container, div);
   }
 
-  // Renders inline as a COLLAPSED bordered accordion. If no resource exists
-  // for this lesson, shows a plain fallback line rather than rendering
-  // nothing - this is now a dedicated sub-nav destination ("Lesson
-  // Resources"), so a silently blank panel would look broken.
+  // Renders each PDF as its own COLLAPSED bordered accordion, with the
+  // first one open by default and the rest closed. Supports any number of
+  // PDFs per lesson. If no resource exists for this lesson, shows a plain
+  // fallback line rather than rendering nothing - this is now a dedicated
+  // sub-nav destination ("Lesson Resources"), so a silently blank panel
+  // would look broken.
   function buildResource(container, resource) {
-    if (!resource || !resource.title) {
+    var pdfs = getResourcePdfs(resource);
+
+    if (!pdfs.length) {
       mount(container, el('p', 'lec-resource-empty',
         'No resource has been added for this lesson yet.'));
       return;
     }
 
-    // The written intro and the embedded document are now TWO independent
-    // dropdowns rather than one containing both, so a student can collapse
-    // the intro and keep the document open (or the reverse). Each renders
-    // only if its content exists — a lesson with a PDF and no intro text
-    // shows one dropdown, not an empty one above it.
-    var hasText = !!(resource.text && resource.text.trim());
-    var hasPdf = !!(resource.pdfUrl && resource.pdfUrl.trim());
+    pdfs.forEach(function (pdf, i) {
+      var label = (pdf.title && pdf.title.trim()) ? pdf.title : 'Resource';
 
-    if (!hasText && !hasPdf) {
-      mount(container, el('p', 'lec-resource-empty',
-        'No resource has been added for this lesson yet.'));
-      return;
-    }
+      var details = el('details', 'lec-resource');
+      details.id = 'lecResourcePdf' + (i + 1);
+      details.open = (i === 0);
 
-    if (hasText) {
-      var textDetails = el('details', 'lec-resource');
-      textDetails.id = 'lecResource';
-      textDetails.open = true;
-
-      mount(textDetails, el('summary', 'lec-resource-bar', resource.title));
-
-      var textBody = el('div', 'lec-resource-body');
-      textBody.innerHTML = resource.html || textToParagraphs(resource.text);
-
-      mount(textDetails, textBody);
-      mount(container, textDetails);
-    }
-
-    if (hasPdf) {
-      // Falls back to the shared resource title when no separate pdfTitle is
-      // set on the lesson config, so existing lessons keep working untouched.
-      var pdfLabel = (resource.pdfTitle && resource.pdfTitle.trim())
-        ? resource.pdfTitle
-        : resource.title;
-
-      var pdfDetails = el('details', 'lec-resource');
-      pdfDetails.id = 'lecResourcePdf';
-      pdfDetails.open = true;
-
-      mount(pdfDetails, el('summary', 'lec-resource-bar', pdfLabel));
+      mount(details, el('summary', 'lec-resource-bar', label));
 
       // The --pdf modifier drops the text body's 420px scroll cap. The
       // embedded document scrolls itself; capping the wrapper as well
       // produces a scrollbar inside a scrollbar.
-      var pdfBody = el('div', 'lec-resource-body lec-resource-body--pdf');
-      var pdfWrap = el('div', 'lec-resource-pdf');
+      var body = el('div', 'lec-resource-body lec-resource-body--pdf');
+      var wrap = el('div', 'lec-resource-pdf');
 
       var frame = document.createElement('iframe');
       frame.className = 'lec-resource-pdf-frame';
-      frame.src = resource.pdfUrl;
-      frame.setAttribute('title', pdfLabel + ' (PDF)');
-      mount(pdfWrap, frame);
+      frame.src = pdf.url;
+      frame.setAttribute('title', label + ' (PDF)');
+      mount(wrap, frame);
 
       var fallback = el('div', 'lec-resource-pdf-fallback');
       fallback.appendChild(document.createTextNode("PDF not displaying? "));
       var fallbackLink = document.createElement('a');
-      fallbackLink.href = resource.pdfUrl;
+      fallbackLink.href = pdf.url;
       fallbackLink.target = '_blank';
       fallbackLink.rel = 'noopener';
       fallbackLink.textContent = 'Open it in a new tab';
       mount(fallback, fallbackLink);
-      mount(pdfWrap, fallback);
+      mount(wrap, fallback);
 
-      mount(pdfBody, pdfWrap);
-      mount(pdfDetails, pdfBody);
-      mount(container, pdfDetails);
+      mount(body, wrap);
+      mount(details, body);
+      mount(container, details);
+    });
+  }
+
+  // Normalises a resource config into a flat array of { title, url } pairs,
+  // regardless of whether it was saved under the current pdfs[] schema or
+  // the older single pdfUrl/pdfTitle schema - so lessons saved before the
+  // multi-PDF admin update keep rendering without needing to be re-saved
+  // first.
+  function getResourcePdfs(resource) {
+    if (!resource) return [];
+    if (Array.isArray(resource.pdfs)) {
+      return resource.pdfs.filter(function (p) { return p && p.url && p.url.trim(); });
     }
+    if (resource.pdfUrl && resource.pdfUrl.trim()) {
+      return [{ title: resource.pdfTitle || resource.title || '', url: resource.pdfUrl }];
+    }
+    return [];
   }
 
   function textToParagraphs(text) {
@@ -1448,11 +1436,15 @@
       'THE LECTURE THEY JUST WATCHED (' + LESSON.scopeNote + '):\n"""\n' + LESSON.transcript + '\n"""'
     ];
 
-    if (LESSON.resource && LESSON.resource.title) {
+    var coachingIntro = (LESSON.coachingIntro && LESSON.coachingIntro.title)
+      ? LESSON.coachingIntro
+      : (LESSON.resource && LESSON.resource.title && LESSON.resource.text ? LESSON.resource : null);
+
+    if (coachingIntro) {
       parts.push(
-        'RESOURCE DOCUMENT THE STUDENT CAN READ ON THIS PAGE (' + LESSON.resource.title + '):\n"""\n' +
-        (LESSON.resource.text || '') +
-        '\n"""\nThis is reference material for you, not a script. The student has access to this same document on the page and may or may not have read it yet. Use it to understand any concepts, frameworks, or techniques it teaches so you can draw on them naturally in conversation and apply them to what the student actually says. Never quote, recite, or paraphrase-at-length from this document to the student - if they have not read it, summarize the relevant idea briefly in your own words instead of reading it to them.'
+        'INTRO TEXT SHOWN TO THE STUDENT AT THE TOP OF THE COACHING TAB (' + coachingIntro.title + '):\n"""\n' +
+        (coachingIntro.text || '') +
+        '\n"""\nThis is reference material for you, not a script. The student has access to this same text on the page - collapsed by default, so they may or may not have opened and read it. Use it to understand any concepts, frameworks, or techniques it teaches so you can draw on them naturally in conversation and apply them to what the student actually says. Never quote, recite, or paraphrase-at-length from this text to the student - if they have not read it, summarize the relevant idea briefly in your own words instead of reading it to them.'
       );
     }
 
@@ -1548,6 +1540,30 @@
   }
 
   function buildCoachTab(panel) {
+    // A lesson saved before the coaching-intro split kept this text under
+    // resource.title/resource.text. If coachingIntro hasn't been re-saved
+    // yet via the admin panel, fall back to that legacy pair so the text
+    // doesn't silently disappear from the page.
+    var intro = (LESSON.coachingIntro && LESSON.coachingIntro.title)
+      ? LESSON.coachingIntro
+      : (LESSON.resource && LESSON.resource.title && LESSON.resource.text ? LESSON.resource : null);
+
+    if (intro) {
+      var introDetails = el('details', 'lec-resource');
+      introDetails.id = 'lecCoachingIntro';
+      // Default closed - this sits at the top of the Coaching tab, above
+      // the chat itself, and should not compete with the conversation for
+      // the student's first glance.
+
+      mount(introDetails, el('summary', 'lec-resource-bar', intro.title));
+
+      var introBody = el('div', 'lec-resource-body');
+      introBody.innerHTML = intro.html || textToParagraphs(intro.text || '');
+      mount(introDetails, introBody);
+
+      mount(panel, introDetails);
+    }
+
     var bleed = el('div', 'syio-bleed');
     var wrap = el('div', 'srx-wrap');
 
