@@ -410,7 +410,22 @@
   </div>
 
   <div id="dashboardView" style="display:none;">
-    Dashboard &mdash; nothing here yet.
+    <div class="card-body" style="padding:0 0 14px;">
+      <input type="text" id="studentSearch" placeholder="Search by email..." style="width:100%;padding:8px 10px;font-size:13px;font-family:'Inter',Arial,sans-serif;border:1px solid #ccc;box-sizing:border-box;" />
+    </div>
+    <table id="studentsTable" style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e2d9c4;">
+      <thead>
+        <tr style="border-bottom:1px solid #e2d9c4;">
+          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Email</th>
+          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Sessions Completed</th>
+          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Sessions Used</th>
+          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Status</th>
+          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Last Seen</th>
+        </tr>
+      </thead>
+      <tbody id="studentsTableBody"></tbody>
+    </table>
+    <div id="studentsStatus" style="padding:14px 2px;font-size:12px;color:#8a7a5e;font-style:italic;"></div>
   </div>
 
   <div id="guidedView">
@@ -781,9 +796,84 @@ function showTopTab(which) {
   essentialsView.style.display = which === 'essentials' ? '' : 'none';
 }
 
-tabDashboardBtn.addEventListener('click', function () { showTopTab('dashboard'); });
+tabDashboardBtn.addEventListener('click', function () {
+  showTopTab('dashboard');
+  loadStudents();
+});
 tabGuidedBtn.addEventListener('click', function () { showTopTab('guided'); });
 tabEssentialsBtn.addEventListener('click', function () { showTopTab('essentials'); });
+
+var studentsTableBody = document.getElementById('studentsTableBody');
+var studentsStatus = document.getElementById('studentsStatus');
+var studentSearch = document.getElementById('studentSearch');
+var allStudents = [];
+var studentsLoaded = false;
+
+function formatLastSeen(iso) {
+  if (!iso) return '\u2014';
+  // D1's datetime('now') stores 'YYYY-MM-DD HH:MM:SS' (UTC, no offset) -
+  // append 'Z' so the browser parses it as UTC rather than local time.
+  var d = new Date(iso.indexOf('Z') === -1 ? iso.replace(' ', 'T') + 'Z' : iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function renderStudents(list) {
+  studentsTableBody.innerHTML = '';
+  if (!list.length) {
+    studentsStatus.textContent = allStudents.length ? 'No students match that search.' : 'No students yet.';
+    return;
+  }
+  studentsStatus.textContent = list.length + ' student' + (list.length === 1 ? '' : 's');
+  list.forEach(function (s) {
+    var tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid #f0e9d8';
+
+    var cells = [
+      s.email || '(no email on file)',
+      String(s.completedCount || 0),
+      (s.sessionsUsed != null ? s.sessionsUsed : 0) + ' / ' + (s.sessionsAllowed != null ? s.sessionsAllowed : '\u2014'),
+      s.status || 'active',
+      formatLastSeen(s.lastSeen)
+    ];
+    cells.forEach(function (text) {
+      var td = document.createElement('td');
+      td.style.padding = '9px 12px';
+      td.style.fontSize = '13px';
+      td.style.fontFamily = "'Inter', Arial, sans-serif";
+      td.style.color = '#3B2F24';
+      td.textContent = text;
+      tr.appendChild(td);
+    });
+    studentsTableBody.appendChild(tr);
+  });
+}
+
+function applyStudentSearch() {
+  var q = studentSearch.value.trim().toLowerCase();
+  if (!q) { renderStudents(allStudents); return; }
+  renderStudents(allStudents.filter(function (s) {
+    return (s.email || '').toLowerCase().indexOf(q) !== -1;
+  }));
+}
+
+studentSearch.addEventListener('input', applyStudentSearch);
+
+function loadStudents() {
+  if (studentsLoaded) return;
+  if (!adminKey) { studentsStatus.textContent = 'Unlock the panel first.'; return; }
+  studentsStatus.textContent = 'Loading...';
+  fetch(PROXY_URL + '/admin/students', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      allStudents = (d && d.students) || [];
+      studentsLoaded = true;
+      renderStudents(allStudents);
+    })
+    .catch(function () {
+      studentsStatus.textContent = 'Could not load students.';
+    });
+}
 
 var tabLessonEditorBtn = document.getElementById('tabLessonEditorBtn');
 var tabCourseAssistantBtn = document.getElementById('tabCourseAssistantBtn');
