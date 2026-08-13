@@ -391,12 +391,41 @@
     mount(container, details);
 
     window.dispatchEvent(new Event('resize'));
-    setTimeout(function () {
-      var t = details.querySelector('wistia-transcript');
-      var fb = document.getElementById('lecTranscriptFallback');
-      if (!t || !fb) return;
-      fb.style.display = (t.offsetHeight < 24) ? 'block' : 'none';
-    }, 2500);
+
+    // The Wistia transcript widget loads asynchronously and can take
+    // anywhere from under a second to several seconds depending on the
+    // connection. A single fixed-delay check was deciding "failed" before
+    // slow-loading widgets had a real chance to render - and once decided,
+    // nothing ever re-checked, so the fallback stayed stuck on screen even
+    // after the real transcript showed up moments later. This instead
+    // watches the widget for actual content and hides the fallback the
+    // moment it appears, however long that takes. A generous outer timeout
+    // is the true failure case - the widget never loaded at all.
+    var fb = document.getElementById('lecTranscriptFallback');
+    if (fb) {
+      var settled = false;
+      var settle = function (widgetLoaded) {
+        if (settled) return;
+        settled = true;
+        observer.disconnect();
+        clearTimeout(giveUpTimer);
+        fb.style.display = widgetLoaded ? 'none' : 'block';
+      };
+
+      var observer = new MutationObserver(function () {
+        if (wt.offsetHeight >= 24) settle(true);
+      });
+      observer.observe(wt, { childList: true, subtree: true });
+
+      // Covers the rare case where the widget's height never legitimately
+      // clears the threshold (e.g. Wistia's script failed to load at all).
+      var giveUpTimer = setTimeout(function () {
+        settle(wt.offsetHeight >= 24);
+      }, 12000);
+
+      // In case content is already present by the time this runs.
+      if (wt.offsetHeight >= 24) settle(true);
+    }
   }
 
   // Kept for Essentials pages, which still show this muted line. Guided/
