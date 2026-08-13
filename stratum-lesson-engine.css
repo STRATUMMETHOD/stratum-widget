@@ -458,16 +458,26 @@ wistia-transcript { display: block; }
 }
 .tabcontent a:hover { color: #004999; text-decoration: underline; }
 
-/* Notes textarea — white background, per brand decision */
+/* Notes textarea — styled as a ruled notepad: horizontal rule lines at
+   each line-height step, plus a legal-pad margin line down the left.
+   background-attachment:local keeps both scrolling with the text instead
+   of staying fixed to the visible viewport. */
 #studentNotes {
   width: 100%;
-  height: 150px;
-  padding: 6px;
-  font-size: 12px;
-  background: #ffffff;
+  height: 228px;
+  padding: 10px 12px 10px 52px;
+  font-size: 15px;
+  line-height: 26px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: #3B2F24;
   text-align: left;
-  font-family: Arial, sans-serif;
-  line-height: 1.15;
+  border: 1px solid #d8cba8;
+  resize: vertical;
+  background-color: #F5EFE0;
+  background-attachment: local;
+  background-image:
+    linear-gradient(90deg, transparent 41px, rgba(201,164,108,.55) 41px, rgba(201,164,108,.55) 42px, transparent 42px),
+    repeating-linear-gradient(180deg, transparent 0, transparent 25px, #e2d5b8 25px, #e2d5b8 26px);
 }
 
 /* Action buttons — unified dark umber across Notes, Tasks and Project */
