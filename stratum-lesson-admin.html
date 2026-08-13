@@ -244,6 +244,14 @@
     line-height: 1.4;
     resize: vertical;
   }
+  .pdf-url-input {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #ccc;
+    margin-top: 6px;
+  }
   .remove-btn {
     background: none;
     border: none;
@@ -476,34 +484,32 @@
         <div class="card-body">
         <div class="toggle-row">
           <input type="checkbox" id="gHasResource" />
-          <label for="gHasResource" style="margin:0;">This lesson has a resource</label>
+          <label for="gHasResource" style="margin:0;">This lesson has resource PDFs</label>
         </div>
         <div id="gResourceFields" class="resource-fields disabled">
+          <div id="gPdfsList"></div>
+          <button class="add-btn" id="gAddPdfBtn" type="button">+ Add PDF</button>
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="plain">
+        <summary class="card-title">Coaching intro text</summary>
+        <div class="card-body">
+        <div class="toggle-row">
+          <input type="checkbox" id="gHasCoachingIntro" />
+          <label for="gHasCoachingIntro" style="margin:0;">This lesson shows an intro message at the top of Coaching, default closed</label>
+        </div>
+        <div id="gCoachingIntroFields" class="resource-fields disabled">
           <div class="field">
-            <label for="gResourceTitle">Resource title</label>
-            <span class="hint">Shown on the labeled bar above the resource content</span>
-            <input type="text" id="gResourceTitle" placeholder="Empty Your Cup &mdash; White Paper" />
+            <label for="gCoachingIntroTitle">Intro title</label>
+            <span class="hint">Shown on the labeled bar above the intro text</span>
+            <input type="text" id="gCoachingIntroTitle" placeholder="Preparation For First Coaching Session" />
           </div>
           <div class="field">
-            <label for="gResourceText">Resource content</label>
-            <span class="hint">Plain text &mdash; renders inline on the lecture page</span>
-            <textarea id="gResourceText" rows="6"></textarea>
-          </div>
-          <div class="toggle-row">
-            <input type="checkbox" id="gHasPdf" />
-            <label for="gHasPdf" style="margin:0;">This resource includes a PDF (displays inline, no click needed)</label>
-          </div>
-          <div id="gPdfFields" class="resource-fields disabled">
-            <div class="field">
-              <label for="gResourcePdfTitle">Document title</label>
-              <span class="hint">Shown on the labeled bar above the embedded PDF</span>
-              <input type="text" id="gResourcePdfTitle" placeholder="Excavation Field Guide" />
-            </div>
-            <div class="field">
-              <label for="gResourcePdfUrl">PDF URL</label>
-              <span class="hint">Direct link to the PDF file &mdash; e.g. hosted on GitHub Pages</span>
-              <input type="text" id="gResourcePdfUrl" placeholder="https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf" />
-            </div>
+            <label for="gCoachingIntroText">Intro content</label>
+            <span class="hint">Plain text &mdash; renders inline at the top of the Coaching tab</span>
+            <textarea id="gCoachingIntroText" rows="6"></textarea>
           </div>
         </div>
       </div>
@@ -653,35 +659,11 @@
       <div class="card-body">
       <div class="toggle-row">
         <input type="checkbox" id="eHasResource" />
-        <label for="eHasResource" style="margin:0;">This lesson has a resource</label>
+        <label for="eHasResource" style="margin:0;">This lesson has resource PDFs</label>
       </div>
       <div id="eResourceFields" class="resource-fields disabled">
-        <div class="field">
-          <label for="eResourceTitle">Resource title</label>
-          <span class="hint">Shown on the labeled bar above the resource content</span>
-          <input type="text" id="eResourceTitle" placeholder="Empty Your Cup &mdash; White Paper" />
-        </div>
-        <div class="field">
-          <label for="eResourceText">Resource content</label>
-          <span class="hint">Plain text &mdash; renders inline on the lecture page</span>
-          <textarea id="eResourceText" rows="6"></textarea>
-        </div>
-        <div class="toggle-row">
-          <input type="checkbox" id="eHasPdf" />
-          <label for="eHasPdf" style="margin:0;">This resource includes a PDF (displays inline, no click needed)</label>
-        </div>
-        <div id="ePdfFields" class="resource-fields disabled">
-          <div class="field">
-            <label for="eResourcePdfTitle">Document title</label>
-            <span class="hint">Shown on the labeled bar above the embedded PDF</span>
-            <input type="text" id="eResourcePdfTitle" placeholder="Excavation Field Guide" />
-          </div>
-          <div class="field">
-            <label for="eResourcePdfUrl">PDF URL</label>
-            <span class="hint">Direct link to the PDF file &mdash; e.g. hosted on GitHub Pages</span>
-            <input type="text" id="eResourcePdfUrl" placeholder="https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf" />
-          </div>
-        </div>
+        <div id="ePdfsList"></div>
+        <button class="add-btn" id="eAddPdfBtn" type="button">+ Add PDF</button>
       </div>
     </div>
     </details>
@@ -723,6 +705,8 @@ var LANGUAGES = [
 
 var adminKey = '';
 var gAreaCounter = 0;
+var gPdfCounter = 0;
+var ePdfCounter = 0;
 
 var authInput = document.getElementById('adminKeyInput');
 var authStatus = document.getElementById('authStatus');
@@ -909,9 +893,10 @@ function populateSelect(selectEl, lessons) {
 var gLessonSelect = document.getElementById('gLessonSelect');
 var gAreasList = document.getElementById('gAreasList');
 var gResourceFields = document.getElementById('gResourceFields');
-var gPdfFields = document.getElementById('gPdfFields');
+var gPdfsList = document.getElementById('gPdfsList');
 var gHasResourceCb = document.getElementById('gHasResource');
-var gHasPdfCb = document.getElementById('gHasPdf');
+var gCoachingIntroFields = document.getElementById('gCoachingIntroFields');
+var gHasCoachingIntroCb = document.getElementById('gHasCoachingIntro');
 var gTranslationsList = document.getElementById('gTranslationsList');
 var gAddLangSelect = document.getElementById('gAddLangSelect');
 var gSaveStatus = document.getElementById('gSaveStatus');
@@ -995,6 +980,62 @@ document.getElementById('gAddAreaBtn').addEventListener('click', function () {
   gAddAreaBlock('', '');
 });
 
+function gAddPdfBlock(title, url) {
+  gPdfCounter++;
+  var id = 'gpdf_' + gPdfCounter;
+
+  var block = document.createElement('div');
+  block.className = 'area-block pdf-block';
+  block.dataset.id = id;
+
+  var head = document.createElement('div');
+  head.className = 'area-block-head';
+
+  var num = document.createElement('span');
+  num.className = 'area-num';
+  head.appendChild(num);
+
+  var titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.className = 'pdf-title';
+  titleInput.placeholder = 'Document title';
+  titleInput.value = title || '';
+  head.appendChild(titleInput);
+
+  var removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'remove-btn';
+  removeBtn.textContent = 'Remove';
+  removeBtn.addEventListener('click', function () {
+    block.remove();
+    gRenumberPdfs();
+  });
+  head.appendChild(removeBtn);
+
+  block.appendChild(head);
+
+  var urlInput = document.createElement('input');
+  urlInput.type = 'text';
+  urlInput.className = 'pdf-url pdf-url-input';
+  urlInput.placeholder = 'https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf';
+  urlInput.value = url || '';
+  block.appendChild(urlInput);
+
+  gPdfsList.appendChild(block);
+  gRenumberPdfs();
+}
+
+function gRenumberPdfs() {
+  var blocks = gPdfsList.querySelectorAll('.pdf-block');
+  blocks.forEach(function (b, i) {
+    b.querySelector('.area-num').textContent = (i + 1);
+  });
+}
+
+document.getElementById('gAddPdfBtn').addEventListener('click', function () {
+  gAddPdfBlock('', '');
+});
+
 document.getElementById('gExpandAllBtn').addEventListener('click', function () {
   lessonEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
 });
@@ -1013,9 +1054,23 @@ lessonEditorView.querySelectorAll('details.card[data-group="auto"]').forEach(fun
 gHasResourceCb.addEventListener('change', function () {
   gResourceFields.className = 'resource-fields' + (gHasResourceCb.checked ? '' : ' disabled');
 });
-gHasPdfCb.addEventListener('change', function () {
-  gPdfFields.className = 'resource-fields' + (gHasPdfCb.checked ? '' : ' disabled');
+gHasCoachingIntroCb.addEventListener('change', function () {
+  gCoachingIntroFields.className = 'resource-fields' + (gHasCoachingIntroCb.checked ? '' : ' disabled');
 });
+
+// Normalises a resource config's PDFs into a flat array of { title, url }
+// pairs, regardless of whether it was saved under the new pdfs[] schema or
+// the older single pdfUrl/pdfTitle schema. Shared by both tiers.
+function getConfigPdfs(resource) {
+  if (!resource) return [];
+  if (Array.isArray(resource.pdfs)) {
+    return resource.pdfs.filter(function (p) { return p && p.url; });
+  }
+  if (resource.pdfUrl) {
+    return [{ title: resource.pdfTitle || resource.title || '', url: resource.pdfUrl }];
+  }
+  return [];
+}
 
 function gRefreshAddLangOptions() {
   var existing = Array.prototype.map.call(
@@ -1093,12 +1148,11 @@ function clearGuidedForm() {
   document.getElementById('gTranscript').value = '';
   gHasResourceCb.checked = false;
   gResourceFields.className = 'resource-fields disabled';
-  document.getElementById('gResourceTitle').value = '';
-  document.getElementById('gResourceText').value = '';
-  gHasPdfCb.checked = false;
-  gPdfFields.className = 'resource-fields disabled';
-  document.getElementById('gResourcePdfTitle').value = '';
-  document.getElementById('gResourcePdfUrl').value = '';
+  gPdfsList.innerHTML = '';
+  gHasCoachingIntroCb.checked = false;
+  gCoachingIntroFields.className = 'resource-fields disabled';
+  document.getElementById('gCoachingIntroTitle').value = '';
+  document.getElementById('gCoachingIntroText').value = '';
   gAreasList.innerHTML = '';
   document.getElementById('gCoachingApproach').value = '';
   document.getElementById('gCalibration').value = '';
@@ -1118,17 +1172,26 @@ function fillGuidedForm(config) {
   document.getElementById('gMediaId').value = (config.video && config.video.mediaId) || '';
   document.getElementById('gTranscript').value = config.transcript || '';
 
-  if (config.resource && config.resource.title) {
+  var pdfs = getConfigPdfs(config.resource);
+  if (pdfs.length) {
     gHasResourceCb.checked = true;
     gResourceFields.className = 'resource-fields';
-    document.getElementById('gResourceTitle').value = config.resource.title || '';
-    document.getElementById('gResourceText').value = config.resource.text || '';
-    if (config.resource.pdfUrl) {
-      gHasPdfCb.checked = true;
-      gPdfFields.className = 'resource-fields';
-      document.getElementById('gResourcePdfTitle').value = config.resource.pdfTitle || '';
-      document.getElementById('gResourcePdfUrl').value = config.resource.pdfUrl;
-    }
+    pdfs.forEach(function (p) { gAddPdfBlock(p.title, p.url); });
+  }
+
+  // A lesson saved before the coaching-intro split kept this text under
+  // resource.title/resource.text. If coachingIntro hasn't been saved yet,
+  // fall back to that legacy pair so the text isn't lost on first load -
+  // saving again writes it under the new schema.
+  var ci = config.coachingIntro;
+  if (!ci && config.resource && config.resource.title && config.resource.text) {
+    ci = { title: config.resource.title, text: config.resource.text };
+  }
+  if (ci && (ci.title || ci.text)) {
+    gHasCoachingIntroCb.checked = true;
+    gCoachingIntroFields.className = 'resource-fields';
+    document.getElementById('gCoachingIntroTitle').value = ci.title || '';
+    document.getElementById('gCoachingIntroText').value = ci.text || '';
   }
 
   var rf = config.reflectionFramework || {};
@@ -1167,19 +1230,20 @@ function collectGuidedConfig() {
     if (fresh || known) translations[lang] = { fresh: fresh, known: known };
   });
 
-  var hasResource = gHasResourceCb.checked;
-  var hasPdf = gHasPdfCb.checked;
+  var pdfs = [];
+  gPdfsList.querySelectorAll('.pdf-block').forEach(function (b) {
+    var title = b.querySelector('.pdf-title').value.trim();
+    var url = b.querySelector('.pdf-url').value.trim();
+    if (url) pdfs.push({ title: title, url: url });
+  });
 
-  var resourceObj = null;
-  if (hasResource) {
-    resourceObj = {
-      title: document.getElementById('gResourceTitle').value.trim(),
-      text: document.getElementById('gResourceText').value.trim()
-    };
-    if (hasPdf) {
-      resourceObj.pdfTitle = document.getElementById('gResourcePdfTitle').value.trim();
-      resourceObj.pdfUrl = document.getElementById('gResourcePdfUrl').value.trim();
-    }
+  var resourceObj = (gHasResourceCb.checked && pdfs.length) ? { pdfs: pdfs } : null;
+
+  var coachingIntroObj = null;
+  if (gHasCoachingIntroCb.checked) {
+    var ciTitle = document.getElementById('gCoachingIntroTitle').value.trim();
+    var ciText = document.getElementById('gCoachingIntroText').value.trim();
+    if (ciTitle || ciText) coachingIntroObj = { title: ciTitle, text: ciText };
   }
 
   return {
@@ -1190,6 +1254,7 @@ function collectGuidedConfig() {
     video: { mediaId: document.getElementById('gMediaId').value.trim() },
     transcript: document.getElementById('gTranscript').value.trim(),
     resource: resourceObj,
+    coachingIntro: coachingIntroObj,
     essentials: { exerciseFormId: '', reflectionFormId: '' },
     reflectionFramework: {
       areas: areas,
@@ -1296,9 +1361,8 @@ document.getElementById('gDeleteBtn').addEventListener('click', function () {
 
 var eLessonSelect = document.getElementById('eLessonSelect');
 var eResourceFields = document.getElementById('eResourceFields');
-var ePdfFields = document.getElementById('ePdfFields');
+var ePdfsList = document.getElementById('ePdfsList');
 var eHasResourceCb = document.getElementById('eHasResource');
-var eHasPdfCb = document.getElementById('eHasPdf');
 var eSaveStatus = document.getElementById('eSaveStatus');
 
 document.getElementById('eLoadBtn').addEventListener('click', function () {
@@ -1324,11 +1388,64 @@ function loadEssentialsLesson(lessonId) {
     .catch(function () { alert('Could not load that lesson.'); });
 }
 
+function eAddPdfBlock(title, url) {
+  ePdfCounter++;
+  var id = 'epdf_' + ePdfCounter;
+
+  var block = document.createElement('div');
+  block.className = 'area-block pdf-block';
+  block.dataset.id = id;
+
+  var head = document.createElement('div');
+  head.className = 'area-block-head';
+
+  var num = document.createElement('span');
+  num.className = 'area-num';
+  head.appendChild(num);
+
+  var titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.className = 'pdf-title';
+  titleInput.placeholder = 'Document title';
+  titleInput.value = title || '';
+  head.appendChild(titleInput);
+
+  var removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'remove-btn';
+  removeBtn.textContent = 'Remove';
+  removeBtn.addEventListener('click', function () {
+    block.remove();
+    eRenumberPdfs();
+  });
+  head.appendChild(removeBtn);
+
+  block.appendChild(head);
+
+  var urlInput = document.createElement('input');
+  urlInput.type = 'text';
+  urlInput.className = 'pdf-url pdf-url-input';
+  urlInput.placeholder = 'https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf';
+  urlInput.value = url || '';
+  block.appendChild(urlInput);
+
+  ePdfsList.appendChild(block);
+  eRenumberPdfs();
+}
+
+function eRenumberPdfs() {
+  var blocks = ePdfsList.querySelectorAll('.pdf-block');
+  blocks.forEach(function (b, i) {
+    b.querySelector('.area-num').textContent = (i + 1);
+  });
+}
+
+document.getElementById('eAddPdfBtn').addEventListener('click', function () {
+  eAddPdfBlock('', '');
+});
+
 eHasResourceCb.addEventListener('change', function () {
   eResourceFields.className = 'resource-fields' + (eHasResourceCb.checked ? '' : ' disabled');
-});
-eHasPdfCb.addEventListener('change', function () {
-  ePdfFields.className = 'resource-fields' + (eHasPdfCb.checked ? '' : ' disabled');
 });
 
 function clearEssentialsForm() {
@@ -1339,12 +1456,7 @@ function clearEssentialsForm() {
   document.getElementById('eTranscript').value = '';
   eHasResourceCb.checked = false;
   eResourceFields.className = 'resource-fields disabled';
-  document.getElementById('eResourceTitle').value = '';
-  document.getElementById('eResourceText').value = '';
-  eHasPdfCb.checked = false;
-  ePdfFields.className = 'resource-fields disabled';
-  document.getElementById('eResourcePdfTitle').value = '';
-  document.getElementById('eResourcePdfUrl').value = '';
+  ePdfsList.innerHTML = '';
   document.getElementById('eExerciseFormId').value = '';
   document.getElementById('eReflectionFormId').value = '';
   updateEssentialsJsonPreview();
@@ -1359,17 +1471,14 @@ function fillEssentialsForm(config) {
   document.getElementById('eMediaId').value = (config.video && config.video.mediaId) || '';
   document.getElementById('eTranscript').value = config.transcript || '';
 
-  if (config.resource && config.resource.title) {
+  // Essentials has no coaching intro text - any legacy resource.title/text
+  // simply isn't shown here anymore and won't be re-saved. Only PDFs carry
+  // forward.
+  var pdfs = getConfigPdfs(config.resource);
+  if (pdfs.length) {
     eHasResourceCb.checked = true;
     eResourceFields.className = 'resource-fields';
-    document.getElementById('eResourceTitle').value = config.resource.title || '';
-    document.getElementById('eResourceText').value = config.resource.text || '';
-    if (config.resource.pdfUrl) {
-      eHasPdfCb.checked = true;
-      ePdfFields.className = 'resource-fields';
-      document.getElementById('eResourcePdfTitle').value = config.resource.pdfTitle || '';
-      document.getElementById('eResourcePdfUrl').value = config.resource.pdfUrl;
-    }
+    pdfs.forEach(function (p) { eAddPdfBlock(p.title, p.url); });
   }
 
   var ess = config.essentials || {};
@@ -1380,20 +1489,14 @@ function fillEssentialsForm(config) {
 }
 
 function collectEssentialsConfig() {
-  var hasResource = eHasResourceCb.checked;
-  var hasPdf = eHasPdfCb.checked;
+  var pdfs = [];
+  ePdfsList.querySelectorAll('.pdf-block').forEach(function (b) {
+    var title = b.querySelector('.pdf-title').value.trim();
+    var url = b.querySelector('.pdf-url').value.trim();
+    if (url) pdfs.push({ title: title, url: url });
+  });
 
-  var resourceObj = null;
-  if (hasResource) {
-    resourceObj = {
-      title: document.getElementById('eResourceTitle').value.trim(),
-      text: document.getElementById('eResourceText').value.trim()
-    };
-    if (hasPdf) {
-      resourceObj.pdfTitle = document.getElementById('eResourcePdfTitle').value.trim();
-      resourceObj.pdfUrl = document.getElementById('eResourcePdfUrl').value.trim();
-    }
-  }
+  var resourceObj = (eHasResourceCb.checked && pdfs.length) ? { pdfs: pdfs } : null;
 
   return {
     lessonId: document.getElementById('eLessonId').value.trim(),
