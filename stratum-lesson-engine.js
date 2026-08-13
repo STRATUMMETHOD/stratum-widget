@@ -1589,8 +1589,6 @@
     var table = language ? translations[language] : null;
 
     if (knownName) {
-      if (table && table.known) return table.known.replace('{name}', knownName);
-      if (g.knownTemplate) return g.knownTemplate.replace('{name}', knownName);
       return 'Hey ' + knownName + " - that lecture just ended, so I'm still right here with you.";
     }
 
