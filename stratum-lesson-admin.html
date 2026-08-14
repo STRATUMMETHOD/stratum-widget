@@ -106,11 +106,7 @@
   #dashboardView {
     background: #fff;
     border: 1px solid #e2d9c4;
-    padding: 60px 22px;
-    text-align: center;
-    color: #a99878;
-    font-size: 13px;
-    font-style: italic;
+    padding: 18px 22px;
   }
 
   .toolbar {
@@ -413,7 +409,7 @@
     <div class="card-body" style="padding:0 0 14px;">
       <input type="text" id="studentSearch" placeholder="Search by email..." style="width:100%;padding:8px 10px;font-size:13px;font-family:'Inter',Arial,sans-serif;border:1px solid #ccc;box-sizing:border-box;" />
     </div>
-    <table id="studentsTable" style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e2d9c4;">
+    <table id="studentsTable" style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e2d9c4;text-align:left;">
       <thead>
         <tr style="border-bottom:1px solid #e2d9c4;">
           <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Email</th>
@@ -421,6 +417,7 @@
           <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Sessions Used</th>
           <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Status</th>
           <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Last Seen</th>
+          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Actions</th>
         </tr>
       </thead>
       <tbody id="studentsTableBody"></tbody>
@@ -842,11 +839,43 @@ function renderStudents(list) {
       td.style.fontSize = '13px';
       td.style.fontFamily = "'Inter', Arial, sans-serif";
       td.style.color = '#3B2F24';
+      td.style.textAlign = 'left';
       td.textContent = text;
       tr.appendChild(td);
     });
+
+    var actionTd = document.createElement('td');
+    actionTd.style.padding = '9px 12px';
+    actionTd.style.textAlign = 'left';
+    var delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.textContent = 'Delete';
+    delBtn.style.cssText = 'padding:4px 12px;font-size:11px;font-family:Arial,sans-serif;background:#8a3a2e;color:#F5EFE0;border:none;cursor:pointer;';
+    delBtn.addEventListener('click', function () { deleteStudentRow(s, tr); });
+    actionTd.appendChild(delBtn);
+    tr.appendChild(actionTd);
+
     studentsTableBody.appendChild(tr);
   });
+}
+
+function deleteStudentRow(s, tr) {
+  var label = s.email || s.studentId;
+  if (!confirm('Permanently delete all data for ' + label + '? This cannot be undone.')) return;
+  fetch(PROXY_URL + '/admin/student?studentId=' + encodeURIComponent(s.studentId), {
+    method: 'DELETE',
+    headers: { 'X-Stratum-Admin-Key': adminKey }
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d && d.ok) {
+        allStudents = allStudents.filter(function (x) { return x.studentId !== s.studentId; });
+        applyStudentSearch();
+      } else {
+        alert('Delete failed: ' + (d && (d.reason || d.error) || 'unknown error'));
+      }
+    })
+    .catch(function () { alert('Network error while deleting.'); });
 }
 
 function applyStudentSearch() {
