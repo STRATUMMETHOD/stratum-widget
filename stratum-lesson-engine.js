@@ -520,10 +520,10 @@
     document.head.appendChild(s);
   }
 
-  function buildTranscript(container, mediaId) {
+  function buildTranscript(container, mediaId, defaultOpen) {
     var details = el('details', 'lec-transcript');
     details.id = 'lecTranscript';
-    details.open = true;
+    details.open = defaultOpen !== false;
 
     var summary = el('summary', null, 'Read the transcript');
     mount(details, summary);
@@ -601,7 +601,7 @@
     return url + (url.indexOf('?') === -1 ? '?' : '&') + 'cb=' + Date.now();
   }
 
-  function buildResource(container, resource) {
+  function buildResource(container, resource, defaultOpen) {
     var pdfs = getResourcePdfs(resource);
 
     if (!pdfs.length) {
@@ -615,7 +615,7 @@
 
       var details = el('details', 'lec-resource');
       details.id = 'lecResourcePdf' + (i + 1);
-      details.open = (i === 0);
+      details.open = defaultOpen === false ? false : (i === 0);
 
       mount(details, el('summary', 'lec-resource-bar', label));
 
@@ -729,7 +729,7 @@
 
       var details = el('details', 'lec-resource');
       details.id = 'lecEssentials' + tab.id;
-      details.open = true;
+      details.open = false;
 
       mount(details, el('summary', 'lec-resource-bar', tab.label));
 
@@ -2314,8 +2314,8 @@
 
     if (tier === 'essentials') {
       buildVideo(container, LESSON.video.mediaId);
-      buildTranscript(container, LESSON.video.mediaId);
-      buildResource(container, LESSON.resource);
+      buildTranscript(container, LESSON.video.mediaId, false);
+      buildResource(container, LESSON.resource, false);
       buildEssentialsDropdowns(container);
       return;
     }
