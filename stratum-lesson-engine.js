@@ -586,20 +586,6 @@
   // Kept for Essentials pages, which still show this muted line. Guided/
   // Mastery pages no longer call this - Contact is a real top-level
   // destination now, so the line was redundant. WhatsApp dropped entirely.
-  function buildContactLine(container) {
-    var div = el('div', 'lec-contact');
-    div.appendChild(document.createTextNode('Stuck? '));
-
-    var mail = el('a', null, 'Email Ted');
-    mail.href = 'https://mail.google.com/mail/?view=cm&fs=1&to=' +
-                encodeURIComponent(CONTACT_EMAIL) + '&su=Course%20Question';
-    mail.target = '_blank';
-    mail.rel = 'noopener';
-    mount(div, mail);
-
-    mount(container, div);
-  }
-
   // Renders each PDF as its own COLLAPSED bordered accordion, with the
   // first one open by default and the rest closed. Supports any number of
   // PDFs per lesson. If no resource exists for this lesson, shows a plain
@@ -2330,7 +2316,6 @@
       buildVideo(container, LESSON.video.mediaId);
       buildTranscript(container, LESSON.video.mediaId);
       buildResource(container, LESSON.resource);
-      buildContactLine(container);
       buildEssentialsDropdowns(container);
       return;
     }
