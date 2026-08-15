@@ -182,6 +182,39 @@
     lsSet(IDENTITY_CONFIRMED_KEY, '1');
   }
 
+  function verifyStratumId(stratumId) {
+    return fetch(PROXY_URL + '/verify-identity?stratumId=' + encodeURIComponent(stratumId))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { return !!(d && d.valid); })
+      // A network hiccup here is the client's own connectivity, not proof
+      // the identity is gone - don't punish a legitimate returning
+      // student's whole local state over a dropped request. Only an
+      // explicit "valid: false" from a server that actually answered
+      // triggers the reset below.
+      .catch(function () { return true; });
+  }
+
+  // Wipes every local trace of the current identity - the durable cookie,
+  // the confirmed flag, and every cached Notes/Tasks/Project value. Used
+  // when a stratum_sid cookie is found to point at an identity that no
+  // longer exists server-side (e.g. deleted via the admin panel). Without
+  // this, the browser kept blindly trusting a dead cookie forever: gated
+  // content unlocked with no re-confirmation, and stale cached content
+  // (old notes, old tasks, an old email) sat ready to be silently
+  // auto-saved back to the server the moment anything touched it - not
+  // because the data still genuinely existed, but because nothing had
+  // ever told this browser to forget it.
+  function forgetLocalIdentity() {
+    setCookie(STRATUM_SID_COOKIE, '', 0);
+    try { localStorage.removeItem(IDENTITY_CONFIRMED_KEY); } catch (e) {}
+    try { localStorage.removeItem(NOTES_KEY); } catch (e) {}
+    try { localStorage.removeItem(TRACKER_KEY); } catch (e) {}
+    Object.keys(PROJ_KEYS).forEach(function (k) {
+      try { localStorage.removeItem(PROJ_KEYS[k]); } catch (e) {}
+    });
+    STUDENT_ID = readCookie('sio_u_public');
+  }
+
   /* ----------------------------------------------------------
      COACHING TAB LOCK
      ------------------------------------------------------------
@@ -242,9 +275,19 @@
   function ensureDurableIdentity() {
     var existing = readCookie(STRATUM_SID_COOKIE);
     if (existing) {
-      STUDENT_ID = existing;
-      lsSet(IDENTITY_CONFIRMED_KEY, '1');
-      return Promise.resolve({ ok: true });
+      return verifyStratumId(existing).then(function (valid) {
+        if (valid) {
+          STUDENT_ID = existing;
+          lsSet(IDENTITY_CONFIRMED_KEY, '1');
+          return { ok: true };
+        }
+        // The cookie is stale - it points at an identity that has been
+        // deleted since it was set. Wipe it and everything cached
+        // alongside it, then fall through to a genuinely fresh
+        // resolution attempt, exactly as if this were a first visit.
+        forgetLocalIdentity();
+        return ensureDurableIdentity();
+      });
     }
 
     if (!RESOLVE_IDENTITY_ENABLED) return Promise.resolve({ ok: false, reason: 'disabled' });
