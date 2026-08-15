@@ -403,6 +403,7 @@
     <button class="top-tab" id="tabDashboardBtn" type="button">Dashboard</button>
     <button class="top-tab" id="tabEssentialsBtn" type="button">Self-Guided</button>
     <button class="top-tab" id="tabGuidedBtn" type="button">Coach</button>
+    <button class="top-tab" id="tabMasteryBtn" type="button">Master Coach</button>
   </div>
 
   <div id="dashboardView" style="display:none;">
@@ -722,6 +723,165 @@
 
   </div>
 
+  <div id="masteryView" style="display:none;">
+
+    <div id="masteryEditorView">
+
+      <div class="toolbar">
+        <select id="mLessonSelect"></select>
+        <button class="btn secondary" id="mLoadBtn" type="button">Load</button>
+        <button class="btn secondary" id="mNewLessonBtn" type="button">+ New Lesson</button>
+        <button class="btn danger" id="mDeleteBtn" type="button">Delete Lesson</button>
+        <div class="spacer"></div>
+        <span class="save-status" id="mSaveStatus"></span>
+        <button class="btn" id="mSaveBtn" type="button">Save Lesson</button>
+      </div>
+
+      <div class="accordion-bar">
+        <button class="btn secondary" id="mExpandAllBtn" type="button">Expand all</button>
+        <button class="btn secondary" id="mCollapseAllBtn" type="button">Collapse all</button>
+      </div>
+
+      <details class="card" data-group="open" open>
+        <summary class="card-title">Lesson identity</summary>
+        <div class="card-body">
+        <div class="row2">
+          <div class="field">
+            <label for="mLessonId">Lesson ID</label>
+            <span class="hint">e.g. 5.1, 6.3</span>
+            <input type="text" id="mLessonId" placeholder="5.1" />
+          </div>
+          <div class="field">
+            <label for="mNextLessonLabel">Next lesson label</label>
+            <span class="hint">Used in the coach's closing message</span>
+            <input type="text" id="mNextLessonLabel" placeholder="Lecture 5.2" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="mScopeNote">Scope note</label>
+          <span class="hint">How the coach refers to this lesson internally &mdash; e.g. "Lecture 2.1 - Empty Your Cup"</span>
+          <input type="text" id="mScopeNote" placeholder="Lecture 5.1 - The Surface Pattern" />
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="open" open>
+        <summary class="card-title">Video</summary>
+        <div class="card-body">
+        <div class="field">
+          <label for="mMediaId">Wistia media ID</label>
+          <input type="text" id="mMediaId" placeholder="0owdas4mfp" />
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="open" open>
+        <summary class="card-title">Lecture transcript</summary>
+        <div class="card-body">
+        <div class="field">
+          <textarea id="mTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="plain">
+        <summary class="card-title">Resource</summary>
+        <div class="card-body">
+        <div class="toggle-row">
+          <input type="checkbox" id="mHasResource" />
+          <label for="mHasResource" style="margin:0;">This lesson has resource PDFs</label>
+        </div>
+        <div id="mResourceFields" class="resource-fields disabled">
+          <div id="mPdfsList"></div>
+          <button class="add-btn" id="mAddPdfBtn" type="button">+ Add PDF</button>
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="plain">
+        <summary class="card-title">Coaching intro text</summary>
+        <div class="card-body">
+        <div class="toggle-row">
+          <input type="checkbox" id="mHasCoachingIntro" />
+          <label for="mHasCoachingIntro" style="margin:0;">This lesson shows an intro message at the top of Coaching, default closed</label>
+        </div>
+        <div id="mCoachingIntroFields" class="resource-fields disabled">
+          <div class="field">
+            <label for="mCoachingIntroTitle">Intro title</label>
+            <span class="hint">Shown on the labeled bar above the intro text</span>
+            <input type="text" id="mCoachingIntroTitle" placeholder="Preparation For First Coaching Session" />
+          </div>
+          <div class="field">
+            <label for="mCoachingIntroText">Intro content</label>
+            <span class="hint">Plain text &mdash; renders inline at the top of the Coaching tab</span>
+            <textarea id="mCoachingIntroText" rows="6"></textarea>
+          </div>
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="auto">
+        <summary class="card-title">Reflection framework &mdash; areas</summary>
+        <div class="card-body">
+        <div id="mAreasList"></div>
+        <button class="add-btn" id="mAddAreaBtn" type="button">+ Add area</button>
+      </div>
+      </details>
+
+      <details class="card" data-group="auto">
+        <summary class="card-title">Coaching approach</summary>
+        <div class="card-body">
+        <div class="field">
+          <span class="hint">Private instructional guidance for the AI on how to conduct THIS lesson's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student, and separate from the resource document. Optional &mdash; most lessons will not need this.</span>
+          <textarea id="mCoachingApproach" rows="5"></textarea>
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="auto">
+        <summary class="card-title">Calibration examples</summary>
+        <div class="card-body">
+        <div class="field">
+          <span class="hint">One per line. Shown to the coach only, never to the student.</span>
+          <textarea id="mCalibration" rows="4"></textarea>
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="plain">
+        <summary class="card-title">Greeting</summary>
+        <div class="card-body">
+        <div class="field">
+          <label for="mGreetingFresh">Greeting</label>
+          <span class="hint">Shown instantly when the student opens Coaching, before the session begins</span>
+          <textarea id="mGreetingFresh" rows="3"></textarea>
+        </div>
+      </div>
+      </details>
+
+      <details class="card" data-group="plain">
+        <summary class="card-title">Greeting translations (optional)</summary>
+        <div class="card-body">
+        <div class="field">
+          <span class="hint">Lessons without a translation for a language fall back to English automatically &mdash; these do not need to be filled in before launch.</span>
+        </div>
+        <div id="mTranslationsList"></div>
+        <div class="add-lang-row">
+          <select id="mAddLangSelect"></select>
+          <button class="btn secondary" id="mAddLangBtn" type="button">+ Add language</button>
+        </div>
+      </div>
+      </details>
+
+      <details class="json-preview">
+        <summary>View raw config JSON (for reference / debugging)</summary>
+        <pre id="mJsonPreview"></pre>
+      </details>
+
+    </div>
+
+  </div>
+
 </div>
 
 <script>
@@ -765,7 +925,8 @@ function unlock() {
         authStatus.textContent = 'Unlocked.';
         authStatus.className = 'ok';
         panel.style.display = 'block';
-        populateSelect(gLessonSelect, result.data.lessons || []);
+        populateSelect(gLessonSelect, (result.data.lessons || []).filter(function (l) { return !isMasteryLessonId(l.lesson_id); }));
+        populateSelect(mLessonSelect, (result.data.lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); }));
         refreshEssentialsList();
         showTopTab('dashboard');
         loadStudents();
@@ -783,17 +944,21 @@ function unlock() {
 var tabDashboardBtn = document.getElementById('tabDashboardBtn');
 var tabGuidedBtn = document.getElementById('tabGuidedBtn');
 var tabEssentialsBtn = document.getElementById('tabEssentialsBtn');
+var tabMasteryBtn = document.getElementById('tabMasteryBtn');
 var dashboardView = document.getElementById('dashboardView');
 var guidedView = document.getElementById('guidedView');
 var essentialsView = document.getElementById('essentialsView');
+var masteryView = document.getElementById('masteryView');
 
 function showTopTab(which) {
   tabDashboardBtn.className = 'top-tab' + (which === 'dashboard' ? ' active' : '');
   tabGuidedBtn.className = 'top-tab' + (which === 'guided' ? ' active' : '');
   tabEssentialsBtn.className = 'top-tab' + (which === 'essentials' ? ' active' : '');
+  tabMasteryBtn.className = 'top-tab' + (which === 'mastery' ? ' active' : '');
   dashboardView.style.display = which === 'dashboard' ? '' : 'none';
   guidedView.style.display = which === 'guided' ? '' : 'none';
   essentialsView.style.display = which === 'essentials' ? '' : 'none';
+  masteryView.style.display = which === 'mastery' ? '' : 'none';
 }
 
 tabDashboardBtn.addEventListener('click', function () {
@@ -802,6 +967,7 @@ tabDashboardBtn.addEventListener('click', function () {
 });
 tabGuidedBtn.addEventListener('click', function () { showTopTab('guided'); });
 tabEssentialsBtn.addEventListener('click', function () { showTopTab('essentials'); });
+tabMasteryBtn.addEventListener('click', function () { showTopTab('mastery'); });
 
 var studentsTableBody = document.getElementById('studentsTableBody');
 var studentsStatus = document.getElementById('studentsStatus');
@@ -1492,7 +1658,7 @@ document.getElementById('gSaveBtn').addEventListener('click', function () {
 function refreshGuidedList() {
   fetch(PROXY_URL + '/lesson-configs?tier=guided', { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
-    .then(function (d) { populateSelect(gLessonSelect, d.lessons || []); })
+    .then(function (d) { populateSelect(gLessonSelect, (d.lessons || []).filter(function (l) { return !isMasteryLessonId(l.lesson_id); })); })
     .catch(function () {});
 }
 
@@ -1525,6 +1691,468 @@ document.getElementById('gDeleteBtn').addEventListener('click', function () {
       gSaveStatus.className = 'save-status err';
     });
 });
+
+// Both Coach and Master Coach lessons are stored under the same D1
+// tier ('guided') since the lesson FORMAT is identical - Master Coach's
+// 8 new lessons (5.x/6.x) are just more lessons of the same shape. The
+// two admin tabs are a pure client-side split over that one shared list.
+function isMasteryLessonId(id) {
+  return /^[56]\./.test(String(id || ''));
+}
+
+var mLessonSelect = document.getElementById('mLessonSelect');
+var mAreasList = document.getElementById('mAreasList');
+var mResourceFields = document.getElementById('mResourceFields');
+var mPdfsList = document.getElementById('mPdfsList');
+var mHasResourceCb = document.getElementById('mHasResource');
+var mCoachingIntroFields = document.getElementById('mCoachingIntroFields');
+var mHasCoachingIntroCb = document.getElementById('mHasCoachingIntro');
+var mTranslationsList = document.getElementById('mTranslationsList');
+var mAddLangSelect = document.getElementById('mAddLangSelect');
+var mSaveStatus = document.getElementById('mSaveStatus');
+
+document.getElementById('mLoadBtn').addEventListener('click', function () {
+  var id = mLessonSelect.value;
+  if (!id) return;
+  loadMasteryLesson(id);
+});
+
+document.getElementById('mNewLessonBtn').addEventListener('click', function () {
+  var id = prompt('New Master Coach lesson ID (e.g. 5.2):');
+  if (!id) return;
+  clearMasteryForm();
+  document.getElementById('mLessonId').value = id.trim();
+});
+
+function loadMasteryLesson(lessonId) {
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided')
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.known) { alert('No Master Coach config found for ' + lessonId + ' yet.'); return; }
+      fillMasteryForm(d.config);
+    })
+    .catch(function () { alert('Could not load that lesson.'); });
+}
+
+function mAddAreaBlock(title, instructions) {
+  mAreaCounter++;
+  var id = 'garea_' + mAreaCounter;
+
+  var block = document.createElement('div');
+  block.className = 'area-block';
+  block.dataset.id = id;
+
+  var head = document.createElement('div');
+  head.className = 'area-block-head';
+
+  var num = document.createElement('span');
+  num.className = 'area-num';
+  head.appendChild(num);
+
+  var titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.className = 'area-title';
+  titleInput.placeholder = 'AREA TITLE';
+  titleInput.value = title || '';
+  head.appendChild(titleInput);
+
+  var removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'remove-btn';
+  removeBtn.textContent = 'Remove';
+  removeBtn.addEventListener('click', function () {
+    block.remove();
+    mRenumberAreas();
+  });
+  head.appendChild(removeBtn);
+
+  block.appendChild(head);
+
+  var instrTextarea = document.createElement('textarea');
+  instrTextarea.className = 'area-instructions';
+  instrTextarea.rows = 5;
+  instrTextarea.placeholder = 'Instructions for the coach on drawing out this area...';
+  instrTextarea.value = instructions || '';
+  block.appendChild(instrTextarea);
+
+  mAreasList.appendChild(block);
+  mRenumberAreas();
+}
+
+function mRenumberAreas() {
+  var blocks = mAreasList.querySelectorAll('.area-block');
+  blocks.forEach(function (b, i) {
+    b.querySelector('.area-num').textContent = (i + 1);
+  });
+}
+
+document.getElementById('mAddAreaBtn').addEventListener('click', function () {
+  mAddAreaBlock('', '');
+});
+
+function mAddPdfBlock(title, url) {
+  mPdfCounter++;
+  var id = 'gpdf_' + mPdfCounter;
+
+  var block = document.createElement('div');
+  block.className = 'area-block pdf-block';
+  block.dataset.id = id;
+
+  var head = document.createElement('div');
+  head.className = 'area-block-head';
+
+  var num = document.createElement('span');
+  num.className = 'area-num';
+  head.appendChild(num);
+
+  var titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.className = 'pdf-title';
+  titleInput.placeholder = 'Document title';
+  titleInput.value = title || '';
+  head.appendChild(titleInput);
+
+  var removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'remove-btn';
+  removeBtn.textContent = 'Remove';
+  removeBtn.addEventListener('click', function () {
+    block.remove();
+    mRenumberPdfs();
+  });
+  head.appendChild(removeBtn);
+
+  block.appendChild(head);
+
+  var urlInput = document.createElement('input');
+  urlInput.type = 'text';
+  urlInput.className = 'pdf-url pdf-url-input';
+  urlInput.placeholder = 'https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf';
+  urlInput.value = url || '';
+  block.appendChild(urlInput);
+
+  mPdfsList.appendChild(block);
+  mRenumberPdfs();
+}
+
+function mRenumberPdfs() {
+  var blocks = mPdfsList.querySelectorAll('.pdf-block');
+  blocks.forEach(function (b, i) {
+    b.querySelector('.area-num').textContent = (i + 1);
+  });
+}
+
+document.getElementById('mAddPdfBtn').addEventListener('click', function () {
+  mAddPdfBlock('', '');
+});
+
+document.getElementById('mExpandAllBtn').addEventListener('click', function () {
+  masteryEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
+});
+document.getElementById('mCollapseAllBtn').addEventListener('click', function () {
+  masteryEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = false; });
+});
+masteryEditorView.querySelectorAll('details.card[data-group="auto"]').forEach(function (card) {
+  card.addEventListener('input', function () {
+    if (!card.open) card.open = true;
+  });
+  card.addEventListener('focusin', function () {
+    if (!card.open) card.open = true;
+  });
+});
+
+mHasResourceCb.addEventListener('change', function () {
+  mResourceFields.className = 'resource-fields' + (mHasResourceCb.checked ? '' : ' disabled');
+});
+mHasCoachingIntroCb.addEventListener('change', function () {
+  mCoachingIntroFields.className = 'resource-fields' + (mHasCoachingIntroCb.checked ? '' : ' disabled');
+});
+
+// Normalises a resource config's PDFs into a flat array of { title, url }
+// pairs, regardless of whether it was saved under the new pdfs[] schema or
+// the older single pdfUrl/pdfTitle schema. Shared by both tiers.
+function getConfigPdfs(resource) {
+  if (!resource) return [];
+  if (Array.isArray(resource.pdfs)) {
+    return resource.pdfs.filter(function (p) { return p && p.url; });
+  }
+  if (resource.pdfUrl) {
+    return [{ title: resource.pdfTitle || resource.title || '', url: resource.pdfUrl }];
+  }
+  return [];
+}
+
+function mRefreshAddLangOptions() {
+  var existing = Array.prototype.map.call(
+    mTranslationsList.querySelectorAll('.lang-block'),
+    function (b) { return b.dataset.lang; }
+  );
+  mAddLangSelect.innerHTML = '';
+  LANGUAGES.filter(function (l) { return existing.indexOf(l) === -1; }).forEach(function (l) {
+    var opt = document.createElement('option');
+    opt.value = l;
+    opt.textContent = l;
+    mAddLangSelect.appendChild(opt);
+  });
+}
+
+function mAddLangBlock(lang, fresh) {
+  var block = document.createElement('div');
+  block.className = 'lang-block';
+  block.dataset.lang = lang;
+
+  var head = document.createElement('div');
+  head.className = 'lang-block-head';
+  head.appendChild(document.createTextNode(lang));
+
+  var removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'remove-btn';
+  removeBtn.textContent = 'Remove';
+  removeBtn.addEventListener('click', function () {
+    block.remove();
+    mRefreshAddLangOptions();
+  });
+  head.appendChild(removeBtn);
+  block.appendChild(head);
+
+  var freshField = document.createElement('div');
+  freshField.className = 'field';
+  var freshLabel = document.createElement('label');
+  freshLabel.textContent = 'Greeting';
+  freshField.appendChild(freshLabel);
+  var freshTa = document.createElement('textarea');
+  freshTa.className = 'lang-fresh';
+  freshTa.rows = 2;
+  freshTa.value = fresh || '';
+  freshField.appendChild(freshTa);
+  block.appendChild(freshField);
+
+  mTranslationsList.appendChild(block);
+  mRefreshAddLangOptions();
+}
+
+document.getElementById('mAddLangBtn').addEventListener('click', function () {
+  var lang = mAddLangSelect.value;
+  if (!lang) return;
+  mAddLangBlock(lang, '', '');
+});
+
+function clearMasteryForm() {
+  document.getElementById('mLessonId').value = '';
+  document.getElementById('mNextLessonLabel').value = '';
+  document.getElementById('mScopeNote').value = '';
+  document.getElementById('mMediaId').value = '';
+  document.getElementById('mTranscript').value = '';
+  mHasResourceCb.checked = false;
+  mResourceFields.className = 'resource-fields disabled';
+  mPdfsList.innerHTML = '';
+  mHasCoachingIntroCb.checked = false;
+  mCoachingIntroFields.className = 'resource-fields disabled';
+  document.getElementById('mCoachingIntroTitle').value = '';
+  document.getElementById('mCoachingIntroText').value = '';
+  mAreasList.innerHTML = '';
+  document.getElementById('mCoachingApproach').value = '';
+  document.getElementById('mCalibration').value = '';
+  document.getElementById('mGreetingFresh').value = '';
+  mTranslationsList.innerHTML = '';
+  mRefreshAddLangOptions();
+  updateMasteryJsonPreview();
+}
+
+function fillMasteryForm(config) {
+  clearMasteryForm();
+
+  document.getElementById('mLessonId').value = config.lessonId || '';
+  document.getElementById('mNextLessonLabel').value = config.nextLessonLabel || '';
+  document.getElementById('mScopeNote').value = config.scopeNote || '';
+  document.getElementById('mMediaId').value = (config.video && config.video.mediaId) || '';
+  document.getElementById('mTranscript').value = config.transcript || '';
+
+  var pdfs = getConfigPdfs(config.resource);
+  if (pdfs.length) {
+    mHasResourceCb.checked = true;
+    mResourceFields.className = 'resource-fields';
+    pdfs.forEach(function (p) { mAddPdfBlock(p.title, p.url); });
+  }
+
+  // A lesson saved before the coaching-intro split kept this text under
+  // resource.title/resource.text. If coachingIntro hasn't been saved yet,
+  // fall back to that legacy pair so the text isn't lost on first load -
+  // saving again writes it under the new schema.
+  var ci = config.coachingIntro;
+  if (!ci && config.resource && config.resource.title && config.resource.text) {
+    ci = { title: config.resource.title, text: config.resource.text };
+  }
+  if (ci && (ci.title || ci.text)) {
+    mHasCoachingIntroCb.checked = true;
+    mCoachingIntroFields.className = 'resource-fields';
+    document.getElementById('mCoachingIntroTitle').value = ci.title || '';
+    document.getElementById('mCoachingIntroText').value = ci.text || '';
+  }
+
+  var rf = config.reflectionFramework || {};
+  (rf.areas || []).forEach(function (a) { mAddAreaBlock(a.title, a.instructions); });
+  document.getElementById('mCoachingApproach').value = rf.coachingApproach || '';
+  document.getElementById('mCalibration').value = (rf.calibrationExamples || []).join('\n');
+
+  var g = config.greeting || {};
+  document.getElementById('mGreetingFresh').value = g.fresh || '';
+
+  var translations = g.translations || {};
+  Object.keys(translations).forEach(function (lang) {
+    mAddLangBlock(lang, translations[lang].fresh);
+  });
+
+  updateMasteryJsonPreview();
+}
+
+function collectMasteryConfig() {
+  var areas = [];
+  mAreasList.querySelectorAll('.area-block').forEach(function (b) {
+    var title = b.querySelector('.area-title').value.trim();
+    var instructions = b.querySelector('.area-instructions').value.trim();
+    if (title || instructions) areas.push({ title: title, instructions: instructions });
+  });
+
+  var calibrationExamples = document.getElementById('mCalibration').value
+    .split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+
+  var translations = {};
+  mTranslationsList.querySelectorAll('.lang-block').forEach(function (b) {
+    var lang = b.dataset.lang;
+    var fresh = b.querySelector('.lang-fresh').value.trim();
+    if (fresh) translations[lang] = { fresh: fresh };
+  });
+
+  var pdfs = [];
+  mPdfsList.querySelectorAll('.pdf-block').forEach(function (b) {
+    var title = b.querySelector('.pdf-title').value.trim();
+    var url = b.querySelector('.pdf-url').value.trim();
+    if (url) pdfs.push({ title: title, url: url });
+  });
+
+  var resourceObj = (mHasResourceCb.checked && pdfs.length) ? { pdfs: pdfs } : null;
+
+  var coachingIntroObj = null;
+  if (mHasCoachingIntroCb.checked) {
+    var ciTitle = document.getElementById('mCoachingIntroTitle').value.trim();
+    var ciText = document.getElementById('mCoachingIntroText').value.trim();
+    if (ciTitle || ciText) coachingIntroObj = { title: ciTitle, text: ciText };
+  }
+
+  return {
+    lessonId: document.getElementById('mLessonId').value.trim(),
+    tier: 'guided',
+    scopeNote: document.getElementById('mScopeNote').value.trim(),
+    nextLessonLabel: document.getElementById('mNextLessonLabel').value.trim(),
+    video: { mediaId: document.getElementById('mMediaId').value.trim() },
+    transcript: document.getElementById('mTranscript').value.trim(),
+    resource: resourceObj,
+    coachingIntro: coachingIntroObj,
+    essentials: { exerciseFormId: '', reflectionFormId: '' },
+    reflectionFramework: {
+      areas: areas,
+      coachingApproach: document.getElementById('mCoachingApproach').value.trim(),
+      calibrationExamples: calibrationExamples
+    },
+    greeting: {
+      fresh: document.getElementById('mGreetingFresh').value.trim(),
+      translations: translations
+    }
+  };
+}
+
+function updateMasteryJsonPreview() {
+  document.getElementById('mJsonPreview').textContent = JSON.stringify(collectMasteryConfig(), null, 2);
+}
+
+var mPreviewTimer = null;
+masteryEditorView.addEventListener('input', function () {
+  clearTimeout(mPreviewTimer);
+  mPreviewTimer = setTimeout(updateMasteryJsonPreview, 300);
+});
+masteryEditorView.addEventListener('change', updateMasteryJsonPreview);
+
+document.getElementById('mSaveBtn').addEventListener('click', function () {
+  var config = collectMasteryConfig();
+
+  if (!config.lessonId) {
+    mSaveStatus.textContent = 'Lesson ID is required.';
+    mSaveStatus.className = 'save-status err';
+    return;
+  }
+  if (!config.video.mediaId) {
+    mSaveStatus.textContent = 'Video media ID is required.';
+    mSaveStatus.className = 'save-status err';
+    return;
+  }
+
+  mSaveStatus.textContent = 'Saving...';
+  mSaveStatus.className = 'save-status';
+
+  fetch(PROXY_URL + '/lesson-config', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Stratum-Admin-Key': adminKey
+    },
+    body: JSON.stringify({ lessonId: config.lessonId, tier: 'guided', config: config })
+  })
+    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+    .then(function (result) {
+      if (result.status === 200 && result.data && result.data.ok) {
+        mSaveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + new Date().toLocaleTimeString() + '.';
+        mSaveStatus.className = 'save-status ok';
+        refreshMasteryList();
+      } else {
+        mSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
+        mSaveStatus.className = 'save-status err';
+      }
+    })
+    .catch(function (e) {
+      mSaveStatus.textContent = 'Network error: ' + e.message;
+      mSaveStatus.className = 'save-status err';
+    });
+});
+
+function refreshMasteryList() {
+  fetch(PROXY_URL + '/lesson-configs?tier=guided', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { populateSelect(mLessonSelect, (d.lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); })); })
+    .catch(function () {});
+}
+
+document.getElementById('mDeleteBtn').addEventListener('click', function () {
+  var id = mLessonSelect.value || document.getElementById('mLessonId').value.trim();
+  if (!id) { mSaveStatus.textContent = 'No lesson selected.'; mSaveStatus.className = 'save-status err'; return; }
+  if (!confirm('Delete Master Coach lesson "' + id + '"? This cannot be undone.')) return;
+
+  mSaveStatus.textContent = 'Deleting...';
+  mSaveStatus.className = 'save-status';
+
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=guided', {
+    method: 'DELETE',
+    headers: { 'X-Stratum-Admin-Key': adminKey }
+  })
+    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+    .then(function (result) {
+      if (result.status === 200 && result.data && result.data.ok) {
+        mSaveStatus.textContent = 'Deleted ' + id + '.';
+        mSaveStatus.className = 'save-status ok';
+        clearMasteryForm();
+        refreshMasteryList();
+      } else {
+        mSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
+        mSaveStatus.className = 'save-status err';
+      }
+    })
+    .catch(function (e) {
+      mSaveStatus.textContent = 'Network error: ' + e.message;
+      mSaveStatus.className = 'save-status err';
+    });
+});
+
 
 var eLessonSelect = document.getElementById('eLessonSelect');
 var eResourceFields = document.getElementById('eResourceFields');
