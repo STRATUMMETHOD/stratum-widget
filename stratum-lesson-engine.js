@@ -448,6 +448,16 @@
     player.setAttribute('media-id', mediaId);
     player.setAttribute('aspect', '1.7777777777777777');
     mount(container, player);
+
+    // A wrong/deleted media ID, or Wistia's script being blocked entirely,
+    // leaves this custom element permanently undefined - it just sits as
+    // a blurred placeholder forever with nothing telling the student
+    // anything is actually wrong. Give it a reasonable window to load
+    // normally before saying so.
+    setTimeout(function () {
+      if (player.matches && player.matches(':defined')) return;
+      mount(container, el('p', 'lec-resource-empty', 'Video not loading? Let Ted know through the Contact tab.'));
+    }, 6000);
   }
 
   function loadScriptOnce(src) {
@@ -553,6 +563,15 @@
   // fallback line rather than rendering nothing - this is now a dedicated
   // sub-nav destination ("Lesson Resources"), so a silently blank panel
   // would look broken.
+  // Appends a fresh, unique query param on every page load, forcing the
+  // browser and GitHub Pages' CDN to always fetch the current file rather
+  // than a cached one - the same problem that bit the "Empty Your Cup"
+  // PDF after it was replaced under an unchanged filename. This means the
+  // PDF URL field in the admin panel never needs a manual ?v= bump.
+  function cacheBust(url) {
+    return url + (url.indexOf('?') === -1 ? '?' : '&') + 'cb=' + Date.now();
+  }
+
   function buildResource(container, resource) {
     var pdfs = getResourcePdfs(resource);
 
@@ -579,14 +598,14 @@
 
       var frame = document.createElement('iframe');
       frame.className = 'lec-resource-pdf-frame';
-      frame.src = pdf.url;
+      frame.src = cacheBust(pdf.url);
       frame.setAttribute('title', label + ' (PDF)');
       mount(wrap, frame);
 
       var fallback = el('div', 'lec-resource-pdf-fallback');
       fallback.appendChild(document.createTextNode("PDF not displaying? "));
       var fallbackLink = document.createElement('a');
-      fallbackLink.href = pdf.url;
+      fallbackLink.href = cacheBust(pdf.url);
       fallbackLink.target = '_blank';
       fallbackLink.rel = 'noopener';
       fallbackLink.textContent = 'Open it in a new tab';
@@ -976,6 +995,11 @@
       .then(function (d) {
         notesLoadedFromD1 = true;
         if (!d || !d.known) return;
+        // If the student already started typing before this (slower)
+        // fetch resolved, their local edit is newer than what the server
+        // had on record - applying the server value here would silently
+        // overwrite what they just wrote.
+        if (notesDirty) return;
         var field = document.getElementById('studentNotes');
         if (!field) return;
         field.value = d.text || '';
@@ -1100,6 +1124,10 @@
       .then(function (d) {
         tasksLoadedFromD1 = true;
         if (!d || !d.known) return;
+        // Same race as Notes: if the student already added/changed a task
+        // before this slower fetch resolved, don't clobber it with what
+        // the server had before that edit.
+        if (tasksDirty) return;
         lsSet(TRACKER_KEY, JSON.stringify(d.tasks || []));
         renderTracker();
       })
@@ -1581,7 +1609,16 @@
   var studentName = '';
   var reflectionComplete = false;
   var poolExhausted = false;
+  var lengthCapped = false;
   var busy = false;
+
+  // Session metering is per-conversation, not per-message - so a single
+  // unusually long back-and-forth costs far more in actual API usage than
+  // a tight one, with nothing previously stopping it. CONVO_SOFT_NUDGE_TURNS
+  // nudges the model toward its own natural wrap-up (see buildSystemPrompt);
+  // CONVO_HARD_CEILING_TURNS is the genuine backstop if that doesn't happen.
+  var CONVO_SOFT_NUDGE_TURNS = 24;
+  var CONVO_HARD_CEILING_TURNS = 50;
 
   var chatEl, formEl, inputEl, sendBtn, meterEl;
 
@@ -1642,6 +1679,14 @@
 
       'WRAPPING UP:\nOnce all the areas have been genuinely explored - not perfectly, not exhaustively, just past a first surface answer - bring the conversation to a warm close. Thank them for what they shared, tell them this becomes something they can keep, and let them know ' + LESSON.nextLessonLabel + ' is next. Immediately before your closing sentence, on its own line, include a hidden tag capturing the single most important thing that surfaced across the whole conversation, in one plain sentence, third person, under twenty words - exactly in this format: [SUMMARY: One sentence capturing the core insight that surfaced.] - this is never shown to the student, it is used only to build their record of the course. End that closing message with the exact tag [REFLECTION_COMPLETE] on its own line at the very end, after the summary tag. Only include either tag once, in the message where you are genuinely wrapping up - not before all areas are covered.'
     );
+
+    // A soft nudge only, not a hard cutoff - this exists purely so a
+    // conversation that has genuinely run long moves toward its natural
+    // close on its own, rather than the only ceiling being the client-side
+    // hard stop many exchanges further on.
+    if (conversationHistory.length >= CONVO_SOFT_NUDGE_TURNS) {
+      parts.push('LENGTH CHECK:\nThis conversation has run long. Begin moving deliberately toward the wrap-up described above within your next reply or two, even if not every area has been explored as deeply as would be ideal in a shorter session.');
+    }
 
     return parts.join('\n\n');
   }
@@ -1841,9 +1886,18 @@
       text = text.replace(summaryMatch[0], '');
     }
 
-    if (text.indexOf('[REFLECTION_COMPLETE]') !== -1) {
+    // Exact-string matching here used to mean any small deviation in the
+    // model's output - different casing, a space instead of an
+    // underscore, stray whitespace inside the brackets - would silently
+    // fail to register a genuinely completed session, with no way for
+    // the student or Ted to recover it after the fact. This tolerates
+    // the realistic range of minor formatting drift while still
+    // requiring a clear, deliberate bracket tag - not a loose phrase
+    // match that could false-positive on ordinary conversation text.
+    var completeMatch = text.match(/\[\s*reflection[\s_-]?complete\s*\]/i);
+    if (completeMatch) {
       complete = true;
-      text = text.replace('[REFLECTION_COMPLETE]', '');
+      text = text.replace(completeMatch[0], '');
     }
 
     return {
@@ -1955,6 +2009,20 @@
     btn.type = 'button';
     btn.addEventListener('click', generateDoc);
     mount(card, btn);
+
+    mount(chatEl, card);
+    scrollToBottom();
+  }
+
+  function showLengthCappedCard() {
+    lengthCapped = true;
+    sendBtn.disabled = true;
+    inputEl.disabled = true;
+
+    var card = el('div', 'srx-exhausted-card');
+    mount(card, el('div', 'srx-ec-title', "LET'S PICK THIS UP NEXT TIME"));
+    mount(card, el('p', null, "This has turned into a long, rich conversation - long enough that it's worth continuing fresh rather than pushing further in one sitting."));
+    mount(card, el('p', null, 'Download your notes below so nothing gets lost. If there\'s a specific thread you want to pick back up, message Ted through the Contact tab and he can help.'));
 
     mount(chatEl, card);
     scrollToBottom();
@@ -2113,6 +2181,8 @@
           reflectionComplete = true;
           showDownloadCard();
           reportLessonComplete(parsed.summary);
+        } else if (!reflectionComplete && !lengthCapped && conversationHistory.length >= CONVO_HARD_CEILING_TURNS) {
+          showLengthCappedCard();
         }
 
         persist();
@@ -2125,7 +2195,7 @@
   }
 
   function handleSend() {
-    if (busy || poolExhausted) return;
+    if (busy || poolExhausted || lengthCapped) return;
     var val = inputEl.value.trim();
     if (!val) return;
 
