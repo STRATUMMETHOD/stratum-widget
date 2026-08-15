@@ -413,6 +413,7 @@
       <thead>
         <tr style="border-bottom:1px solid #e2d9c4;">
           <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Email</th>
+          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Plan</th>
           <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Sessions Completed</th>
           <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Sessions Used</th>
           <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Status</th>
@@ -817,6 +818,11 @@ function formatLastSeen(iso) {
   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
+function planDisplayLabel(plan) {
+  var labels = { essentials: 'Self-Guided', guided: 'Coach', mastery: 'Master Coach' };
+  return labels[plan] || plan || '\u2014';
+}
+
 function renderStudents(list) {
   studentsTableBody.innerHTML = '';
   if (!list.length) {
@@ -830,6 +836,7 @@ function renderStudents(list) {
 
     var cells = [
       s.email || '(no email on file)',
+      planDisplayLabel(s.plan),
       String(s.completedCount || 0),
       (s.sessionsUsed != null ? s.sessionsUsed : 0) + ' / ' + (s.sessionsAllowed != null ? s.sessionsAllowed : '\u2014'),
       s.status || 'active',
