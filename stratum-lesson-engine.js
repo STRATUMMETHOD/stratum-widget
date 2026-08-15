@@ -989,12 +989,19 @@
   var notesDirty = false;
 
   function loadNotesFromD1() {
-    if (!STUDENT_ID) { notesLoadedFromD1 = true; return; }
+    if (!STUDENT_ID) { return; }
     fetch(PROXY_URL + '/notes?studentId=' + encodeURIComponent(STUDENT_ID))
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        notesLoadedFromD1 = true;
+        // The server not recognizing this identity at all must NOT count
+        // as "loaded" - that flag is what gates whether an auto-save on
+        // tab-switch is allowed to fire, and treating an unknown identity
+        // as loaded is exactly what let stale localStorage content
+        // (e.g. left over from a deleted identity) get silently written
+        // straight back to the server with no typing involved at all.
         if (!d || !d.known) return;
+
+        notesLoadedFromD1 = true;
         // If the student already started typing before this (slower)
         // fetch resolved, their local edit is newer than what the server
         // had on record - applying the server value here would silently
@@ -1118,12 +1125,17 @@
   var tasksDirty = false;
 
   function loadTasksFromD1() {
-    if (!STUDENT_ID) { tasksLoadedFromD1 = true; return; }
+    if (!STUDENT_ID) { return; }
     fetch(PROXY_URL + '/tasks?studentId=' + encodeURIComponent(STUDENT_ID))
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        tasksLoadedFromD1 = true;
+        // Same reasoning as Notes: an unknown identity must not count as
+        // "loaded" - that's what let stale localStorage tasks get
+        // silently auto-saved back to the server for an identity the
+        // server had never heard of, with no editing involved at all.
         if (!d || !d.known) return;
+
+        tasksLoadedFromD1 = true;
         // Same race as Notes: if the student already added/changed a task
         // before this slower fetch resolved, don't clobber it with what
         // the server had before that edit.
