@@ -847,16 +847,54 @@ function renderStudents(list) {
     var actionTd = document.createElement('td');
     actionTd.style.padding = '9px 12px';
     actionTd.style.textAlign = 'left';
+
+    var editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.textContent = 'Edit email';
+    editBtn.style.cssText = 'padding:4px 12px;font-size:11px;font-family:Arial,sans-serif;background:#3B2F24;color:#F5EFE0;border:none;cursor:pointer;margin-right:6px;';
+    editBtn.addEventListener('click', function () { editStudentEmail(s); });
+    actionTd.appendChild(editBtn);
+
     var delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.textContent = 'Delete';
     delBtn.style.cssText = 'padding:4px 12px;font-size:11px;font-family:Arial,sans-serif;background:#8a3a2e;color:#F5EFE0;border:none;cursor:pointer;';
     delBtn.addEventListener('click', function () { deleteStudentRow(s, tr); });
     actionTd.appendChild(delBtn);
+
     tr.appendChild(actionTd);
 
     studentsTableBody.appendChild(tr);
   });
+}
+
+function editStudentEmail(s) {
+  var current = s.email || '';
+  var next = prompt('Correct email for this student (current: ' + (current || 'none on file') + '):', current);
+  if (next === null) return;
+  next = next.trim();
+  if (!next || next === current) return;
+
+  fetch(PROXY_URL + '/admin/student/email', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+    body: JSON.stringify({ studentId: s.studentId, newEmail: next })
+  })
+    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+    .then(function (result) {
+      var d = result.data;
+      if (d && d.ok) {
+        s.email = d.email;
+        renderStudents(allStudents);
+        return;
+      }
+      if (d && d.reason === 'email_in_use') {
+        alert('That email is already tied to a different student record (ID: ' + d.existingStudentId + '). Resolve that conflict manually before correcting this one.');
+      } else {
+        alert('Could not update email: ' + (d && (d.reason || d.error) || 'unknown error'));
+      }
+    })
+    .catch(function () { alert('Network error while updating email.'); });
 }
 
 function deleteStudentRow(s, tr) {
