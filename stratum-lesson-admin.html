@@ -401,8 +401,8 @@
 
   <div class="top-tabs">
     <button class="top-tab" id="tabDashboardBtn" type="button">Dashboard</button>
-    <button class="top-tab active" id="tabGuidedBtn" type="button">Guided</button>
-    <button class="top-tab" id="tabEssentialsBtn" type="button">Essentials</button>
+    <button class="top-tab" id="tabGuidedBtn" type="button">Coach</button>
+    <button class="top-tab" id="tabEssentialsBtn" type="button">Self-Guided</button>
   </div>
 
   <div id="dashboardView" style="display:none;">
@@ -591,7 +591,7 @@
       <div class="card">
         <div class="chat-window">
           <div class="chat-messages" id="chatMessages">
-            <div class="chat-empty" id="chatEmptyState">Ask about continuity across Guided lessons &mdash; tone, repeated questions, whether a reflection area overlaps one already covered elsewhere. This reads your saved Guided lesson configs; it doesn't write to them. Essentials lessons have no AI coach, so they aren't part of this corpus.</div>
+            <div class="chat-empty" id="chatEmptyState">Ask about continuity across Coach lessons &mdash; tone, repeated questions, whether a reflection area overlaps one already covered elsewhere. This reads your saved Coach lesson configs; it doesn't write to them. Self-Guided lessons have no AI coach, so they aren't part of this corpus.</div>
           </div>
           <div class="chat-options-row">
             <input type="checkbox" id="chatIncludeTranscripts" />
@@ -698,9 +698,9 @@
     </details>
 
     <details class="card" data-group="open" open>
-      <summary class="card-title">Essentials &mdash; Jotform tabs</summary>
+      <summary class="card-title">Self-Guided &mdash; Jotform tabs</summary>
       <div class="card-body">
-      <span class="hint" style="display:block;margin-bottom:10px;">The self-guided lesson page shows an Exercise tab and a Reflection tab, each embedding the matching Jotform form. There is no AI coach on Essentials pages.</span>
+      <span class="hint" style="display:block;margin-bottom:10px;">The self-guided lesson page shows an Exercise tab and a Reflection tab, each embedding the matching Jotform form. There is no AI coach on Self-Guided pages.</span>
       <div class="field">
         <label for="eExerciseFormId">Exercise &mdash; Jotform form ID</label>
         <span class="hint">From the form's Jotform URL or share settings</span>
@@ -766,6 +766,8 @@ function unlock() {
         panel.style.display = 'block';
         populateSelect(gLessonSelect, result.data.lessons || []);
         refreshEssentialsList();
+        showTopTab('dashboard');
+        loadStudents();
       } else {
         authStatus.textContent = 'Key rejected. Check it matches STRATUM_ADMIN_KEY on the Worker.';
         authStatus.className = '';
@@ -1082,7 +1084,7 @@ document.getElementById('gLoadBtn').addEventListener('click', function () {
 });
 
 document.getElementById('gNewLessonBtn').addEventListener('click', function () {
-  var id = prompt('New Guided lesson ID (e.g. 1.2):');
+  var id = prompt('New Coach lesson ID (e.g. 1.2):');
   if (!id) return;
   clearGuidedForm();
   document.getElementById('gLessonId').value = id.trim();
@@ -1092,7 +1094,7 @@ function loadGuidedLesson(lessonId) {
   fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided')
     .then(function (r) { return r.json(); })
     .then(function (d) {
-      if (!d || !d.known) { alert('No Guided config found for ' + lessonId + ' yet.'); return; }
+      if (!d || !d.known) { alert('No Coach config found for ' + lessonId + ' yet.'); return; }
       fillGuidedForm(d.config);
     })
     .catch(function () { alert('Could not load that lesson.'); });
@@ -1490,7 +1492,7 @@ function refreshGuidedList() {
 document.getElementById('gDeleteBtn').addEventListener('click', function () {
   var id = gLessonSelect.value || document.getElementById('gLessonId').value.trim();
   if (!id) { gSaveStatus.textContent = 'No lesson selected.'; gSaveStatus.className = 'save-status err'; return; }
-  if (!confirm('Delete Guided lesson "' + id + '"? This cannot be undone.')) return;
+  if (!confirm('Delete Coach lesson "' + id + '"? This cannot be undone.')) return;
 
   gSaveStatus.textContent = 'Deleting...';
   gSaveStatus.className = 'save-status';
@@ -1532,7 +1534,7 @@ document.getElementById('eLoadBtn').addEventListener('click', function () {
 });
 
 document.getElementById('eNewLessonBtn').addEventListener('click', function () {
-  var id = prompt('New Essentials lesson ID (e.g. 1.2):');
+  var id = prompt('New Self-Guided lesson ID (e.g. 1.2):');
   if (!id) return;
   clearEssentialsForm();
   document.getElementById('eLessonId').value = id.trim();
@@ -1542,7 +1544,7 @@ function loadEssentialsLesson(lessonId) {
   fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=essentials')
     .then(function (r) { return r.json(); })
     .then(function (d) {
-      if (!d || !d.known) { alert('No Essentials config found for ' + lessonId + ' yet.'); return; }
+      if (!d || !d.known) { alert('No Self-Guided config found for ' + lessonId + ' yet.'); return; }
       fillEssentialsForm(d.config);
     })
     .catch(function () { alert('Could not load that lesson.'); });
@@ -1765,7 +1767,7 @@ function refreshEssentialsList() {
 document.getElementById('eDeleteBtn').addEventListener('click', function () {
   var id = eLessonSelect.value || document.getElementById('eLessonId').value.trim();
   if (!id) { eSaveStatus.textContent = 'No lesson selected.'; eSaveStatus.className = 'save-status err'; return; }
-  if (!confirm('Delete Essentials lesson "' + id + '"? This cannot be undone.')) return;
+  if (!confirm('Delete Self-Guided lesson "' + id + '"? This cannot be undone.')) return;
 
   eSaveStatus.textContent = 'Deleting...';
   eSaveStatus.className = 'save-status';
