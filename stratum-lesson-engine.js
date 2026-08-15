@@ -71,6 +71,13 @@
   var STRATUM_SID_COOKIE = 'stratum_sid';
   var STRATUM_SID_MAX_AGE = 60 * 60 * 24 * 365 * 2; // ~2 years
 
+  // Set ONLY the moment /resolve-identity genuinely succeeds - never just
+  // because a validly-formatted email string exists somewhere. This is
+  // what isEmailConfirmed() actually trusts; a second, independent record
+  // of confirmation alongside the cookie, so a cleared cookie alone
+  // doesn't erase the fact that this device was once confirmed.
+  var IDENTITY_CONFIRMED_KEY = 'wlfc_identity_confirmed';
+
   // Runtime state, populated once the lesson config arrives.
   var LESSON = null;       // the fetched lesson config object
   var LESSON_ID = null;
@@ -136,8 +143,14 @@
   }
 
   function isEmailConfirmed() {
+    // Deliberately does NOT accept "there is a validly-formatted email in
+    // localStorage" as proof - that was the root cause of gated content
+    // (Coaching, Notes, Tasks) unlocking even when identity resolution had
+    // silently failed against Systeme.io. Only a genuine prior success
+    // (the durable cookie, or this flag set the moment that cookie was
+    // last set) counts as confirmed.
     if (readCookie(STRATUM_SID_COOKIE)) return true;
-    return isValidEmail(lsGet(PROJ_KEYS.email));
+    return lsGet(IDENTITY_CONFIRMED_KEY) === '1';
   }
 
   var STUDENT_ID = readCookie('sio_u_public');
@@ -149,22 +162,7 @@
 
   var RESOLVE_IDENTITY_ENABLED = true;
 
-  function ensureDurableIdentity() {
-    var existing = readCookie(STRATUM_SID_COOKIE);
-    if (existing) {
-      STUDENT_ID = existing;
-      return Promise.resolve();
-    }
-
-    if (!RESOLVE_IDENTITY_ENABLED) {
-      return Promise.resolve();
-    }
-
-    var email = lsGet(PROJ_KEYS.email);
-    if (!isValidEmail(email)) {
-      return Promise.resolve();
-    }
-
+  function attemptResolveIdentity(email) {
     return fetch(PROXY_URL + '/resolve-identity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -172,12 +170,116 @@
     })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (d && d.ok && d.stratumId) {
-          STUDENT_ID = d.stratumId;
-          setCookie(STRATUM_SID_COOKIE, d.stratumId, STRATUM_SID_MAX_AGE);
-        }
+        if (d && d.ok && d.stratumId) return { ok: true, stratumId: d.stratumId };
+        return { ok: false, reason: (d && d.reason) || 'unknown' };
       })
-      .catch(function () {});
+      .catch(function () { return { ok: false, reason: 'network_error' }; });
+  }
+
+  function confirmIdentity(stratumId) {
+    STUDENT_ID = stratumId;
+    setCookie(STRATUM_SID_COOKIE, stratumId, STRATUM_SID_MAX_AGE);
+    lsSet(IDENTITY_CONFIRMED_KEY, '1');
+  }
+
+  /* ----------------------------------------------------------
+     COACHING TAB LOCK
+     ------------------------------------------------------------
+     Two tabs open on the same lesson's Coaching subtab used to
+     each generate their own conversation ID, silently splitting
+     one coaching session into two - both charged against the
+     student's pool, with whichever tab saved last overwriting
+     the other's transcript entirely. This gives each browser tab
+     a random token and has it hold a heartbeat-refreshed lock in
+     localStorage (visible to every same-origin tab) for the
+     lesson it's coaching on; a second tab sees a fresh lock held
+     by a different token and warns instead of silently colliding.
+     A lock older than TAB_LOCK_STALE_MS is treated as abandoned
+     (crashed tab, etc.) so nobody can get permanently stuck.
+     ---------------------------------------------------------- */
+
+  var TAB_TOKEN = makeId();
+  var TAB_LOCK_STALE_MS = 12000;
+  var TAB_LOCK_HEARTBEAT_MS = 5000;
+  var tabLockKey = null;
+  var tabLockInterval = null;
+
+  function tabLockConflict() {
+    if (!tabLockKey) return false;
+    var raw = lsGet(tabLockKey);
+    if (!raw) return false;
+    var lock;
+    try { lock = JSON.parse(raw); } catch (e) { return false; }
+    if (!lock || lock.token === TAB_TOKEN) return false;
+    return (Date.now() - (lock.ts || 0)) < TAB_LOCK_STALE_MS;
+  }
+
+  function claimTabLock() {
+    if (!tabLockKey) return;
+    lsSet(tabLockKey, JSON.stringify({ token: TAB_TOKEN, ts: Date.now() }));
+    if (tabLockInterval) clearInterval(tabLockInterval);
+    tabLockInterval = setInterval(function () {
+      lsSet(tabLockKey, JSON.stringify({ token: TAB_TOKEN, ts: Date.now() }));
+    }, TAB_LOCK_HEARTBEAT_MS);
+  }
+
+  function releaseTabLock() {
+    if (tabLockInterval) { clearInterval(tabLockInterval); tabLockInterval = null; }
+    if (!tabLockKey) return;
+    var raw = lsGet(tabLockKey);
+    if (!raw) return;
+    try {
+      var lock = JSON.parse(raw);
+      if (lock && lock.token === TAB_TOKEN) localStorage.removeItem(tabLockKey);
+    } catch (e) {}
+  }
+
+  // Resolves with { ok: true } only once identity is genuinely confirmed,
+  // or { ok: false, reason } otherwise - callers that gate real access
+  // (see saveProjectFields) must check this rather than assume success,
+  // which is what previously let students proceed on an unconfirmed,
+  // fragile fallback ID with no indication anything had gone wrong.
+  function ensureDurableIdentity() {
+    var existing = readCookie(STRATUM_SID_COOKIE);
+    if (existing) {
+      STUDENT_ID = existing;
+      lsSet(IDENTITY_CONFIRMED_KEY, '1');
+      return Promise.resolve({ ok: true });
+    }
+
+    if (!RESOLVE_IDENTITY_ENABLED) return Promise.resolve({ ok: false, reason: 'disabled' });
+
+    var email = lsGet(PROJ_KEYS.email);
+    if (!isValidEmail(email)) return Promise.resolve({ ok: false, reason: 'no_email' });
+
+    return attemptResolveIdentity(email).then(function (result) {
+      if (result.ok) {
+        confirmIdentity(result.stratumId);
+        return { ok: true };
+      }
+
+      // A brand-new purchase can take a short while to sync into
+      // Systeme.io as a contact record, and a network blip is possible
+      // too. One quiet retry a few seconds later absorbs that window
+      // before this is treated as a genuine failure worth surfacing.
+      var transient = result.reason === 'contact_not_found' ||
+        result.reason === 'systeme_api_error' ||
+        result.reason === 'network_error';
+      if (!transient) return result;
+
+      return new Promise(function (resolve) {
+        setTimeout(function () {
+          attemptResolveIdentity(email).then(function (retryResult) {
+            if (retryResult.ok) {
+              confirmIdentity(retryResult.stratumId);
+              resolve({ ok: true });
+            } else {
+              resolve(retryResult);
+            }
+          });
+        }, 3000);
+      });
+    });
   }
 
   /* ==========================================================
@@ -1412,18 +1514,23 @@
       return;
     }
 
-    var wasConfirmedBefore = isEmailConfirmed();
-
     eachProjectSpec(function (spec) {
       lsSet(PROJ_KEYS[spec.key], fields[spec.key]);
     });
 
-    if (!wasConfirmedBefore && isEmailConfirmed()) {
+    if (!isEmailConfirmed()) {
+      if (btn) btn.disabled = true;
       statusEl.textContent = 'Confirming…';
       statusEl.className = 'proj-status';
-      ensureDurableIdentity().then(function () {
-        unlockGatedTabs();
-        finishProjectSave(fields, statusEl, btn);
+      ensureDurableIdentity().then(function (result) {
+        if (btn) btn.disabled = false;
+        if (result && result.ok) {
+          unlockGatedTabs();
+          finishProjectSave(fields, statusEl, btn);
+        } else {
+          statusEl.textContent = "We couldn't confirm that email against your enrollment. Double-check it matches the address you signed up with, or wait a minute in case your account is still syncing, then click Save again.";
+          statusEl.className = 'proj-status err';
+        }
       });
       return;
     }
@@ -1599,6 +1706,39 @@
   function buildCoachTab(panel) {
     buildCoachingIntro(panel);
 
+    tabLockKey = 'wlfc_coach_lock_' + LESSON_ID.replace(/\./g, '_');
+
+    if (tabLockConflict()) {
+      buildTabConflictNotice(panel);
+      return;
+    }
+
+    claimTabLock();
+    buildCoachChatUI(panel);
+  }
+
+  function buildTabConflictNotice(panel) {
+    var box = el('div', 'lec-contact');
+    box.style.padding = '20px';
+
+    mount(box, el('p', null,
+      "This lesson's coaching session looks like it's already open in another tab or window. " +
+      'To avoid losing progress, close the other tab and refresh this page - or continue here instead.'));
+
+    var btn = el('button', 'proj-gate-btn', 'Continue here instead');
+    btn.type = 'button';
+    btn.addEventListener('click', function () {
+      panel.innerHTML = '';
+      buildCoachingIntro(panel);
+      claimTabLock();
+      buildCoachChatUI(panel);
+    });
+    mount(box, btn);
+
+    mount(panel, box);
+  }
+
+  function buildCoachChatUI(panel) {
     var bleed = el('div', 'syio-bleed');
     var wrap = el('div', 'srx-wrap');
 
@@ -1942,8 +2082,20 @@
         }
 
         var block = (data.content || []).find(function (b) { return b.type === 'text'; });
-        var raw = block ? block.text : 'I lost my train of thought there for a second. Could you say that again?';
 
+        if (!block) {
+          // A genuine upstream/API error, or a malformed response - there
+          // is no real reply here. Say so honestly rather than inventing
+          // an in-character filler line and silently recording it into
+          // history as if the coach had actually said it - that used to
+          // mask real failures, could repeat forever with the student
+          // never knowing anything was actually broken, and polluted the
+          // conversation history sent on every future turn.
+          addMessage('assistant', "That didn't go through cleanly on my end. Try sending it again - if this keeps happening, let Ted know through the Contact tab.");
+          return;
+        }
+
+        var raw = block.text;
         var parsed = extractTags(raw);
         if (parsed.name) {
           studentName = parsed.name;
@@ -1978,9 +2130,22 @@
     if (!val) return;
 
     addMessage('user', val);
-    conversationHistory.push({ role: 'user', content: val });
     inputEl.value = '';
     inputEl.style.height = 'auto';
+
+    // If the previous send failed (network drop, dropped connection), the
+    // last entry in history is still an unanswered 'user' turn. Claude's
+    // API requires strict user/assistant alternation - pushing a second
+    // consecutive 'user' entry would make every future send in this
+    // conversation fail the same way, with no way for the student to
+    // recover short of abandoning the lesson. Merging into that same
+    // pending turn keeps the history valid.
+    var last = conversationHistory[conversationHistory.length - 1];
+    if (last && last.role === 'user') {
+      last.content = last.content + '\n\n' + val;
+    } else {
+      conversationHistory.push({ role: 'user', content: val });
+    }
     persist();
 
     sendToClaude();
@@ -2100,6 +2265,7 @@
   window.addEventListener('pagehide', function () {
     flushNotesToD1();
     flushTasksToD1();
+    releaseTabLock();
   });
 
   document.addEventListener('visibilitychange', function () {
