@@ -735,6 +735,12 @@
     ];
 
     TABS_E.forEach(function (tab) {
+      // Skip entirely if this lesson has no form configured for it yet -
+      // an empty accordion with a "not set up yet" placeholder just looks
+      // like a real feature that's broken. Nothing here is student-facing
+      // proof of missing content once the form ID is actually entered.
+      if (!tab.formId) return;
+
       var details = el('details', 'lec-resource');
       details.id = 'lecEssentials' + tab.id;
       details.open = true;
@@ -750,12 +756,6 @@
   }
 
   function buildJotformTab(panel, formId, label) {
-    if (!formId) {
-      mount(panel, el('p', null,
-        'This ' + label.toLowerCase() + ' has not been set up yet. Check back soon, or let Ted know.'));
-      return;
-    }
-
     var wrap = el('div', 'jf-embed-wrap');
     var iframeId = 'JotFormIFrame-' + formId;
 
