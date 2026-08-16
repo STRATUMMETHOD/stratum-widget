@@ -300,6 +300,7 @@
   function buildTranscript(container, mediaId) {
     var details = el('details', 'lec-transcript');
     details.id = 'lecTranscript';
+    details.open = true;
 
     var summary = el('summary', null, 'Read the transcript');
     mount(details, summary);
@@ -413,6 +414,10 @@
   }
 
   function buildResourcesPanel(panel) {
+    if (!LESSON.resource || !LESSON.resource.title) {
+      mount(panel, el('p', 'lec-resource-empty', 'This lesson has no additional resources.'));
+      return;
+    }
     buildResource(panel, LESSON.resource);
   }
 
@@ -485,8 +490,14 @@
       var view = el('div', 'stratum-topview');
       view.id = dest.id;
       if (index !== 0) view.style.display = 'none';
-      dest.build(view);
+      // Mount FIRST, build SECOND. This Lesson's sub-nav ends with a
+      // synthetic defaultBtn.click(), which calls document.getElementById()
+      // to find its own panels - if those panels only exist inside a
+      // detached `view` node that hasn't been inserted into the real
+      // document yet, getElementById returns null and the click handler
+      // throws silently, leaving nothing correctly shown or hidden.
       mount(container, view);
+      dest.build(view);
     });
   }
 
