@@ -369,21 +369,44 @@
   // title bar is the toggle. Not a download, not a new-tab link.
   // Only called when the lesson config actually has a resource.
   function buildResource(container, resource) {
-    if (!resource || !resource.title) return;
+    if (!resource) return;
 
-    var details = el('details', 'lec-resource');
-    details.id = 'lecResource';
+    // Current schema: a repeatable list of PDFs, each its own accordion.
+    var pdfs = Array.isArray(resource.pdfs) ? resource.pdfs.filter(function (p) { return p && p.title && p.url; }) : [];
+    if (pdfs.length) {
+      pdfs.forEach(function (pdf, i) {
+        var details = el('details', 'lec-resource');
+        details.id = 'lecResource' + i;
+        mount(details, el('summary', 'lec-resource-bar', pdf.title));
 
-    mount(details, el('summary', 'lec-resource-bar', resource.title));
+        var body = el('div', 'lec-resource-body');
+        var pdfWrap = el('div', 'lec-resource-pdf');
+        var link = document.createElement('a');
+        link.href = pdf.url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.className = 'lec-resource-pdf-btn';
+        link.textContent = 'Download PDF';
+        mount(pdfWrap, link);
+        mount(body, pdfWrap);
+        mount(details, body);
+        mount(container, details);
+      });
+      return;
+    }
 
-    var body = el('div', 'lec-resource-body');
-    // Resource content is authored by Ted through the admin panel, not by
-    // students, so trusted HTML is allowed. Plain text from the panel is
-    // split into paragraphs so it does not render as one solid block.
-    body.innerHTML = resource.html || textToParagraphs(resource.text || '');
-    mount(details, body);
-
-    mount(container, details);
+    // Legacy schema fallback: a single resource.title + resource.text/html
+    // pair, from before Resource became a repeatable PDF list. A lesson
+    // saved before that restructure keeps this shape until re-saved.
+    if (resource.title) {
+      var legacyDetails = el('details', 'lec-resource');
+      legacyDetails.id = 'lecResource';
+      mount(legacyDetails, el('summary', 'lec-resource-bar', resource.title));
+      var legacyBody = el('div', 'lec-resource-body');
+      legacyBody.innerHTML = resource.html || textToParagraphs(resource.text || '');
+      mount(legacyDetails, legacyBody);
+      mount(container, legacyDetails);
+    }
   }
 
   // Blank lines separate paragraphs; single newlines become line breaks.
@@ -418,7 +441,10 @@
   }
 
   function buildResourcesPanel(panel) {
-    if (!LESSON.resource || !LESSON.resource.title) {
+    var hasPdfs = LESSON.resource && Array.isArray(LESSON.resource.pdfs) &&
+      LESSON.resource.pdfs.some(function (p) { return p && p.title && p.url; });
+    var hasLegacy = LESSON.resource && LESSON.resource.title;
+    if (!hasPdfs && !hasLegacy) {
       mount(panel, el('p', 'lec-resource-empty', 'This lesson has no additional resources.'));
       return;
     }
@@ -610,16 +636,35 @@
     });
   }
 
+  // ESSENTIALS (Self-Guided) ONLY - the coaching-intro text, when
+  // configured, shows as its own collapsed accordion directly above the
+  // Exercise/Reflection forms (matches the admin panel's own field label:
+  // "shown above the Exercise/Reflection forms, default closed").
+  function buildEssentialsCoachingIntro(container) {
+    var ci = LESSON.coachingIntro;
+    if (!ci || !ci.text) return;
+    var details = el('details', 'lec-resource');
+    details.id = 'lecEssentialsIntro';
+    details.open = false;
+    mount(details, el('summary', 'lec-resource-bar', ci.title || 'Before you begin'));
+    var body = el('div', 'lec-resource-body');
+    body.innerHTML = textToParagraphs(ci.text);
+    mount(details, body);
+    mount(container, details);
+  }
+
   // ESSENTIALS (Self-Guided) ONLY - a flat page: video, transcript,
-  // resource, a plain contact line, then Exercise/Reflection. Deliberately
-  // does NOT use the This Lesson/Dashboard/Contact shell built for
-  // Guided/Mastery below - Self-Guided has no AI coach and no persistent
-  // Notes/Tasks/Project, so that whole shell doesn't apply here.
+  // resource, an optional coaching-intro note, then Exercise/Reflection.
+  // Deliberately does NOT use the This Lesson/Dashboard/Contact shell
+  // built for Guided/Mastery below - Self-Guided has no AI coach and no
+  // persistent Notes/Tasks/Project, so that whole shell doesn't apply
+  // here. Also deliberately has no "Stuck? Email Ted" line - that was
+  // removed from this tier by design.
   function buildEssentialsPage(container) {
     buildVideo(container, LESSON.video.mediaId);
     buildTranscript(container, LESSON.video.mediaId, false);
     buildResource(container, LESSON.resource);
-    buildContactLine(container);
+    buildEssentialsCoachingIntro(container);
     buildEssentialsDropdowns(container);
   }
 
