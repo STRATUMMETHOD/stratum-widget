@@ -1613,6 +1613,142 @@ lessonEditorView.addEventListener('input', function () {
 });
 lessonEditorView.addEventListener('change', updateGuidedJsonPreview);
 
+// Triggers a browser download of a JSON object with no server involvement -
+// just a Blob + a temporary link click, standard client-side download
+// pattern.
+function downloadJSON(filename, dataObj) {
+  var blob = new Blob([JSON.stringify(dataObj, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function downloadText(filename, text) {
+  var blob = new Blob([text], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Turns a lesson config into a plain-English, field-by-field record -
+// every field labeled clearly, in reading order, with sections that don't
+// apply (e.g. reflection areas on a Self-Guided lesson) simply omitted
+// rather than shown empty. This is the human-readable history file, as
+// opposed to downloadExistingConfig's raw JSON safety-net backup.
+function configToReadableText(config, savedAt) {
+  var lines = [];
+  var rule = '============================================================';
+
+  function section(title) {
+    lines.push('');
+    lines.push(rule);
+    lines.push(title);
+    lines.push(rule);
+  }
+
+  lines.push('STRATUM LESSON RECORD');
+  lines.push('Lesson: ' + (config.lessonId || '(no ID)') + '   Tier: ' + (config.tier || ''));
+  lines.push('Saved: ' + savedAt.toLocaleString());
+
+  section('LESSON IDENTITY');
+  lines.push('Scope note: ' + (config.scopeNote || '(none)'));
+  lines.push('Next lesson label: ' + (config.nextLessonLabel || '(none)'));
+
+  section('VIDEO');
+  lines.push('Wistia media ID: ' + ((config.video && config.video.mediaId) || '(none)'));
+
+  section('TRANSCRIPT');
+  lines.push(config.transcript || '(none)');
+
+  if (config.resource && Array.isArray(config.resource.pdfs) && config.resource.pdfs.length) {
+    section('RESOURCE');
+    config.resource.pdfs.forEach(function (p, i) {
+      lines.push((i + 1) + '. ' + (p.title || '(untitled)') + '  -  ' + p.url);
+    });
+  }
+
+  if (config.coachingIntro && (config.coachingIntro.title || config.coachingIntro.text)) {
+    section('COACHING INTRO (shown before first session)');
+    lines.push('Title: ' + (config.coachingIntro.title || '(none)'));
+    lines.push('');
+    lines.push(config.coachingIntro.text || '(none)');
+  }
+
+  var areas = (config.reflectionFramework && config.reflectionFramework.areas) || [];
+  if (areas.length) {
+    section('REFLECTION AREAS (' + areas.length + ')');
+    areas.forEach(function (a, i) {
+      lines.push((i + 1) + '. ' + (a.title || '(untitled)'));
+      lines.push('   ' + (a.instructions || '(no instructions)'));
+      lines.push('');
+    });
+  }
+
+  if (config.reflectionFramework && config.reflectionFramework.coachingApproach) {
+    section('COACHING APPROACH (coach-only, never shown to student)');
+    lines.push(config.reflectionFramework.coachingApproach);
+  }
+
+  var cal = (config.reflectionFramework && config.reflectionFramework.calibrationExamples) || [];
+  if (cal.length) {
+    section('CALIBRATION EXAMPLES (coach-only)');
+    cal.forEach(function (c, i) {
+      lines.push((i + 1) + '. ' + c);
+      lines.push('');
+    });
+  }
+
+  if (config.greeting && config.greeting.fresh) {
+    section('GREETING');
+    lines.push(config.greeting.fresh);
+  }
+
+  var langs = config.greeting && config.greeting.translations ? Object.keys(config.greeting.translations) : [];
+  if (langs.length) {
+    lines.push('');
+    lines.push('Translations available: ' + langs.join(', '));
+  }
+
+  if (config.essentials && (config.essentials.exerciseFormId || config.essentials.reflectionFormId)) {
+    section('SELF-GUIDED JOTFORM IDS');
+    lines.push('Exercise form ID: ' + (config.essentials.exerciseFormId || '(none)'));
+    lines.push('Reflection form ID: ' + (config.essentials.reflectionFormId || '(none)'));
+  }
+
+  return lines.join('\n');
+}
+
+// Fetches whatever is CURRENTLY stored for this exact lessonId+tier and
+// auto-downloads it before any save overwrites it - specifically guards
+// against a blank or bad save silently clobbering real content, since the
+// last-known-good state is captured to disk with no extra click required.
+// Best-effort: a failed backup fetch (network hiccup, nothing existed yet
+// for a genuinely new lesson) never blocks the save itself - it just skips
+// straight to onDone().
+function backupExistingConfig(lessonId, tier, onDone) {
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=' + encodeURIComponent(tier))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d && d.known && d.config) {
+        var stamp = new Date().toISOString().replace(/[:.]/g, '-');
+        var safeId = String(lessonId).replace(/\./g, '-');
+        downloadJSON('stratum-backup_' + safeId + '_' + tier + '_' + stamp + '.json', d.config);
+      }
+    })
+    .catch(function () { /* best-effort - proceed to save regardless */ })
+    .then(onDone);
+}
+
 document.getElementById('gSaveBtn').addEventListener('click', function () {
   var config = collectGuidedConfig();
 
@@ -1627,32 +1763,39 @@ document.getElementById('gSaveBtn').addEventListener('click', function () {
     return;
   }
 
-  gSaveStatus.textContent = 'Saving...';
+  gSaveStatus.textContent = 'Backing up current version...';
   gSaveStatus.className = 'save-status';
 
-  fetch(PROXY_URL + '/lesson-config', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Stratum-Admin-Key': adminKey
-    },
-    body: JSON.stringify({ lessonId: config.lessonId, tier: 'guided', config: config })
-  })
-    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
-    .then(function (result) {
-      if (result.status === 200 && result.data && result.data.ok) {
-        gSaveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + new Date().toLocaleTimeString() + '.';
-        gSaveStatus.className = 'save-status ok';
-        refreshGuidedList();
-      } else {
-        gSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
-        gSaveStatus.className = 'save-status err';
-      }
+  backupExistingConfig(config.lessonId, 'guided', function () {
+    gSaveStatus.textContent = 'Saving...';
+
+    fetch(PROXY_URL + '/lesson-config', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Stratum-Admin-Key': adminKey
+      },
+      body: JSON.stringify({ lessonId: config.lessonId, tier: 'guided', config: config })
     })
-    .catch(function (e) {
-      gSaveStatus.textContent = 'Network error: ' + e.message;
-      gSaveStatus.className = 'save-status err';
-    });
+      .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+      .then(function (result) {
+        if (result.status === 200 && result.data && result.data.ok) {
+          var gNow = new Date();
+          var gStamp = gNow.toISOString().replace(/[:.]/g, '-');
+          downloadText('stratum-record_' + config.lessonId.replace(/\./g, '-') + '_guided_' + gStamp + '.txt', configToReadableText(config, gNow));
+          gSaveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + gNow.toLocaleTimeString() + '. Backup + record downloaded.';
+          gSaveStatus.className = 'save-status ok';
+          refreshGuidedList();
+        } else {
+          gSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
+          gSaveStatus.className = 'save-status err';
+        }
+      })
+      .catch(function (e) {
+        gSaveStatus.textContent = 'Network error: ' + e.message;
+        gSaveStatus.className = 'save-status err';
+      });
+  });
 });
 
 function refreshGuidedList() {
@@ -2088,32 +2231,39 @@ document.getElementById('mSaveBtn').addEventListener('click', function () {
     return;
   }
 
-  mSaveStatus.textContent = 'Saving...';
+  mSaveStatus.textContent = 'Backing up current version...';
   mSaveStatus.className = 'save-status';
 
-  fetch(PROXY_URL + '/lesson-config', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Stratum-Admin-Key': adminKey
-    },
-    body: JSON.stringify({ lessonId: config.lessonId, tier: 'guided', config: config })
-  })
-    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
-    .then(function (result) {
-      if (result.status === 200 && result.data && result.data.ok) {
-        mSaveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + new Date().toLocaleTimeString() + '.';
-        mSaveStatus.className = 'save-status ok';
-        refreshMasteryList();
-      } else {
-        mSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
-        mSaveStatus.className = 'save-status err';
-      }
+  backupExistingConfig(config.lessonId, 'guided', function () {
+    mSaveStatus.textContent = 'Saving...';
+
+    fetch(PROXY_URL + '/lesson-config', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Stratum-Admin-Key': adminKey
+      },
+      body: JSON.stringify({ lessonId: config.lessonId, tier: 'guided', config: config })
     })
-    .catch(function (e) {
-      mSaveStatus.textContent = 'Network error: ' + e.message;
-      mSaveStatus.className = 'save-status err';
-    });
+      .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+      .then(function (result) {
+        if (result.status === 200 && result.data && result.data.ok) {
+          var mNow = new Date();
+          var mStamp = mNow.toISOString().replace(/[:.]/g, '-');
+          downloadText('stratum-record_' + config.lessonId.replace(/\./g, '-') + '_guided_' + mStamp + '.txt', configToReadableText(config, mNow));
+          mSaveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + mNow.toLocaleTimeString() + '. Backup + record downloaded.';
+          mSaveStatus.className = 'save-status ok';
+          refreshMasteryList();
+        } else {
+          mSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
+          mSaveStatus.className = 'save-status err';
+        }
+      })
+      .catch(function (e) {
+        mSaveStatus.textContent = 'Network error: ' + e.message;
+        mSaveStatus.className = 'save-status err';
+      });
+  });
 });
 
 function refreshMasteryList() {
@@ -2364,32 +2514,39 @@ document.getElementById('eSaveBtn').addEventListener('click', function () {
     return;
   }
 
-  eSaveStatus.textContent = 'Saving...';
+  eSaveStatus.textContent = 'Backing up current version...';
   eSaveStatus.className = 'save-status';
 
-  fetch(PROXY_URL + '/lesson-config', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Stratum-Admin-Key': adminKey
-    },
-    body: JSON.stringify({ lessonId: config.lessonId, tier: 'essentials', config: config })
-  })
-    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
-    .then(function (result) {
-      if (result.status === 200 && result.data && result.data.ok) {
-        eSaveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + new Date().toLocaleTimeString() + '.';
-        eSaveStatus.className = 'save-status ok';
-        refreshEssentialsList();
-      } else {
-        eSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
-        eSaveStatus.className = 'save-status err';
-      }
+  backupExistingConfig(config.lessonId, 'essentials', function () {
+    eSaveStatus.textContent = 'Saving...';
+
+    fetch(PROXY_URL + '/lesson-config', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Stratum-Admin-Key': adminKey
+      },
+      body: JSON.stringify({ lessonId: config.lessonId, tier: 'essentials', config: config })
     })
-    .catch(function (e) {
-      eSaveStatus.textContent = 'Network error: ' + e.message;
-      eSaveStatus.className = 'save-status err';
-    });
+      .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+      .then(function (result) {
+        if (result.status === 200 && result.data && result.data.ok) {
+          var eNow = new Date();
+          var eStamp = eNow.toISOString().replace(/[:.]/g, '-');
+          downloadText('stratum-record_' + config.lessonId.replace(/\./g, '-') + '_essentials_' + eStamp + '.txt', configToReadableText(config, eNow));
+          eSaveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + eNow.toLocaleTimeString() + '. Backup + record downloaded.';
+          eSaveStatus.className = 'save-status ok';
+          refreshEssentialsList();
+        } else {
+          eSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
+          eSaveStatus.className = 'save-status err';
+        }
+      })
+      .catch(function (e) {
+        eSaveStatus.textContent = 'Network error: ' + e.message;
+        eSaveStatus.className = 'save-status err';
+      });
+  });
 });
 
 function refreshEssentialsList() {
