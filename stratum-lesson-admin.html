@@ -1509,11 +1509,14 @@ function fillGuidedForm(config) {
   document.getElementById('gTranscript').value = config.transcript || '';
 
   var pdfs = getConfigPdfs(config.resource);
-  if (pdfs.length) {
-    gHasResourceCb.checked = true;
-    gResourceFields.className = 'resource-fields';
-    pdfs.forEach(function (p) { gAddPdfBlock(p.title, p.url); });
-  }
+  // Set checked-state and the disabled class TOGETHER, unconditionally, on
+  // every load - not only inside an "if there's content" branch. The
+  // disabled class carries pointer-events:none, so if it were ever left on
+  // by mistake while the checkbox reads checked, the +Add PDF button would
+  // render normally but be completely unclickable with no visible error.
+  gHasResourceCb.checked = pdfs.length > 0;
+  gResourceFields.className = 'resource-fields' + (pdfs.length > 0 ? '' : ' disabled');
+  pdfs.forEach(function (p) { gAddPdfBlock(p.title, p.url); });
 
   // A lesson saved before the coaching-intro split kept this text under
   // resource.title/resource.text. If coachingIntro hasn't been saved yet,
@@ -1528,6 +1531,9 @@ function fillGuidedForm(config) {
     gCoachingIntroFields.className = 'resource-fields';
     document.getElementById('gCoachingIntroTitle').value = ci.title || '';
     document.getElementById('gCoachingIntroText').value = ci.text || '';
+  } else {
+    gHasCoachingIntroCb.checked = false;
+    gCoachingIntroFields.className = 'resource-fields disabled';
   }
 
   var rf = config.reflectionFramework || {};
@@ -2113,11 +2119,9 @@ function fillMasteryForm(config) {
   document.getElementById('mTranscript').value = config.transcript || '';
 
   var pdfs = getConfigPdfs(config.resource);
-  if (pdfs.length) {
-    mHasResourceCb.checked = true;
-    mResourceFields.className = 'resource-fields';
-    pdfs.forEach(function (p) { mAddPdfBlock(p.title, p.url); });
-  }
+  mHasResourceCb.checked = pdfs.length > 0;
+  mResourceFields.className = 'resource-fields' + (pdfs.length > 0 ? '' : ' disabled');
+  pdfs.forEach(function (p) { mAddPdfBlock(p.title, p.url); });
 
   // A lesson saved before the coaching-intro split kept this text under
   // resource.title/resource.text. If coachingIntro hasn't been saved yet,
@@ -2132,6 +2136,9 @@ function fillMasteryForm(config) {
     mCoachingIntroFields.className = 'resource-fields';
     document.getElementById('mCoachingIntroTitle').value = ci.title || '';
     document.getElementById('mCoachingIntroText').value = ci.text || '';
+  } else {
+    mHasCoachingIntroCb.checked = false;
+    mCoachingIntroFields.className = 'resource-fields disabled';
   }
 
   var rf = config.reflectionFramework || {};
@@ -2426,11 +2433,9 @@ function fillEssentialsForm(config) {
   document.getElementById('eTranscript').value = config.transcript || '';
 
   var pdfs = getConfigPdfs(config.resource);
-  if (pdfs.length) {
-    eHasResourceCb.checked = true;
-    eResourceFields.className = 'resource-fields';
-    pdfs.forEach(function (p) { eAddPdfBlock(p.title, p.url); });
-  }
+  eHasResourceCb.checked = pdfs.length > 0;
+  eResourceFields.className = 'resource-fields' + (pdfs.length > 0 ? '' : ' disabled');
+  pdfs.forEach(function (p) { eAddPdfBlock(p.title, p.url); });
 
   // A lesson saved before this field existed kept any intro text under
   // resource.title/resource.text (the pre-restructure schema). Fall back to
@@ -2445,6 +2450,9 @@ function fillEssentialsForm(config) {
     eCoachingIntroFields.className = 'resource-fields';
     document.getElementById('eCoachingIntroTitle').value = ci.title || '';
     document.getElementById('eCoachingIntroText').value = ci.text || '';
+  } else {
+    eHasCoachingIntroCb.checked = false;
+    eCoachingIntroFields.className = 'resource-fields disabled';
   }
 
   var ess = config.essentials || {};
