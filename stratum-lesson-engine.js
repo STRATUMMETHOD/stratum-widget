@@ -1110,35 +1110,33 @@
   // resolution, not just data storage, and its rendering depends on
   // confirmation state (input when unconfirmed, plain text once done).
   function buildEmailField(panel) {
+    // Fully hidden once confirmed - identity already lives in STUDENT_ID/
+    // STUDENT_EMAIL regardless of anything being shown on screen, and the
+    // field can't be edited here anyway (see admin's Edit-email flow), so
+    // there's nothing useful to display once it's done its job.
+    if (isEmailConfirmed()) return;
+
     var wrap = el('div', 'proj-field proj-email-field');
     wrap.id = 'projEmailWrap';
 
-    if (isEmailConfirmed()) {
-      var confirmedMsg = el('div', 'proj-email-confirmed', 'Signed in as ' + (STUDENT_EMAIL || 'your account'));
-      mount(wrap, confirmedMsg);
-    } else {
-      var label = el('label', 'proj-label', 'Your email');
-      label.setAttribute('for', 'projEmail');
-      mount(wrap, label);
-      var hint = el('span', 'proj-hint', 'Required \u2014 this is what keeps your notes, tasks, and coaching history with you.');
-      mount(wrap, hint);
-      var input = document.createElement('input');
-      input.type = 'email';
-      input.id = 'projEmail';
-      input.className = 'proj-input';
-      input.required = true;
-      input.placeholder = 'you@example.com';
-      mount(wrap, input);
-    }
+    var label = el('label', 'proj-label', 'Your email');
+    label.setAttribute('for', 'projEmail');
+    mount(wrap, label);
+    var hint = el('span', 'proj-hint', 'Required \u2014 this is what keeps your notes, tasks, and coaching history with you.');
+    mount(wrap, hint);
+    var input = document.createElement('input');
+    input.type = 'email';
+    input.id = 'projEmail';
+    input.className = 'proj-input';
+    input.required = true;
+    input.placeholder = 'you@example.com';
+    mount(wrap, input);
 
     mount(panel, wrap);
   }
 
   function buildProjectTab(panel) {
-    var h = el('h3', 'tracker-notice');
-    mount(h, el('em', null,
-      "This information is saved to your account and carries forward to every lesson's coach — so it already knows your project by the time you get there. Update it any time your story changes."));
-    mount(panel, h);
+    mount(panel, el('h3', null, 'My Project'));
 
     buildEmailField(panel);
 
@@ -1285,14 +1283,12 @@
         statusEl.className = 'proj-status err';
         return;
       }
-      // Swap the email input for the "Signed in as" confirmation, and
-      // un-gate Notes/Tasks/Coaching in place - "come straight back" is
-      // meant literally, no page reload required.
+      // Remove the email field entirely now that identity is confirmed -
+      // it's fully hidden going forward, not replaced with a display
+      // message. Un-gate Notes/Tasks/Coaching in place at the same time,
+      // so "come straight back" is meant literally, no reload required.
       var wrap = document.getElementById('projEmailWrap');
-      if (wrap) {
-        wrap.innerHTML = '';
-        mount(wrap, el('div', 'proj-email-confirmed', 'Signed in as ' + email));
-      }
+      if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
       refreshGatedTabs();
       doServerSave();
     });
