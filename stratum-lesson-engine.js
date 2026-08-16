@@ -402,11 +402,19 @@
      ========================================================== */
 
   var TABS = [
-    { id: 'Project',  label: 'My Project', build: buildProjectTab },
-    { id: 'Notes',    label: 'My Notes',   build: buildNotesTab },
-    { id: 'Tasks',    label: 'My Tasks',   build: buildTasksTab },
-    { id: 'Coaching', label: 'My Coach',   build: buildCoachTab }
+    { id: 'Video',     label: 'Video & Transcript', build: buildVideoTranscriptPanel },
+    { id: 'Resources', label: 'Lesson Resources',   build: buildResourcesPanel },
+    { id: 'Coaching',  label: 'Coaching',           build: buildCoachTab }
   ];
+
+  function buildVideoTranscriptPanel(panel) {
+    buildVideo(panel, LESSON.video.mediaId);
+    buildTranscript(panel, LESSON.video.mediaId);
+  }
+
+  function buildResourcesPanel(panel) {
+    buildResource(panel, LESSON.resource);
+  }
 
   function buildTabs(container) {
     var bar = el('div', 'tab');
@@ -427,6 +435,10 @@
       tab.build(panel);
       mount(container, panel);
     });
+
+    // Video & Transcript opens by default.
+    var defaultBtn = document.getElementById('defaultOpen');
+    if (defaultBtn) defaultBtn.click();
   }
 
   function openTab(evt, tabName) {
@@ -442,18 +454,129 @@
     evt.currentTarget.className += ' active';
   }
 
-  // Programmatic equivalent of clicking the My Project tab - used by the
-  // gate's "Go to My Project" button, which has no click event of its own
-  // to hand to openTab(). My Project is always TABS[0], so it's always the
-  // first .tablinks button in DOM order.
-  function goToProjectTab() {
-    var panels = document.getElementsByClassName('tabcontent');
-    for (var i = 0; i < panels.length; i++) panels[i].style.display = 'none';
-    var links = document.getElementsByClassName('tablinks');
+  /* ==========================================================
+     TOP-LEVEL NAV — THIS LESSON / DASHBOARD / CONTACT
+     ----------------------------------------------------------
+     Deliberately separate class names (stratum-toplink /
+     stratum-topview) from the This Lesson sub-nav's tablinks /
+     tabcontent above - keeps the two independent switchers from
+     interfering with each other via getElementsByClassName.
+     ========================================================== */
+
+  var TOP_DESTINATIONS = [
+    { id: 'view-lesson',    label: 'This Lesson', build: buildLessonView },
+    { id: 'view-dashboard', label: 'Dashboard',   build: buildDashboardView },
+    { id: 'view-contact',   label: 'Contact',     build: buildContactView }
+  ];
+
+  function buildTopNav(container) {
+    var nav = el('div', 'stratum-topnav');
+
+    TOP_DESTINATIONS.forEach(function (dest, index) {
+      var btn = el('button', 'stratum-toplink' + (index === 0 ? ' active' : ''), dest.label);
+      btn.type = 'button';
+      btn.addEventListener('click', function (evt) { showTopView(evt, dest.id); });
+      mount(nav, btn);
+    });
+
+    mount(container, nav);
+
+    TOP_DESTINATIONS.forEach(function (dest, index) {
+      var view = el('div', 'stratum-topview');
+      view.id = dest.id;
+      if (index !== 0) view.style.display = 'none';
+      dest.build(view);
+      mount(container, view);
+    });
+  }
+
+  function showTopView(evt, viewId) {
+    var views = document.getElementsByClassName('stratum-topview');
+    for (var i = 0; i < views.length; i++) views[i].style.display = 'none';
+    var links = document.getElementsByClassName('stratum-toplink');
     for (var j = 0; j < links.length; j++) links[j].className = links[j].className.replace(' active', '');
+    document.getElementById(viewId).style.display = 'block';
+    evt.currentTarget.className += ' active';
+  }
+
+  // "This Lesson" - video, transcript, resources, and coaching, as a
+  // 3-item sub-nav reusing the existing tablinks/tabcontent/openTab
+  // mechanism defined above.
+  function buildLessonView(container) {
+    buildTabs(container);
+  }
+
+  // "Dashboard" - Progress card, Notes+Tasks side by side, My Project
+  // full-width below. Nothing here is sub-tabbed; everything is visible
+  // at once, so Notes/Tasks/Project deliberately do NOT get the
+  // tabcontent class - they'd otherwise get toggled by This Lesson's
+  // openTab() calls via its document-wide getElementsByClassName lookup.
+  function buildDashboardView(container) {
+    buildExcavationRecordShell(container);
+    refreshExcavationRecord();
+
+    var grid = el('div', 'dash-grid');
+
+    var notesPanel = el('div', 'dash-grid-item');
+    notesPanel.id = 'Notes';
+    buildNotesTab(notesPanel);
+    mount(grid, notesPanel);
+
+    var tasksPanel = el('div', 'dash-grid-item');
+    tasksPanel.id = 'Tasks';
+    buildTasksTab(tasksPanel);
+    mount(grid, tasksPanel);
+
+    mount(container, grid);
+
+    var projectPanel = el('div', 'dash-project-full');
+    projectPanel.id = 'Project';
+    buildProjectTab(projectPanel);
+    mount(container, projectPanel);
+  }
+
+  // "Contact" - Jotform embed, replacing the old inline "Stuck? Email Ted"
+  // text line entirely.
+  function buildContactView(container) {
+    var wrap = el('div', 'jf-embed-wrap');
+    var iframe = document.createElement('iframe');
+    iframe.id = 'JotFormIFrame-261614223369860';
+    iframe.title = 'Contact Form';
+    iframe.src = 'https://form.jotform.com/261614223369860';
+    iframe.className = 'jf-embed-frame';
+    iframe.setAttribute('frameborder', '0');
+    mount(wrap, iframe);
+    mount(container, wrap);
+
+    // Jotform's own handler script auto-resizes the iframe to fit the
+    // form's real height instead of relying on a fixed guess.
+    var script = document.createElement('script');
+    script.src = 'https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js';
+    script.onload = function () {
+      if (window.jotformEmbedHandler) {
+        window.jotformEmbedHandler("iframe[id='JotFormIFrame-261614223369860']", 'https://form.jotform.com/');
+      }
+    };
+    document.body.appendChild(script);
+  }
+
+  // Programmatic equivalent of navigating to My Project - used by the
+  // identity gate's "Go to My Project" button. My Project now lives on
+  // the Dashboard (not sub-tabbed), so this switches top-level view to
+  // Dashboard and scrolls straight to the Project section, since Notes
+  // and Tasks sit above it on that page.
+  function goToProjectTab() {
+    var views = document.getElementsByClassName('stratum-topview');
+    for (var i = 0; i < views.length; i++) views[i].style.display = 'none';
+    var links = document.getElementsByClassName('stratum-toplink');
+    for (var j = 0; j < links.length; j++) links[j].className = links[j].className.replace(' active', '');
+    var dashView = document.getElementById('view-dashboard');
+    if (dashView) dashView.style.display = 'block';
+    if (links[1]) links[1].className += ' active'; // Dashboard is TOP_DESTINATIONS[1]
     var projectPanel = document.getElementById('Project');
-    if (projectPanel) projectPanel.style.display = 'block';
-    if (links[0]) links[0].className += ' active';
+    if (projectPanel && projectPanel.scrollIntoView) {
+      projectPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   // Shown in place of Notes/Tasks/Coaching's real content until this
@@ -1828,21 +1951,10 @@
   }
 
   function buildLessonPage(container) {
-    buildExcavationRecordShell(container);
-    refreshExcavationRecord();
-
-    buildVideo(container, LESSON.video.mediaId);
-    buildTranscript(container, LESSON.video.mediaId);
-    buildContactLine(container);
-
-    // Only renders when the lesson actually has one - Section 1 has none.
-    buildResource(container, LESSON.resource);
-
-    buildTabs(container);
-
-    // My Project opens by default.
-    var defaultBtn = document.getElementById('defaultOpen');
-    if (defaultBtn) defaultBtn.click();
+    // Progress card, video, transcript, resources, notes, tasks, project,
+    // coaching, and contact are all assembled inside buildTopNav's three
+    // destinations now - nothing else needs to be called directly here.
+    buildTopNav(container);
   }
 
   function init() {
