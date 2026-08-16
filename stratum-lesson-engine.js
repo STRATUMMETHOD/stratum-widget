@@ -64,6 +64,10 @@
   // Runtime state, populated once the lesson config arrives.
   var LESSON = null;       // the fetched lesson config object
   var LESSON_ID = null;
+  var TIER = 'guided';     // window.STRATUM_TIER - 'guided' or 'essentials'. Coach/
+                            // Master Coach pages don't set this at all, so it
+                            // defaults to 'guided' rather than requiring every
+                            // existing lesson page to be updated.
   var STORE_KEY = null;    // per-lesson conversation cache key
 
   /* ==========================================================
@@ -297,10 +301,10 @@
     document.head.appendChild(s);
   }
 
-  function buildTranscript(container, mediaId) {
+  function buildTranscript(container, mediaId, startOpen) {
     var details = el('details', 'lec-transcript');
     details.id = 'lecTranscript';
-    details.open = true;
+    details.open = startOpen !== false;
 
     var summary = el('summary', null, 'Read the transcript');
     mount(details, summary);
@@ -547,12 +551,18 @@
 
   // "Contact" - Jotform embed, replacing the old inline "Stuck? Email Ted"
   // text line entirely.
-  function buildContactView(container) {
+  // Generalized Jotform embed - used by Contact (fixed form) and by
+  // Essentials' Exercise/Reflection dropdowns (per-lesson form IDs from
+  // the admin panel). label is used only to build a unique DOM id so
+  // multiple embeds can coexist on one page without colliding.
+  function buildJotformEmbed(container, formId, label) {
+    if (!formId) return;
+    var domId = 'JotFormIFrame-' + formId;
     var wrap = el('div', 'jf-embed-wrap');
     var iframe = document.createElement('iframe');
-    iframe.id = 'JotFormIFrame-261614223369860';
-    iframe.title = 'Contact Form';
-    iframe.src = 'https://form.jotform.com/261614223369860';
+    iframe.id = domId;
+    iframe.title = label || 'Form';
+    iframe.src = 'https://form.jotform.com/' + formId;
     iframe.className = 'jf-embed-frame';
     mount(wrap, iframe);
     mount(container, wrap);
@@ -563,10 +573,54 @@
     script.src = 'https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js';
     script.onload = function () {
       if (window.jotformEmbedHandler) {
-        window.jotformEmbedHandler("iframe[id='JotFormIFrame-261614223369860']", 'https://form.jotform.com/');
+        window.jotformEmbedHandler("iframe[id='" + domId + "']", 'https://form.jotform.com/');
       }
     };
     document.body.appendChild(script);
+  }
+
+  function buildContactView(container) {
+    buildJotformEmbed(container, '261614223369860', 'Contact Form');
+  }
+
+  // ESSENTIALS (Self-Guided) ONLY - Exercise and Reflection each render as
+  // their own collapsed accordion (same visual language as the Resource
+  // dropdown), not as tabs. Both open independently. A form with no ID
+  // configured in the admin panel is skipped entirely rather than shown
+  // empty.
+  function buildEssentialsDropdowns(container) {
+    var items = [
+      { id: 'Exercise',   label: 'Exercise',   formId: LESSON.essentials && LESSON.essentials.exerciseFormId },
+      { id: 'Reflection', label: 'Reflection', formId: LESSON.essentials && LESSON.essentials.reflectionFormId }
+    ];
+
+    items.forEach(function (item) {
+      if (!item.formId) return;
+      var details = el('details', 'lec-resource');
+      details.id = 'lecEssentials' + item.id;
+      details.open = false;
+
+      mount(details, el('summary', 'lec-resource-bar', item.label));
+
+      var body = el('div', 'lec-resource-body lec-resource-body--pdf');
+      buildJotformEmbed(body, item.formId, item.label);
+
+      mount(details, body);
+      mount(container, details);
+    });
+  }
+
+  // ESSENTIALS (Self-Guided) ONLY - a flat page: video, transcript,
+  // resource, a plain contact line, then Exercise/Reflection. Deliberately
+  // does NOT use the This Lesson/Dashboard/Contact shell built for
+  // Guided/Mastery below - Self-Guided has no AI coach and no persistent
+  // Notes/Tasks/Project, so that whole shell doesn't apply here.
+  function buildEssentialsPage(container) {
+    buildVideo(container, LESSON.video.mediaId);
+    buildTranscript(container, LESSON.video.mediaId, false);
+    buildResource(container, LESSON.resource);
+    buildContactLine(container);
+    buildEssentialsDropdowns(container);
   }
 
   // Programmatic equivalent of navigating to My Project - used by the
@@ -1958,14 +2012,20 @@
   }
 
   function buildLessonPage(container) {
-    // Progress card, video, transcript, resources, notes, tasks, project,
-    // coaching, and contact are all assembled inside buildTopNav's three
-    // destinations now - nothing else needs to be called directly here.
+    if (TIER === 'essentials') {
+      buildEssentialsPage(container);
+      return;
+    }
+    // Guided/Master Coach: Progress card, video, transcript, resources,
+    // notes, tasks, project, coaching, and contact are all assembled
+    // inside buildTopNav's three destinations - nothing else needs to be
+    // called directly here.
     buildTopNav(container);
   }
 
   function init() {
     LESSON_ID = window.STRATUM_LESSON_ID;
+    TIER = window.STRATUM_TIER === 'essentials' ? 'essentials' : 'guided';
 
     var container = document.getElementById('stratum-lesson');
     if (!container) {
@@ -1980,7 +2040,7 @@
 
     STORE_KEY = 'wlfc_coach_' + LESSON_ID.replace(/\./g, '_');
 
-    fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(LESSON_ID))
+    fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(LESSON_ID) + '&tier=' + TIER)
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || !d.known || !d.config) {
