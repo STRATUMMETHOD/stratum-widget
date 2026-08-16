@@ -402,7 +402,7 @@
      Four tabs only - they must not wrap to two lines on mobile.
      ========================================================== */
 
-  var TABS = [
+  var SUB_TABS = [
     { id: 'Video',     label: 'Video & Transcript', build: buildVideoTranscriptPanel },
     { id: 'Resources', label: 'Lesson Resources',   build: buildResourcesPanel },
     { id: 'Coaching',  label: 'Coaching',           build: buildCoachTab }
@@ -421,21 +421,25 @@
     buildResource(panel, LESSON.resource);
   }
 
-  function buildTabs(container) {
-    var bar = el('div', 'tab');
+  // This Lesson's own sub-nav (Video & Transcript / Lesson Resources /
+  // Coaching) - deliberately separate from .tab/.tablinks/.tabcontent,
+  // which is the Essentials-only flat system. Uses .stratum-subnav /
+  // .sublink / .stratum-subsection, matching the real stylesheet.
+  function buildSubNav(container) {
+    var bar = el('div', 'stratum-subnav');
 
-    TABS.forEach(function (tab, index) {
-      var btn = el('button', 'tablinks', tab.label);
+    SUB_TABS.forEach(function (tab, index) {
+      var btn = el('button', 'sublink', tab.label);
       btn.type = 'button';
-      btn.addEventListener('click', function (evt) { openTab(evt, tab.id); });
+      btn.addEventListener('click', function (evt) { openSubTab(evt, tab.id); });
       if (index === 0) btn.id = 'defaultOpen';
       mount(bar, btn);
     });
 
     mount(container, bar);
 
-    TABS.forEach(function (tab) {
-      var panel = el('div', 'tabcontent');
+    SUB_TABS.forEach(function (tab) {
+      var panel = el('div', 'stratum-subsection');
       panel.id = tab.id;
       tab.build(panel);
       mount(container, panel);
@@ -446,11 +450,11 @@
     if (defaultBtn) defaultBtn.click();
   }
 
-  function openTab(evt, tabName) {
-    var panels = document.getElementsByClassName('tabcontent');
+  function openSubTab(evt, tabName) {
+    var panels = document.getElementsByClassName('stratum-subsection');
     for (var i = 0; i < panels.length; i++) panels[i].style.display = 'none';
 
-    var links = document.getElementsByClassName('tablinks');
+    var links = document.getElementsByClassName('sublink');
     for (var j = 0; j < links.length; j++) {
       links[j].className = links[j].className.replace(' active', '');
     }
@@ -461,11 +465,6 @@
 
   /* ==========================================================
      TOP-LEVEL NAV — THIS LESSON / DASHBOARD / CONTACT
-     ----------------------------------------------------------
-     Deliberately separate class names (stratum-toplink /
-     stratum-topview) from the This Lesson sub-nav's tablinks /
-     tabcontent above - keeps the two independent switchers from
-     interfering with each other via getElementsByClassName.
      ========================================================== */
 
   var TOP_DESTINATIONS = [
@@ -478,7 +477,7 @@
     var nav = el('div', 'stratum-topnav');
 
     TOP_DESTINATIONS.forEach(function (dest, index) {
-      var btn = el('button', 'stratum-toplink' + (index === 0 ? ' active' : ''), dest.label);
+      var btn = el('button', 'toplink' + (index === 0 ? ' active' : ''), dest.label);
       btn.type = 'button';
       btn.addEventListener('click', function (evt) { showTopView(evt, dest.id); });
       mount(nav, btn);
@@ -487,7 +486,7 @@
     mount(container, nav);
 
     TOP_DESTINATIONS.forEach(function (dest, index) {
-      var view = el('div', 'stratum-topview');
+      var view = el('div', 'stratum-section');
       view.id = dest.id;
       if (index !== 0) view.style.display = 'none';
       // Mount FIRST, build SECOND. This Lesson's sub-nav ends with a
@@ -502,45 +501,45 @@
   }
 
   function showTopView(evt, viewId) {
-    var views = document.getElementsByClassName('stratum-topview');
+    var views = document.getElementsByClassName('stratum-section');
     for (var i = 0; i < views.length; i++) views[i].style.display = 'none';
-    var links = document.getElementsByClassName('stratum-toplink');
+    var links = document.getElementsByClassName('toplink');
     for (var j = 0; j < links.length; j++) links[j].className = links[j].className.replace(' active', '');
     document.getElementById(viewId).style.display = 'block';
     evt.currentTarget.className += ' active';
   }
 
-  // "This Lesson" - video, transcript, resources, and coaching, as a
-  // 3-item sub-nav reusing the existing tablinks/tabcontent/openTab
-  // mechanism defined above.
+  // "This Lesson" - video, transcript, resources, and coaching, as their
+  // own 3-item sub-nav.
   function buildLessonView(container) {
-    buildTabs(container);
+    buildSubNav(container);
   }
 
   // "Dashboard" - Progress card, Notes+Tasks side by side, My Project
   // full-width below. Nothing here is sub-tabbed; everything is visible
-  // at once, so Notes/Tasks/Project deliberately do NOT get the
-  // tabcontent class - they'd otherwise get toggled by This Lesson's
-  // openTab() calls via its document-wide getElementsByClassName lookup.
+  // at once. dash-card is the shared block style; dash-progress and
+  // dash-project are modifiers on top of it, matching the stylesheet.
   function buildDashboardView(container) {
-    buildExcavationRecordShell(container);
+    var progressCard = el('div', 'dash-card dash-progress');
+    buildExcavationRecordShell(progressCard);
+    mount(container, progressCard);
     refreshExcavationRecord();
 
     var grid = el('div', 'dash-grid');
 
-    var notesPanel = el('div', 'dash-grid-item');
+    var notesPanel = el('div', 'dash-card');
     notesPanel.id = 'Notes';
     buildNotesTab(notesPanel);
     mount(grid, notesPanel);
 
-    var tasksPanel = el('div', 'dash-grid-item');
+    var tasksPanel = el('div', 'dash-card');
     tasksPanel.id = 'Tasks';
     buildTasksTab(tasksPanel);
     mount(grid, tasksPanel);
 
     mount(container, grid);
 
-    var projectPanel = el('div', 'dash-project-full');
+    var projectPanel = el('div', 'dash-card dash-project');
     projectPanel.id = 'Project';
     buildProjectTab(projectPanel);
     mount(container, projectPanel);
@@ -555,7 +554,6 @@
     iframe.title = 'Contact Form';
     iframe.src = 'https://form.jotform.com/261614223369860';
     iframe.className = 'jf-embed-frame';
-    iframe.setAttribute('frameborder', '0');
     mount(wrap, iframe);
     mount(container, wrap);
 
@@ -577,9 +575,9 @@
   // Dashboard and scrolls straight to the Project section, since Notes
   // and Tasks sit above it on that page.
   function goToProjectTab() {
-    var views = document.getElementsByClassName('stratum-topview');
+    var views = document.getElementsByClassName('stratum-section');
     for (var i = 0; i < views.length; i++) views[i].style.display = 'none';
-    var links = document.getElementsByClassName('stratum-toplink');
+    var links = document.getElementsByClassName('toplink');
     for (var j = 0; j < links.length; j++) links[j].className = links[j].className.replace(' active', '');
     var dashView = document.getElementById('view-dashboard');
     if (dashView) dashView.style.display = 'block';
@@ -594,11 +592,13 @@
   // browser has a confirmed identity. itemLabel is the plain-English name
   // of what's being protected, e.g. "notes" or "coaching history".
   function buildIdentityGate(panel, itemLabel) {
-    var wrap = el('div', 'identity-gate');
-    var msg = el('p', 'identity-gate-msg');
-    msg.textContent = 'This makes sure your ' + itemLabel + ' actually stays with you. Add your email on My Project, then come straight back.';
+    var wrap = el('div', 'proj-gate');
+    var title = el('div', 'proj-gate-title', 'Keep your ' + itemLabel);
+    mount(wrap, title);
+    var msg = el('p', 'proj-gate-text',
+      'This makes sure your ' + itemLabel + ' actually stays with you. Add your email on My Project, then come straight back.');
     mount(wrap, msg);
-    var btn = el('button', 'identity-gate-btn', 'Go to My Project');
+    var btn = el('button', 'proj-gate-btn', 'Go to My Project');
     btn.type = 'button';
     btn.addEventListener('click', goToProjectTab);
     mount(wrap, btn);
