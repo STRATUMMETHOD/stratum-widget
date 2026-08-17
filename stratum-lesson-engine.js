@@ -53,26 +53,13 @@
   var NOTES_KEY = 'wlfc_notes';
   var TRACKER_KEY = 'systemeCourseTasks';
 
-  // The durable identity cookie this engine owns, as opposed to
-  // sio_u_public (systeme.io's own cookie - confirmed by their support to
-  // be session-scoped and not safe to rely on long-term for cross-visit
-  // identity). Once this cookie exists on a device, that device is linked
-  // to a stable stratum_id and never needs to re-resolve identity again.
   var STRATUM_SID_COOKIE = 'stratum_sid';
   var STRATUM_SID_MAX_AGE = 60 * 60 * 24 * 365 * 2; // ~2 years
 
-  // Runtime state, populated once the lesson config arrives.
-  var LESSON = null;       // the fetched lesson config object
+  var LESSON = null;
   var LESSON_ID = null;
-  var TIER = 'guided';     // window.STRATUM_TIER - 'guided' or 'essentials'. Coach/
-                            // Master Coach pages don't set this at all, so it
-                            // defaults to 'guided' rather than requiring every
-                            // existing lesson page to be updated.
-  var STORE_KEY = null;    // per-lesson conversation cache key
-
-  /* ==========================================================
-     SMALL UTILITIES
-     ========================================================== */
+  var TIER = 'guided';
+  var STORE_KEY = null;
 
   function readCookie(name) {
     var parts = document.cookie ? document.cookie.split(';') : [];
@@ -110,10 +97,6 @@
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  // Collapses rapid-fire saves (every keystroke for Notes, every add/toggle/
-  // delete for Tasks) into a single network call after the student pauses.
-  // localStorage still writes instantly at the call site for responsiveness -
-  // this only governs the push to D1.
   function debounce(fn, delay) {
     var t = null;
     return function () {
@@ -123,11 +106,6 @@
     };
   }
 
-  // SAFETY NET - independent of whether the model follows the no-asterisks
-  // instruction in the system prompt. Strips *word* style emphasis down to
-  // plain text so a slip never reaches the screen as literal asterisks.
-  // Deliberately narrow: only matches a single pair around text with no
-  // asterisk or newline inside, so it cannot eat a stray "3 * 4".
   function stripAsteriskEmphasis(text) {
     return String(text).replace(/\*([^*\n]+)\*/g, '$1');
   }
@@ -135,20 +113,10 @@
   var STUDENT_ID = readCookie(STRATUM_SID_COOKIE);
   var STUDENT_EMAIL = readSessionValue('email');
 
-  // True only once this browser has a stratum_id linked to a real,
-  // resolved identity - i.e. /resolve-identity has succeeded at some point
-  // (this visit or a prior one, via the durable cookie). Everything that
-  // needs to survive across devices/visits (Notes, Tasks, Coaching) gates
-  // on this rather than on STUDENT_ID alone, so the intent stays clear at
-  // every call site even though today they're equivalent.
   function isEmailConfirmed() {
     return !!STUDENT_ID;
   }
 
-  // Resolves an email to a stable stratum_id via the Worker (which in turn
-  // looks the email up against systeme.io's contacts API) and, on success,
-  // sets the durable cookie so this device never needs to ask again.
-  // Returns a Promise<boolean>.
   function ensureDurableIdentity(email) {
     return fetch(PROXY_URL + '/resolve-identity', {
       method: 'POST',
@@ -168,10 +136,6 @@
       .catch(function () { return false; });
   }
 
-  /* ==========================================================
-     DOM HELPERS
-     ========================================================== */
-
   function el(tag, className, text) {
     var node = document.createElement(tag);
     if (className) node.className = className;
@@ -183,17 +147,6 @@
     parent.appendChild(child);
     return child;
   }
-
-  /* ==========================================================
-     COACHING SESSIONS SUMMARY WIDGET
-     ----------------------------------------------------------
-     Four always-visible section labels, each showing a small
-     fixed-size checkmark tile for every lesson completed in
-     that section so far. Sections with zero completions still
-     show their label and reserve the same row height, but no
-     tiles. Hovering a tile reveals the summary that was
-     carried forward from that session.
-     ========================================================== */
 
   function buildExcavationRecordShell(container) {
     var wrap = el('div', 'excrec');
@@ -214,14 +167,9 @@
 
     EXCREC_GROUPS.forEach(function (group) {
       var groupDiv = el('div', 'excrec-group');
-
-      // Section label - always visible, always its own subtle colored pill,
-      // never conditional on whether anything in this section is complete.
       var labelDiv = el('div', 'excrec-group-label excrec-pill-' + group.key, group.label);
       mount(groupDiv, labelDiv);
 
-      // Tile row - reserves height even when empty; only renders a tile for
-      // lessons this student has actually completed.
       var rowDiv = el('div', 'strata-group');
 
       group.lessons.forEach(function (lesson) {
@@ -255,22 +203,13 @@
       .catch(function () { renderExcavationRecordFrom({}); });
   }
 
-  // Exposed so the coach can trigger a live redraw right after a lesson
-  // completes, without requiring a page refresh.
   window.STRATUM_refreshExcavationRecord = refreshExcavationRecord;
 
-  /* ==========================================================
-     VIDEO + TRANSCRIPT + CONTACT + RESOURCE
-     ========================================================== */
-
   function buildVideo(container, mediaId) {
-    // Wistia's player.js and transcript.js each load exactly once per page.
-    // The per-media embed script is separate and loads per video.
     loadScriptOnce('https://fast.wistia.com/player.js');
     loadScriptOnce('https://fast.wistia.com/assets/external/transcript.js');
     loadModuleOnce('https://fast.wistia.com/embed/' + mediaId + '.js');
 
-    // Placeholder styling while the custom element is still undefined.
     var style = document.createElement('style');
     style.textContent =
       "wistia-player[media-id='" + mediaId + "']:not(:defined){" +
@@ -301,20 +240,12 @@
     document.head.appendChild(s);
   }
 
-  // NOTE (change 1 of 2): the wrapping <details> now carries BOTH
-  // "lec-transcript" (its own behaviour-specific styles - body max-height,
-  // hint text, Wistia transcript part styling) AND "lec-resource" (the
-  // shared bordered-box treatment used by every other accordion on the
-  // page - Resource, Coaching Intro previously, Exercise, Reflection). The
-  // <summary> now carries "lec-resource-bar" instead of being unstyled, so
-  // its label bar matches those accordions exactly. Nothing about the
-  // toggle/open behaviour below changes.
   function buildTranscript(container, mediaId, startOpen) {
     var details = el('details', 'lec-transcript lec-resource');
     details.id = 'lecTranscript';
     details.open = startOpen !== false;
 
-    var summary = el('summary', 'lec-resource-bar', 'Read the transcript');
+    var summary = el('summary', 'lec-resource-bar', 'Transcript');
     mount(details, summary);
 
     var body = el('div', 'lec-transcript-body');
@@ -334,11 +265,6 @@
     mount(details, body);
     mount(container, details);
 
-    // The Wistia transcript is a web component that measures itself on render.
-    // Inside a closed <details> it has no box to measure, so on first open we
-    // nudge it with a resize event. If nothing has rendered a couple of seconds
-    // later, the media has no generated transcript in Wistia yet - show the
-    // fallback line rather than an empty panel.
     details.addEventListener('toggle', function () {
       if (!details.open) return;
       window.dispatchEvent(new Event('resize'));
@@ -373,13 +299,9 @@
     mount(container, div);
   }
 
-  // Renders inline on the page as a COLLAPSED bordered accordion. The labeled
-  // title bar is the toggle. Not a download, not a new-tab link.
-  // Only called when the lesson config actually has a resource.
   function buildResource(container, resource) {
     if (!resource) return;
 
-    // Current schema: a repeatable list of PDFs, each its own accordion.
     var pdfs = Array.isArray(resource.pdfs) ? resource.pdfs.filter(function (p) { return p && p.title && p.url; }) : [];
     if (pdfs.length) {
       pdfs.forEach(function (pdf, i) {
@@ -387,25 +309,30 @@
         details.id = 'lecResource' + i;
         mount(details, el('summary', 'lec-resource-bar', pdf.title));
 
-        var body = el('div', 'lec-resource-body');
-        var pdfWrap = el('div', 'lec-resource-pdf');
+        var body = el('div', 'lec-resource-body lec-resource-body--pdf');
+
+        var iframe = document.createElement('iframe');
+        iframe.className = 'lec-resource-pdf-frame';
+        iframe.src = pdf.url;
+        iframe.title = pdf.title;
+        mount(body, iframe);
+
+        var fallback = el('p', 'lec-resource-pdf-fallback');
+        fallback.appendChild(document.createTextNode('Having trouble viewing it? '));
         var link = document.createElement('a');
         link.href = pdf.url;
         link.target = '_blank';
         link.rel = 'noopener';
-        link.className = 'lec-resource-pdf-btn';
-        link.textContent = 'Download PDF';
-        mount(pdfWrap, link);
-        mount(body, pdfWrap);
+        link.textContent = 'Open the PDF directly';
+        fallback.appendChild(link);
+        mount(body, fallback);
+
         mount(details, body);
         mount(container, details);
       });
       return;
     }
 
-    // Legacy schema fallback: a single resource.title + resource.text/html
-    // pair, from before Resource became a repeatable PDF list. A lesson
-    // saved before that restructure keeps this shape until re-saved.
     if (resource.title) {
       var legacyDetails = el('details', 'lec-resource');
       legacyDetails.id = 'lecResource';
@@ -417,7 +344,6 @@
     }
   }
 
-  // Blank lines separate paragraphs; single newlines become line breaks.
   function textToParagraphs(text) {
     var blocks = String(text).replace(/\r\n/g, '\n').split(/\n\s*\n/);
     var out = '';
@@ -428,14 +354,6 @@
     }
     return out;
   }
-
-  /* ==========================================================
-     TAB STRUCTURE
-     ----------------------------------------------------------
-     Tabs are for things you DO (interactive, stateful).
-     The page itself is for things you READ.
-     Four tabs only - they must not wrap to two lines on mobile.
-     ========================================================== */
 
   var SUB_TABS = [
     { id: 'Video',     label: 'Video & Transcript', build: buildVideoTranscriptPanel },
@@ -459,10 +377,6 @@
     buildResource(panel, LESSON.resource);
   }
 
-  // This Lesson's own sub-nav (Video & Transcript / Lesson Resources /
-  // Coaching) - deliberately separate from .tab/.tablinks/.tabcontent,
-  // which is the Essentials-only flat system. Uses .stratum-subnav /
-  // .sublink / .stratum-subsection, matching the real stylesheet.
   function buildSubNav(container) {
     var bar = el('div', 'stratum-subnav');
 
@@ -483,7 +397,6 @@
       mount(container, panel);
     });
 
-    // Video & Transcript opens by default.
     var defaultBtn = document.getElementById('defaultOpen');
     if (defaultBtn) defaultBtn.click();
   }
@@ -500,10 +413,6 @@
     document.getElementById(tabName).style.display = 'block';
     evt.currentTarget.className += ' active';
   }
-
-  /* ==========================================================
-     TOP-LEVEL NAV — THIS LESSON / DASHBOARD / CONTACT
-     ========================================================== */
 
   var TOP_DESTINATIONS = [
     { id: 'view-lesson',    label: 'This Lesson', build: buildLessonView },
@@ -527,12 +436,6 @@
       var view = el('div', 'stratum-section');
       view.id = dest.id;
       if (index !== 0) view.style.display = 'none';
-      // Mount FIRST, build SECOND. This Lesson's sub-nav ends with a
-      // synthetic defaultBtn.click(), which calls document.getElementById()
-      // to find its own panels - if those panels only exist inside a
-      // detached `view` node that hasn't been inserted into the real
-      // document yet, getElementById returns null and the click handler
-      // throws silently, leaving nothing correctly shown or hidden.
       mount(container, view);
       dest.build(view);
     });
@@ -547,16 +450,10 @@
     evt.currentTarget.className += ' active';
   }
 
-  // "This Lesson" - video, transcript, resources, and coaching, as their
-  // own 3-item sub-nav.
   function buildLessonView(container) {
     buildSubNav(container);
   }
 
-  // "Dashboard" - Progress card, Notes+Tasks side by side, My Project
-  // full-width below. Nothing here is sub-tabbed; everything is visible
-  // at once. dash-card is the shared block style; dash-progress and
-  // dash-project are modifiers on top of it, matching the stylesheet.
   function buildDashboardView(container) {
     var progressCard = el('div', 'dash-card dash-progress');
     buildExcavationRecordShell(progressCard);
@@ -583,12 +480,6 @@
     mount(container, projectPanel);
   }
 
-  // "Contact" - Jotform embed, replacing the old inline "Stuck? Email Ted"
-  // text line entirely.
-  // Generalized Jotform embed - used by Contact (fixed form) and by
-  // Essentials' Exercise/Reflection dropdowns (per-lesson form IDs from
-  // the admin panel). label is used only to build a unique DOM id so
-  // multiple embeds can coexist on one page without colliding.
   function buildJotformEmbed(container, formId, label) {
     if (!formId) return;
     var domId = 'JotFormIFrame-' + formId;
@@ -601,8 +492,6 @@
     mount(wrap, iframe);
     mount(container, wrap);
 
-    // Jotform's own handler script auto-resizes the iframe to fit the
-    // form's real height instead of relying on a fixed guess.
     var script = document.createElement('script');
     script.src = 'https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js';
     script.onload = function () {
@@ -617,25 +506,6 @@
     buildJotformEmbed(container, '261614223369860', 'Contact Form');
   }
 
-  // ESSENTIALS (Self-Guided) ONLY - Exercise and Reflection each render as
-  // their own collapsed accordion (same visual language as the Resource
-  // dropdown), not as tabs. Both open independently. A form with no ID
-  // configured in the admin panel is skipped entirely rather than shown
-  // empty.
-  //
-  // NOTE (change 2 of 2): the coaching-intro text (LESSON.coachingIntro) is
-  // no longer its own standalone accordion (buildEssentialsCoachingIntro
-  // has been removed). It now renders as plain content directly inside the
-  // Reflection accordion's body, above the embedded Jotform form. It has
-  // no independent collapse/expand control of its own - it is simply
-  // visible the moment a student expands Reflection. Exercise's accordion
-  // is untouched.
-  //
-  // lec-coaching-intro / lec-coaching-intro-title / lec-coaching-intro-body /
-  // lec-coaching-intro-divider are new class names with no rules yet in
-  // stratum-lesson-engine.css - they will render with plain browser/page
-  // default styling (no custom font, spacing, or divider color) until
-  // rules are added there.
   function buildEssentialsDropdowns(container) {
     var items = [
       { id: 'Exercise',   label: 'Exercise',   formId: LESSON.essentials && LESSON.essentials.exerciseFormId },
@@ -672,14 +542,6 @@
     });
   }
 
-  // ESSENTIALS (Self-Guided) ONLY - a flat page: video, transcript,
-  // resource, then Exercise/Reflection (the latter now carrying the
-  // coaching-intro content inline, above its Jotform embed - see
-  // buildEssentialsDropdowns). Deliberately does NOT use the This Lesson/
-  // Dashboard/Contact shell built for Guided/Mastery below - Self-Guided
-  // has no AI coach and no persistent Notes/Tasks/Project, so that whole
-  // shell doesn't apply here. Also deliberately has no "Stuck? Email Ted"
-  // line - that was removed from this tier by design.
   function buildEssentialsPage(container) {
     buildVideo(container, LESSON.video.mediaId);
     buildTranscript(container, LESSON.video.mediaId, false);
@@ -687,11 +549,6 @@
     buildEssentialsDropdowns(container);
   }
 
-  // Programmatic equivalent of navigating to My Project - used by the
-  // identity gate's "Go to My Project" button. My Project now lives on
-  // the Dashboard (not sub-tabbed), so this switches top-level view to
-  // Dashboard and scrolls straight to the Project section, since Notes
-  // and Tasks sit above it on that page.
   function goToProjectTab() {
     var views = document.getElementsByClassName('stratum-section');
     for (var i = 0; i < views.length; i++) views[i].style.display = 'none';
@@ -699,16 +556,13 @@
     for (var j = 0; j < links.length; j++) links[j].className = links[j].className.replace(' active', '');
     var dashView = document.getElementById('view-dashboard');
     if (dashView) dashView.style.display = 'block';
-    if (links[1]) links[1].className += ' active'; // Dashboard is TOP_DESTINATIONS[1]
+    if (links[1]) links[1].className += ' active';
     var projectPanel = document.getElementById('Project');
     if (projectPanel && projectPanel.scrollIntoView) {
       projectPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 
-  // Shown in place of Notes/Tasks/Coaching's real content until this
-  // browser has a confirmed identity. itemLabel is the plain-English name
-  // of what's being protected, e.g. "notes" or "coaching history".
   function buildIdentityGate(panel, itemLabel) {
     var wrap = el('div', 'proj-gate');
     var title = el('div', 'proj-gate-title', 'Keep your ' + itemLabel);
@@ -723,11 +577,6 @@
     mount(panel, wrap);
   }
 
-  // Rebuilds Notes/Tasks/Coaching in place immediately after identity is
-  // confirmed via My Project, so "come straight back" is literally true -
-  // no page reload needed. Each panel was left showing only the gate (its
-  // build function returned before doing any real work), so clearing and
-  // rebuilding is safe: this is each panel's first genuine data load.
   function refreshGatedTabs() {
     var notesPanel = document.getElementById('Notes');
     if (notesPanel) { notesPanel.innerHTML = ''; buildNotesTab(notesPanel); }
@@ -736,10 +585,6 @@
     var coachPanel = document.getElementById('Coaching');
     if (coachPanel) { coachPanel.innerHTML = ''; buildCoachTab(coachPanel); }
   }
-
-  /* ==========================================================
-     MY NOTES TAB
-     ========================================================== */
 
   function buildNotesTab(panel) {
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'notes'); return; }
@@ -782,7 +627,7 @@
         field.value = d.text || '';
         lsSet(NOTES_KEY, d.text || '');
       })
-      .catch(function () { /* local cache already shown - fail quietly */ });
+      .catch(function () {});
   }
 
   var saveNotesToD1 = debounce(function () {
@@ -793,7 +638,7 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId: STUDENT_ID, text: field.value })
-    }).catch(function () { /* localStorage already has it - sync is best-effort */ });
+    }).catch(function () {});
   }, 2000);
 
   function flushNotesToD1() {
@@ -818,10 +663,6 @@
     link.download = 'MyCourseNotes.txt';
     link.click();
   }
-
-  /* ==========================================================
-     MY TASKS TAB
-     ========================================================== */
 
   function buildTasksTab(panel) {
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'tasks'); return; }
@@ -903,19 +744,16 @@
         lsSet(TRACKER_KEY, JSON.stringify(d.tasks || []));
         renderTracker();
       })
-      .catch(function () { /* local cache already shown - fail quietly */ });
+      .catch(function () {});
   }
 
-  // Hooked into saveTasks() rather than each individual action, so add,
-  // toggle, delete, clear-completed and reset all get the debounced D1 push
-  // automatically through their existing saveTasks() call.
   var saveTasksToD1 = debounce(function () {
     if (!STUDENT_ID) return;
     fetch(PROXY_URL + '/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId: STUDENT_ID, tasks: loadTasks() })
-    }).catch(function () { /* localStorage already has it - sync is best-effort */ });
+    }).catch(function () {});
   }, 2000);
 
   function flushTasksToD1() {
@@ -930,8 +768,6 @@
     } catch (e) {}
   }
 
-  // isoDate is "YYYY-MM-DD" from the date input - parse as local, not UTC,
-  // so "Aug 10" doesn't shift to Aug 9 for anyone west of UTC.
   function formatDueDate(isoDate) {
     var parts = isoDate.split('-');
     var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
@@ -1063,16 +899,6 @@
     link.download = 'MyCourseTasks.txt';
     link.click();
   }
-
-  /* ==========================================================
-     MY PROJECT TAB
-     ----------------------------------------------------------
-     localStorage is the shared channel between this tab and the
-     coach: the coach reads these same keys fresh on every
-     message it sends, so saving here takes effect immediately
-     without any direct JS coupling between the two. D1 is the
-     source of truth; localStorage is a fast local cache.
-     ========================================================== */
 
   var PROJECT_FIELDS = [
     {
@@ -1224,14 +1050,7 @@
     return field;
   }
 
-  // Separate from PROJECT_FIELDS deliberately - this field drives identity
-  // resolution, not just data storage, and its rendering depends on
-  // confirmation state (input when unconfirmed, plain text once done).
   function buildEmailField(panel) {
-    // Fully hidden once confirmed - identity already lives in STUDENT_ID/
-    // STUDENT_EMAIL regardless of anything being shown on screen, and the
-    // field can't be edited here anyway (see admin's Edit-email flow), so
-    // there's nothing useful to display once it's done its job.
     if (isEmailConfirmed()) return;
 
     var wrap = el('div', 'proj-field proj-email-field');
@@ -1299,7 +1118,6 @@
   }
 
   function loadProjectFields() {
-    // Instant fill from local cache so the form never opens empty on a repeat visit.
     var cached = {};
     eachProjectSpec(function (spec) {
       cached[spec.key] = lsGet(PROJ_KEYS[spec.key]) || '';
@@ -1308,15 +1126,10 @@
 
     if (!STUDENT_ID) return;
 
-    // Then reconcile against D1, in case this student edited from another device.
     fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(STUDENT_ID))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || !d.known) return;
-        // If the coach already learned this student's name mid-conversation
-        // (via the [NAME: ...] tag) but that name was never explicitly saved
-        // through My Project, D1 won't have it yet. Don't let an empty D1
-        // value blank out a name that's already known locally.
         var merged = Object.assign({}, d);
         if (!merged.studentName) merged.studentName = lsGet(PROJ_KEYS.studentName) || '';
         fillProjectForm(merged);
@@ -1324,7 +1137,7 @@
           lsSet(PROJ_KEYS[spec.key], merged[spec.key] || '');
         });
       })
-      .catch(function () { /* local cache already shown - fail quietly */ });
+      .catch(function () {});
   }
 
   function saveProjectFields() {
@@ -1338,8 +1151,6 @@
       fields[spec.key] = (spec.type === 'select') ? value : value.trim();
     });
 
-    // Save locally right away regardless of network - the coach can use it
-    // this session even if the server write is still in flight or fails.
     eachProjectSpec(function (spec) {
       lsSet(PROJ_KEYS[spec.key], fields[spec.key]);
     });
@@ -1372,15 +1183,11 @@
         });
     }
 
-    // Already confirmed on a prior visit (or earlier this session) - this
-    // is just a normal project-detail save, no identity work needed.
     if (isEmailConfirmed()) {
       doServerSave();
       return;
     }
 
-    // Not yet confirmed - the email field is required and drives identity
-    // resolution before anything else can be saved to the server.
     var emailInput = document.getElementById('projEmail');
     var email = emailInput ? emailInput.value.trim() : '';
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -1401,20 +1208,12 @@
         statusEl.className = 'proj-status err';
         return;
       }
-      // Remove the email field entirely now that identity is confirmed -
-      // it's fully hidden going forward, not replaced with a display
-      // message. Un-gate Notes/Tasks/Coaching in place at the same time,
-      // so "come straight back" is meant literally, no reload required.
       var wrap = document.getElementById('projEmailWrap');
       if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
       refreshGatedTabs();
       doServerSave();
     });
   }
-
-  /* ==========================================================
-     MY COACH TAB — THE EXCAVATION COACH
-     ========================================================== */
 
   var conversationHistory = [];
   var conversationId = null;
@@ -1424,16 +1223,6 @@
   var busy = false;
 
   var chatEl, formEl, inputEl, sendBtn, meterEl;
-
-  /* ----------------------------------------------------------
-     SYSTEM PROMPT ASSEMBLY
-     ----------------------------------------------------------
-     Universal coaching behaviour lives here and applies to
-     every lesson. Lesson-specific material (transcript,
-     reflection areas, calibration examples) comes from the
-     fetched config. Change coaching behaviour once here and
-     every lesson inherits it.
-     ---------------------------------------------------------- */
 
   function buildSystemPrompt() {
     var areas = (LESSON.reflectionFramework.areas || []).map(function (area, i) {
@@ -1454,13 +1243,6 @@
       'THE LECTURE THEY JUST WATCHED (' + LESSON.scopeNote + '):\n"""\n' + LESSON.transcript + '\n"""'
     ];
 
-    // RESOURCE DOCUMENT - only present for Section 2+ lessons. This is the
-    // same document the student can read inline on the page. The coach gets
-    // it too, so it understands and can naturally draw on any concepts,
-    // frameworks, or techniques taught in it - but it must never recite or
-    // quote from it verbatim. The student can already read it themselves;
-    // reciting it would be redundant at best and breaks the "AI asks, never
-    // answers" rule at worst.
     if (LESSON.resource && LESSON.resource.title) {
       parts.push(
         'RESOURCE DOCUMENT THE STUDENT CAN READ ON THIS PAGE (' + LESSON.resource.title + '):\n"""\n' +
@@ -1473,11 +1255,6 @@
       'WHAT THIS CONVERSATION IS FOR:\nThis single, continuous, natural conversation IS the ' + LESSON.scopeNote + ' reflection. It replaces a written reflection form. Your job is to walk this student through the areas below - in whatever order the conversation naturally takes, based on what they say and ask. Do not treat these as a rigid checklist to march through in order. Follow threads. Let one answer lead somewhere before pivoting. But you are responsible for making sure, by the end, all of them have been genuinely explored:\n\n' + areas
     );
 
-    // COACHING APPROACH - private instructor guidance, written by Ted
-    // specifically for how the AI should conduct THIS lesson's session.
-    // Optional: most lessons will not need this. Never shown to the student
-    // and never drawn from a student-facing document - this is where Ted
-    // puts direction he wants the coach to have but does not want published.
     if (LESSON.reflectionFramework.coachingApproach) {
       parts.push(
         'COACHING APPROACH FOR THIS LESSON - PRIVATE, NEVER SHOWN OR REFERENCED TO THE STUDENT:\n' +
@@ -1506,10 +1283,6 @@
     return parts.join('\n\n');
   }
 
-  /* ----------------------------------------------------------
-     PROJECT CONTEXT + LANGUAGE
-     ---------------------------------------------------------- */
-
   var FOCUS_GUIDANCE = {
     character_depth: 'They specifically want to know whether their character feels real rather than constructed. When character work comes up, that means leaning toward substrate and compensation - what the character is protecting - rather than staying on surface traits.',
     dialogue: 'They specifically want to know whether their dialogue sounds authentic. When dialogue work comes up, that means leaning toward what is being left unsaid, and whether lines read as protection rather than direct statement.',
@@ -1519,8 +1292,6 @@
     not_sure: 'They are not yet sure what they most need help seeing. Do not push them to decide right now - let it surface naturally as the conversation goes.'
   };
 
-  // Read fresh on every send rather than cached once, so a mid-lesson edit to
-  // the My Project tab takes effect on the coach's very next reply.
   function buildProjectContextBlock() {
     var v = {};
     Object.keys(PROJ_KEYS).forEach(function (k) { v[k] = lsGet(PROJ_KEYS[k]) || ''; });
@@ -1549,21 +1320,12 @@
       }
     }
 
-    // LANGUAGE - separate from the project-fields guard above, since a student
-    // may have set only their language preference and nothing else. The hidden
-    // tags stay in English on purpose: [NAME: ...] and [REFLECTION_COMPLETE]
-    // are parsed by exact string match in this file, and [SUMMARY: ...] is read
-    // by the instructor for internal course records, not shown to the student.
     if (v.language) {
       block += '\n\nLANGUAGE: This student has selected ' + v.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + v.language + ' - every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically in ' + v.language + ', not as a literal word-for-word translation. Exception: keep the [NAME: ...] tag, the [SUMMARY: ...] tag, and the [REFLECTION_COMPLETE] tag exactly in their English bracket format as instructed elsewhere in this prompt - only the name inside the NAME tag should reflect what the student actually typed, and the sentence inside the SUMMARY tag must always be written in English regardless of ' + v.language + ', because it is read by the instructor, not the student.';
     }
 
     return block;
   }
-
-  /* ----------------------------------------------------------
-     GREETING SELECTION
-     ---------------------------------------------------------- */
 
   function getGreetingText(language, knownName) {
     var g = LESSON.greeting || {};
@@ -1579,10 +1341,6 @@
     if (table && table.fresh) return table.fresh;
     return g.fresh || "Hey - that lecture just ended, so I'm still right here with you.\n\nBefore we get into it, I'd like to actually know who I'm talking to. What's your name?";
   }
-
-  /* ----------------------------------------------------------
-     CHAT UI
-     ---------------------------------------------------------- */
 
   function buildCoachTab(panel) {
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'coaching history'); return; }
@@ -1707,10 +1465,6 @@
     };
   }
 
-  /* ----------------------------------------------------------
-     SESSION BALANCE
-     ---------------------------------------------------------- */
-
   function renderMeter(remaining, allowed) {
     if (remaining == null || allowed == null) { meterEl.textContent = ''; return; }
     meterEl.textContent = remaining <= 0
@@ -1723,7 +1477,7 @@
     fetch(PROXY_URL + '/balance?studentId=' + encodeURIComponent(STUDENT_ID))
       .then(function (r) { return r.json(); })
       .then(function (d) { if (d && d.metered) renderMeter(d.remaining, d.allowed); })
-      .catch(function () { /* balance is cosmetic - stay quiet */ });
+      .catch(function () {});
   }
 
   function reportLessonComplete(summaryText) {
@@ -1734,21 +1488,8 @@
       body: JSON.stringify({ studentId: STUDENT_ID, lesson: LESSON_ID, summary: summaryText || null })
     })
       .then(function () { refreshExcavationRecord(); })
-      .catch(function () { /* record update is cosmetic - fail quietly */ });
+      .catch(function () {});
   }
-
-  /* ----------------------------------------------------------
-     PERSISTENCE - D1 first, localStorage as fallback/cache
-     ----------------------------------------------------------
-     D1 is the source of truth so a student who starts a
-     reflection on one device and opens the same lesson on
-     another picks up the SAME conversationId rather than being
-     handed a new one. That matters beyond convenience: the
-     Worker claims a session the first time a conversationId is
-     seen, so recovering the same id on a second device
-     continues the existing session instead of silently
-     spending a second one from the student's pool.
-     ---------------------------------------------------------- */
 
   function persist() {
     lsSet(STORE_KEY, JSON.stringify({
@@ -1773,7 +1514,7 @@
         studentName: studentName,
         reflectionComplete: reflectionComplete
       })
-    }).catch(function () { /* localStorage already has it - sync is best-effort */ });
+    }).catch(function () {});
   }
 
   function hydrateFromSaved(saved) {
@@ -1782,7 +1523,6 @@
     studentName = saved.studentName || '';
     reflectionComplete = !!saved.reflectionComplete;
 
-    // index 0 is the silent primer - never shown
     for (var i = 1; i < conversationHistory.length; i++) {
       var m = conversationHistory[i];
       var shown = m.role === 'assistant' ? extractTags(m.content).text : m.content;
@@ -1817,10 +1557,6 @@
       .catch(function () { return null; });
   }
 
-  /* ----------------------------------------------------------
-     CARDS
-     ---------------------------------------------------------- */
-
   function showDownloadCard() {
     var card = el('div', 'srx-download-card');
     mount(card, el('div', 'srx-dc-title', 'YOUR REFLECTION IS READY'));
@@ -1851,10 +1587,6 @@
     meterEl.textContent = 'No coaching sessions remaining';
   }
 
-  /* ----------------------------------------------------------
-     WORD EXPORT
-     ---------------------------------------------------------- */
-
   var LT = String.fromCharCode(60);
   var GT = String.fromCharCode(62);
   function otag(name, attrs) { return LT + name + (attrs ? ' ' + attrs : '') + GT; }
@@ -1865,7 +1597,6 @@
     var name = studentName || 'Student';
     var body = '';
 
-    // slice(2) drops the silent primer and the static opening greeting
     conversationHistory.slice(2).forEach(function (msg) {
       var content = msg.content;
       if (msg.role === 'assistant') {
@@ -1911,10 +1642,6 @@
     URL.revokeObjectURL(url);
   }
 
-  /* ----------------------------------------------------------
-     SENDING
-     ---------------------------------------------------------- */
-
   function setBusy(state) {
     busy = state;
     sendBtn.disabled = state || poolExhausted;
@@ -1931,7 +1658,6 @@
       messages: conversationHistory
     };
 
-    // Only attach metering metadata when we actually know who this is.
     if (STUDENT_ID) {
       body.stratum = {
         studentId: STUDENT_ID,
@@ -2011,26 +1737,12 @@
     sendToClaude();
   }
 
-  /* ----------------------------------------------------------
-     BOOT
-     ----------------------------------------------------------
-     The message array must open with a user turn - the API
-     rejects a leading assistant message. So a silent primer
-     user turn goes in first, then the greeting as a real
-     assistant turn. The model sees that it already greeted the
-     student, which is what stops it asking for the name twice.
-     Neither the primer nor the greeting appears in the
-     downloaded document.
-     ---------------------------------------------------------- */
-
   function bootConversation() {
     fetchTranscriptFromD1().then(function (remote) {
       var saved = remote || restoreLocal();
 
       if (saved) {
         hydrateFromSaved(saved);
-        // Whichever source won, make sure both agree - covers the case where
-        // D1 had nothing yet but localStorage did.
         persist();
         loadBalance();
         return;
@@ -2060,13 +1772,6 @@
     });
   }
 
-  /* ==========================================================
-     INITIALISATION
-     ----------------------------------------------------------
-     A lesson page provides window.STRATUM_LESSON_ID and a
-     container div. Everything else is fetched and built here.
-     ========================================================== */
-
   function showFatalError(container, message) {
     var box = el('div', 'lec-contact');
     box.style.padding = '20px';
@@ -2080,10 +1785,6 @@
       buildEssentialsPage(container);
       return;
     }
-    // Guided/Master Coach: Progress card, video, transcript, resources,
-    // notes, tasks, project, coaching, and contact are all assembled
-    // inside buildTopNav's three destinations - nothing else needs to be
-    // called directly here.
     buildTopNav(container);
   }
 
@@ -2113,7 +1814,6 @@
         }
         LESSON = d.config;
 
-        // Defensive defaults so a partially-filled config still renders.
         LESSON.scopeNote = LESSON.scopeNote || ('Lecture ' + LESSON_ID);
         LESSON.nextLessonLabel = LESSON.nextLessonLabel || 'the next lecture';
         LESSON.transcript = LESSON.transcript || '';
@@ -2131,15 +1831,6 @@
         showFatalError(container, "Couldn't load this lesson right now. Please refresh the page, and if it keeps happening, let Ted know.");
       });
   }
-
-  /* ==========================================================
-     FLUSH ON EXIT
-     ----------------------------------------------------------
-     Pushes any pending debounced Notes/Tasks save immediately
-     when the student navigates away or backgrounds the tab, so
-     a save that hasn't hit its 2s debounce window yet isn't
-     lost. keepalive lets the request survive page unload.
-     ========================================================== */
 
   window.addEventListener('pagehide', function () {
     flushNotesToD1();
