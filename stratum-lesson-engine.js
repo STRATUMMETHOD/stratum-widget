@@ -301,12 +301,20 @@
     document.head.appendChild(s);
   }
 
+  // NOTE (change 1 of 2): the wrapping <details> now carries BOTH
+  // "lec-transcript" (its own behaviour-specific styles - body max-height,
+  // hint text, Wistia transcript part styling) AND "lec-resource" (the
+  // shared bordered-box treatment used by every other accordion on the
+  // page - Resource, Coaching Intro previously, Exercise, Reflection). The
+  // <summary> now carries "lec-resource-bar" instead of being unstyled, so
+  // its label bar matches those accordions exactly. Nothing about the
+  // toggle/open behaviour below changes.
   function buildTranscript(container, mediaId, startOpen) {
-    var details = el('details', 'lec-transcript');
+    var details = el('details', 'lec-transcript lec-resource');
     details.id = 'lecTranscript';
     details.open = startOpen !== false;
 
-    var summary = el('summary', null, 'Read the transcript');
+    var summary = el('summary', 'lec-resource-bar', 'Read the transcript');
     mount(details, summary);
 
     var body = el('div', 'lec-transcript-body');
@@ -614,6 +622,20 @@
   // dropdown), not as tabs. Both open independently. A form with no ID
   // configured in the admin panel is skipped entirely rather than shown
   // empty.
+  //
+  // NOTE (change 2 of 2): the coaching-intro text (LESSON.coachingIntro) is
+  // no longer its own standalone accordion (buildEssentialsCoachingIntro
+  // has been removed). It now renders as plain content directly inside the
+  // Reflection accordion's body, above the embedded Jotform form. It has
+  // no independent collapse/expand control of its own - it is simply
+  // visible the moment a student expands Reflection. Exercise's accordion
+  // is untouched.
+  //
+  // lec-coaching-intro / lec-coaching-intro-title / lec-coaching-intro-body /
+  // lec-coaching-intro-divider are new class names with no rules yet in
+  // stratum-lesson-engine.css - they will render with plain browser/page
+  // default styling (no custom font, spacing, or divider color) until
+  // rules are added there.
   function buildEssentialsDropdowns(container) {
     var items = [
       { id: 'Exercise',   label: 'Exercise',   formId: LESSON.essentials && LESSON.essentials.exerciseFormId },
@@ -629,6 +651,20 @@
       mount(details, el('summary', 'lec-resource-bar', item.label));
 
       var body = el('div', 'lec-resource-body lec-resource-body--pdf');
+
+      if (item.id === 'Reflection') {
+        var ci = LESSON.coachingIntro;
+        if (ci && ci.text) {
+          var introWrap = el('div', 'lec-coaching-intro');
+          mount(introWrap, el('div', 'lec-coaching-intro-title', ci.title || 'Before you begin'));
+          var introBody = el('div', 'lec-coaching-intro-body');
+          introBody.innerHTML = textToParagraphs(ci.text);
+          mount(introWrap, introBody);
+          mount(introWrap, el('hr', 'lec-coaching-intro-divider'));
+          mount(body, introWrap);
+        }
+      }
+
       buildJotformEmbed(body, item.formId, item.label);
 
       mount(details, body);
@@ -636,35 +672,18 @@
     });
   }
 
-  // ESSENTIALS (Self-Guided) ONLY - the coaching-intro text, when
-  // configured, shows as its own collapsed accordion directly above the
-  // Exercise/Reflection forms (matches the admin panel's own field label:
-  // "shown above the Exercise/Reflection forms, default closed").
-  function buildEssentialsCoachingIntro(container) {
-    var ci = LESSON.coachingIntro;
-    if (!ci || !ci.text) return;
-    var details = el('details', 'lec-resource');
-    details.id = 'lecEssentialsIntro';
-    details.open = false;
-    mount(details, el('summary', 'lec-resource-bar', ci.title || 'Before you begin'));
-    var body = el('div', 'lec-resource-body');
-    body.innerHTML = textToParagraphs(ci.text);
-    mount(details, body);
-    mount(container, details);
-  }
-
   // ESSENTIALS (Self-Guided) ONLY - a flat page: video, transcript,
-  // resource, an optional coaching-intro note, then Exercise/Reflection.
-  // Deliberately does NOT use the This Lesson/Dashboard/Contact shell
-  // built for Guided/Mastery below - Self-Guided has no AI coach and no
-  // persistent Notes/Tasks/Project, so that whole shell doesn't apply
-  // here. Also deliberately has no "Stuck? Email Ted" line - that was
-  // removed from this tier by design.
+  // resource, then Exercise/Reflection (the latter now carrying the
+  // coaching-intro content inline, above its Jotform embed - see
+  // buildEssentialsDropdowns). Deliberately does NOT use the This Lesson/
+  // Dashboard/Contact shell built for Guided/Mastery below - Self-Guided
+  // has no AI coach and no persistent Notes/Tasks/Project, so that whole
+  // shell doesn't apply here. Also deliberately has no "Stuck? Email Ted"
+  // line - that was removed from this tier by design.
   function buildEssentialsPage(container) {
     buildVideo(container, LESSON.video.mediaId);
     buildTranscript(container, LESSON.video.mediaId, false);
     buildResource(container, LESSON.resource);
-    buildEssentialsCoachingIntro(container);
     buildEssentialsDropdowns(container);
   }
 
