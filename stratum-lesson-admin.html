@@ -109,6 +109,58 @@
     padding: 18px 22px;
   }
 
+  .dash-toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .dash-toolbar input[type="text"] {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #ccc;
+  }
+
+  #addStudentPanel {
+    display: none;
+    background: #fbf8f1;
+    border: 1px solid #e2d9c4;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  #addStudentPanel .row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  #addStudentPanel .field { flex: 1; min-width: 200px; }
+  #addStudentPanel label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #3B2F24;
+    margin-bottom: 4px;
+  }
+  #addStudentPanel input[type="email"],
+  #addStudentPanel select {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #ccc;
+  }
+  #addStudentStatus {
+    font-size: 12.5px;
+    color: #666;
+    font-style: italic;
+    margin-top: 10px;
+  }
+  #addStudentStatus.ok { color: #2e7d32; font-style: normal; }
+  #addStudentStatus.err { color: #b3261e; font-style: normal; }
+
   .toolbar {
     display: flex;
     gap: 10px;
@@ -407,9 +459,31 @@
   </div>
 
   <div id="dashboardView" style="display:none;">
-    <div class="card-body" style="padding:0 0 14px;">
-      <input type="text" id="studentSearch" placeholder="Search by email..." style="width:100%;padding:8px 10px;font-size:13px;font-family:'Inter',Arial,sans-serif;border:1px solid #ccc;box-sizing:border-box;" />
+    <div class="dash-toolbar">
+      <input type="text" id="studentSearch" placeholder="Search by email..." />
+      <button class="btn secondary" id="addStudentToggleBtn" type="button">+ Add Student</button>
     </div>
+
+    <div id="addStudentPanel">
+      <div class="row">
+        <div class="field">
+          <label for="addStudentEmail">Email</label>
+          <input type="email" id="addStudentEmail" placeholder="student@example.com" />
+        </div>
+        <div class="field">
+          <label for="addStudentPlan">Course</label>
+          <select id="addStudentPlan">
+            <option value="essentials">Self-Guided</option>
+            <option value="guided">Coach</option>
+            <option value="mastery">Master Coach</option>
+          </select>
+        </div>
+        <button class="btn" id="addStudentSubmitBtn" type="button">Add Student</button>
+        <button class="btn secondary" id="addStudentCancelBtn" type="button">Cancel</button>
+      </div>
+      <div id="addStudentStatus"></div>
+    </div>
+
     <table id="studentsTable" style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e2d9c4;text-align:left;">
       <thead>
         <tr style="border-bottom:1px solid #e2d9c4;">
@@ -976,6 +1050,86 @@ var studentsStatus = document.getElementById('studentsStatus');
 var studentSearch = document.getElementById('studentSearch');
 var allStudents = [];
 var studentsLoaded = false;
+
+var addStudentToggleBtn = document.getElementById('addStudentToggleBtn');
+var addStudentPanel = document.getElementById('addStudentPanel');
+var addStudentEmail = document.getElementById('addStudentEmail');
+var addStudentPlan = document.getElementById('addStudentPlan');
+var addStudentSubmitBtn = document.getElementById('addStudentSubmitBtn');
+var addStudentCancelBtn = document.getElementById('addStudentCancelBtn');
+var addStudentStatus = document.getElementById('addStudentStatus');
+
+function openAddStudentPanel() {
+  addStudentPanel.style.display = 'block';
+  addStudentEmail.value = '';
+  addStudentPlan.value = 'essentials';
+  addStudentStatus.textContent = '';
+  addStudentStatus.className = '';
+  addStudentEmail.focus();
+}
+
+function closeAddStudentPanel() {
+  addStudentPanel.style.display = 'none';
+  addStudentStatus.textContent = '';
+  addStudentStatus.className = '';
+}
+
+addStudentToggleBtn.addEventListener('click', function () {
+  if (addStudentPanel.style.display === 'block') { closeAddStudentPanel(); }
+  else { openAddStudentPanel(); }
+});
+addStudentCancelBtn.addEventListener('click', closeAddStudentPanel);
+
+function submitAddStudent() {
+  if (!adminKey) { addStudentStatus.textContent = 'Unlock the panel first.'; addStudentStatus.className = 'err'; return; }
+
+  var email = addStudentEmail.value.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    addStudentStatus.textContent = 'Enter a valid email first.';
+    addStudentStatus.className = 'err';
+    addStudentEmail.focus();
+    return;
+  }
+  var plan = addStudentPlan.value;
+
+  addStudentSubmitBtn.disabled = true;
+  addStudentStatus.textContent = 'Adding...';
+  addStudentStatus.className = '';
+
+  fetch(PROXY_URL + '/admin/student/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+    body: JSON.stringify({ email: email, plan: plan })
+  })
+    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+    .then(function (result) {
+      addStudentSubmitBtn.disabled = false;
+      var d = result.data;
+      if (result.status === 200 && d && d.ok) {
+        addStudentStatus.textContent = 'Added ' + d.email + ' (' + planDisplayLabel(d.plan) + ').';
+        addStudentStatus.className = 'ok';
+        studentsLoaded = false;
+        loadStudents();
+        setTimeout(closeAddStudentPanel, 1200);
+      } else if (d && d.reason === 'email_in_use') {
+        addStudentStatus.textContent = 'That email already has a student record (ID: ' + d.existingStudentId + '). Use Edit email on the existing row instead, or delete it first.';
+        addStudentStatus.className = 'err';
+      } else {
+        addStudentStatus.textContent = 'Could not add student: ' + (d && (d.error || d.reason) || 'unknown error');
+        addStudentStatus.className = 'err';
+      }
+    })
+    .catch(function () {
+      addStudentSubmitBtn.disabled = false;
+      addStudentStatus.textContent = 'Network error while adding student.';
+      addStudentStatus.className = 'err';
+    });
+}
+
+addStudentSubmitBtn.addEventListener('click', submitAddStudent);
+addStudentEmail.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') { e.preventDefault(); submitAddStudent(); }
+});
 
 function formatLastSeen(iso) {
   if (!iso) return '\u2014';
