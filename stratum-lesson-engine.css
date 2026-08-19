@@ -370,7 +370,7 @@ wistia-transcript { display: block; }
 .jf-embed-frame {
   display: block;
   width: 100%;
-  min-height: 150px;
+  min-height: 250px;
   border: none;
 }
 
