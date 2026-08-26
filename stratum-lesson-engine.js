@@ -997,7 +997,13 @@
   function buildProjectTab(panel) {
     mount(panel, el('h3', null, 'My Project'));
 
+    var reminder = el('p', null,
+      'Complete and save this before using Notes, Tasks, or starting your first coaching session \u2014 that\u2019s what ties everything to you.');
+    reminder.style.cssText = 'font-size:13px;font-style:italic;color:#8a7a5e;line-height:1.5;margin:4px 0 18px;';
+    mount(panel, reminder);
+
     var topActions = el('div', 'proj-actions proj-actions-top');
+    topActions.style.marginBottom = '28px';
     var topSave = el('button', 'proj-save-btn', 'Save Project Details');
     topSave.type = 'button';
     topSave.id = 'projSaveBtnTop';
