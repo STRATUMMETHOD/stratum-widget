@@ -25,14 +25,6 @@
   var CONTACT_EMAIL = 'ted@thestratummethod.com';
   var CONTACT_WHATSAPP = 'https://wa.me/50684192287';
 
-  // Section groupings for the Coaching Sessions summary widget.
-  var EXCREC_GROUPS = [
-    { key: 'orientation', label: 'Orientation', lessons: ['1.1', '1.2', '1.3'] },
-    { key: 'awareness',   label: 'Awareness',   lessons: ['2.1', '2.2', '2.3'] },
-    { key: 'proof',       label: 'Proof',       lessons: ['3.1', '3.2', '3.3'] },
-    { key: 'application', label: 'Application', lessons: ['4.1', '4.2', '4.3'] }
-  ];
-
   // localStorage keys. Shared with the coach so the My Project tab and the
   // coaching session stay in sync without any direct JS coupling.
   var PROJ_KEYS = {
@@ -147,63 +139,6 @@
     parent.appendChild(child);
     return child;
   }
-
-  function buildExcavationRecordShell(container) {
-    var wrap = el('div', 'excrec');
-    wrap.id = 'excrec';
-    mount(wrap, el('div', 'excrec-title', 'Coaching Sessions'));
-    mount(wrap, el('div', 'excrec-sub',
-      'The following is a summary of your completed coaching sessions. Hover over a lesson for a review of the session.'));
-    var groups = el('div', 'excrec-groups');
-    groups.id = 'excrecGroups';
-    mount(wrap, groups);
-    mount(container, wrap);
-  }
-
-  function renderExcavationRecordFrom(completionsByLesson) {
-    var groupsEl = document.getElementById('excrecGroups');
-    if (!groupsEl) return;
-    groupsEl.innerHTML = '';
-
-    EXCREC_GROUPS.forEach(function (group) {
-      var groupDiv = el('div', 'excrec-group');
-      var labelDiv = el('div', 'excrec-group-label excrec-pill-' + group.key, group.label);
-      mount(groupDiv, labelDiv);
-
-      var rowDiv = el('div', 'strata-group');
-
-      group.lessons.forEach(function (lesson) {
-        if (!Object.prototype.hasOwnProperty.call(completionsByLesson, lesson)) return;
-
-        var tile = el('div', 'stratum excrec-tile-' + group.key);
-
-        var tip = el('div', 'excrec-tooltip');
-        mount(tip, el('div', 'excrec-tooltip-lecture', 'Lecture ' + lesson));
-        tip.appendChild(document.createTextNode(completionsByLesson[lesson] || 'Completed.'));
-        mount(tile, tip);
-
-        mount(tile, el('div', 'stratum-check', '\u2713'));
-        mount(rowDiv, tile);
-      });
-
-      mount(groupDiv, rowDiv);
-      mount(groupsEl, groupDiv);
-    });
-  }
-
-  function refreshExcavationRecord() {
-    if (!STUDENT_ID) { renderExcavationRecordFrom({}); return; }
-    fetch(PROXY_URL + '/completions?studentId=' + encodeURIComponent(STUDENT_ID))
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        var map = {};
-        (d.completions || []).forEach(function (c) { map[c.lesson] = c.summary; });
-        renderExcavationRecordFrom(map);
-      })
-      .catch(function () { renderExcavationRecordFrom({}); });
-  }
-
-  window.STRATUM_refreshExcavationRecord = refreshExcavationRecord;
 
   function buildVideo(container, mediaId) {
     loadScriptOnce('https://fast.wistia.com/player.js');
@@ -455,11 +390,6 @@
   }
 
   function buildDashboardView(container) {
-    var progressCard = el('div', 'dash-card dash-progress');
-    buildExcavationRecordShell(progressCard);
-    mount(container, progressCard);
-    refreshExcavationRecord();
-
     var grid = el('div', 'dash-grid');
 
     var notesPanel = el('div', 'dash-card');
@@ -1601,13 +1531,17 @@
 
   function reportLessonComplete(summaryText) {
     if (!STUDENT_ID) return;
+    var body = { studentId: STUDENT_ID, lesson: LESSON_ID, summary: summaryText || null };
+    // Send the validated structured deliverable (behavior + instances)
+    // alongside the summary when this lesson has one - lets the admin
+    // audit view (GET /admin/deliverables) show exactly what a student's
+    // session produced, not just the one-sentence summary.
+    if (lastDeliverable) body.deliverable = lastDeliverable;
     fetch(PROXY_URL + '/complete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: STUDENT_ID, lesson: LESSON_ID, summary: summaryText || null })
-    })
-      .then(function () { refreshExcavationRecord(); })
-      .catch(function () {});
+      body: JSON.stringify(body)
+    }).catch(function () {});
   }
 
   function persist() {
