@@ -1265,8 +1265,20 @@
     parts.push(
       'HOW YOU DRAW THESE OUT - MOTIVATIONAL INTERVIEWING, NOT INTERROGATION:\nUse the spirit of motivational interviewing (Miller & Rollnick): ask open questions, not yes/no ones. Reflect back what they say in your own words before moving forward, so they feel heard and so the reflection deepens on its own. Offer genuine affirmation when something costs them something to say. Summarize periodically so the conversation feels like it is building toward something, not just accumulating answers.',
 
-      'THE DEPTH RULE - HOLD THE LINE GENTLY:\nIf you were the live coach in the room, you would not let someone get away with a flat, surface-level first answer. So: when an answer is generic, rehearsed-sounding, or just one clipped sentence, reflect it back gently and ask ONE specific, warm follow-up that invites a little more - "Say more about that," "What did that actually look like on the page?", "What\'s the real version of that?" Ask that follow-up once per area. If the second answer is genuine and specific, affirm it and move on. If they are still staying on the surface after that one gentle nudge, do not force a third round. Accept where they are, thank them for what they gave you, and move to the next area. Never let a surface answer pass completely unremarked, but never turn this into an interrogation.',
+      'THE DEPTH RULE - HOLD THE LINE GENTLY:\nIf you were the live coach in the room, you would not let someone get away with a flat, surface-level first answer. So: when an answer is generic, rehearsed-sounding, or just one clipped sentence, reflect it back gently and ask ONE specific, warm follow-up that invites a little more - "Say more about that," "What did that actually look like on the page?", "What\'s the real version of that?" Ask that follow-up once per area. If the second answer is genuine and specific, affirm it and move on. If they are still staying on the surface after that one gentle nudge, do not force a third round. Accept where they are, thank them for what they gave you, and move to the next area. Never let a surface answer pass completely unremarked, but never turn this into an interrogation.'
+    );
 
+    if (LESSON.reflectionFramework.deliverable && LESSON.reflectionFramework.deliverable.required) {
+      var dReq = LESSON.reflectionFramework.deliverable;
+      var count = dReq.instanceCount || 3;
+      parts.push(
+        'OVERRIDE TO THE DEPTH RULE FOR THIS LESSON - THIS TAKES PRECEDENCE:\nThis lesson has one non-negotiable deliverable: a single ' +
+        (dReq.behaviorLabel || 'anchor behavior') + ', supported by exactly ' + count + ' real, specific ' +
+        (dReq.instanceLabel || 'instances') + '. The general depth rule above (accept where they are after one nudge, move on) does NOT apply to gathering these ' + count + ' instances. Do not move toward closing this session with fewer than ' + count + ' complete instances, no matter how many follow-up questions it takes. If an instance is vague, a label, or a single unsupported moment, ask again - a different angle, a different question, but keep asking until a real one lands. This is the one place in the conversation where you hold firm past a single gentle nudge.'
+      );
+    }
+
+    parts.push(
       'WHAT YOU NEVER DO:\nNever write their reflection for them. Never supply the answer you think they should give. Never diagnose them or their psychology ("that sounds like impostor syndrome," "you clearly have perfectionism"). Never summarize their answer as more profound than what they actually said. Stay descriptive and curious, not clinical. You may, occasionally and briefly, share a small piece of your own experience in your own words - the way a real coach sometimes does to build trust - but always bring it back to them quickly. Keep your own share brief; this is their reflection, not yours.',
 
       'CALIBRATION ONLY - NEVER SHOW OR QUOTE THESE TO THE STUDENT:\nThese are examples of the tone and depth a real answer has. They exist only to calibrate how you respond and what "good and specific" sounds like versus "surface." Never reveal, quote, paraphrase-as-if-theirs, or refer to these examples in any way to the student.\n' + calibration,
@@ -1275,10 +1287,39 @@
 
       'GETTING THEIR NAME:\nYou have already greeted the student before this conversation history begins - the greeting is the first message in the conversation. If you did not already know their name, their reply should contain it. The very first time you learn their name, begin your reply with a hidden tag on its own line, exactly in this format: [NAME: Their Name] - then continue your normal reply below it in your own voice. Only include this tag once, the first time you learn their name. After that, use their name naturally through the conversation the way a person actually would - not in every single message, but enough that it feels personal.',
 
-      'STYLE:\nWrite the way a real person talks in a warm one-on-one conversation - not a lecture, not a form. Keep replies short: usually two to five sentences. Ask ONE question at a time - never stack multiple questions in a single message. Never use markdown formatting of any kind - no asterisks, no bullet lists, no headers, no underscores. This includes using asterisks to stress a single word, like *felt* or *that* or *flat* - the chat displays your text as plain characters, so anything wrapped in asterisks shows up on screen as literal asterisks, not italics. For example, never write "something whispers *flat*" - write "something whispers flat" with no punctuation around it. If you want to stress a word, do it through word choice, sentence rhythm, or repetition instead - plain conversational prose only, with no punctuation marks used for emphasis.',
-
-      'WRAPPING UP:\nOnce all the areas have been genuinely explored - not perfectly, not exhaustively, just past a first surface answer - bring the conversation to a warm close. Thank them for what they shared, tell them this becomes something they can keep, and let them know ' + LESSON.nextLessonLabel + ' is next. Immediately before your closing sentence, on its own line, include a hidden tag capturing the single most important thing that surfaced across the whole conversation, in one plain sentence, third person, under twenty words - exactly in this format: [SUMMARY: One sentence capturing the core insight that surfaced.] - this is never shown to the student, it is used only to build their record of the course. End that closing message with the exact tag [REFLECTION_COMPLETE] on its own line at the very end, after the summary tag. Only include either tag once, in the message where you are genuinely wrapping up - not before all areas are covered.'
+      'STYLE:\nWrite the way a real person talks in a warm one-on-one conversation - not a lecture, not a form. Keep replies short: usually two to five sentences. Ask ONE question at a time - never stack multiple questions in a single message. Never use markdown formatting of any kind - no asterisks, no bullet lists, no headers, no underscores. This includes using asterisks to stress a single word, like *felt* or *that* or *flat* - the chat displays your text as plain characters, so anything wrapped in asterisks shows up on screen as literal asterisks, not italics. For example, never write "something whispers *flat*" - write "something whispers flat" with no punctuation around it. If you want to stress a word, do it through word choice, sentence rhythm, or repetition instead - plain conversational prose only, with no punctuation marks used for emphasis.'
     );
+
+    var wrapParts = [
+      'Once all the areas have been genuinely explored - not perfectly, not exhaustively, just past a first surface answer - bring the conversation to a warm close. Thank them for what they shared, tell them this becomes something they can keep, and let them know ' + LESSON.nextLessonLabel + ' is next.'
+    ];
+
+    if (LESSON.reflectionFramework.deliverable && LESSON.reflectionFramework.deliverable.required) {
+      var d = LESSON.reflectionFramework.deliverable;
+      var n = d.instanceCount || 3;
+      var behaviorLabel = d.behaviorLabel || 'anchor behavior';
+      var instanceLabel = d.instanceLabel || 'instance';
+
+      var instanceLines = '';
+      for (var i = 1; i <= n; i++) {
+        instanceLines += '[INSTANCE_' + i + ': context here | who was there | exactly what they did]\n';
+      }
+
+      wrapParts.push(
+        'CAPTURING THE DELIVERABLE - REQUIRED BEFORE YOU CAN CLOSE:\nBefore your closing message, on their own lines, include these hidden tags capturing the finished ' + behaviorLabel + ' and all ' + n + ' ' + instanceLabel + 's, exactly in this format (one line each, pipe-separated, no line breaks inside a tag):\n\n[BEHAVIOR: the one-sentence anchor behavior, stated as a specific observable action]\n' + instanceLines +
+        '\nEvery field must contain real, specific content the student actually gave you - never a placeholder, never something you infer or invent on their behalf. Do not emit these tags, and do not close the session, until you actually have all of this. If the student trails off or seems ready to stop before you have a complete deliverable, gently keep gathering it rather than closing early - this deliverable is the entire point of the lesson.'
+      );
+
+      wrapParts.push(
+        'Immediately after the BEHAVIOR and INSTANCE tags, on its own line, include a hidden tag capturing the single most important thing that surfaced across the whole conversation, in one plain sentence, third person, under twenty words - exactly in this format: [SUMMARY: One sentence capturing the core insight that surfaced.] - this is never shown to the student, it is used only to build their record of the course. End that closing message with the exact tag [REFLECTION_COMPLETE] on its own line at the very end, after every other tag. Only include these tags once, in the message where you are genuinely wrapping up, and only once BEHAVIOR and all ' + n + ' INSTANCE tags are complete and specific.'
+      );
+    } else {
+      wrapParts.push(
+        'Immediately before your closing sentence, on its own line, include a hidden tag capturing the single most important thing that surfaced across the whole conversation, in one plain sentence, third person, under twenty words - exactly in this format: [SUMMARY: One sentence capturing the core insight that surfaced.] - this is never shown to the student, it is used only to build their record of the course. End that closing message with the exact tag [REFLECTION_COMPLETE] on its own line at the very end, after the summary tag. Only include either tag once, in the message where you are genuinely wrapping up - not before all areas are covered.'
+      );
+    }
+
+    parts.push('WRAPPING UP:\n' + wrapParts.join('\n\n'));
 
     return parts.join('\n\n');
   }
@@ -1321,7 +1362,7 @@
     }
 
     if (v.language) {
-      block += '\n\nLANGUAGE: This student has selected ' + v.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + v.language + ' - every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically in ' + v.language + ', not as a literal word-for-word translation. Exception: keep the [NAME: ...] tag, the [SUMMARY: ...] tag, and the [REFLECTION_COMPLETE] tag exactly in their English bracket format as instructed elsewhere in this prompt - only the name inside the NAME tag should reflect what the student actually typed, and the sentence inside the SUMMARY tag must always be written in English regardless of ' + v.language + ', because it is read by the instructor, not the student.';
+      block += '\n\nLANGUAGE: This student has selected ' + v.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + v.language + ' - every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically in ' + v.language + ', not as a literal word-for-word translation. Exception: keep the [NAME: ...] tag, the [SUMMARY: ...] tag, the [BEHAVIOR: ...] / [INSTANCE_n: ...] tags, and the [REFLECTION_COMPLETE] tag exactly in their English bracket format as instructed elsewhere in this prompt - only the name inside the NAME tag should reflect what the student actually typed, and the sentence inside the SUMMARY tag must always be written in English regardless of ' + v.language + ', because it is read by the instructor, not the student. The BEHAVIOR and INSTANCE tag contents should be written in ' + v.language + ' since they belong to the student, matching whatever language they did the session in.';
     }
 
     return block;
@@ -1434,16 +1475,67 @@
     typingRow = null;
   }
 
+  // Sentinel prefix marking a hidden, engine-injected corrective turn. These
+  // exist only to steer the model back on track after an invalid attempt to
+  // close (see validateDeliverable / retryForDeliverable below) - they are
+  // real entries in conversationHistory (the API needs them for context) but
+  // are never rendered in the chat UI and never included in the downloaded
+  // Word document. Uses a zero-width space so it can never collide with
+  // anything a real student could type or paste.
+  var SYSTEM_RETRY_PREFIX = '\u200B[STRATUM_INTERNAL_RETRY]';
+
+  function isHiddenSystemMessage(msg) {
+    return !!msg && msg.role === 'user' && typeof msg.content === 'string' &&
+      msg.content.indexOf(SYSTEM_RETRY_PREFIX) === 0;
+  }
+
+  var MAX_DELIVERABLE_RETRIES = 2;
+  var deliverableRetryCount = 0;
+  var lastDeliverable = null; // { behavior, instances: [{context, people, action}, ...] } once validated
+
+  function getDeliverableConfig() {
+    return (LESSON && LESSON.reflectionFramework && LESSON.reflectionFramework.deliverable &&
+      LESSON.reflectionFramework.deliverable.required) ? LESSON.reflectionFramework.deliverable : null;
+  }
+
   function extractTags(raw) {
     var text = raw;
     var name = null;
     var complete = false;
     var summary = null;
+    var behavior = null;
+    var instances = [];
 
     var nameMatch = text.match(/^\[NAME:\s*([^\]]+)\]\s*/i);
     if (nameMatch) {
       name = nameMatch[1].trim();
       text = text.replace(nameMatch[0], '');
+    }
+
+    var behaviorMatch = text.match(/\[BEHAVIOR:\s*([^\]]+)\]\s*/i);
+    if (behaviorMatch) {
+      behavior = behaviorMatch[1].trim();
+      text = text.replace(behaviorMatch[0], '');
+    }
+
+    // Pull every [INSTANCE_n: context | people | action] tag present, in
+    // whatever order the model emitted them, rather than assuming a fixed
+    // count - validateDeliverable() below checks the count against the
+    // lesson's configured requirement.
+    var instanceRe = /\[INSTANCE_(\d+):\s*([^\]]+)\]\s*/gi;
+    var im;
+    while ((im = instanceRe.exec(raw)) !== null) {
+      var fields = im[2].split('|').map(function (s) { return s.trim(); });
+      instances.push({
+        index: Number(im[1]),
+        context: fields[0] || '',
+        people: fields[1] || '',
+        action: fields[2] || ''
+      });
+    }
+    if (instances.length) {
+      text = text.replace(instanceRe, '');
+      instances.sort(function (a, b) { return a.index - b.index; });
     }
 
     var summaryMatch = text.match(/\[SUMMARY:\s*([^\]]+)\]\s*/i);
@@ -1461,8 +1553,35 @@
       text: stripAsteriskEmphasis(text.trim()),
       name: name,
       complete: complete,
-      summary: summary
+      summary: summary,
+      behavior: behavior,
+      instances: instances
     };
+  }
+
+  // Checks a parsed deliverable against the lesson's requirement. Returns
+  // { valid: bool, missing: [strings describing what's missing or empty] }
+  // so the corrective message can be specific rather than generic.
+  function validateDeliverable(parsed, config) {
+    var missing = [];
+    var requiredCount = config.instanceCount || 3;
+
+    if (!parsed.behavior) {
+      missing.push('the ' + (config.behaviorLabel || 'anchor behavior') + ' itself');
+    }
+
+    if (parsed.instances.length < requiredCount) {
+      missing.push((requiredCount - parsed.instances.length) + ' more ' +
+        (config.instanceLabel || 'instance') + (requiredCount - parsed.instances.length === 1 ? '' : 's'));
+    }
+
+    parsed.instances.forEach(function (inst) {
+      if (!inst.context || !inst.people || !inst.action) {
+        missing.push('a complete context/people/action for instance ' + inst.index + ' (one or more fields were left blank)');
+      }
+    });
+
+    return { valid: missing.length === 0, missing: missing };
   }
 
   function renderMeter(remaining, allowed) {
@@ -1496,7 +1615,8 @@
       conversationId: conversationId,
       history: conversationHistory,
       studentName: studentName,
-      reflectionComplete: reflectionComplete
+      reflectionComplete: reflectionComplete,
+      deliverable: lastDeliverable
     }));
     saveTranscriptToD1();
   }
@@ -1522,9 +1642,11 @@
     conversationHistory = saved.history;
     studentName = saved.studentName || '';
     reflectionComplete = !!saved.reflectionComplete;
+    lastDeliverable = saved.deliverable || null;
 
     for (var i = 1; i < conversationHistory.length; i++) {
       var m = conversationHistory[i];
+      if (isHiddenSystemMessage(m)) continue;
       var shown = m.role === 'assistant' ? extractTags(m.content).text : m.content;
       if (shown) addMessage(m.role, shown);
     }
@@ -1557,8 +1679,35 @@
       .catch(function () { return null; });
   }
 
+  // Renders a clean, plain-language snapshot of the captured deliverable -
+  // shown both at the moment of completion and folded into the Word doc.
+  // Kept as its own function so both call sites stay in sync automatically.
+  function buildDeliverableSnapshotEl(deliverable, config) {
+    var box = el('div', 'srx-deliverable');
+    mount(box, el('div', 'srx-deliverable-label', config && config.behaviorLabel ? config.behaviorLabel.toUpperCase() : 'ANCHOR BEHAVIOR'));
+    mount(box, el('div', 'srx-deliverable-behavior', deliverable.behavior));
+
+    var list = el('div', 'srx-deliverable-instances');
+    deliverable.instances.forEach(function (inst, i) {
+      var row = el('div', 'srx-deliverable-instance');
+      mount(row, el('div', 'srx-deliverable-instance-num', String(i + 1)));
+      var text = el('div', 'srx-deliverable-instance-text');
+      text.textContent = inst.context + ' — with ' + inst.people + ' — ' + inst.action;
+      mount(row, text);
+      mount(list, row);
+    });
+    mount(box, list);
+
+    return box;
+  }
+
   function showDownloadCard() {
     var card = el('div', 'srx-download-card');
+
+    if (lastDeliverable) {
+      mount(card, buildDeliverableSnapshotEl(lastDeliverable, getDeliverableConfig()));
+    }
+
     mount(card, el('div', 'srx-dc-title', 'YOUR REFLECTION IS READY'));
     mount(card, el('div', 'srx-dc-sub', 'Keep a copy of this conversation for yourself.'));
 
@@ -1597,11 +1746,35 @@
     var name = studentName || 'Student';
     var body = '';
 
+    if (lastDeliverable) {
+      var cfg = getDeliverableConfig();
+      var behaviorLabel = (cfg && cfg.behaviorLabel) || 'Anchor Behavior';
+      var instanceLabel = (cfg && cfg.instanceLabel) || 'Instance';
+
+      body += otag('div', 'style="background:#F5EFE0;border:1px solid #DDD0B8;border-left:4px solid #C9A46C;padding:16px 20px;margin:0 0 22px;"');
+      body += otag('p', 'style="margin:0 0 4px;font-family:Calibri,Arial,sans-serif;font-size:10pt;letter-spacing:1px;text-transform:uppercase;color:#8b6340;font-weight:bold;"') +
+              escapeHtml(behaviorLabel.toUpperCase()) + ctag('p');
+      body += otag('p', 'style="margin:0 0 14px;font-family:Georgia,serif;font-size:14pt;color:#2e1f0e;"') +
+              escapeHtml(lastDeliverable.behavior) + ctag('p');
+
+      lastDeliverable.instances.forEach(function (inst, i) {
+        body += otag('p', 'style="margin:0 0 8px;"') +
+                otag('strong') + escapeHtml(instanceLabel) + ' ' + (i + 1) + ':' + ctag('strong') + ' ' +
+                escapeHtml(inst.context) + ' — with ' + escapeHtml(inst.people) + ' — ' + escapeHtml(inst.action) +
+                ctag('p');
+      });
+      body += ctag('div');
+    }
+
     conversationHistory.slice(2).forEach(function (msg) {
+      if (isHiddenSystemMessage(msg)) return;
+
       var content = msg.content;
       if (msg.role === 'assistant') {
         content = stripAsteriskEmphasis(
           content.replace(/^\[NAME:\s*[^\]]+\]\s*/i, '')
+                 .replace(/\[BEHAVIOR:\s*[^\]]+\]\s*/i, '')
+                 .replace(/\[INSTANCE_\d+:\s*[^\]]+\]\s*/gi, '')
                  .replace(/\[SUMMARY:\s*[^\]]+\]\s*/i, '')
                  .replace('[REFLECTION_COMPLETE]', '')
                  .trim()
@@ -1647,6 +1820,24 @@
     sendBtn.disabled = state || poolExhausted;
   }
 
+  // Pushes a hidden, hard-coded corrective turn (never billed, never shown,
+  // never sent to Claude as if the student wrote it in spirit - it's a
+  // fixed instruction, not user content) and immediately re-sends. Used
+  // only when the model tries to close with an incomplete deliverable.
+  function retryForDeliverable(missing) {
+    deliverableRetryCount++;
+    var note = SYSTEM_RETRY_PREFIX +
+      'The deliverable is not yet complete: still missing ' + missing.join('; ') + '. ' +
+      'Do not mention this note or that anything went wrong. Simply continue the conversation naturally - ' +
+      'ask the next question needed to get what is missing, exactly as you would if the student had just given ' +
+      'a surface-level answer. Do not emit the BEHAVIOR, INSTANCE, SUMMARY, or REFLECTION_COMPLETE tags again ' +
+      'until everything is genuinely complete.';
+
+    conversationHistory.push({ role: 'user', content: note });
+    persist();
+    sendToClaude();
+  }
+
   function sendToClaude() {
     setBusy(true);
     showTyping();
@@ -1681,13 +1872,12 @@
         return res.json();
       })
       .then(function (data) {
-        hideTyping();
-        setBusy(false);
-
         data = data || {};
 
-        if (data.stratum_error === 'pool_exhausted') { showExhaustedCard(); return; }
+        if (data.stratum_error === 'pool_exhausted') { hideTyping(); setBusy(false); showExhaustedCard(); return; }
         if (data.stratum_error === 'account_suspended') {
+          hideTyping();
+          setBusy(false);
           addMessage('assistant', "Something's wrong with the access on this account. Send me a message and I'll get it sorted out.");
           return;
         }
@@ -1696,6 +1886,63 @@
         var raw = block ? block.text : 'I lost my train of thought there for a second. Could you say that again?';
 
         var parsed = extractTags(raw);
+        var deliverableConfig = getDeliverableConfig();
+
+        // If this lesson requires a structured deliverable and the model
+        // tried to close, validate before trusting it. An incomplete
+        // deliverable never reaches the student as a "session complete"
+        // state - the raw attempt is discarded from history (tags
+        // stripped) and a hidden corrective turn triggers a silent retry,
+        // up to MAX_DELIVERABLE_RETRIES times.
+        if (parsed.complete && deliverableConfig) {
+          var check = validateDeliverable(parsed, deliverableConfig);
+
+          if (!check.valid && deliverableRetryCount < MAX_DELIVERABLE_RETRIES) {
+            hideTyping();
+
+            var cleanedContent = raw
+              .replace(/^\[NAME:\s*[^\]]+\]\s*/i, '')
+              .replace(/\[BEHAVIOR:\s*[^\]]+\]\s*/i, '')
+              .replace(/\[INSTANCE_\d+:\s*[^\]]+\]\s*/gi, '')
+              .replace(/\[SUMMARY:\s*[^\]]+\]\s*/i, '')
+              .replace('[REFLECTION_COMPLETE]', '')
+              .trim();
+
+            if (parsed.name) { studentName = parsed.name; lsSet(PROJ_KEYS.studentName, studentName); }
+            conversationHistory.push({ role: 'assistant', content: cleanedContent });
+            if (parsed.text) addMessage('assistant', parsed.text);
+
+            if (remainingHeader !== null && allowedHeader !== null) {
+              renderMeter(Number(remainingHeader), Number(allowedHeader));
+            }
+
+            persist();
+            retryForDeliverable(check.missing);
+            return;
+          }
+
+          // Either valid, or we've exhausted retries - in both cases fall
+          // through to normal handling below. If still invalid after max
+          // retries, we deliberately do NOT force a fake completion: the
+          // REFLECTION_COMPLETE tag is stripped and the session simply
+          // keeps going as an ordinary conversation until a real
+          // deliverable is captured on some later turn.
+          if (!check.valid) {
+            parsed.complete = false;
+            raw = raw.replace('[REFLECTION_COMPLETE]', '');
+          } else {
+            lastDeliverable = {
+              behavior: parsed.behavior,
+              instances: parsed.instances.map(function (inst) {
+                return { context: inst.context, people: inst.people, action: inst.action };
+              })
+            };
+          }
+        }
+
+        hideTyping();
+        setBusy(false);
+
         if (parsed.name) {
           studentName = parsed.name;
           lsSet(PROJ_KEYS.studentName, studentName);
