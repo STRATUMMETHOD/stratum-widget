@@ -519,12 +519,7 @@
   function buildNotesTab(panel) {
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'notes'); return; }
 
-    var h = el('h3');
-    var strong = el('strong');
-    mount(strong, el('em', null,
-      'Your notes are saved to your account and available on any device you sign in from. Download a copy any time.'));
-    mount(h, strong);
-    mount(panel, h);
+    mount(panel, el('h3', null, 'Notes'));
 
     var ta = document.createElement('textarea');
     ta.id = 'studentNotes';
@@ -597,10 +592,7 @@
   function buildTasksTab(panel) {
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'tasks'); return; }
 
-    var h = el('h3', 'tracker-notice');
-    mount(h, el('em', null,
-      'Your tasks are saved to your account and available on any device you sign in from. Download a copy any time.'));
-    mount(panel, h);
+    mount(panel, el('h3', null, 'Tasks'));
 
     var count = el('div', 'tracker-count');
     count.id = 'trackerCount';
@@ -1005,6 +997,19 @@
   function buildProjectTab(panel) {
     mount(panel, el('h3', null, 'My Project'));
 
+    var topActions = el('div', 'proj-actions proj-actions-top');
+    var topSave = el('button', 'proj-save-btn', 'Save Project Details');
+    topSave.type = 'button';
+    topSave.id = 'projSaveBtnTop';
+    topSave.addEventListener('click', saveProjectFields);
+    mount(topActions, topSave);
+
+    var topStatus = el('span', 'proj-status');
+    topStatus.id = 'projStatusTop';
+    mount(topActions, topStatus);
+
+    mount(panel, topActions);
+
     buildEmailField(panel);
 
     PROJECT_FIELDS.forEach(function (spec) {
@@ -1071,8 +1076,22 @@
   }
 
   function saveProjectFields() {
-    var statusEl = document.getElementById('projStatus');
-    var btn = document.getElementById('projSaveBtn');
+    // Two Save buttons exist now (top and bottom of the form, both class
+    // 'proj-save-btn'/'proj-status') so a long My Project form never buries
+    // the only way to save below the fold. Both stay in lockstep - every
+    // status/enabled change below applies to the whole set, not just one.
+    var statusEls = document.querySelectorAll('.proj-status');
+    var btns = document.querySelectorAll('.proj-save-btn');
+
+    function setStatus(text, cls) {
+      statusEls.forEach(function (el) {
+        el.textContent = text;
+        el.className = cls;
+      });
+    }
+    function setDisabled(state) {
+      btns.forEach(function (b) { b.disabled = state; });
+    }
 
     var fields = {};
     eachProjectSpec(function (spec) {
@@ -1086,9 +1105,8 @@
     });
 
     function doServerSave() {
-      btn.disabled = true;
-      statusEl.textContent = 'Saving…';
-      statusEl.className = 'proj-status';
+      setDisabled(true);
+      setStatus('Saving…', 'proj-status');
 
       fetch(PROXY_URL + '/project', {
         method: 'POST',
@@ -1097,19 +1115,16 @@
       })
         .then(function (r) { return r.json(); })
         .then(function (d) {
-          btn.disabled = false;
+          setDisabled(false);
           if (d && d.ok) {
-            statusEl.textContent = "Saved. Every lesson's coach will know your project.";
-            statusEl.className = 'proj-status ok';
+            setStatus("Saved. Every lesson's coach will know your project.", 'proj-status ok');
           } else {
-            statusEl.textContent = "Saved on this device only - couldn't reach the server.";
-            statusEl.className = 'proj-status err';
+            setStatus("Saved on this device only - couldn't reach the server.", 'proj-status err');
           }
         })
         .catch(function () {
-          btn.disabled = false;
-          statusEl.textContent = "Saved on this device only - couldn't reach the server.";
-          statusEl.className = 'proj-status err';
+          setDisabled(false);
+          setStatus("Saved on this device only - couldn't reach the server.", 'proj-status err');
         });
     }
 
@@ -1121,21 +1136,18 @@
     var emailInput = document.getElementById('projEmail');
     var email = emailInput ? emailInput.value.trim() : '';
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      statusEl.textContent = 'Enter a valid email first — it keeps your notes, tasks, and coaching history with you.';
-      statusEl.className = 'proj-status err';
+      setStatus('Enter a valid email first — it keeps your notes, tasks, and coaching history with you.', 'proj-status err');
       if (emailInput) emailInput.focus();
       return;
     }
 
-    btn.disabled = true;
-    statusEl.textContent = 'Confirming your email…';
-    statusEl.className = 'proj-status';
+    setDisabled(true);
+    setStatus('Confirming your email…', 'proj-status');
 
     ensureDurableIdentity(email).then(function (ok) {
       if (!ok) {
-        btn.disabled = false;
-        statusEl.textContent = "Couldn't confirm that email. Double-check it and try again.";
-        statusEl.className = 'proj-status err';
+        setDisabled(false);
+        setStatus("Couldn't confirm that email. Double-check it and try again.", 'proj-status err');
         return;
       }
       var wrap = document.getElementById('projEmailWrap');
