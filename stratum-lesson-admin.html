@@ -261,8 +261,6 @@
   .field textarea { resize: vertical; }
   .row2 { display: flex; gap: 16px; }
   .row2 .field { flex: 1; }
-  .row3 { display: flex; gap: 16px; }
-  .row3 .field { flex: 1; }
 
   .area-block {
     border: 1px solid #e2d9c4;
@@ -438,6 +436,127 @@
     line-height: 1.4;
   }
   .chat-input-row button:disabled { opacity: .5; cursor: default; }
+
+  #excavationView {
+    background: #fff;
+    border: 1px solid #e2d9c4;
+    padding: 18px 22px;
+  }
+  .exc-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .exc-toolbar .spacer { flex: 1; }
+  .exc-stat-row {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+  .exc-stat-card {
+    flex: 1;
+    min-width: 130px;
+    background: #fbf8f1;
+    border: 1px solid #e2d9c4;
+    padding: 14px 16px;
+  }
+  .exc-stat-num {
+    font-family: 'Bebas Neue', Arial, sans-serif;
+    font-size: 28px;
+    color: #281e16;
+    letter-spacing: .02em;
+  }
+  .exc-stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #8a7a5e;
+    margin-top: 2px;
+  }
+  .exc-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #8a6630;
+    margin: 24px 0 10px;
+  }
+  .exc-section-title:first-of-type { margin-top: 0; }
+  table.exc-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid #e2d9c4;
+    text-align: left;
+    margin-bottom: 6px;
+  }
+  table.exc-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #8a7a5e;
+    border-bottom: 1px solid #e2d9c4;
+  }
+  table.exc-table td {
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #3B2F24;
+    border-bottom: 1px solid #f0e9d8;
+  }
+  .exc-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .exc-bar-label { width: 60px; font-size: 12px; color: #3B2F24; font-weight: 600; }
+  .exc-bar-track { flex: 1; background: #f0e9d8; height: 14px; position: relative; }
+  .exc-bar-fill { background: #C9A46C; height: 100%; }
+  .exc-bar-count { width: 34px; text-align: right; font-size: 12px; color: #8a7a5e; }
+  .exc-transcript-row td {
+    background: #fbf8f1;
+    padding: 14px 16px;
+  }
+  .exc-transcript-qa { margin-bottom: 12px; }
+  .exc-transcript-qa:last-child { margin-bottom: 0; }
+  .exc-transcript-q {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: #3B2F24;
+    margin-bottom: 4px;
+  }
+  .exc-transcript-a {
+    font-size: 12.5px;
+    color: #5a4535;
+    padding-left: 12px;
+    border-left: 2px solid #C9A46C;
+  }
+  .exc-transcript-closing {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: #8a6630;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e2d9c4;
+  }
+  .exc-view-link {
+    background: none;
+    border: none;
+    color: #8a6630;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+  }
 </style>
 </head>
 <body>
@@ -455,6 +574,7 @@
 
   <div class="top-tabs">
     <button class="top-tab" id="tabDashboardBtn" type="button">Dashboard</button>
+    <button class="top-tab" id="tabExcavationBtn" type="button">Excavation</button>
     <button class="top-tab" id="tabEssentialsBtn" type="button">Self-Guided</button>
     <button class="top-tab" id="tabGuidedBtn" type="button">Coach</button>
     <button class="top-tab" id="tabMasteryBtn" type="button">Master Coach</button>
@@ -501,6 +621,53 @@
       <tbody id="studentsTableBody"></tbody>
     </table>
     <div id="studentsStatus" style="padding:14px 2px;font-size:12px;color:#8a7a5e;font-style:italic;"></div>
+  </div>
+
+  <div id="excavationView" style="display:none;">
+    <div class="exc-toolbar">
+      <span class="sub" style="margin:0;">The 5-Minute Character Excavation &mdash; started / completed / traffic source / surprise rating.</span>
+      <div class="spacer"></div>
+      <button class="btn secondary" id="excRefreshBtn" type="button">Refresh</button>
+    </div>
+
+    <div class="exc-stat-row">
+      <div class="exc-stat-card">
+        <div class="exc-stat-num" id="excStatStarted">&mdash;</div>
+        <div class="exc-stat-label">Started</div>
+      </div>
+      <div class="exc-stat-card">
+        <div class="exc-stat-num" id="excStatCompleted">&mdash;</div>
+        <div class="exc-stat-label">Completed</div>
+      </div>
+      <div class="exc-stat-card">
+        <div class="exc-stat-num" id="excStatRate">&mdash;</div>
+        <div class="exc-stat-label">Completion Rate</div>
+      </div>
+      <div class="exc-stat-card">
+        <div class="exc-stat-num" id="excStatSurprise">&mdash;</div>
+        <div class="exc-stat-label">Avg Surprise (1&ndash;5)</div>
+      </div>
+    </div>
+
+    <div class="exc-section-title">Started &amp; completed by traffic source</div>
+    <table class="exc-table">
+      <thead>
+        <tr><th>Source</th><th>Started</th><th>Completed</th><th>Completion Rate</th></tr>
+      </thead>
+      <tbody id="excSourceTableBody"></tbody>
+    </table>
+
+    <div class="exc-section-title">Surprise score distribution</div>
+    <div id="excScoreDist"></div>
+
+    <div class="exc-section-title">Recent completed sessions &mdash; view transcript to see which questions landed</div>
+    <table class="exc-table">
+      <thead>
+        <tr><th>Completed</th><th>Source</th><th>Character</th><th>Score</th><th>Closing line</th><th></th></tr>
+      </thead>
+      <tbody id="excRecentTableBody"></tbody>
+    </table>
+    <div id="excStatus" style="padding:14px 2px;font-size:12px;color:#8a7a5e;font-style:italic;"></div>
   </div>
 
   <div id="guidedView">
@@ -610,36 +777,6 @@
         <div class="card-body">
         <div id="gAreasList"></div>
         <button class="add-btn" id="gAddAreaBtn" type="button">+ Add area</button>
-      </div>
-      </details>
-
-      <details class="card" data-group="plain">
-        <summary class="card-title">Structured deliverable (optional)</summary>
-        <div class="card-body">
-        <div class="toggle-row">
-          <input type="checkbox" id="gHasDeliverable" />
-          <label for="gHasDeliverable" style="margin:0;">This lesson has a required, validated deliverable</label>
-        </div>
-        <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until it has captured one real, specific behavior and exactly the number of instances below &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done.</span>
-        <div id="gDeliverableFields" class="resource-fields disabled">
-          <div class="row3">
-            <div class="field">
-              <label for="gBehaviorLabel">Behavior label</label>
-              <span class="hint">What to call the core thing captured</span>
-              <input type="text" id="gBehaviorLabel" placeholder="Anchor Behavior" />
-            </div>
-            <div class="field">
-              <label for="gInstanceLabel">Instance label</label>
-              <span class="hint">What to call each supporting example</span>
-              <input type="text" id="gInstanceLabel" placeholder="Instance" />
-            </div>
-            <div class="field">
-              <label for="gInstanceCount">Instance count</label>
-              <span class="hint">Exactly how many are required</span>
-              <input type="text" id="gInstanceCount" placeholder="3" />
-            </div>
-          </div>
-        </div>
       </div>
       </details>
 
@@ -934,36 +1071,6 @@
       </div>
       </details>
 
-      <details class="card" data-group="plain">
-        <summary class="card-title">Structured deliverable (optional)</summary>
-        <div class="card-body">
-        <div class="toggle-row">
-          <input type="checkbox" id="mHasDeliverable" />
-          <label for="mHasDeliverable" style="margin:0;">This lesson has a required, validated deliverable</label>
-        </div>
-        <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until it has captured one real, specific behavior and exactly the number of instances below &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done.</span>
-        <div id="mDeliverableFields" class="resource-fields disabled">
-          <div class="row3">
-            <div class="field">
-              <label for="mBehaviorLabel">Behavior label</label>
-              <span class="hint">What to call the core thing captured</span>
-              <input type="text" id="mBehaviorLabel" placeholder="Anchor Behavior" />
-            </div>
-            <div class="field">
-              <label for="mInstanceLabel">Instance label</label>
-              <span class="hint">What to call each supporting example</span>
-              <input type="text" id="mInstanceLabel" placeholder="Instance" />
-            </div>
-            <div class="field">
-              <label for="mInstanceCount">Instance count</label>
-              <span class="hint">Exactly how many are required</span>
-              <input type="text" id="mInstanceCount" placeholder="3" />
-            </div>
-          </div>
-        </div>
-      </div>
-      </details>
-
       <details class="card" data-group="auto">
         <summary class="card-title">Coaching approach</summary>
         <div class="card-body">
@@ -1080,20 +1187,24 @@ function unlock() {
 }
 
 var tabDashboardBtn = document.getElementById('tabDashboardBtn');
+var tabExcavationBtn = document.getElementById('tabExcavationBtn');
 var tabGuidedBtn = document.getElementById('tabGuidedBtn');
 var tabEssentialsBtn = document.getElementById('tabEssentialsBtn');
 var tabMasteryBtn = document.getElementById('tabMasteryBtn');
 var dashboardView = document.getElementById('dashboardView');
+var excavationView = document.getElementById('excavationView');
 var guidedView = document.getElementById('guidedView');
 var essentialsView = document.getElementById('essentialsView');
 var masteryView = document.getElementById('masteryView');
 
 function showTopTab(which) {
   tabDashboardBtn.className = 'top-tab' + (which === 'dashboard' ? ' active' : '');
+  tabExcavationBtn.className = 'top-tab' + (which === 'excavation' ? ' active' : '');
   tabGuidedBtn.className = 'top-tab' + (which === 'guided' ? ' active' : '');
   tabEssentialsBtn.className = 'top-tab' + (which === 'essentials' ? ' active' : '');
   tabMasteryBtn.className = 'top-tab' + (which === 'mastery' ? ' active' : '');
   dashboardView.style.display = which === 'dashboard' ? '' : 'none';
+  excavationView.style.display = which === 'excavation' ? '' : 'none';
   guidedView.style.display = which === 'guided' ? '' : 'none';
   essentialsView.style.display = which === 'essentials' ? '' : 'none';
   masteryView.style.display = which === 'mastery' ? '' : 'none';
@@ -1102,6 +1213,10 @@ function showTopTab(which) {
 tabDashboardBtn.addEventListener('click', function () {
   showTopTab('dashboard');
   loadStudents();
+});
+tabExcavationBtn.addEventListener('click', function () {
+  showTopTab('excavation');
+  loadExcavations();
 });
 tabGuidedBtn.addEventListener('click', function () { showTopTab('guided'); });
 tabEssentialsBtn.addEventListener('click', function () { showTopTab('essentials'); });
@@ -1335,6 +1450,181 @@ function loadStudents() {
     });
 }
 
+// ===== Excavation dashboard =====
+var excavationsLoaded = false;
+var excStatus = document.getElementById('excStatus');
+var excSourceTableBody = document.getElementById('excSourceTableBody');
+var excScoreDist = document.getElementById('excScoreDist');
+var excRecentTableBody = document.getElementById('excRecentTableBody');
+var excOpenTranscriptRow = null;
+
+function formatExcDate(iso) {
+  if (!iso) return '\u2014';
+  var d = new Date(iso.indexOf('Z') === -1 ? iso.replace(' ', 'T') + 'Z' : iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+function loadExcavations() {
+  if (!adminKey) { excStatus.textContent = 'Unlock the panel first.'; return; }
+  excStatus.textContent = 'Loading...';
+  fetch(PROXY_URL + '/admin/excavations', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      excavationsLoaded = true;
+      renderExcavationStats(d);
+      excStatus.textContent = '';
+    })
+    .catch(function () {
+      excStatus.textContent = 'Could not load excavation data.';
+    });
+}
+
+document.getElementById('excRefreshBtn').addEventListener('click', function () {
+  excavationsLoaded = false;
+  loadExcavations();
+});
+
+function renderExcavationStats(d) {
+  var started = d.started || 0;
+  var completed = d.completed || 0;
+  var rate = started ? Math.round((completed / started) * 1000) / 10 : 0;
+  document.getElementById('excStatStarted').textContent = started;
+  document.getElementById('excStatCompleted').textContent = completed;
+  document.getElementById('excStatRate').textContent = started ? rate + '%' : '\u2014';
+  document.getElementById('excStatSurprise').textContent = d.avgSurprise != null ? (Math.round(d.avgSurprise * 10) / 10) : '\u2014';
+
+  excSourceTableBody.innerHTML = '';
+  (d.bySource || []).forEach(function (row) {
+    var tr = document.createElement('tr');
+    var srcRate = row.started ? Math.round((row.completed / row.started) * 1000) / 10 + '%' : '\u2014';
+    [row.source, row.started, row.completed, srcRate].forEach(function (val) {
+      var td = document.createElement('td');
+      td.textContent = val;
+      tr.appendChild(td);
+    });
+    excSourceTableBody.appendChild(tr);
+  });
+  if (!(d.bySource || []).length) {
+    var emptyTr = document.createElement('tr');
+    var emptyTd = document.createElement('td');
+    emptyTd.colSpan = 4;
+    emptyTd.style.fontStyle = 'italic';
+    emptyTd.style.color = '#8a7a5e';
+    emptyTd.textContent = 'No sessions started yet.';
+    emptyTr.appendChild(emptyTd);
+    excSourceTableBody.appendChild(emptyTr);
+  }
+
+  excScoreDist.innerHTML = '';
+  var dist = d.scoreDistribution || [];
+  var maxCount = dist.reduce(function (m, r) { return Math.max(m, r.count); }, 0) || 1;
+  if (!dist.length) {
+    excScoreDist.innerHTML = '<div style="font-size:12px;color:#8a7a5e;font-style:italic;">No ratings submitted yet.</div>';
+  } else {
+    [1, 2, 3, 4, 5].forEach(function (score) {
+      var found = dist.filter(function (r) { return r.score === score; })[0];
+      var count = found ? found.count : 0;
+      var pct = Math.round((count / maxCount) * 100);
+      var row = document.createElement('div');
+      row.className = 'exc-bar-row';
+      row.innerHTML =
+        '<div class="exc-bar-label">' + score + (score === 1 ? ' pt' : ' pts') + '</div>' +
+        '<div class="exc-bar-track"><div class="exc-bar-fill" style="width:' + pct + '%;"></div></div>' +
+        '<div class="exc-bar-count">' + count + '</div>';
+      excScoreDist.appendChild(row);
+    });
+  }
+
+  excRecentTableBody.innerHTML = '';
+  var recent = d.recentSessions || [];
+  if (!recent.length) {
+    var rEmptyTr = document.createElement('tr');
+    var rEmptyTd = document.createElement('td');
+    rEmptyTd.colSpan = 6;
+    rEmptyTd.style.fontStyle = 'italic';
+    rEmptyTd.style.color = '#8a7a5e';
+    rEmptyTd.textContent = 'No completed sessions yet.';
+    rEmptyTr.appendChild(rEmptyTd);
+    excRecentTableBody.appendChild(rEmptyTr);
+    return;
+  }
+  recent.forEach(function (s) {
+    var tr = document.createElement('tr');
+    var cells = [
+      formatExcDate(s.completed_at),
+      s.utm_source || 'direct',
+      s.character_input || '\u2014',
+      s.surprise_score != null ? String(s.surprise_score) : '\u2014',
+      s.closing_line ? (s.closing_line.length > 70 ? s.closing_line.slice(0, 70) + '\u2026' : s.closing_line) : '\u2014'
+    ];
+    cells.forEach(function (val) {
+      var td = document.createElement('td');
+      td.textContent = val;
+      tr.appendChild(td);
+    });
+    var actionTd = document.createElement('td');
+    var viewBtn = document.createElement('button');
+    viewBtn.type = 'button';
+    viewBtn.className = 'exc-view-link';
+    viewBtn.textContent = 'View transcript';
+    viewBtn.addEventListener('click', function () { toggleExcavationTranscript(s.session_id, tr, viewBtn); });
+    actionTd.appendChild(viewBtn);
+    tr.appendChild(actionTd);
+    excRecentTableBody.appendChild(tr);
+  });
+}
+
+function toggleExcavationTranscript(sessionId, afterRow, viewBtn) {
+  if (excOpenTranscriptRow && excOpenTranscriptRow.parentNode) {
+    var wasSameSession = excOpenTranscriptRow.dataset.forSession === sessionId;
+    excOpenTranscriptRow.remove();
+    excOpenTranscriptRow = null;
+    if (wasSameSession) { viewBtn.textContent = 'View transcript'; return; }
+  }
+
+  viewBtn.textContent = 'Loading...';
+  fetch(PROXY_URL + '/admin/excavation?sessionId=' + encodeURIComponent(sessionId), {
+    headers: { 'X-Stratum-Admin-Key': adminKey }
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      viewBtn.textContent = 'Hide transcript';
+      var tr = document.createElement('tr');
+      tr.className = 'exc-transcript-row';
+      tr.dataset.forSession = sessionId;
+      var td = document.createElement('td');
+      td.colSpan = 6;
+
+      var html = '';
+      (d.exchanges || []).forEach(function (ex) {
+        html += '<div class="exc-transcript-qa">' +
+          '<div class="exc-transcript-q">' + escapeExcHtml(ex.question_text || '') + '</div>' +
+          '<div class="exc-transcript-a">' + escapeExcHtml(ex.answer_text || '') + '</div>' +
+          '</div>';
+      });
+      if (d.session && d.session.closing_line) {
+        html += '<div class="exc-transcript-closing">' + escapeExcHtml(d.session.closing_line) + '</div>';
+      }
+      if (!html) html = '<div style="font-size:12px;color:#8a7a5e;font-style:italic;">No exchange data recorded for this session.</div>';
+
+      td.innerHTML = html;
+      tr.appendChild(td);
+      afterRow.parentNode.insertBefore(tr, afterRow.nextSibling);
+      excOpenTranscriptRow = tr;
+    })
+    .catch(function () {
+      viewBtn.textContent = 'View transcript';
+      alert('Could not load that transcript.');
+    });
+}
+
+function escapeExcHtml(s) {
+  var d = document.createElement('div');
+  d.innerText = s;
+  return d.innerHTML;
+}
+
 var tabLessonEditorBtn = document.getElementById('tabLessonEditorBtn');
 var tabCourseAssistantBtn = document.getElementById('tabCourseAssistantBtn');
 var lessonEditorView = document.getElementById('lessonEditorView');
@@ -1465,8 +1755,6 @@ var gPdfsList = document.getElementById('gPdfsList');
 var gHasResourceCb = document.getElementById('gHasResource');
 var gCoachingIntroFields = document.getElementById('gCoachingIntroFields');
 var gHasCoachingIntroCb = document.getElementById('gHasCoachingIntro');
-var gDeliverableFields = document.getElementById('gDeliverableFields');
-var gHasDeliverableCb = document.getElementById('gHasDeliverable');
 var gTranslationsList = document.getElementById('gTranslationsList');
 var gAddLangSelect = document.getElementById('gAddLangSelect');
 var gSaveStatus = document.getElementById('gSaveStatus');
@@ -1627,9 +1915,6 @@ gHasResourceCb.addEventListener('change', function () {
 gHasCoachingIntroCb.addEventListener('change', function () {
   gCoachingIntroFields.className = 'resource-fields' + (gHasCoachingIntroCb.checked ? '' : ' disabled');
 });
-gHasDeliverableCb.addEventListener('change', function () {
-  gDeliverableFields.className = 'resource-fields' + (gHasDeliverableCb.checked ? '' : ' disabled');
-});
 
 // Normalises a resource config's PDFs into a flat array of { title, url }
 // pairs, regardless of whether it was saved under the new pdfs[] schema or
@@ -1715,11 +2000,6 @@ function clearGuidedForm() {
   document.getElementById('gCoachingIntroTitle').value = '';
   document.getElementById('gCoachingIntroText').value = '';
   gAreasList.innerHTML = '';
-  gHasDeliverableCb.checked = false;
-  gDeliverableFields.className = 'resource-fields disabled';
-  document.getElementById('gBehaviorLabel').value = '';
-  document.getElementById('gInstanceLabel').value = '';
-  document.getElementById('gInstanceCount').value = '';
   document.getElementById('gCoachingApproach').value = '';
   document.getElementById('gCalibration').value = '';
   document.getElementById('gGreetingFresh').value = '';
@@ -1770,18 +2050,6 @@ function fillGuidedForm(config) {
   document.getElementById('gCoachingApproach').value = rf.coachingApproach || '';
   document.getElementById('gCalibration').value = (rf.calibrationExamples || []).join('\n');
 
-  var dv = rf.deliverable;
-  if (dv && dv.required) {
-    gHasDeliverableCb.checked = true;
-    gDeliverableFields.className = 'resource-fields';
-    document.getElementById('gBehaviorLabel').value = dv.behaviorLabel || '';
-    document.getElementById('gInstanceLabel').value = dv.instanceLabel || '';
-    document.getElementById('gInstanceCount').value = dv.instanceCount != null ? String(dv.instanceCount) : '';
-  } else {
-    gHasDeliverableCb.checked = false;
-    gDeliverableFields.className = 'resource-fields disabled';
-  }
-
   var g = config.greeting || {};
   document.getElementById('gGreetingFresh').value = g.fresh || '';
 
@@ -1827,15 +2095,6 @@ function collectGuidedConfig() {
     if (ciTitle || ciText) coachingIntroObj = { title: ciTitle, text: ciText };
   }
 
-  var deliverableObj = null;
-  if (gHasDeliverableCb.checked) {
-    var gbLabel = document.getElementById('gBehaviorLabel').value.trim() || 'Anchor Behavior';
-    var giLabel = document.getElementById('gInstanceLabel').value.trim() || 'Instance';
-    var giCountRaw = parseInt(document.getElementById('gInstanceCount').value.trim(), 10);
-    var giCount = (giCountRaw && giCountRaw > 0) ? giCountRaw : 3;
-    deliverableObj = { required: true, behaviorLabel: gbLabel, instanceLabel: giLabel, instanceCount: giCount };
-  }
-
   return {
     lessonId: document.getElementById('gLessonId').value.trim(),
     tier: 'guided',
@@ -1848,7 +2107,6 @@ function collectGuidedConfig() {
     essentials: { exerciseFormId: '', reflectionFormId: '' },
     reflectionFramework: {
       areas: areas,
-      deliverable: deliverableObj,
       coachingApproach: document.getElementById('gCoachingApproach').value.trim(),
       calibrationExamples: calibrationExamples
     },
@@ -1949,14 +2207,6 @@ function configToReadableText(config, savedAt) {
       lines.push('   ' + (a.instructions || '(no instructions)'));
       lines.push('');
     });
-  }
-
-  if (config.reflectionFramework && config.reflectionFramework.deliverable && config.reflectionFramework.deliverable.required) {
-    var dv = config.reflectionFramework.deliverable;
-    section('STRUCTURED DELIVERABLE (validated by the engine before the session can close)');
-    lines.push('Behavior label: ' + (dv.behaviorLabel || 'Anchor Behavior'));
-    lines.push('Instance label: ' + (dv.instanceLabel || 'Instance'));
-    lines.push('Instances required: ' + (dv.instanceCount || 3));
   }
 
   if (config.reflectionFramework && config.reflectionFramework.coachingApproach) {
@@ -2115,8 +2365,6 @@ var mPdfsList = document.getElementById('mPdfsList');
 var mHasResourceCb = document.getElementById('mHasResource');
 var mCoachingIntroFields = document.getElementById('mCoachingIntroFields');
 var mHasCoachingIntroCb = document.getElementById('mHasCoachingIntro');
-var mDeliverableFields = document.getElementById('mDeliverableFields');
-var mHasDeliverableCb = document.getElementById('mHasDeliverable');
 var mTranslationsList = document.getElementById('mTranslationsList');
 var mAddLangSelect = document.getElementById('mAddLangSelect');
 var mSaveStatus = document.getElementById('mSaveStatus');
@@ -2277,9 +2525,6 @@ mHasResourceCb.addEventListener('change', function () {
 mHasCoachingIntroCb.addEventListener('change', function () {
   mCoachingIntroFields.className = 'resource-fields' + (mHasCoachingIntroCb.checked ? '' : ' disabled');
 });
-mHasDeliverableCb.addEventListener('change', function () {
-  mDeliverableFields.className = 'resource-fields' + (mHasDeliverableCb.checked ? '' : ' disabled');
-});
 
 // Normalises a resource config's PDFs into a flat array of { title, url }
 // pairs, regardless of whether it was saved under the new pdfs[] schema or
@@ -2365,11 +2610,6 @@ function clearMasteryForm() {
   document.getElementById('mCoachingIntroTitle').value = '';
   document.getElementById('mCoachingIntroText').value = '';
   mAreasList.innerHTML = '';
-  mHasDeliverableCb.checked = false;
-  mDeliverableFields.className = 'resource-fields disabled';
-  document.getElementById('mBehaviorLabel').value = '';
-  document.getElementById('mInstanceLabel').value = '';
-  document.getElementById('mInstanceCount').value = '';
   document.getElementById('mCoachingApproach').value = '';
   document.getElementById('mCalibration').value = '';
   document.getElementById('mGreetingFresh').value = '';
@@ -2414,18 +2654,6 @@ function fillMasteryForm(config) {
   (rf.areas || []).forEach(function (a) { mAddAreaBlock(a.title, a.instructions); });
   document.getElementById('mCoachingApproach').value = rf.coachingApproach || '';
   document.getElementById('mCalibration').value = (rf.calibrationExamples || []).join('\n');
-
-  var dv = rf.deliverable;
-  if (dv && dv.required) {
-    mHasDeliverableCb.checked = true;
-    mDeliverableFields.className = 'resource-fields';
-    document.getElementById('mBehaviorLabel').value = dv.behaviorLabel || '';
-    document.getElementById('mInstanceLabel').value = dv.instanceLabel || '';
-    document.getElementById('mInstanceCount').value = dv.instanceCount != null ? String(dv.instanceCount) : '';
-  } else {
-    mHasDeliverableCb.checked = false;
-    mDeliverableFields.className = 'resource-fields disabled';
-  }
 
   var g = config.greeting || {};
   document.getElementById('mGreetingFresh').value = g.fresh || '';
@@ -2472,15 +2700,6 @@ function collectMasteryConfig() {
     if (ciTitle || ciText) coachingIntroObj = { title: ciTitle, text: ciText };
   }
 
-  var deliverableObj = null;
-  if (mHasDeliverableCb.checked) {
-    var mbLabel = document.getElementById('mBehaviorLabel').value.trim() || 'Anchor Behavior';
-    var miLabel = document.getElementById('mInstanceLabel').value.trim() || 'Instance';
-    var miCountRaw = parseInt(document.getElementById('mInstanceCount').value.trim(), 10);
-    var miCount = (miCountRaw && miCountRaw > 0) ? miCountRaw : 3;
-    deliverableObj = { required: true, behaviorLabel: mbLabel, instanceLabel: miLabel, instanceCount: miCount };
-  }
-
   return {
     lessonId: document.getElementById('mLessonId').value.trim(),
     tier: 'guided',
@@ -2493,7 +2712,6 @@ function collectMasteryConfig() {
     essentials: { exerciseFormId: '', reflectionFormId: '' },
     reflectionFramework: {
       areas: areas,
-      deliverable: deliverableObj,
       coachingApproach: document.getElementById('mCoachingApproach').value.trim(),
       calibrationExamples: calibrationExamples
     },
