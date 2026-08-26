@@ -1141,6 +1141,17 @@
       return;
     }
 
+    // First name is required at the same moment email is first confirmed -
+    // once isEmailConfirmed() is true (checked above), this branch never
+    // runs again, so this only gates the initial save, not every future one.
+    var nameInput = document.getElementById('projStudentName');
+    var studentNameValue = nameInput ? nameInput.value.trim() : '';
+    if (!studentNameValue) {
+      setStatus('Enter your first name too — it lets your coach greet you by name instead of asking every time.', 'proj-status err');
+      if (nameInput) nameInput.focus();
+      return;
+    }
+
     setDisabled(true);
     setStatus('Confirming your email…', 'proj-status');
 
