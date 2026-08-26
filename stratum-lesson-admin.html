@@ -261,6 +261,8 @@
   .field textarea { resize: vertical; }
   .row2 { display: flex; gap: 16px; }
   .row2 .field { flex: 1; }
+  .row3 { display: flex; gap: 16px; }
+  .row3 .field { flex: 1; }
 
   .area-block {
     border: 1px solid #e2d9c4;
@@ -557,6 +559,92 @@
     padding: 0;
     text-decoration: underline;
   }
+
+  #deliverablesView {
+    background: #fff;
+    border: 1px solid #e2d9c4;
+    padding: 18px 22px;
+  }
+  .dlv-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .dlv-toolbar select { padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; min-width: 200px; }
+  .dlv-toolbar .spacer { flex: 1; }
+  table.dlv-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid #e2d9c4;
+    text-align: left;
+    margin-bottom: 6px;
+  }
+  table.dlv-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #8a7a5e;
+    border-bottom: 1px solid #e2d9c4;
+  }
+  table.dlv-table td {
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #3B2F24;
+    border-bottom: 1px solid #f0e9d8;
+    vertical-align: top;
+  }
+  .dlv-view-link {
+    background: none;
+    border: none;
+    color: #8a6630;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+  }
+  .dlv-detail-row td {
+    background: #fbf8f1;
+    padding: 14px 16px;
+  }
+  .dlv-behavior-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #8a6630;
+    margin-bottom: 4px;
+  }
+  .dlv-behavior-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: #281e16;
+    margin-bottom: 12px;
+  }
+  .dlv-instance {
+    font-size: 12.5px;
+    color: #5a4535;
+    padding: 6px 0 6px 12px;
+    border-left: 2px solid #C9A46C;
+    margin-bottom: 6px;
+  }
+  .dlv-instance strong { color: #3B2F24; }
+  .dlv-count-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .dlv-count-pill.ok { background: #e6f2e6; color: #2e7d32; }
+  .dlv-count-pill.short { background: #fdecea; color: #b3261e; }
 </style>
 </head>
 <body>
@@ -574,6 +662,7 @@
 
   <div class="top-tabs">
     <button class="top-tab" id="tabDashboardBtn" type="button">Dashboard</button>
+    <button class="top-tab" id="tabDeliverablesBtn" type="button">Deliverables</button>
     <button class="top-tab" id="tabExcavationBtn" type="button">Excavation</button>
     <button class="top-tab" id="tabEssentialsBtn" type="button">Self-Guided</button>
     <button class="top-tab" id="tabGuidedBtn" type="button">Coach</button>
@@ -621,6 +710,24 @@
       <tbody id="studentsTableBody"></tbody>
     </table>
     <div id="studentsStatus" style="padding:14px 2px;font-size:12px;color:#8a7a5e;font-style:italic;"></div>
+  </div>
+
+  <div id="deliverablesView" style="display:none;">
+    <div class="dlv-toolbar">
+      <span class="sub" style="margin:0;">Confirms every completed session actually captured a real, validated deliverable &mdash; not just the summary sentence.</span>
+    </div>
+    <div class="dlv-toolbar">
+      <select id="dlvLessonSelect"></select>
+      <button class="btn secondary" id="dlvLoadBtn" type="button">Load</button>
+      <div class="spacer"></div>
+    </div>
+    <table class="dlv-table">
+      <thead>
+        <tr><th>Student</th><th>Behavior</th><th>Instances</th><th>Completed</th><th></th></tr>
+      </thead>
+      <tbody id="dlvTableBody"></tbody>
+    </table>
+    <div id="dlvStatus" style="padding:14px 2px;font-size:12px;color:#8a7a5e;font-style:italic;"></div>
   </div>
 
   <div id="excavationView" style="display:none;">
@@ -777,6 +884,36 @@
         <div class="card-body">
         <div id="gAreasList"></div>
         <button class="add-btn" id="gAddAreaBtn" type="button">+ Add area</button>
+      </div>
+      </details>
+
+      <details class="card" data-group="plain">
+        <summary class="card-title">Structured deliverable (optional)</summary>
+        <div class="card-body">
+        <div class="toggle-row">
+          <input type="checkbox" id="gHasDeliverable" />
+          <label for="gHasDeliverable" style="margin:0;">This lesson has a required, validated deliverable</label>
+        </div>
+        <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until it has captured one real, specific behavior and exactly the number of instances below &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done. Confirm captured deliverables under the Deliverables tab.</span>
+        <div id="gDeliverableFields" class="resource-fields disabled">
+          <div class="row3">
+            <div class="field">
+              <label for="gBehaviorLabel">Behavior label</label>
+              <span class="hint">What to call the core thing captured</span>
+              <input type="text" id="gBehaviorLabel" placeholder="Anchor Behavior" />
+            </div>
+            <div class="field">
+              <label for="gInstanceLabel">Instance label</label>
+              <span class="hint">What to call each supporting example</span>
+              <input type="text" id="gInstanceLabel" placeholder="Instance" />
+            </div>
+            <div class="field">
+              <label for="gInstanceCount">Instance count</label>
+              <span class="hint">Exactly how many are required</span>
+              <input type="text" id="gInstanceCount" placeholder="3" />
+            </div>
+          </div>
+        </div>
       </div>
       </details>
 
@@ -1071,6 +1208,36 @@
       </div>
       </details>
 
+      <details class="card" data-group="plain">
+        <summary class="card-title">Structured deliverable (optional)</summary>
+        <div class="card-body">
+        <div class="toggle-row">
+          <input type="checkbox" id="mHasDeliverable" />
+          <label for="mHasDeliverable" style="margin:0;">This lesson has a required, validated deliverable</label>
+        </div>
+        <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until it has captured one real, specific behavior and exactly the number of instances below &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done. Confirm captured deliverables under the Deliverables tab.</span>
+        <div id="mDeliverableFields" class="resource-fields disabled">
+          <div class="row3">
+            <div class="field">
+              <label for="mBehaviorLabel">Behavior label</label>
+              <span class="hint">What to call the core thing captured</span>
+              <input type="text" id="mBehaviorLabel" placeholder="Anchor Behavior" />
+            </div>
+            <div class="field">
+              <label for="mInstanceLabel">Instance label</label>
+              <span class="hint">What to call each supporting example</span>
+              <input type="text" id="mInstanceLabel" placeholder="Instance" />
+            </div>
+            <div class="field">
+              <label for="mInstanceCount">Instance count</label>
+              <span class="hint">Exactly how many are required</span>
+              <input type="text" id="mInstanceCount" placeholder="3" />
+            </div>
+          </div>
+        </div>
+      </div>
+      </details>
+
       <details class="card" data-group="auto">
         <summary class="card-title">Coaching approach</summary>
         <div class="card-body">
@@ -1172,6 +1339,7 @@ function unlock() {
         panel.style.display = 'block';
         populateSelect(gLessonSelect, (result.data.lessons || []).filter(function (l) { return !isMasteryLessonId(l.lesson_id); }));
         populateSelect(mLessonSelect, (result.data.lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); }));
+        populateSelect(dlvLessonSelect, result.data.lessons || []);
         refreshEssentialsList();
         showTopTab('dashboard');
         loadStudents();
@@ -1187,11 +1355,13 @@ function unlock() {
 }
 
 var tabDashboardBtn = document.getElementById('tabDashboardBtn');
+var tabDeliverablesBtn = document.getElementById('tabDeliverablesBtn');
 var tabExcavationBtn = document.getElementById('tabExcavationBtn');
 var tabGuidedBtn = document.getElementById('tabGuidedBtn');
 var tabEssentialsBtn = document.getElementById('tabEssentialsBtn');
 var tabMasteryBtn = document.getElementById('tabMasteryBtn');
 var dashboardView = document.getElementById('dashboardView');
+var deliverablesView = document.getElementById('deliverablesView');
 var excavationView = document.getElementById('excavationView');
 var guidedView = document.getElementById('guidedView');
 var essentialsView = document.getElementById('essentialsView');
@@ -1199,11 +1369,13 @@ var masteryView = document.getElementById('masteryView');
 
 function showTopTab(which) {
   tabDashboardBtn.className = 'top-tab' + (which === 'dashboard' ? ' active' : '');
+  tabDeliverablesBtn.className = 'top-tab' + (which === 'deliverables' ? ' active' : '');
   tabExcavationBtn.className = 'top-tab' + (which === 'excavation' ? ' active' : '');
   tabGuidedBtn.className = 'top-tab' + (which === 'guided' ? ' active' : '');
   tabEssentialsBtn.className = 'top-tab' + (which === 'essentials' ? ' active' : '');
   tabMasteryBtn.className = 'top-tab' + (which === 'mastery' ? ' active' : '');
   dashboardView.style.display = which === 'dashboard' ? '' : 'none';
+  deliverablesView.style.display = which === 'deliverables' ? '' : 'none';
   excavationView.style.display = which === 'excavation' ? '' : 'none';
   guidedView.style.display = which === 'guided' ? '' : 'none';
   essentialsView.style.display = which === 'essentials' ? '' : 'none';
@@ -1213,6 +1385,9 @@ function showTopTab(which) {
 tabDashboardBtn.addEventListener('click', function () {
   showTopTab('dashboard');
   loadStudents();
+});
+tabDeliverablesBtn.addEventListener('click', function () {
+  showTopTab('deliverables');
 });
 tabExcavationBtn.addEventListener('click', function () {
   showTopTab('excavation');
@@ -1448,6 +1623,125 @@ function loadStudents() {
     .catch(function () {
       studentsStatus.textContent = 'Could not load students.';
     });
+}
+
+// ===== Deliverable audit =====
+var dlvLessonSelect = document.getElementById('dlvLessonSelect');
+var dlvTableBody = document.getElementById('dlvTableBody');
+var dlvStatus = document.getElementById('dlvStatus');
+var dlvOpenDetailRow = null;
+
+document.getElementById('dlvLoadBtn').addEventListener('click', function () {
+  var id = dlvLessonSelect.value;
+  if (!id) return;
+  loadDeliverables(id);
+});
+
+function formatDlvDate(iso) {
+  if (!iso) return '\u2014';
+  var d = new Date(iso.indexOf('Z') === -1 ? iso.replace(' ', 'T') + 'Z' : iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+function loadDeliverables(lessonId) {
+  if (!adminKey) { dlvStatus.textContent = 'Unlock the panel first.'; return; }
+  dlvStatus.textContent = 'Loading...';
+  dlvTableBody.innerHTML = '';
+  dlvOpenDetailRow = null;
+
+  fetch(PROXY_URL + '/admin/deliverables?lessonId=' + encodeURIComponent(lessonId), {
+    headers: { 'X-Stratum-Admin-Key': adminKey }
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var deliverables = d.deliverables || [];
+      if (!deliverables.length) {
+        dlvStatus.textContent = 'No captured deliverables for ' + lessonId + ' yet. This may mean the lesson has no structured deliverable configured, or no student has completed it.';
+        return;
+      }
+      dlvStatus.textContent = deliverables.length + ' captured deliverable' + (deliverables.length === 1 ? '' : 's') + ' for ' + lessonId + '.';
+      deliverables.forEach(function (dv) { renderDeliverableRow(dv); });
+    })
+    .catch(function () {
+      dlvStatus.textContent = 'Could not load deliverables.';
+    });
+}
+
+function renderDeliverableRow(dv) {
+  var tr = document.createElement('tr');
+
+  var studentTd = document.createElement('td');
+  studentTd.textContent = dv.email || dv.studentId;
+  tr.appendChild(studentTd);
+
+  var behaviorTd = document.createElement('td');
+  behaviorTd.textContent = dv.behavior || '(none captured)';
+  tr.appendChild(behaviorTd);
+
+  var countTd = document.createElement('td');
+  var count = (dv.instances || []).length;
+  var pill = document.createElement('span');
+  pill.className = 'dlv-count-pill ' + (count > 0 ? 'ok' : 'short');
+  pill.textContent = count;
+  countTd.appendChild(pill);
+  tr.appendChild(countTd);
+
+  var completedTd = document.createElement('td');
+  completedTd.textContent = formatDlvDate(dv.completedAt);
+  tr.appendChild(completedTd);
+
+  var actionTd = document.createElement('td');
+  var viewBtn = document.createElement('button');
+  viewBtn.type = 'button';
+  viewBtn.className = 'dlv-view-link';
+  viewBtn.textContent = 'View';
+  viewBtn.addEventListener('click', function () { toggleDeliverableDetail(dv, tr, viewBtn); });
+  actionTd.appendChild(viewBtn);
+  tr.appendChild(actionTd);
+
+  dlvTableBody.appendChild(tr);
+}
+
+function toggleDeliverableDetail(dv, afterRow, viewBtn) {
+  if (dlvOpenDetailRow && dlvOpenDetailRow.parentNode) {
+    var wasSameRow = dlvOpenDetailRow.dataset.forRow === String(dv.studentId);
+    dlvOpenDetailRow.remove();
+    dlvOpenDetailRow = null;
+    if (wasSameRow) { viewBtn.textContent = 'View'; return; }
+  }
+
+  viewBtn.textContent = 'Hide';
+  var tr = document.createElement('tr');
+  tr.className = 'dlv-detail-row';
+  tr.dataset.forRow = String(dv.studentId);
+  var td = document.createElement('td');
+  td.colSpan = 5;
+
+  var html = '<div class="dlv-behavior-label">BEHAVIOR</div>';
+  html += '<div class="dlv-behavior-text">' + escapeDlvHtml(dv.behavior || '(none captured)') + '</div>';
+  (dv.instances || []).forEach(function (inst, i) {
+    html += '<div class="dlv-instance"><strong>Instance ' + (i + 1) + ':</strong> ' +
+      escapeDlvHtml(inst.context || '') + ' &mdash; with ' + escapeDlvHtml(inst.people || '') + ' &mdash; ' + escapeDlvHtml(inst.action || '') +
+      '</div>';
+  });
+  if (!(dv.instances || []).length) {
+    html += '<div style="font-size:12px;color:#8a7a5e;font-style:italic;">No instances captured.</div>';
+  }
+  if (dv.summary) {
+    html += '<div style="margin-top:10px;font-size:12px;color:#8a7a5e;font-style:italic;">Summary: ' + escapeDlvHtml(dv.summary) + '</div>';
+  }
+
+  td.innerHTML = html;
+  tr.appendChild(td);
+  afterRow.parentNode.insertBefore(tr, afterRow.nextSibling);
+  dlvOpenDetailRow = tr;
+}
+
+function escapeDlvHtml(s) {
+  var d = document.createElement('div');
+  d.innerText = s;
+  return d.innerHTML;
 }
 
 // ===== Excavation dashboard =====
@@ -1755,6 +2049,8 @@ var gPdfsList = document.getElementById('gPdfsList');
 var gHasResourceCb = document.getElementById('gHasResource');
 var gCoachingIntroFields = document.getElementById('gCoachingIntroFields');
 var gHasCoachingIntroCb = document.getElementById('gHasCoachingIntro');
+var gDeliverableFields = document.getElementById('gDeliverableFields');
+var gHasDeliverableCb = document.getElementById('gHasDeliverable');
 var gTranslationsList = document.getElementById('gTranslationsList');
 var gAddLangSelect = document.getElementById('gAddLangSelect');
 var gSaveStatus = document.getElementById('gSaveStatus');
@@ -1915,6 +2211,9 @@ gHasResourceCb.addEventListener('change', function () {
 gHasCoachingIntroCb.addEventListener('change', function () {
   gCoachingIntroFields.className = 'resource-fields' + (gHasCoachingIntroCb.checked ? '' : ' disabled');
 });
+gHasDeliverableCb.addEventListener('change', function () {
+  gDeliverableFields.className = 'resource-fields' + (gHasDeliverableCb.checked ? '' : ' disabled');
+});
 
 // Normalises a resource config's PDFs into a flat array of { title, url }
 // pairs, regardless of whether it was saved under the new pdfs[] schema or
@@ -2000,6 +2299,11 @@ function clearGuidedForm() {
   document.getElementById('gCoachingIntroTitle').value = '';
   document.getElementById('gCoachingIntroText').value = '';
   gAreasList.innerHTML = '';
+  gHasDeliverableCb.checked = false;
+  gDeliverableFields.className = 'resource-fields disabled';
+  document.getElementById('gBehaviorLabel').value = '';
+  document.getElementById('gInstanceLabel').value = '';
+  document.getElementById('gInstanceCount').value = '';
   document.getElementById('gCoachingApproach').value = '';
   document.getElementById('gCalibration').value = '';
   document.getElementById('gGreetingFresh').value = '';
@@ -2050,6 +2354,18 @@ function fillGuidedForm(config) {
   document.getElementById('gCoachingApproach').value = rf.coachingApproach || '';
   document.getElementById('gCalibration').value = (rf.calibrationExamples || []).join('\n');
 
+  var dv = rf.deliverable;
+  if (dv && dv.required) {
+    gHasDeliverableCb.checked = true;
+    gDeliverableFields.className = 'resource-fields';
+    document.getElementById('gBehaviorLabel').value = dv.behaviorLabel || '';
+    document.getElementById('gInstanceLabel').value = dv.instanceLabel || '';
+    document.getElementById('gInstanceCount').value = dv.instanceCount != null ? String(dv.instanceCount) : '';
+  } else {
+    gHasDeliverableCb.checked = false;
+    gDeliverableFields.className = 'resource-fields disabled';
+  }
+
   var g = config.greeting || {};
   document.getElementById('gGreetingFresh').value = g.fresh || '';
 
@@ -2095,6 +2411,15 @@ function collectGuidedConfig() {
     if (ciTitle || ciText) coachingIntroObj = { title: ciTitle, text: ciText };
   }
 
+  var deliverableObj = null;
+  if (gHasDeliverableCb.checked) {
+    var gbLabel = document.getElementById('gBehaviorLabel').value.trim() || 'Anchor Behavior';
+    var giLabel = document.getElementById('gInstanceLabel').value.trim() || 'Instance';
+    var giCountRaw = parseInt(document.getElementById('gInstanceCount').value.trim(), 10);
+    var giCount = (giCountRaw && giCountRaw > 0) ? giCountRaw : 3;
+    deliverableObj = { required: true, behaviorLabel: gbLabel, instanceLabel: giLabel, instanceCount: giCount };
+  }
+
   return {
     lessonId: document.getElementById('gLessonId').value.trim(),
     tier: 'guided',
@@ -2107,6 +2432,7 @@ function collectGuidedConfig() {
     essentials: { exerciseFormId: '', reflectionFormId: '' },
     reflectionFramework: {
       areas: areas,
+      deliverable: deliverableObj,
       coachingApproach: document.getElementById('gCoachingApproach').value.trim(),
       calibrationExamples: calibrationExamples
     },
@@ -2207,6 +2533,14 @@ function configToReadableText(config, savedAt) {
       lines.push('   ' + (a.instructions || '(no instructions)'));
       lines.push('');
     });
+  }
+
+  if (config.reflectionFramework && config.reflectionFramework.deliverable && config.reflectionFramework.deliverable.required) {
+    var dv = config.reflectionFramework.deliverable;
+    section('STRUCTURED DELIVERABLE (validated by the engine before the session can close)');
+    lines.push('Behavior label: ' + (dv.behaviorLabel || 'Anchor Behavior'));
+    lines.push('Instance label: ' + (dv.instanceLabel || 'Instance'));
+    lines.push('Instances required: ' + (dv.instanceCount || 3));
   }
 
   if (config.reflectionFramework && config.reflectionFramework.coachingApproach) {
@@ -2316,7 +2650,10 @@ document.getElementById('gSaveBtn').addEventListener('click', function () {
 function refreshGuidedList() {
   fetch(PROXY_URL + '/lesson-configs?tier=guided', { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
-    .then(function (d) { populateSelect(gLessonSelect, (d.lessons || []).filter(function (l) { return !isMasteryLessonId(l.lesson_id); })); })
+    .then(function (d) {
+      populateSelect(gLessonSelect, (d.lessons || []).filter(function (l) { return !isMasteryLessonId(l.lesson_id); }));
+      refreshDeliverablesLessonList();
+    })
     .catch(function () {});
 }
 
@@ -2358,6 +2695,17 @@ function isMasteryLessonId(id) {
   return /^[56]\./.test(String(id || ''));
 }
 
+// Keeps the Deliverables tab's lesson dropdown in sync with whatever
+// lessons currently exist across Coach + Master Coach, without needing its
+// own separate fetch - reuses whichever list (guided or mastery) just
+// changed. Called after every guided/mastery save or delete.
+function refreshDeliverablesLessonList() {
+  fetch(PROXY_URL + '/lesson-configs?tier=guided', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { populateSelect(dlvLessonSelect, d.lessons || []); })
+    .catch(function () {});
+}
+
 var mLessonSelect = document.getElementById('mLessonSelect');
 var mAreasList = document.getElementById('mAreasList');
 var mResourceFields = document.getElementById('mResourceFields');
@@ -2365,6 +2713,8 @@ var mPdfsList = document.getElementById('mPdfsList');
 var mHasResourceCb = document.getElementById('mHasResource');
 var mCoachingIntroFields = document.getElementById('mCoachingIntroFields');
 var mHasCoachingIntroCb = document.getElementById('mHasCoachingIntro');
+var mDeliverableFields = document.getElementById('mDeliverableFields');
+var mHasDeliverableCb = document.getElementById('mHasDeliverable');
 var mTranslationsList = document.getElementById('mTranslationsList');
 var mAddLangSelect = document.getElementById('mAddLangSelect');
 var mSaveStatus = document.getElementById('mSaveStatus');
@@ -2525,6 +2875,9 @@ mHasResourceCb.addEventListener('change', function () {
 mHasCoachingIntroCb.addEventListener('change', function () {
   mCoachingIntroFields.className = 'resource-fields' + (mHasCoachingIntroCb.checked ? '' : ' disabled');
 });
+mHasDeliverableCb.addEventListener('change', function () {
+  mDeliverableFields.className = 'resource-fields' + (mHasDeliverableCb.checked ? '' : ' disabled');
+});
 
 // Normalises a resource config's PDFs into a flat array of { title, url }
 // pairs, regardless of whether it was saved under the new pdfs[] schema or
@@ -2610,6 +2963,11 @@ function clearMasteryForm() {
   document.getElementById('mCoachingIntroTitle').value = '';
   document.getElementById('mCoachingIntroText').value = '';
   mAreasList.innerHTML = '';
+  mHasDeliverableCb.checked = false;
+  mDeliverableFields.className = 'resource-fields disabled';
+  document.getElementById('mBehaviorLabel').value = '';
+  document.getElementById('mInstanceLabel').value = '';
+  document.getElementById('mInstanceCount').value = '';
   document.getElementById('mCoachingApproach').value = '';
   document.getElementById('mCalibration').value = '';
   document.getElementById('mGreetingFresh').value = '';
@@ -2654,6 +3012,18 @@ function fillMasteryForm(config) {
   (rf.areas || []).forEach(function (a) { mAddAreaBlock(a.title, a.instructions); });
   document.getElementById('mCoachingApproach').value = rf.coachingApproach || '';
   document.getElementById('mCalibration').value = (rf.calibrationExamples || []).join('\n');
+
+  var dv = rf.deliverable;
+  if (dv && dv.required) {
+    mHasDeliverableCb.checked = true;
+    mDeliverableFields.className = 'resource-fields';
+    document.getElementById('mBehaviorLabel').value = dv.behaviorLabel || '';
+    document.getElementById('mInstanceLabel').value = dv.instanceLabel || '';
+    document.getElementById('mInstanceCount').value = dv.instanceCount != null ? String(dv.instanceCount) : '';
+  } else {
+    mHasDeliverableCb.checked = false;
+    mDeliverableFields.className = 'resource-fields disabled';
+  }
 
   var g = config.greeting || {};
   document.getElementById('mGreetingFresh').value = g.fresh || '';
@@ -2700,6 +3070,15 @@ function collectMasteryConfig() {
     if (ciTitle || ciText) coachingIntroObj = { title: ciTitle, text: ciText };
   }
 
+  var deliverableObj = null;
+  if (mHasDeliverableCb.checked) {
+    var mbLabel = document.getElementById('mBehaviorLabel').value.trim() || 'Anchor Behavior';
+    var miLabel = document.getElementById('mInstanceLabel').value.trim() || 'Instance';
+    var miCountRaw = parseInt(document.getElementById('mInstanceCount').value.trim(), 10);
+    var miCount = (miCountRaw && miCountRaw > 0) ? miCountRaw : 3;
+    deliverableObj = { required: true, behaviorLabel: mbLabel, instanceLabel: miLabel, instanceCount: miCount };
+  }
+
   return {
     lessonId: document.getElementById('mLessonId').value.trim(),
     tier: 'guided',
@@ -2712,6 +3091,7 @@ function collectMasteryConfig() {
     essentials: { exerciseFormId: '', reflectionFormId: '' },
     reflectionFramework: {
       areas: areas,
+      deliverable: deliverableObj,
       coachingApproach: document.getElementById('mCoachingApproach').value.trim(),
       calibrationExamples: calibrationExamples
     },
@@ -2785,7 +3165,10 @@ document.getElementById('mSaveBtn').addEventListener('click', function () {
 function refreshMasteryList() {
   fetch(PROXY_URL + '/lesson-configs?tier=guided', { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
-    .then(function (d) { populateSelect(mLessonSelect, (d.lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); })); })
+    .then(function (d) {
+      populateSelect(mLessonSelect, (d.lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); }));
+      refreshDeliverablesLessonList();
+    })
     .catch(function () {});
 }
 
