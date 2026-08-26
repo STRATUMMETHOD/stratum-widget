@@ -1402,10 +1402,6 @@
   function addMessage(role, text) {
     var row = el('div', 'srx-row ' + role);
 
-    var avatar = el('div', 'srx-avatar',
-      role === 'assistant' ? 'TB' : (studentName ? studentName.charAt(0).toUpperCase() : 'Y'));
-    mount(row, avatar);
-
     var bubble = el('div', 'srx-bubble', text);
     mount(row, bubble);
 
@@ -1417,7 +1413,6 @@
 
   function showTyping() {
     typingRow = el('div', 'srx-row assistant');
-    mount(typingRow, el('div', 'srx-avatar', 'TB'));
 
     var bubble = el('div', 'srx-bubble');
     var dots = el('div', 'srx-typing');
