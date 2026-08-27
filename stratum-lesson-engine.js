@@ -113,8 +113,7 @@
   // Returns a promise resolving to { ok, isNew }. isNew is true only when
   // the Worker minted a brand-new identity row - it's false when this
   // email matched an existing identity (e.g. a returning student
-  // reconnecting on a new device), which callers use to decide whether a
-  // first name still needs to be collected before continuing.
+  // reconnecting on a new device).
   function ensureDurableIdentity(email) {
     return fetch(PROXY_URL + '/resolve-identity', {
       method: 'POST',
@@ -417,13 +416,11 @@
     buildProjectTab(projectPanel);
     mount(container, projectPanel);
 
-    // Dashboard is now the first thing a student sees (see TOP_DESTINATIONS
-    // order below), so this is the natural moment to ask an unconfirmed
-    // visitor for their email - rather than waiting for them to hit a
-    // gate on Notes/Tasks/Coaching individually. Shown once per browser
-    // session; the My Project form below remains the permanent fallback
-    // for anyone who dismisses it.
-    if (!isEmailConfirmed() && !readSessionValue(IDENTITY_MODAL_DISMISSED_KEY)) {
+    // Dashboard is the first thing a student sees (see TOP_DESTINATIONS
+    // order below). If no identity is confirmed yet, the modal is
+    // mandatory - no close, no dismiss - so it shows every time an
+    // unconfirmed visitor reaches Dashboard, full stop.
+    if (!isEmailConfirmed()) {
       showIdentityModal();
     }
   }
@@ -513,9 +510,10 @@
   }
 
   // Shown inside Notes / Tasks / Coaching when no identity is confirmed yet
-  // - either because the identity modal was dismissed, or a student landed
-  // directly on a sub-tab without visiting Dashboard first. My Project
-  // (inside Dashboard) remains the permanent fallback path.
+  // - a student would normally already have resolved this via the
+  // mandatory Dashboard modal, but this remains as a fallback (e.g. a
+  // direct link straight into a sub-tab). My Project (inside Dashboard)
+  // is the permanent fallback path.
   function buildIdentityGate(panel, itemLabel) {
     var wrap = el('div', 'proj-gate');
     var title = el('div', 'proj-gate-title', 'Keep your ' + itemLabel);
@@ -850,7 +848,7 @@
       key: 'studentName', id: 'projStudentName', type: 'text', maxLength: 60,
       label: 'Your first name',
       hint: 'So your coach already knows who you are — no need to introduce yourself at the start of every lesson.',
-      placeholder: 'e.g. Priya'
+      placeholder: 'e.g. John'
     },
     {
       row: [
@@ -1206,14 +1204,12 @@
      ------------------------------------------------------------
      Triggered from buildDashboardView() whenever an unconfirmed
      visitor lands on Dashboard - now the first tab a student
-     sees. Asks for email (and, only for a genuinely new identity,
-     first name), so their notes/tasks/coaching history sync
-     immediately rather than waiting for them to discover the My
-     Project form further down the same tab. Dismissible; My
-     Project remains the permanent fallback path either way.
+     sees. Mandatory: no close button, no dismiss link. Email and
+     first name are both always required, regardless of whether
+     the identity turns out to be new or already exists - so the
+     modal only ever disappears once a real identity is confirmed
+     and stored (stratum_sid cookie set).
      ========================================================== */
-
-  var IDENTITY_MODAL_DISMISSED_KEY = 'wlfc_identity_modal_dismissed';
 
   function showIdentityModal() {
     if (isEmailConfirmed()) return;
@@ -1224,15 +1220,9 @@
 
     var modal = el('div', 'srx-identity-modal');
 
-    var closeBtn = el('button', 'srx-identity-close', '\u00D7');
-    closeBtn.type = 'button';
-    closeBtn.setAttribute('aria-label', 'Close');
-    closeBtn.addEventListener('click', dismiss);
-    mount(modal, closeBtn);
-
-    mount(modal, el('div', 'srx-identity-title', 'Welcome back?'));
+    mount(modal, el('div', 'srx-identity-title', 'Welcome To Stratum'));
     mount(modal, el('p', 'srx-identity-text',
-      'Enter your email to sync your notes, tasks, and coaching history to this device. New here? Add your first name too and you\u2019re set.'));
+      'Enter your email and first name to keep your notes, tasks, and coaching history tied to you throughout the course.'));
 
     var emailField = el('div', 'srx-identity-field');
     mount(emailField, el('label', 'srx-identity-label', 'Email'));
@@ -1244,11 +1234,11 @@
     mount(modal, emailField);
 
     var nameField = el('div', 'srx-identity-field');
-    mount(nameField, el('label', 'srx-identity-label', 'First name (if you\u2019re new)'));
+    mount(nameField, el('label', 'srx-identity-label', 'First name'));
     var nameInput = document.createElement('input');
     nameInput.type = 'text';
     nameInput.className = 'srx-identity-input';
-    nameInput.placeholder = 'e.g. Priya';
+    nameInput.placeholder = 'e.g. John';
     nameInput.maxLength = 60;
     mount(nameField, nameInput);
     mount(modal, nameField);
@@ -1260,19 +1250,9 @@
     var status = el('div', 'srx-identity-status');
     mount(modal, status);
 
-    var later = el('button', 'srx-identity-later', 'Maybe later');
-    later.type = 'button';
-    later.addEventListener('click', dismiss);
-    mount(modal, later);
-
     mount(overlay, modal);
     mount(document.body, overlay);
     emailInput.focus();
-
-    function dismiss() {
-      try { sessionStorage.setItem(IDENTITY_MODAL_DISMISSED_KEY, '1'); } catch (e) {}
-      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-    }
 
     function submit() {
       var email = emailInput.value.trim();
@@ -1282,6 +1262,15 @@
         emailInput.focus();
         return;
       }
+
+      var name = nameInput.value.trim();
+      if (!name) {
+        status.textContent = 'Enter your first name too.';
+        status.className = 'srx-identity-status err';
+        nameInput.focus();
+        return;
+      }
+
       btn.disabled = true;
       status.textContent = 'Checking…';
       status.className = 'srx-identity-status';
@@ -1294,18 +1283,8 @@
           return;
         }
 
-        if (result.isNew) {
-          var name = nameInput.value.trim();
-          if (!name) {
-            btn.disabled = false;
-            status.textContent = 'New here? Add your first name too, so your coach can greet you properly.';
-            status.className = 'srx-identity-status err';
-            nameInput.focus();
-            return;
-          }
-          studentName = name;
-          lsSet(PROJ_KEYS.studentName, name);
-        }
+        studentName = name;
+        lsSet(PROJ_KEYS.studentName, name);
 
         if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
         refreshGatedTabs();
