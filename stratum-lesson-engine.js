@@ -355,9 +355,11 @@
     evt.currentTarget.className += ' active';
   }
 
+  // Order here drives both the tab bar and which view opens by default
+  // (index 0). Dashboard first, This Lesson second, Contact last.
   var TOP_DESTINATIONS = [
-    { id: 'view-lesson',    label: 'This Lesson', build: buildLessonView },
     { id: 'view-dashboard', label: 'Dashboard',   build: buildDashboardView },
+    { id: 'view-lesson',    label: 'This Lesson', build: buildLessonView },
     { id: 'view-contact',   label: 'Contact',     build: buildContactView }
   ];
 
@@ -492,7 +494,8 @@
     for (var j = 0; j < links.length; j++) links[j].className = links[j].className.replace(' active', '');
     var dashView = document.getElementById('view-dashboard');
     if (dashView) dashView.style.display = 'block';
-    if (links[1]) links[1].className += ' active';
+    // Dashboard is now the first tab (index 0) - see TOP_DESTINATIONS order.
+    if (links[0]) links[0].className += ' active';
     var projectPanel = document.getElementById('Project');
     if (projectPanel && projectPanel.scrollIntoView) {
       projectPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1269,7 +1272,7 @@
   var poolExhausted = false;
   var busy = false;
 
-  var chatEl, formEl, inputEl, sendBtn, meterEl;
+  var chatEl, formEl, inputEl, sendBtn;
 
   function buildSystemPrompt() {
     var areas = (LESSON.reflectionFramework.areas || []).map(function (area, i) {
@@ -1430,8 +1433,34 @@
     return g.fresh || "Hey - that lecture just ended, so I'm still right here with you.\n\nBefore we get into it, I'd like to actually know who I'm talking to. What's your name?";
   }
 
+  // Renders the "Before You Begin" intro the admin panel captures under
+  // Coaching Intro Text (title + content, plus a "shows an intro message"
+  // checkbox). Previously this was only ever rendered inside the
+  // Essentials Reflection dropdown - Guided/Mastery students never saw it
+  // at all. Reuses the existing .lec-resource accordion styling so it's
+  // visually consistent with Lesson Resources: bordered, collapsible,
+  // closed by default (matching the admin panel's "default closed" label).
+  function buildCoachingIntro(panel) {
+    var ci = LESSON.coachingIntro;
+    if (!ci || !ci.text || ci.enabled === false) return;
+
+    var details = el('details', 'lec-resource');
+    details.id = 'lecCoachingIntro';
+    details.open = false;
+
+    mount(details, el('summary', 'lec-resource-bar', ci.title || 'Before You Begin'));
+
+    var body = el('div', 'lec-resource-body');
+    body.innerHTML = textToParagraphs(ci.text);
+    mount(details, body);
+
+    mount(panel, details);
+  }
+
   function buildCoachTab(panel) {
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'coaching history'); return; }
+
+    buildCoachingIntro(panel);
 
     var bleed = el('div', 'syio-bleed');
     var wrap = el('div', 'srx-wrap');
@@ -1456,9 +1485,6 @@
     mount(formEl, sendBtn);
 
     mount(wrap, formEl);
-
-    meterEl = el('div', 'srx-meter');
-    mount(wrap, meterEl);
 
     mount(bleed, wrap);
     mount(panel, bleed);
@@ -1626,21 +1652,6 @@
     return { valid: missing.length === 0, missing: missing };
   }
 
-  function renderMeter(remaining, allowed) {
-    if (remaining == null || allowed == null) { meterEl.textContent = ''; return; }
-    meterEl.textContent = remaining <= 0
-      ? 'No coaching sessions remaining'
-      : remaining + ' of ' + allowed + ' coaching sessions remaining';
-  }
-
-  function loadBalance() {
-    if (!STUDENT_ID) { meterEl.textContent = ''; return; }
-    fetch(PROXY_URL + '/balance?studentId=' + encodeURIComponent(STUDENT_ID))
-      .then(function (r) { return r.json(); })
-      .then(function (d) { if (d && d.metered) renderMeter(d.remaining, d.allowed); })
-      .catch(function () {});
-  }
-
   function reportLessonComplete(summaryText) {
     if (!STUDENT_ID) return;
     var body = { studentId: STUDENT_ID, lesson: LESSON_ID, summary: summaryText || null };
@@ -1779,7 +1790,6 @@
 
     mount(chatEl, card);
     scrollToBottom();
-    meterEl.textContent = 'No coaching sessions remaining';
   }
 
   var LT = String.fromCharCode(60);
@@ -1904,17 +1914,12 @@
       };
     }
 
-    var remainingHeader = null;
-    var allowedHeader = null;
-
     fetch(PROXY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     })
       .then(function (res) {
-        remainingHeader = res.headers.get('X-Stratum-Remaining');
-        allowedHeader = res.headers.get('X-Stratum-Allowed');
         return res.json();
       })
       .then(function (data) {
@@ -1958,10 +1963,6 @@
             conversationHistory.push({ role: 'assistant', content: cleanedContent });
             if (parsed.text) addMessage('assistant', parsed.text);
 
-            if (remainingHeader !== null && allowedHeader !== null) {
-              renderMeter(Number(remainingHeader), Number(allowedHeader));
-            }
-
             persist();
             retryForDeliverable(check.missing);
             return;
@@ -1996,10 +1997,6 @@
 
         conversationHistory.push({ role: 'assistant', content: raw });
         addMessage('assistant', parsed.text);
-
-        if (remainingHeader !== null && allowedHeader !== null) {
-          renderMeter(Number(remainingHeader), Number(allowedHeader));
-        }
 
         if (parsed.complete && !reflectionComplete) {
           reflectionComplete = true;
@@ -2037,7 +2034,6 @@
       if (saved) {
         hydrateFromSaved(saved);
         persist();
-        loadBalance();
         return;
       }
 
@@ -2061,7 +2057,6 @@
       conversationHistory.push({ role: 'assistant', content: greetingText });
       addMessage('assistant', greetingText);
       persist();
-      loadBalance();
     });
   }
 
