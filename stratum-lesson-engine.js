@@ -416,6 +416,16 @@
     projectPanel.id = 'Project';
     buildProjectTab(projectPanel);
     mount(container, projectPanel);
+
+    // Dashboard is now the first thing a student sees (see TOP_DESTINATIONS
+    // order below), so this is the natural moment to ask an unconfirmed
+    // visitor for their email - rather than waiting for them to hit a
+    // gate on Notes/Tasks/Coaching individually. Shown once per browser
+    // session; the My Project form below remains the permanent fallback
+    // for anyone who dismisses it.
+    if (!isEmailConfirmed() && !readSessionValue(IDENTITY_MODAL_DISMISSED_KEY)) {
+      showIdentityModal();
+    }
   }
 
   function buildJotformEmbed(container, formId, label) {
@@ -502,12 +512,16 @@
     }
   }
 
+  // Shown inside Notes / Tasks / Coaching when no identity is confirmed yet
+  // - either because the identity modal was dismissed, or a student landed
+  // directly on a sub-tab without visiting Dashboard first. My Project
+  // (inside Dashboard) remains the permanent fallback path.
   function buildIdentityGate(panel, itemLabel) {
     var wrap = el('div', 'proj-gate');
     var title = el('div', 'proj-gate-title', 'Keep your ' + itemLabel);
     mount(wrap, title);
     var msg = el('p', 'proj-gate-text',
-      'This makes sure your ' + itemLabel + ' actually stays with you. Add your email on My Project, then come straight back.');
+      'This makes sure your ' + itemLabel + ' actually stays with you. Add your email in My Project on the Dashboard, then come straight back.');
     mount(wrap, msg);
     var btn = el('button', 'proj-gate-btn', 'Go to My Project');
     btn.type = 'button';
@@ -1188,81 +1202,119 @@
   }
 
   /* ==========================================================
-     RECOGNIZE BANNER
+     IDENTITY MODAL
      ------------------------------------------------------------
-     Shown once per session at the top of the lesson page when no
-     stratum_sid cookie is present. Lets a returning student on a
-     new device resync their identity by email in one field,
-     instead of having to discover My Project buried three tabs
-     deep behind three separate identity gates.
+     Triggered from buildDashboardView() whenever an unconfirmed
+     visitor lands on Dashboard - now the first tab a student
+     sees. Asks for email (and, only for a genuinely new identity,
+     first name), so their notes/tasks/coaching history sync
+     immediately rather than waiting for them to discover the My
+     Project form further down the same tab. Dismissible; My
+     Project remains the permanent fallback path either way.
      ========================================================== */
 
-  var RECOGNIZE_DISMISSED_KEY = 'wlfc_recognize_dismissed';
+  var IDENTITY_MODAL_DISMISSED_KEY = 'wlfc_identity_modal_dismissed';
 
-  function buildRecognizeBanner() {
-    if (isEmailConfirmed()) return null;
-    if (readSessionValue(RECOGNIZE_DISMISSED_KEY)) return null;
+  function showIdentityModal() {
+    if (isEmailConfirmed()) return;
+    if (document.getElementById('srxIdentityOverlay')) return;
 
-    var banner = el('div', 'srx-recognize-banner');
+    var overlay = el('div', 'srx-identity-overlay');
+    overlay.id = 'srxIdentityOverlay';
 
-    mount(banner, el('div', 'srx-recognize-text',
-      'Welcome back? Enter your email to sync your notes, tasks, and coaching history.'));
+    var modal = el('div', 'srx-identity-modal');
 
-    var row = el('div', 'srx-recognize-row');
+    var closeBtn = el('button', 'srx-identity-close', '\u00D7');
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.addEventListener('click', dismiss);
+    mount(modal, closeBtn);
 
-    var input = document.createElement('input');
-    input.type = 'email';
-    input.className = 'srx-recognize-input';
-    input.placeholder = 'you@example.com';
-    mount(row, input);
+    mount(modal, el('div', 'srx-identity-title', 'Welcome back?'));
+    mount(modal, el('p', 'srx-identity-text',
+      'Enter your email to sync your notes, tasks, and coaching history to this device. New here? Add your first name too and you\u2019re set.'));
 
-    var btn = el('button', 'srx-recognize-btn', 'Sync');
+    var emailField = el('div', 'srx-identity-field');
+    mount(emailField, el('label', 'srx-identity-label', 'Email'));
+    var emailInput = document.createElement('input');
+    emailInput.type = 'email';
+    emailInput.className = 'srx-identity-input';
+    emailInput.placeholder = 'you@example.com';
+    mount(emailField, emailInput);
+    mount(modal, emailField);
+
+    var nameField = el('div', 'srx-identity-field');
+    mount(nameField, el('label', 'srx-identity-label', 'First name (if you\u2019re new)'));
+    var nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'srx-identity-input';
+    nameInput.placeholder = 'e.g. Priya';
+    nameInput.maxLength = 60;
+    mount(nameField, nameInput);
+    mount(modal, nameField);
+
+    var btn = el('button', 'srx-identity-btn', 'Continue');
     btn.type = 'button';
-    mount(row, btn);
+    mount(modal, btn);
 
-    var status = el('span', 'srx-recognize-status');
-    mount(row, status);
-    mount(banner, row);
+    var status = el('div', 'srx-identity-status');
+    mount(modal, status);
 
-    var dismiss = el('button', 'srx-recognize-dismiss', '\u00D7');
-    dismiss.type = 'button';
-    dismiss.setAttribute('aria-label', 'Dismiss');
-    dismiss.addEventListener('click', function () {
-      try { sessionStorage.setItem(RECOGNIZE_DISMISSED_KEY, '1'); } catch (e) {}
-      if (banner.parentNode) banner.parentNode.removeChild(banner);
-    });
-    mount(banner, dismiss);
+    var later = el('button', 'srx-identity-later', 'Maybe later');
+    later.type = 'button';
+    later.addEventListener('click', dismiss);
+    mount(modal, later);
 
-    function doResolve() {
-      var email = input.value.trim();
+    mount(overlay, modal);
+    mount(document.body, overlay);
+    emailInput.focus();
+
+    function dismiss() {
+      try { sessionStorage.setItem(IDENTITY_MODAL_DISMISSED_KEY, '1'); } catch (e) {}
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }
+
+    function submit() {
+      var email = emailInput.value.trim();
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         status.textContent = 'Enter a valid email.';
-        status.className = 'srx-recognize-status err';
-        input.focus();
+        status.className = 'srx-identity-status err';
+        emailInput.focus();
         return;
       }
       btn.disabled = true;
       status.textContent = 'Checking…';
-      status.className = 'srx-recognize-status';
+      status.className = 'srx-identity-status';
 
       ensureDurableIdentity(email).then(function (result) {
         if (!result.ok) {
           btn.disabled = false;
-          status.textContent = "Couldn't find that email — no problem, use My Project below to get started.";
-          status.className = 'srx-recognize-status err';
+          status.textContent = "Couldn't confirm that email. Double-check it and try again.";
+          status.className = 'srx-identity-status err';
           return;
         }
-        if (banner.parentNode) banner.parentNode.removeChild(banner);
+
+        if (result.isNew) {
+          var name = nameInput.value.trim();
+          if (!name) {
+            btn.disabled = false;
+            status.textContent = 'New here? Add your first name too, so your coach can greet you properly.';
+            status.className = 'srx-identity-status err';
+            nameInput.focus();
+            return;
+          }
+          studentName = name;
+          lsSet(PROJ_KEYS.studentName, name);
+        }
+
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
         refreshGatedTabs();
       });
     }
 
-    btn.addEventListener('click', doResolve);
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); doResolve(); }
-    });
-
-    return banner;
+    btn.addEventListener('click', submit);
+    emailInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+    nameInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
   }
 
   var conversationHistory = [];
@@ -1435,9 +1487,7 @@
 
   // Renders the "Before You Begin" intro the admin panel captures under
   // Coaching Intro Text (title + content, plus a "shows an intro message"
-  // checkbox). Previously this was only ever rendered inside the
-  // Essentials Reflection dropdown - Guided/Mastery students never saw it
-  // at all. Reuses the existing .lec-resource accordion styling so it's
+  // checkbox). Reuses the existing .lec-resource accordion styling so it's
   // visually consistent with Lesson Resources: bordered, collapsible,
   // closed by default (matching the admin panel's "default closed" label).
   function buildCoachingIntro(panel) {
@@ -2073,8 +2123,6 @@
       buildEssentialsPage(container);
       return;
     }
-    var banner = buildRecognizeBanner();
-    if (banner) mount(container, banner);
     buildTopNav(container);
   }
 
