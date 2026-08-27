@@ -1044,11 +1044,11 @@ button.download-btn:hover { background-color: #5a4535; }
    12. IDENTITY MODAL
    ------------------------------------------------------------
    Full-screen overlay triggered from Dashboard (now the first
-   tab a student sees) when no identity is confirmed yet. Asks
-   for email, and - only when the identity turns out to be new -
-   first name. Dismissible; My Project remains the permanent
-   fallback path either way. See showIdentityModal() in the
-   engine JS.
+   tab a student sees) when no identity is confirmed yet.
+   Mandatory: no close button, no dismiss link - see
+   showIdentityModal() in the engine JS. Anchored near the top
+   of the viewport (not vertically centered) so it's the first
+   thing in view regardless of scroll position or screen height.
    ============================================================ */
 
 .srx-identity-overlay {
@@ -1057,9 +1057,10 @@ button.download-btn:hover { background-color: #5a4535; }
   background: rgba(8,8,8,.6);
   z-index: 9999;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 20px;
+  padding: 48px 20px 20px;
+  overflow-y: auto;
 }
 .srx-identity-modal {
   position: relative;
@@ -1072,24 +1073,6 @@ button.download-btn:hover { background-color: #5a4535; }
   text-align: left;
   box-shadow: 0 12px 40px rgba(0,0,0,.35);
 }
-.srx-identity-close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  font-size: 20px;
-  line-height: 1;
-  color: #8a7a5e;
-  cursor: pointer;
-  transition: color .2s ease;
-}
-.srx-identity-close:hover { color: #281e16; }
 .srx-identity-title {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 24px;
@@ -1147,19 +1130,8 @@ button.download-btn:hover { background-color: #5a4535; }
   color: #8a7a5e;
 }
 .srx-identity-status.err { color: #b3261e; }
-.srx-identity-later {
-  display: block;
-  margin: 14px auto 0;
-  background: none;
-  border: none;
-  font-size: 11.5px;
-  color: #8a7a5e;
-  text-decoration: underline;
-  cursor: pointer;
-  transition: color .2s ease;
-}
-.srx-identity-later:hover { color: #281e16; }
 
 @media (max-width: 480px) {
+  .srx-identity-overlay { padding: 28px 16px 16px; }
   .srx-identity-modal { padding: 28px 20px 22px; }
 }
