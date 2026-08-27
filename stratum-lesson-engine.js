@@ -80,6 +80,42 @@
     try { localStorage.setItem(key, value); } catch (e) {}
   }
 
+  // Every piece of local state (notes, tasks, project fields, per-lesson
+  // coaching history) is cached in localStorage keyed only by lesson/field
+  // name, never by student. That's fine for the normal case, but if the
+  // identity behind stratum_sid ever changes on this browser - a deleted
+  // and recreated D1 identity during testing, a shared/reused device, a
+  // student manually clearing their cookie - the old identity's cached
+  // content would otherwise sit there and get shown to whoever resolves
+  // next, until (and unless) a server fetch happens to overwrite it.
+  //
+  // CACHE_OWNER_KEY records which student the currently-cached local data
+  // actually belongs to. Whenever STUDENT_ID is established or changes
+  // (page load with an existing cookie, or a fresh /resolve-identity call),
+  // clearStaleLocalCache() compares the two and wipes every wlfc_* key
+  // (plus the legacy-named task tracker key) if they don't match, before
+  // anything is read from or written to local storage for this identity.
+  var CACHE_OWNER_KEY = 'wlfc_cache_owner';
+
+  function clearStaleLocalCache(currentId) {
+    if (!currentId) return;
+    var owner = lsGet(CACHE_OWNER_KEY);
+    if (owner && owner !== currentId) {
+      try {
+        var toRemove = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (!k || k === CACHE_OWNER_KEY) continue;
+          if (k.indexOf('wlfc_') === 0 || k === TRACKER_KEY) toRemove.push(k);
+        }
+        toRemove.forEach(function (k) {
+          try { localStorage.removeItem(k); } catch (e) {}
+        });
+      } catch (e) {}
+    }
+    lsSet(CACHE_OWNER_KEY, currentId);
+  }
+
   function makeId() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
     return 'c-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
@@ -104,6 +140,7 @@
 
   var STUDENT_ID = readCookie(STRATUM_SID_COOKIE);
   var STUDENT_EMAIL = readSessionValue('email');
+  clearStaleLocalCache(STUDENT_ID);
 
   function isEmailConfirmed() {
     return !!STUDENT_ID;
@@ -124,6 +161,7 @@
       .then(function (d) {
         if (d && d.ok && d.stratumId) {
           STUDENT_ID = d.stratumId;
+          clearStaleLocalCache(STUDENT_ID);
           STUDENT_EMAIL = email;
           setCookie(STRATUM_SID_COOKIE, STUDENT_ID, STRATUM_SID_MAX_AGE);
           return { ok: true, isNew: !!d.isNew };
@@ -1127,9 +1165,16 @@
       fields[spec.key] = (spec.type === 'select') ? value : value.trim();
     });
 
-    eachProjectSpec(function (spec) {
-      lsSet(PROJ_KEYS[spec.key], fields[spec.key]);
-    });
+    // Deliberately NOT written to localStorage yet. If this is a brand-new
+    // email being resolved below, clearStaleLocalCache() runs inside
+    // ensureDurableIdentity() and would wipe anything written here first -
+    // persistFieldsLocally() is called only after ownership is settled,
+    // in both branches below.
+    function persistFieldsLocally() {
+      eachProjectSpec(function (spec) {
+        lsSet(PROJ_KEYS[spec.key], fields[spec.key]);
+      });
+    }
 
     function doServerSave() {
       setDisabled(true);
@@ -1156,6 +1201,7 @@
     }
 
     if (isEmailConfirmed()) {
+      persistFieldsLocally();
       doServerSave();
       return;
     }
@@ -1191,6 +1237,8 @@
           return;
         }
       }
+
+      persistFieldsLocally();
 
       var wrap = document.getElementById('projEmailWrap');
       if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
@@ -1283,6 +1331,9 @@
           return;
         }
 
+        // Safe to write locally here - ensureDurableIdentity() already
+        // reconciled cache ownership (cleared any stale prior identity's
+        // data) before this .then() ever runs.
         studentName = name;
         lsSet(PROJ_KEYS.studentName, name);
 
