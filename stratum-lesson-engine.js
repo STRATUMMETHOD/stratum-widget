@@ -109,6 +109,12 @@
     return !!STUDENT_ID;
   }
 
+  // Resolves (or mints) the durable identity behind a given email.
+  // Returns a promise resolving to { ok, isNew }. isNew is true only when
+  // the Worker minted a brand-new identity row - it's false when this
+  // email matched an existing identity (e.g. a returning student
+  // reconnecting on a new device), which callers use to decide whether a
+  // first name still needs to be collected before continuing.
   function ensureDurableIdentity(email) {
     return fetch(PROXY_URL + '/resolve-identity', {
       method: 'POST',
@@ -121,11 +127,11 @@
           STUDENT_ID = d.stratumId;
           STUDENT_EMAIL = email;
           setCookie(STRATUM_SID_COOKIE, STUDENT_ID, STRATUM_SID_MAX_AGE);
-          return true;
+          return { ok: true, isNew: !!d.isNew };
         }
-        return false;
+        return { ok: false, isNew: false };
       })
-      .catch(function () { return false; });
+      .catch(function () { return { ok: false, isNew: false }; });
   }
 
   function el(tag, className, text) {
@@ -1147,31 +1153,113 @@
       return;
     }
 
-    // First name is required at the same moment email is first confirmed -
-    // once isEmailConfirmed() is true (checked above), this branch never
-    // runs again, so this only gates the initial save, not every future one.
-    var nameInput = document.getElementById('projStudentName');
-    var studentNameValue = nameInput ? nameInput.value.trim() : '';
-    if (!studentNameValue) {
-      setStatus('Enter your first name too — it lets your coach greet you by name instead of asking every time.', 'proj-status err');
-      if (nameInput) nameInput.focus();
-      return;
-    }
-
     setDisabled(true);
     setStatus('Confirming your email…', 'proj-status');
 
-    ensureDurableIdentity(email).then(function (ok) {
-      if (!ok) {
+    ensureDurableIdentity(email).then(function (result) {
+      if (!result.ok) {
         setDisabled(false);
         setStatus("Couldn't confirm that email. Double-check it and try again.", 'proj-status err');
         return;
       }
+
+      // Name is only required the moment a brand-new identity is minted.
+      // A returning student resolving on a new device already has one, so
+      // don't block them behind a name they've already given us before.
+      if (result.isNew) {
+        var nameInput = document.getElementById('projStudentName');
+        var studentNameValue = nameInput ? nameInput.value.trim() : '';
+        if (!studentNameValue) {
+          setDisabled(false);
+          setStatus('Enter your first name too — it lets your coach greet you by name instead of asking every time.', 'proj-status err');
+          if (nameInput) nameInput.focus();
+          return;
+        }
+      }
+
       var wrap = document.getElementById('projEmailWrap');
       if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
       refreshGatedTabs();
       doServerSave();
     });
+  }
+
+  /* ==========================================================
+     RECOGNIZE BANNER
+     ------------------------------------------------------------
+     Shown once per session at the top of the lesson page when no
+     stratum_sid cookie is present. Lets a returning student on a
+     new device resync their identity by email in one field,
+     instead of having to discover My Project buried three tabs
+     deep behind three separate identity gates.
+     ========================================================== */
+
+  var RECOGNIZE_DISMISSED_KEY = 'wlfc_recognize_dismissed';
+
+  function buildRecognizeBanner() {
+    if (isEmailConfirmed()) return null;
+    if (readSessionValue(RECOGNIZE_DISMISSED_KEY)) return null;
+
+    var banner = el('div', 'srx-recognize-banner');
+
+    mount(banner, el('div', 'srx-recognize-text',
+      'Welcome back? Enter your email to sync your notes, tasks, and coaching history.'));
+
+    var row = el('div', 'srx-recognize-row');
+
+    var input = document.createElement('input');
+    input.type = 'email';
+    input.className = 'srx-recognize-input';
+    input.placeholder = 'you@example.com';
+    mount(row, input);
+
+    var btn = el('button', 'srx-recognize-btn', 'Sync');
+    btn.type = 'button';
+    mount(row, btn);
+
+    var status = el('span', 'srx-recognize-status');
+    mount(row, status);
+    mount(banner, row);
+
+    var dismiss = el('button', 'srx-recognize-dismiss', '\u00D7');
+    dismiss.type = 'button';
+    dismiss.setAttribute('aria-label', 'Dismiss');
+    dismiss.addEventListener('click', function () {
+      try { sessionStorage.setItem(RECOGNIZE_DISMISSED_KEY, '1'); } catch (e) {}
+      if (banner.parentNode) banner.parentNode.removeChild(banner);
+    });
+    mount(banner, dismiss);
+
+    function doResolve() {
+      var email = input.value.trim();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        status.textContent = 'Enter a valid email.';
+        status.className = 'srx-recognize-status err';
+        input.focus();
+        return;
+      }
+      btn.disabled = true;
+      status.textContent = 'Checking…';
+      status.className = 'srx-recognize-status';
+
+      ensureDurableIdentity(email).then(function (result) {
+        if (!result.ok) {
+          btn.disabled = false;
+          status.textContent = "Couldn't find that email — no problem, use My Project below to get started.";
+          status.className = 'srx-recognize-status err';
+          return;
+        }
+        if (banner.parentNode) banner.parentNode.removeChild(banner);
+        refreshGatedTabs();
+      });
+    }
+
+    btn.addEventListener('click', doResolve);
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); doResolve(); }
+    });
+
+    return banner;
   }
 
   var conversationHistory = [];
@@ -1990,6 +2078,8 @@
       buildEssentialsPage(container);
       return;
     }
+    var banner = buildRecognizeBanner();
+    if (banner) mount(container, banner);
     buildTopNav(container);
   }
 
