@@ -323,6 +323,19 @@
   }
   .add-btn:hover { background: #f5f0e6; color: #000; }
 
+  .deliv-field-block .area-block-head input[type="text"] { font-weight: 400; }
+  .deliv-field-block .deliv-field-key { max-width: 220px; font-family: 'Courier New', monospace; font-size: 12.5px; }
+  .deliv-field-block select.deliv-field-type {
+    padding: 8px 6px;
+    font-size: 12.5px;
+    font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #ccc;
+    max-width: 160px;
+  }
+  .deliv-field-list-opts { display: flex; gap: 10px; margin-top: 8px; }
+  .deliv-field-list-opts input.deliv-field-count { max-width: 140px; padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; }
+  .deliv-field-list-opts input.deliv-field-parts { flex: 1; padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; }
+
   .toggle-row {
     display: flex;
     align-items: center;
@@ -645,6 +658,81 @@
   }
   .dlv-count-pill.ok { background: #e6f2e6; color: #2e7d32; }
   .dlv-count-pill.short { background: #fdecea; color: #b3261e; }
+
+  #testimonialsView {
+    background: #fff;
+    border: 1px solid #e2d9c4;
+    padding: 18px 22px;
+  }
+  .tst-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .tst-toolbar .spacer { flex: 1; }
+  .tst-block {
+    border: 1px solid #e2d9c4;
+    background: #fbf8f1;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .tst-block-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .tst-drag-handle { font-size: 11px; color: #8a7a5e; min-width: 20px; }
+  .tst-block-head input.tst-name { flex: 1; font-weight: 700; padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; }
+  .tst-block-head input.tst-detail { flex: 1; padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; }
+  .tst-order-btns { display: flex; gap: 2px; }
+  .tst-order-btns button {
+    background: none;
+    border: 1px solid #ccc;
+    color: #3B2F24;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  .tst-order-btns button:hover { background: #f0e9d8; }
+  .tst-inactive-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #b3261e;
+    background: #fdecea;
+    padding: 2px 6px;
+    margin-left: 4px;
+  }
+  textarea.tst-quote {
+    width: 100%;
+    padding: 10px;
+    font-size: 13px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    border: 1px solid #ccc;
+    resize: vertical;
+    min-height: 90px;
+    margin-bottom: 10px;
+  }
+  .tst-meta-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 10px; }
+  .tst-meta-row .field { margin-bottom: 0; min-width: 180px; }
+  .tst-meta-row .field.grow { flex: 1; }
+  .tst-block-foot { display: flex; align-items: center; gap: 14px; }
+  .tst-save-btn {
+    background: #3B2F24;
+    color: #F5EFE0;
+    border: none;
+    padding: 8px 16px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .tst-save-btn:hover { background: #2a2118; }
+  .tst-save-status { font-size: 11.5px; color: #8a7a5e; font-style: italic; }
 </style>
 </head>
 <body>
@@ -663,6 +751,7 @@
   <div class="top-tabs">
     <button class="top-tab" id="tabDashboardBtn" type="button">Dashboard</button>
     <button class="top-tab" id="tabDeliverablesBtn" type="button">Deliverables</button>
+    <button class="top-tab" id="tabTestimonialsBtn" type="button">Testimonials</button>
     <button class="top-tab" id="tabExcavationBtn" type="button">Excavation</button>
     <button class="top-tab" id="tabEssentialsBtn" type="button">Self-Guided</button>
     <button class="top-tab" id="tabGuidedBtn" type="button">Coach</button>
@@ -723,11 +812,24 @@
     </div>
     <table class="dlv-table">
       <thead>
-        <tr><th>Student</th><th>Behavior</th><th>Instances</th><th>Completed</th><th></th></tr>
+        <tr><th>Student</th><th>Preview</th><th>Fields</th><th>Completed</th><th></th></tr>
       </thead>
       <tbody id="dlvTableBody"></tbody>
     </table>
     <div id="dlvStatus" style="padding:14px 2px;font-size:12px;color:#8a7a5e;font-style:italic;"></div>
+  </div>
+
+  <div id="testimonialsView" style="display:none;">
+    <div class="tst-toolbar">
+      <span class="sub" style="margin:0;">Testimonials shown in the homepage rotator, fading from one to the next. Order controls display order; inactive testimonials stay saved but are skipped on the live site.</span>
+    </div>
+    <div class="tst-toolbar">
+      <button class="btn secondary" id="tstReloadBtn" type="button">Reload</button>
+      <div class="spacer"></div>
+      <span id="tstStatus" style="font-size:12px;color:#8a7a5e;font-style:italic;"></span>
+    </div>
+    <div id="tstList"></div>
+    <button class="add-btn" id="tstAddBtn" type="button">+ Add testimonial</button>
   </div>
 
   <div id="excavationView" style="display:none;">
@@ -894,25 +996,11 @@
           <input type="checkbox" id="gHasDeliverable" />
           <label for="gHasDeliverable" style="margin:0;">This lesson has a required, validated deliverable</label>
         </div>
-        <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until it has captured one real, specific behavior and exactly the number of instances below &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done. Confirm captured deliverables under the Deliverables tab.</span>
+        <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until every field below has been captured, real and specific &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done. Confirm captured deliverables under the Deliverables tab.</span>
         <div id="gDeliverableFields" class="resource-fields disabled">
-          <div class="row3">
-            <div class="field">
-              <label for="gBehaviorLabel">Behavior label</label>
-              <span class="hint">What to call the core thing captured</span>
-              <input type="text" id="gBehaviorLabel" placeholder="Anchor Behavior" />
-            </div>
-            <div class="field">
-              <label for="gInstanceLabel">Instance label</label>
-              <span class="hint">What to call each supporting example</span>
-              <input type="text" id="gInstanceLabel" placeholder="Instance" />
-            </div>
-            <div class="field">
-              <label for="gInstanceCount">Instance count</label>
-              <span class="hint">Exactly how many are required</span>
-              <input type="text" id="gInstanceCount" placeholder="3" />
-            </div>
-          </div>
+          <div id="gDeliverableFieldsList"></div>
+          <button class="add-btn" id="gAddDeliverableFieldBtn" type="button">+ Add deliverable field</button>
+          <span class="hint" style="display:block;margin-top:8px;">Field key: a short camelCase identifier the coach's hidden tags will use (e.g. <code>hiddenTruth</code>). Single value: one field, one answer (e.g. a causal lock sentence). Repeatable list: N required items (e.g. 3 instances) &mdash; optionally split each item into comma-separated sub-parts (e.g. <code>context, people, action</code>) the way Lesson 1's instances work; leave sub-parts blank for a plain list of single strings.</span>
         </div>
       </div>
       </details>
@@ -1215,25 +1303,11 @@
           <input type="checkbox" id="mHasDeliverable" />
           <label for="mHasDeliverable" style="margin:0;">This lesson has a required, validated deliverable</label>
         </div>
-        <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until it has captured one real, specific behavior and exactly the number of instances below &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done. Confirm captured deliverables under the Deliverables tab.</span>
+        <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until every field below has been captured, real and specific &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done. Confirm captured deliverables under the Deliverables tab.</span>
         <div id="mDeliverableFields" class="resource-fields disabled">
-          <div class="row3">
-            <div class="field">
-              <label for="mBehaviorLabel">Behavior label</label>
-              <span class="hint">What to call the core thing captured</span>
-              <input type="text" id="mBehaviorLabel" placeholder="Anchor Behavior" />
-            </div>
-            <div class="field">
-              <label for="mInstanceLabel">Instance label</label>
-              <span class="hint">What to call each supporting example</span>
-              <input type="text" id="mInstanceLabel" placeholder="Instance" />
-            </div>
-            <div class="field">
-              <label for="mInstanceCount">Instance count</label>
-              <span class="hint">Exactly how many are required</span>
-              <input type="text" id="mInstanceCount" placeholder="3" />
-            </div>
-          </div>
+          <div id="mDeliverableFieldsList"></div>
+          <button class="add-btn" id="mAddDeliverableFieldBtn" type="button">+ Add deliverable field</button>
+          <span class="hint" style="display:block;margin-top:8px;">Field key: a short camelCase identifier the coach's hidden tags will use (e.g. <code>hiddenTruth</code>). Single value: one field, one answer. Repeatable list: N required items &mdash; optionally split each item into comma-separated sub-parts (e.g. <code>context, people, action</code>); leave sub-parts blank for a plain list of single strings.</span>
         </div>
       </div>
       </details>
@@ -1356,12 +1430,14 @@ function unlock() {
 
 var tabDashboardBtn = document.getElementById('tabDashboardBtn');
 var tabDeliverablesBtn = document.getElementById('tabDeliverablesBtn');
+var tabTestimonialsBtn = document.getElementById('tabTestimonialsBtn');
 var tabExcavationBtn = document.getElementById('tabExcavationBtn');
 var tabGuidedBtn = document.getElementById('tabGuidedBtn');
 var tabEssentialsBtn = document.getElementById('tabEssentialsBtn');
 var tabMasteryBtn = document.getElementById('tabMasteryBtn');
 var dashboardView = document.getElementById('dashboardView');
 var deliverablesView = document.getElementById('deliverablesView');
+var testimonialsView = document.getElementById('testimonialsView');
 var excavationView = document.getElementById('excavationView');
 var guidedView = document.getElementById('guidedView');
 var essentialsView = document.getElementById('essentialsView');
@@ -1370,12 +1446,14 @@ var masteryView = document.getElementById('masteryView');
 function showTopTab(which) {
   tabDashboardBtn.className = 'top-tab' + (which === 'dashboard' ? ' active' : '');
   tabDeliverablesBtn.className = 'top-tab' + (which === 'deliverables' ? ' active' : '');
+  tabTestimonialsBtn.className = 'top-tab' + (which === 'testimonials' ? ' active' : '');
   tabExcavationBtn.className = 'top-tab' + (which === 'excavation' ? ' active' : '');
   tabGuidedBtn.className = 'top-tab' + (which === 'guided' ? ' active' : '');
   tabEssentialsBtn.className = 'top-tab' + (which === 'essentials' ? ' active' : '');
   tabMasteryBtn.className = 'top-tab' + (which === 'mastery' ? ' active' : '');
   dashboardView.style.display = which === 'dashboard' ? '' : 'none';
   deliverablesView.style.display = which === 'deliverables' ? '' : 'none';
+  testimonialsView.style.display = which === 'testimonials' ? '' : 'none';
   excavationView.style.display = which === 'excavation' ? '' : 'none';
   guidedView.style.display = which === 'guided' ? '' : 'none';
   essentialsView.style.display = which === 'essentials' ? '' : 'none';
@@ -1388,6 +1466,10 @@ tabDashboardBtn.addEventListener('click', function () {
 });
 tabDeliverablesBtn.addEventListener('click', function () {
   showTopTab('deliverables');
+});
+tabTestimonialsBtn.addEventListener('click', function () {
+  showTopTab('testimonials');
+  loadTestimonials();
 });
 tabExcavationBtn.addEventListener('click', function () {
   showTopTab('excavation');
@@ -1668,6 +1750,26 @@ function loadDeliverables(lessonId) {
     });
 }
 
+// Renders one value from a generic deliverable.fields object as a short,
+// single-line preview - a plain string as-is, a list as "N items", so the
+// summary table stays readable regardless of what fields a given lesson
+// actually configured.
+function dlvFieldPreview(fields) {
+  var keys = Object.keys(fields || {});
+  for (var i = 0; i < keys.length; i++) {
+    var v = fields[keys[i]];
+    if (typeof v === 'string' && v) return v;
+  }
+  return '(no single-value field captured)';
+}
+
+function dlvFieldCount(fields) {
+  return Object.keys(fields || {}).filter(function (k) {
+    var v = fields[k];
+    return (typeof v === 'string' && v) || (Array.isArray(v) && v.length);
+  }).length;
+}
+
 function renderDeliverableRow(dv) {
   var tr = document.createElement('tr');
 
@@ -1675,12 +1777,12 @@ function renderDeliverableRow(dv) {
   studentTd.textContent = dv.email || dv.studentId;
   tr.appendChild(studentTd);
 
-  var behaviorTd = document.createElement('td');
-  behaviorTd.textContent = dv.behavior || '(none captured)';
-  tr.appendChild(behaviorTd);
+  var previewTd = document.createElement('td');
+  previewTd.textContent = dlvFieldPreview(dv.fields);
+  tr.appendChild(previewTd);
 
   var countTd = document.createElement('td');
-  var count = (dv.instances || []).length;
+  var count = dlvFieldCount(dv.fields);
   var pill = document.createElement('span');
   pill.className = 'dlv-count-pill ' + (count > 0 ? 'ok' : 'short');
   pill.textContent = count;
@@ -1703,6 +1805,26 @@ function renderDeliverableRow(dv) {
   dlvTableBody.appendChild(tr);
 }
 
+// Renders a value from deliverable.fields generically: a plain string
+// prints as one block, an array of plain strings prints as a numbered
+// list, and an array of {part: value} objects (Lesson 1-style instances
+// with sub-parts) prints each item's parts joined with an em dash.
+function dlvFormatFieldValue(val) {
+  if (Array.isArray(val)) {
+    if (!val.length) return '<div style="font-size:12px;color:#8a7a5e;font-style:italic;">Nothing captured.</div>';
+    return val.map(function (item, i) {
+      var text;
+      if (item && typeof item === 'object') {
+        text = Object.keys(item).map(function (k) { return item[k]; }).filter(Boolean).join(' &mdash; ');
+      } else {
+        text = String(item || '');
+      }
+      return '<div class="dlv-instance"><strong>' + (i + 1) + ':</strong> ' + escapeDlvHtml(text) + '</div>';
+    }).join('');
+  }
+  return '<div class="dlv-behavior-text">' + escapeDlvHtml(val || '(none captured)') + '</div>';
+}
+
 function toggleDeliverableDetail(dv, afterRow, viewBtn) {
   if (dlvOpenDetailRow && dlvOpenDetailRow.parentNode) {
     var wasSameRow = dlvOpenDetailRow.dataset.forRow === String(dv.studentId);
@@ -1718,15 +1840,16 @@ function toggleDeliverableDetail(dv, afterRow, viewBtn) {
   var td = document.createElement('td');
   td.colSpan = 5;
 
-  var html = '<div class="dlv-behavior-label">BEHAVIOR</div>';
-  html += '<div class="dlv-behavior-text">' + escapeDlvHtml(dv.behavior || '(none captured)') + '</div>';
-  (dv.instances || []).forEach(function (inst, i) {
-    html += '<div class="dlv-instance"><strong>Instance ' + (i + 1) + ':</strong> ' +
-      escapeDlvHtml(inst.context || '') + ' &mdash; with ' + escapeDlvHtml(inst.people || '') + ' &mdash; ' + escapeDlvHtml(inst.action || '') +
-      '</div>';
-  });
-  if (!(dv.instances || []).length) {
-    html += '<div style="font-size:12px;color:#8a7a5e;font-style:italic;">No instances captured.</div>';
+  var fields = dv.fields || {};
+  var keys = Object.keys(fields);
+  var html = '';
+  if (!keys.length) {
+    html += '<div style="font-size:12px;color:#8a7a5e;font-style:italic;">No deliverable fields captured.</div>';
+  } else {
+    keys.forEach(function (key) {
+      html += '<div class="dlv-behavior-label">' + escapeDlvHtml(key.toUpperCase()) + '</div>';
+      html += dlvFormatFieldValue(fields[key]);
+    });
   }
   if (dv.summary) {
     html += '<div style="margin-top:10px;font-size:12px;color:#8a7a5e;font-style:italic;">Summary: ' + escapeDlvHtml(dv.summary) + '</div>';
@@ -1742,6 +1865,285 @@ function escapeDlvHtml(s) {
   var d = document.createElement('div');
   d.innerText = s;
   return d.innerHTML;
+}
+
+// ===== Testimonials =====
+// Manages the homepage rotator's testimonial content. Each block edits one
+// row from the `testimonials` D1 table and saves independently with its
+// own Save button (rather than one big form-wide save) so a mistake in one
+// testimonial can never block saving another. Reordering swaps
+// display_order between the moved block and its neighbor and saves both
+// immediately, so the list's on-screen order always matches what's stored.
+var tstList = document.getElementById('tstList');
+var tstStatus = document.getElementById('tstStatus');
+var tstData = []; // last-loaded rows, kept so reorder buttons can find neighbors
+
+document.getElementById('tstReloadBtn').addEventListener('click', loadTestimonials);
+document.getElementById('tstAddBtn').addEventListener('click', function () {
+  addTestimonialBlock({
+    id: null,
+    authorName: '',
+    authorDetail: '',
+    photoUrl: '',
+    quoteText: '',
+    displaySeconds: null,
+    displayOrder: tstData.length ? (tstData[tstData.length - 1].displayOrder + 1) : 0,
+    isActive: true
+  }, true);
+});
+
+function loadTestimonials() {
+  if (!adminKey) { tstStatus.textContent = 'Unlock the panel first.'; return; }
+  tstStatus.textContent = 'Loading...';
+  tstList.innerHTML = '';
+  fetch(PROXY_URL + '/admin/testimonials', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      tstData = (d && d.testimonials) || [];
+      if (!tstData.length) {
+        tstStatus.textContent = 'No testimonials yet - add the first one below.';
+        return;
+      }
+      tstStatus.textContent = tstData.length + ' testimonial' + (tstData.length === 1 ? '' : 's') + '.';
+      tstData.forEach(function (t) { addTestimonialBlock(t, false); });
+    })
+    .catch(function () {
+      tstStatus.textContent = 'Could not load testimonials.';
+    });
+}
+
+// Rough reading-time estimate (~200wpm, 3s floor for the name/photo to
+// register, 30s ceiling) shown as a placeholder so Ted can see what the
+// widget will use automatically when displaySeconds is left blank -
+// leaving it blank is the normal case; the field is only for manual
+// override on a testimonial that needs more or less time than its length
+// alone would suggest.
+function tstEstimateSeconds(quote) {
+  var words = (quote || '').trim().split(/\s+/).filter(Boolean).length;
+  var seconds = Math.round((words / 200) * 60) + 3;
+  return Math.max(4, Math.min(30, seconds));
+}
+
+function addTestimonialBlock(t, isNew) {
+  var block = document.createElement('div');
+  block.className = 'tst-block';
+  if (t.isActive === false) block.style.opacity = '0.65';
+
+  var head = document.createElement('div');
+  head.className = 'tst-block-head';
+
+  var orderBtns = document.createElement('div');
+  orderBtns.className = 'tst-order-btns';
+  var upBtn = document.createElement('button');
+  upBtn.type = 'button';
+  upBtn.textContent = '\u2191';
+  upBtn.title = 'Move earlier';
+  var downBtn = document.createElement('button');
+  downBtn.type = 'button';
+  downBtn.textContent = '\u2193';
+  downBtn.title = 'Move later';
+  orderBtns.appendChild(upBtn);
+  orderBtns.appendChild(downBtn);
+  head.appendChild(orderBtns);
+
+  var nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.className = 'tst-name';
+  nameInput.placeholder = 'Author name';
+  nameInput.value = t.authorName || '';
+  head.appendChild(nameInput);
+
+  var detailInput = document.createElement('input');
+  detailInput.type = 'text';
+  detailInput.className = 'tst-detail';
+  detailInput.placeholder = 'Detail line (e.g. Fantasy novelist, Beta Tester)';
+  detailInput.value = t.authorDetail || '';
+  head.appendChild(detailInput);
+
+  if (t.isActive === false) {
+    var tag = document.createElement('span');
+    tag.className = 'tst-inactive-tag';
+    tag.textContent = 'Inactive';
+    head.appendChild(tag);
+  }
+
+  block.appendChild(head);
+
+  var quoteArea = document.createElement('textarea');
+  quoteArea.className = 'tst-quote';
+  quoteArea.placeholder = 'The testimonial quote - can run long.';
+  quoteArea.value = t.quoteText || '';
+  block.appendChild(quoteArea);
+
+  var metaRow = document.createElement('div');
+  metaRow.className = 'tst-meta-row';
+
+  var photoField = document.createElement('div');
+  photoField.className = 'field grow';
+  var photoLabel = document.createElement('label');
+  photoLabel.textContent = 'Photo URL (optional)';
+  var photoInput = document.createElement('input');
+  photoInput.type = 'text';
+  photoInput.className = 'tst-photo';
+  photoInput.placeholder = 'https://stratummethod.github.io/stratum-widget/...';
+  photoInput.value = t.photoUrl || '';
+  photoField.appendChild(photoLabel);
+  photoField.appendChild(photoInput);
+  metaRow.appendChild(photoField);
+
+  var secField = document.createElement('div');
+  secField.className = 'field';
+  var secLabel = document.createElement('label');
+  secLabel.textContent = 'Display seconds (optional)';
+  var secInput = document.createElement('input');
+  secInput.type = 'text';
+  secInput.className = 'tst-seconds';
+  secInput.placeholder = 'auto (~' + tstEstimateSeconds(t.quoteText) + 's)';
+  secInput.value = t.displaySeconds != null ? String(t.displaySeconds) : '';
+  secField.appendChild(secLabel);
+  secField.appendChild(secInput);
+  metaRow.appendChild(secField);
+
+  quoteArea.addEventListener('input', function () {
+    if (!secInput.value) secInput.placeholder = 'auto (~' + tstEstimateSeconds(quoteArea.value) + 's)';
+  });
+
+  var activeField = document.createElement('div');
+  activeField.className = 'field';
+  var activeLabel = document.createElement('label');
+  activeLabel.textContent = 'Live on site';
+  var activeWrap = document.createElement('div');
+  activeWrap.className = 'toggle-row';
+  activeWrap.style.marginBottom = '0';
+  var activeCb = document.createElement('input');
+  activeCb.type = 'checkbox';
+  activeCb.className = 'tst-active';
+  activeCb.checked = t.isActive !== false;
+  activeCb.id = 'tstActive_' + (t.id || 'new_' + Math.random().toString(36).slice(2));
+  var activeCbLabel = document.createElement('label');
+  activeCbLabel.setAttribute('for', activeCb.id);
+  activeCbLabel.style.margin = '0';
+  activeCbLabel.textContent = 'Active';
+  activeWrap.appendChild(activeCb);
+  activeWrap.appendChild(activeCbLabel);
+  activeField.appendChild(activeLabel);
+  activeField.appendChild(activeWrap);
+  metaRow.appendChild(activeField);
+
+  block.appendChild(metaRow);
+
+  var foot = document.createElement('div');
+  foot.className = 'tst-block-foot';
+
+  var saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = 'tst-save-btn';
+  saveBtn.textContent = isNew ? 'Add testimonial' : 'Save';
+  foot.appendChild(saveBtn);
+
+  var deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'remove-btn';
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.style.display = isNew ? 'none' : '';
+  foot.appendChild(deleteBtn);
+
+  var saveStatus = document.createElement('span');
+  saveStatus.className = 'tst-save-status';
+  foot.appendChild(saveStatus);
+
+  block.appendChild(foot);
+  tstList.appendChild(block);
+
+  var currentId = t.id || null;
+  var currentOrder = t.displayOrder || 0;
+
+  function payload() {
+    var secondsRaw = secInput.value.trim();
+    return {
+      id: currentId,
+      authorName: nameInput.value.trim(),
+      authorDetail: detailInput.value.trim(),
+      photoUrl: photoInput.value.trim(),
+      quoteText: quoteArea.value.trim(),
+      displaySeconds: secondsRaw ? parseInt(secondsRaw, 10) : null,
+      displayOrder: currentOrder,
+      isActive: activeCb.checked
+    };
+  }
+
+  function save(afterSave) {
+    if (!payload().authorName || !payload().quoteText) {
+      saveStatus.textContent = 'Name and quote are both required.';
+      return;
+    }
+    saveStatus.textContent = 'Saving...';
+    fetch(PROXY_URL + '/admin/testimonials', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+      body: JSON.stringify(payload())
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) { saveStatus.textContent = 'Save failed.'; return; }
+        currentId = d.id;
+        isNew = false;
+        saveBtn.textContent = 'Save';
+        deleteBtn.style.display = '';
+        saveStatus.textContent = 'Saved.';
+        setTimeout(function () { saveStatus.textContent = ''; }, 2000);
+        if (afterSave) afterSave();
+      })
+      .catch(function () { saveStatus.textContent = 'Save failed.'; });
+  }
+
+  saveBtn.addEventListener('click', function () { save(); });
+
+  deleteBtn.addEventListener('click', function () {
+    if (!currentId) { block.remove(); return; }
+    if (!confirm('Delete this testimonial? This cannot be undone.')) return;
+    fetch(PROXY_URL + '/admin/testimonials?id=' + encodeURIComponent(currentId), {
+      method: 'DELETE',
+      headers: { 'X-Stratum-Admin-Key': adminKey }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok) { block.remove(); } else { saveStatus.textContent = 'Delete failed.'; }
+      })
+      .catch(function () { saveStatus.textContent = 'Delete failed.'; });
+  });
+
+  function swapOrderWith(neighborBlock) {
+    if (!neighborBlock) return;
+    var neighborSave = neighborBlock.__tstSwapOrder;
+    if (!neighborSave) return;
+    var myOrder = currentOrder;
+    var theirOrder = neighborSave.getOrder();
+    currentOrder = theirOrder;
+    neighborSave.setOrder(myOrder);
+    save();
+    neighborSave.save();
+    if (block.previousSibling === neighborBlock) {
+      tstList.insertBefore(block, neighborBlock);
+    } else {
+      tstList.insertBefore(neighborBlock, block);
+    }
+  }
+
+  block.__tstSwapOrder = {
+    getOrder: function () { return currentOrder; },
+    setOrder: function (v) { currentOrder = v; },
+    save: save
+  };
+
+  upBtn.addEventListener('click', function () {
+    var prev = block.previousElementSibling;
+    if (prev && prev.classList.contains('tst-block')) swapOrderWith(prev);
+  });
+  downBtn.addEventListener('click', function () {
+    var next = block.nextElementSibling;
+    if (next && next.classList.contains('tst-block')) swapOrderWith(next);
+  });
 }
 
 // ===== Excavation dashboard =====
@@ -2051,6 +2453,158 @@ var gCoachingIntroFields = document.getElementById('gCoachingIntroFields');
 var gHasCoachingIntroCb = document.getElementById('gHasCoachingIntro');
 var gDeliverableFields = document.getElementById('gDeliverableFields');
 var gHasDeliverableCb = document.getElementById('gHasDeliverable');
+
+// ===== Generalized deliverable field editor =====
+// Shared factory (Sept 2026) - a lesson's deliverable is now any number of
+// independently named fields (single value or repeatable list) instead of
+// one hardcoded behavior+instances shape. Instantiated once per tier below
+// so Guided and Mastery each get their own independent list container but
+// share identical add/collect/normalize logic - no per-tier drift.
+function makeDeliverableFieldEditor(listEl) {
+  var counter = 0;
+
+  function renumber() {
+    listEl.querySelectorAll('.deliv-field-block').forEach(function (b, i) {
+      b.querySelector('.deliv-field-num').textContent = (i + 1);
+    });
+  }
+
+  function addFieldBlock(field) {
+    field = field || {};
+    counter++;
+
+    var block = document.createElement('div');
+    block.className = 'area-block deliv-field-block';
+
+    var head = document.createElement('div');
+    head.className = 'area-block-head';
+
+    var num = document.createElement('span');
+    num.className = 'area-num deliv-field-num';
+    head.appendChild(num);
+
+    var keyInput = document.createElement('input');
+    keyInput.type = 'text';
+    keyInput.className = 'deliv-field-key';
+    keyInput.placeholder = 'fieldKey';
+    keyInput.value = field.key || '';
+    head.appendChild(keyInput);
+
+    var labelInput = document.createElement('input');
+    labelInput.type = 'text';
+    labelInput.className = 'deliv-field-label';
+    labelInput.placeholder = 'Label shown in the summary (e.g. Hidden Truth)';
+    labelInput.value = field.label || '';
+    head.appendChild(labelInput);
+
+    var typeSelect = document.createElement('select');
+    typeSelect.className = 'deliv-field-type';
+    [['single', 'Single value'], ['list', 'Repeatable list']].forEach(function (pair) {
+      var opt = document.createElement('option');
+      opt.value = pair[0];
+      opt.textContent = pair[1];
+      typeSelect.appendChild(opt);
+    });
+    typeSelect.value = field.type === 'list' ? 'list' : 'single';
+    head.appendChild(typeSelect);
+
+    var removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = 'Remove';
+    removeBtn.addEventListener('click', function () {
+      block.remove();
+      renumber();
+    });
+    head.appendChild(removeBtn);
+
+    block.appendChild(head);
+
+    var listOpts = document.createElement('div');
+    listOpts.className = 'deliv-field-list-opts';
+    listOpts.style.display = typeSelect.value === 'list' ? 'flex' : 'none';
+
+    var countInput = document.createElement('input');
+    countInput.type = 'text';
+    countInput.className = 'deliv-field-count';
+    countInput.placeholder = 'Count required (e.g. 3)';
+    countInput.value = field.count != null ? String(field.count) : '';
+    listOpts.appendChild(countInput);
+
+    var partsInput = document.createElement('input');
+    partsInput.type = 'text';
+    partsInput.className = 'deliv-field-parts';
+    partsInput.placeholder = 'Sub-parts, comma separated (optional - e.g. context, people, action)';
+    partsInput.value = Array.isArray(field.parts) ? field.parts.join(', ') : '';
+    listOpts.appendChild(partsInput);
+
+    block.appendChild(listOpts);
+
+    typeSelect.addEventListener('change', function () {
+      listOpts.style.display = typeSelect.value === 'list' ? 'flex' : 'none';
+    });
+
+    listEl.appendChild(block);
+    renumber();
+  }
+
+  function collectFields() {
+    var fields = [];
+    listEl.querySelectorAll('.deliv-field-block').forEach(function (b) {
+      var key = b.querySelector('.deliv-field-key').value.trim();
+      if (!key) return;
+      var label = b.querySelector('.deliv-field-label').value.trim();
+      var type = b.querySelector('.deliv-field-type').value === 'list' ? 'list' : 'single';
+      var f = { key: key, label: label || key, type: type };
+      if (type === 'list') {
+        var countRaw = parseInt(b.querySelector('.deliv-field-count').value.trim(), 10);
+        f.count = (countRaw && countRaw > 0) ? countRaw : 3;
+        var partsRaw = b.querySelector('.deliv-field-parts').value.trim();
+        if (partsRaw) {
+          f.parts = partsRaw.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        }
+      }
+      fields.push(f);
+    });
+    return fields;
+  }
+
+  return {
+    addFieldBlock: addFieldBlock,
+    collectFields: collectFields,
+    clear: function () { listEl.innerHTML = ''; }
+  };
+}
+
+// Auto-upgrades an OLD-shape deliverable config (behaviorLabel /
+// instanceLabel / instanceCount, no fields[]) into the new fields[] shape
+// for display in the editor - mirrors normalizeDeliverableConfig() in
+// engine.js exactly (including the legacy field keys "behavior" /
+// "instance", which must match so a lesson saved before this change and
+// then re-saved through this UI keeps emitting the exact same tag names).
+function normalizeDeliverableConfigForAdmin(raw) {
+  if (!raw || !raw.required) return null;
+  if (Array.isArray(raw.fields) && raw.fields.length) return { required: true, fields: raw.fields };
+  return {
+    required: true,
+    fields: [
+      { key: 'behavior', label: raw.behaviorLabel || 'Anchor Behavior', type: 'single' },
+      {
+        key: 'instance',
+        label: raw.instanceLabel || 'Instance',
+        type: 'list',
+        count: raw.instanceCount || 3,
+        parts: ['context', 'people', 'action']
+      }
+    ]
+  };
+}
+
+var gDeliverableEditor = makeDeliverableFieldEditor(document.getElementById('gDeliverableFieldsList'));
+document.getElementById('gAddDeliverableFieldBtn').addEventListener('click', function () {
+  gDeliverableEditor.addFieldBlock({});
+});
+
 var gTranslationsList = document.getElementById('gTranslationsList');
 var gAddLangSelect = document.getElementById('gAddLangSelect');
 var gSaveStatus = document.getElementById('gSaveStatus');
@@ -2301,9 +2855,7 @@ function clearGuidedForm() {
   gAreasList.innerHTML = '';
   gHasDeliverableCb.checked = false;
   gDeliverableFields.className = 'resource-fields disabled';
-  document.getElementById('gBehaviorLabel').value = '';
-  document.getElementById('gInstanceLabel').value = '';
-  document.getElementById('gInstanceCount').value = '';
+  gDeliverableEditor.clear();
   document.getElementById('gCoachingApproach').value = '';
   document.getElementById('gCalibration').value = '';
   document.getElementById('gGreetingFresh').value = '';
@@ -2354,13 +2906,12 @@ function fillGuidedForm(config) {
   document.getElementById('gCoachingApproach').value = rf.coachingApproach || '';
   document.getElementById('gCalibration').value = (rf.calibrationExamples || []).join('\n');
 
-  var dv = rf.deliverable;
+  var dv = normalizeDeliverableConfigForAdmin(rf.deliverable);
+  gDeliverableEditor.clear();
   if (dv && dv.required) {
     gHasDeliverableCb.checked = true;
     gDeliverableFields.className = 'resource-fields';
-    document.getElementById('gBehaviorLabel').value = dv.behaviorLabel || '';
-    document.getElementById('gInstanceLabel').value = dv.instanceLabel || '';
-    document.getElementById('gInstanceCount').value = dv.instanceCount != null ? String(dv.instanceCount) : '';
+    dv.fields.forEach(function (f) { gDeliverableEditor.addFieldBlock(f); });
   } else {
     gHasDeliverableCb.checked = false;
     gDeliverableFields.className = 'resource-fields disabled';
@@ -2413,11 +2964,8 @@ function collectGuidedConfig() {
 
   var deliverableObj = null;
   if (gHasDeliverableCb.checked) {
-    var gbLabel = document.getElementById('gBehaviorLabel').value.trim() || 'Anchor Behavior';
-    var giLabel = document.getElementById('gInstanceLabel').value.trim() || 'Instance';
-    var giCountRaw = parseInt(document.getElementById('gInstanceCount').value.trim(), 10);
-    var giCount = (giCountRaw && giCountRaw > 0) ? giCountRaw : 3;
-    deliverableObj = { required: true, behaviorLabel: gbLabel, instanceLabel: giLabel, instanceCount: giCount };
+    var gFields = gDeliverableEditor.collectFields();
+    if (gFields.length) deliverableObj = { required: true, fields: gFields };
   }
 
   return {
@@ -2536,11 +3084,15 @@ function configToReadableText(config, savedAt) {
   }
 
   if (config.reflectionFramework && config.reflectionFramework.deliverable && config.reflectionFramework.deliverable.required) {
-    var dv = config.reflectionFramework.deliverable;
+    var dv = normalizeDeliverableConfigForAdmin(config.reflectionFramework.deliverable);
     section('STRUCTURED DELIVERABLE (validated by the engine before the session can close)');
-    lines.push('Behavior label: ' + (dv.behaviorLabel || 'Anchor Behavior'));
-    lines.push('Instance label: ' + (dv.instanceLabel || 'Instance'));
-    lines.push('Instances required: ' + (dv.instanceCount || 3));
+    (dv.fields || []).forEach(function (f) {
+      if (f.type === 'list') {
+        lines.push((f.label || f.key) + ': ' + (f.count || 3) + ' required' + (Array.isArray(f.parts) && f.parts.length ? ' (parts: ' + f.parts.join(', ') + ')' : ''));
+      } else {
+        lines.push((f.label || f.key) + ': single value');
+      }
+    });
   }
 
   if (config.reflectionFramework && config.reflectionFramework.coachingApproach) {
@@ -2715,6 +3267,10 @@ var mCoachingIntroFields = document.getElementById('mCoachingIntroFields');
 var mHasCoachingIntroCb = document.getElementById('mHasCoachingIntro');
 var mDeliverableFields = document.getElementById('mDeliverableFields');
 var mHasDeliverableCb = document.getElementById('mHasDeliverable');
+var mDeliverableEditor = makeDeliverableFieldEditor(document.getElementById('mDeliverableFieldsList'));
+document.getElementById('mAddDeliverableFieldBtn').addEventListener('click', function () {
+  mDeliverableEditor.addFieldBlock({});
+});
 var mTranslationsList = document.getElementById('mTranslationsList');
 var mAddLangSelect = document.getElementById('mAddLangSelect');
 var mSaveStatus = document.getElementById('mSaveStatus');
@@ -2965,9 +3521,7 @@ function clearMasteryForm() {
   mAreasList.innerHTML = '';
   mHasDeliverableCb.checked = false;
   mDeliverableFields.className = 'resource-fields disabled';
-  document.getElementById('mBehaviorLabel').value = '';
-  document.getElementById('mInstanceLabel').value = '';
-  document.getElementById('mInstanceCount').value = '';
+  mDeliverableEditor.clear();
   document.getElementById('mCoachingApproach').value = '';
   document.getElementById('mCalibration').value = '';
   document.getElementById('mGreetingFresh').value = '';
@@ -3013,13 +3567,12 @@ function fillMasteryForm(config) {
   document.getElementById('mCoachingApproach').value = rf.coachingApproach || '';
   document.getElementById('mCalibration').value = (rf.calibrationExamples || []).join('\n');
 
-  var dv = rf.deliverable;
+  var dv = normalizeDeliverableConfigForAdmin(rf.deliverable);
+  mDeliverableEditor.clear();
   if (dv && dv.required) {
     mHasDeliverableCb.checked = true;
     mDeliverableFields.className = 'resource-fields';
-    document.getElementById('mBehaviorLabel').value = dv.behaviorLabel || '';
-    document.getElementById('mInstanceLabel').value = dv.instanceLabel || '';
-    document.getElementById('mInstanceCount').value = dv.instanceCount != null ? String(dv.instanceCount) : '';
+    dv.fields.forEach(function (f) { mDeliverableEditor.addFieldBlock(f); });
   } else {
     mHasDeliverableCb.checked = false;
     mDeliverableFields.className = 'resource-fields disabled';
@@ -3072,11 +3625,8 @@ function collectMasteryConfig() {
 
   var deliverableObj = null;
   if (mHasDeliverableCb.checked) {
-    var mbLabel = document.getElementById('mBehaviorLabel').value.trim() || 'Anchor Behavior';
-    var miLabel = document.getElementById('mInstanceLabel').value.trim() || 'Instance';
-    var miCountRaw = parseInt(document.getElementById('mInstanceCount').value.trim(), 10);
-    var miCount = (miCountRaw && miCountRaw > 0) ? miCountRaw : 3;
-    deliverableObj = { required: true, behaviorLabel: mbLabel, instanceLabel: miLabel, instanceCount: miCount };
+    var mFields = mDeliverableEditor.collectFields();
+    if (mFields.length) deliverableObj = { required: true, fields: mFields };
   }
 
   return {
