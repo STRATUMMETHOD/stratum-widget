@@ -1400,13 +1400,16 @@
       'THE DEPTH RULE - HOLD THE LINE GENTLY:\nIf you were the live coach in the room, you would not let someone get away with a flat, surface-level first answer. So: when an answer is generic, rehearsed-sounding, or just one clipped sentence, reflect it back gently and ask ONE specific, warm follow-up that invites a little more - "Say more about that," "What did that actually look like on the page?", "What\'s the real version of that?" Ask that follow-up once per area. If the second answer is genuine and specific, affirm it and move on. If they are still staying on the surface after that one gentle nudge, do not force a third round. Accept where they are, thank them for what they gave you, and move to the next area. Never let a surface answer pass completely unremarked, but never turn this into an interrogation.'
     );
 
-    if (LESSON.reflectionFramework.deliverable && LESSON.reflectionFramework.deliverable.required) {
-      var dReq = LESSON.reflectionFramework.deliverable;
-      var count = dReq.instanceCount || 3;
+    var dReq = getDeliverableConfig();
+    if (dReq) {
+      var fieldDescs = dReq.fields.map(function (f) {
+        return f.type === 'list'
+          ? 'exactly ' + (f.count || 3) + ' real, specific ' + (f.label || f.key) + '(s)'
+          : 'a single, specific ' + (f.label || f.key);
+      });
       parts.push(
-        'OVERRIDE TO THE DEPTH RULE FOR THIS LESSON - THIS TAKES PRECEDENCE:\nThis lesson has one non-negotiable deliverable: a single ' +
-        (dReq.behaviorLabel || 'anchor behavior') + ', supported by exactly ' + count + ' real, specific ' +
-        (dReq.instanceLabel || 'instances') + '. The general depth rule above (accept where they are after one nudge, move on) does NOT apply to gathering these ' + count + ' instances. Do not move toward closing this session with fewer than ' + count + ' complete instances, no matter how many follow-up questions it takes. If an instance is vague, a label, or a single unsupported moment, ask again - a different angle, a different question, but keep asking until a real one lands. This is the one place in the conversation where you hold firm past a single gentle nudge.'
+        'OVERRIDE TO THE DEPTH RULE FOR THIS LESSON - THIS TAKES PRECEDENCE:\nThis lesson has non-negotiable deliverables: ' +
+        fieldDescs.join(', and ') + '. The general depth rule above (accept where they are after one nudge, move on) does NOT apply to gathering these. Do not move toward closing this session until every one of them is genuinely complete, no matter how many follow-up questions it takes. If an answer is vague, a label, or a single unsupported moment, ask again - a different angle, a different question, but keep asking until a real one lands. This is the one place in the conversation where you hold firm past a single gentle nudge.'
       );
     }
 
@@ -1426,24 +1429,37 @@
       'Once all the areas have been genuinely explored - not perfectly, not exhaustively, just past a first surface answer - bring the conversation to a warm close. Thank them for what they shared, tell them this becomes something they can keep, and let them know ' + LESSON.nextLessonLabel + ' is next.'
     ];
 
-    if (LESSON.reflectionFramework.deliverable && LESSON.reflectionFramework.deliverable.required) {
-      var d = LESSON.reflectionFramework.deliverable;
-      var n = d.instanceCount || 3;
-      var behaviorLabel = d.behaviorLabel || 'anchor behavior';
-      var instanceLabel = d.instanceLabel || 'instance';
+    var dWrap = getDeliverableConfig();
+    if (dWrap) {
+      var tagLines = '';
+      var tagNamesForClose = [];
+      dWrap.fields.forEach(function (f) {
+        var tag = fieldTagName(f.key);
+        tagNamesForClose.push(tag);
+        if (f.type === 'list') {
+          var count = f.count || 3;
+          var payloadHint = Array.isArray(f.parts) && f.parts.length
+            ? f.parts.join(' | ')
+            : 'exactly what applies for this one, stated specifically';
+          for (var i = 1; i <= count; i++) {
+            tagLines += '[' + tag + '_' + i + ': ' + payloadHint + ']\n';
+          }
+        } else {
+          tagLines += '[' + tag + ': the finished, specific ' + (f.label || f.key) + ']\n';
+        }
+      });
 
-      var instanceLines = '';
-      for (var i = 1; i <= n; i++) {
-        instanceLines += '[INSTANCE_' + i + ': context here | who was there | exactly what they did]\n';
-      }
+      var fieldSummary = dWrap.fields.map(function (f) {
+        return f.type === 'list' ? (f.count || 3) + ' ' + (f.label || f.key) + '(s)' : (f.label || f.key);
+      }).join(', ');
 
       wrapParts.push(
-        'CAPTURING THE DELIVERABLE - REQUIRED BEFORE YOU CAN CLOSE:\nBefore your closing message, on their own lines, include these hidden tags capturing the finished ' + behaviorLabel + ' and all ' + n + ' ' + instanceLabel + 's, exactly in this format (one line each, pipe-separated, no line breaks inside a tag):\n\n[BEHAVIOR: the one-sentence anchor behavior, stated as a specific observable action]\n' + instanceLines +
+        'CAPTURING THE DELIVERABLE - REQUIRED BEFORE YOU CAN CLOSE:\nBefore your closing message, on their own lines, include hidden tags capturing every finished deliverable field - ' + fieldSummary + ' - exactly in this format (one line each, pipe-separated where shown, no line breaks inside a tag):\n\n' + tagLines +
         '\nEvery field must contain real, specific content the student actually gave you - never a placeholder, never something you infer or invent on their behalf. Do not emit these tags, and do not close the session, until you actually have all of this. If the student trails off or seems ready to stop before you have a complete deliverable, gently keep gathering it rather than closing early - this deliverable is the entire point of the lesson.'
       );
 
       wrapParts.push(
-        'Immediately after the BEHAVIOR and INSTANCE tags, on its own line, include a hidden tag capturing the single most important thing that surfaced across the whole conversation, in one plain sentence, third person, under twenty words - exactly in this format: [SUMMARY: One sentence capturing the core insight that surfaced.] - this is never shown to the student, it is used only to build their record of the course. End that closing message with the exact tag [REFLECTION_COMPLETE] on its own line at the very end, after every other tag. Only include these tags once, in the message where you are genuinely wrapping up, and only once BEHAVIOR and all ' + n + ' INSTANCE tags are complete and specific.'
+        'Immediately after the ' + tagNamesForClose.join('/') + ' tags, on its own line, include a hidden tag capturing the single most important thing that surfaced across the whole conversation, in one plain sentence, third person, under twenty words - exactly in this format: [SUMMARY: One sentence capturing the core insight that surfaced.] - this is never shown to the student, it is used only to build their record of the course. End that closing message with the exact tag [REFLECTION_COMPLETE] on its own line at the very end, after every other tag. Only include these tags once, in the message where you are genuinely wrapping up, and only once every deliverable field above is complete and specific.'
       );
     } else {
       wrapParts.push(
@@ -1494,7 +1510,7 @@
     }
 
     if (v.language) {
-      block += '\n\nLANGUAGE: This student has selected ' + v.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + v.language + ' - every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically in ' + v.language + ', not as a literal word-for-word translation. Exception: keep the [NAME: ...] tag, the [SUMMARY: ...] tag, the [BEHAVIOR: ...] / [INSTANCE_n: ...] tags, and the [REFLECTION_COMPLETE] tag exactly in their English bracket format as instructed elsewhere in this prompt - only the name inside the NAME tag should reflect what the student actually typed, and the sentence inside the SUMMARY tag must always be written in English regardless of ' + v.language + ', because it is read by the instructor, not the student. The BEHAVIOR and INSTANCE tag contents should be written in ' + v.language + ' since they belong to the student, matching whatever language they did the session in.';
+      block += '\n\nLANGUAGE: This student has selected ' + v.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + v.language + ' - every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically in ' + v.language + ', not as a literal word-for-word translation. Exception: keep every hidden bracket tag - [NAME: ...], [SUMMARY: ...], every deliverable field tag such as [FIELDKEY: ...] or [FIELDKEY_n: ...], and [REFLECTION_COMPLETE] - exactly in their English bracket format as instructed elsewhere in this prompt - only the name inside the NAME tag should reflect what the student actually typed, and the sentence inside the SUMMARY tag must always be written in English regardless of ' + v.language + ', because it is read by the instructor, not the student. The content inside deliverable field tags should be written in ' + v.language + ' since it belongs to the student, matching whatever language they did the session in.';
     }
 
     return block;
@@ -1639,11 +1655,77 @@
 
   var MAX_DELIVERABLE_RETRIES = 2;
   var deliverableRetryCount = 0;
-  var lastDeliverable = null; // { behavior, instances: [{context, people, action}, ...] } once validated
+  var lastDeliverable = null; // { fields: { <key>: string | string[] | object[] } } once validated
+
+  // Generalized (Sept 2026) deliverable system - a lesson's deliverable can
+  // now be any number of independently named fields instead of one
+  // hardcoded "behavior + N instances" shape. Each field is either:
+  //   type "single" - one string value, tag format [KEY: value]
+  //   type "list"   - an array of `count` items, tag format [KEY_n: value].
+  //                   If the field also defines `parts` (an array of
+  //                   sub-field names, e.g. ["context","people","action"]),
+  //                   each item's tag payload is pipe-delimited matching
+  //                   those parts and gets parsed into an object; if
+  //                   `parts` is omitted, each item is just a plain string.
+  //
+  // normalizeDeliverableConfig() auto-converts any OLD-shape config already
+  // saved in D1 (behaviorLabel/instanceLabel/instanceCount, no fields[])
+  // into the new fields[] shape at read time, so Lesson 1's already-tested,
+  // already-live config keeps working without Ted needing to re-enter it -
+  // new lessons entered through the admin panel write the new shape
+  // directly, and old ones are upgraded transparently on load.
+  function normalizeDeliverableConfig(raw) {
+    if (!raw || !raw.required) return null;
+    if (Array.isArray(raw.fields) && raw.fields.length) {
+      return { required: true, fields: raw.fields };
+    }
+    // Legacy shape fallback. Field keys are chosen to exactly reproduce the
+    // original hardcoded tag names (BEHAVIOR / INSTANCE_n) via
+    // fieldTagName() below - not just the same shape - so a conversation
+    // already in progress at deploy time, or an already-saved legacy
+    // config, keeps parsing correctly with zero behavior change.
+    return {
+      required: true,
+      fields: [
+        { key: 'behavior', label: raw.behaviorLabel || 'Anchor Behavior', type: 'single' },
+        {
+          key: 'instance',
+          label: raw.instanceLabel || 'Instance',
+          type: 'list',
+          count: raw.instanceCount || 3,
+          parts: ['context', 'people', 'action']
+        }
+      ]
+    };
+  }
 
   function getDeliverableConfig() {
-    return (LESSON && LESSON.reflectionFramework && LESSON.reflectionFramework.deliverable &&
-      LESSON.reflectionFramework.deliverable.required) ? LESSON.reflectionFramework.deliverable : null;
+    var raw = (LESSON && LESSON.reflectionFramework) ? LESSON.reflectionFramework.deliverable : null;
+    return normalizeDeliverableConfig(raw);
+  }
+
+  // Turns a field key into the bracket-tag name used in the model's output
+  // - uppercased, non-alphanumerics stripped, so a key like "hiddenTruth"
+  // becomes the tag HIDDENTRUTH and "causalLock" becomes CAUSALLOCK.
+  function fieldTagName(key) {
+    return String(key || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  }
+
+  // Strips every deliverable tag for the given config out of a block of
+  // text - used both when discarding an invalid completion attempt and
+  // when cleaning the transcript for the Word doc export, so the two stay
+  // in sync automatically as fields are added or renamed.
+  function stripDeliverableTags(text, config) {
+    var out = text;
+    (config && config.fields ? config.fields : []).forEach(function (f) {
+      var tag = fieldTagName(f.key);
+      if (f.type === 'list') {
+        out = out.replace(new RegExp('\\[' + tag + '_\\d+:\\s*[^\\]]+\\]\\s*', 'gi'), '');
+      } else {
+        out = out.replace(new RegExp('\\[' + tag + ':\\s*[^\\]]+\\]\\s*', 'i'), '');
+      }
+    });
+    return out;
   }
 
   function extractTags(raw) {
@@ -1651,8 +1733,7 @@
     var name = null;
     var complete = false;
     var summary = null;
-    var behavior = null;
-    var instances = [];
+    var fields = {};
 
     var nameMatch = text.match(/^\[NAME:\s*([^\]]+)\]\s*/i);
     if (nameMatch) {
@@ -1660,31 +1741,42 @@
       text = text.replace(nameMatch[0], '');
     }
 
-    var behaviorMatch = text.match(/\[BEHAVIOR:\s*([^\]]+)\]\s*/i);
-    if (behaviorMatch) {
-      behavior = behaviorMatch[1].trim();
-      text = text.replace(behaviorMatch[0], '');
-    }
-
-    // Pull every [INSTANCE_n: context | people | action] tag present, in
-    // whatever order the model emitted them, rather than assuming a fixed
-    // count - validateDeliverable() below checks the count against the
-    // lesson's configured requirement.
-    var instanceRe = /\[INSTANCE_(\d+):\s*([^\]]+)\]\s*/gi;
-    var im;
-    while ((im = instanceRe.exec(raw)) !== null) {
-      var fields = im[2].split('|').map(function (s) { return s.trim(); });
-      instances.push({
-        index: Number(im[1]),
-        context: fields[0] || '',
-        people: fields[1] || '',
-        action: fields[2] || ''
-      });
-    }
-    if (instances.length) {
-      text = text.replace(instanceRe, '');
-      instances.sort(function (a, b) { return a.index - b.index; });
-    }
+    // Generic deliverable field parsing - walks the lesson's own field
+    // config (single value vs. repeatable list, with or without
+    // pipe-delimited sub-parts) rather than assuming a fixed BEHAVIOR /
+    // INSTANCE_n shape, so any lesson's deliverable fields parse the same
+    // way without engine changes.
+    var config = getDeliverableConfig();
+    (config && config.fields ? config.fields : []).forEach(function (f) {
+      var tag = fieldTagName(f.key);
+      if (f.type === 'list') {
+        var count = f.count || 3;
+        var re = new RegExp('\\[' + tag + '_(\\d+):\\s*([^\\]]+)\\]\\s*', 'gi');
+        var items = [];
+        var im;
+        while ((im = re.exec(raw)) !== null) {
+          var payload = im[2];
+          var value;
+          if (Array.isArray(f.parts) && f.parts.length) {
+            var pieces = payload.split('|').map(function (s) { return s.trim(); });
+            value = {};
+            f.parts.forEach(function (partName, i) { value[partName] = pieces[i] || ''; });
+          } else {
+            value = payload.trim();
+          }
+          items[Number(im[1]) - 1] = value;
+        }
+        text = text.replace(re, '');
+        // Drop any holes (a skipped index) rather than leaving `undefined`
+        // entries, so length checks in validateDeliverable are accurate.
+        fields[f.key] = items.filter(function (v) { return v !== undefined; });
+      } else {
+        var reSingle = new RegExp('\\[' + tag + ':\\s*([^\\]]+)\\]\\s*', 'i');
+        var m = text.match(reSingle);
+        fields[f.key] = m ? m[1].trim() : null;
+        if (m) text = text.replace(reSingle, '');
+      }
+    });
 
     var summaryMatch = text.match(/\[SUMMARY:\s*([^\]]+)\]\s*/i);
     if (summaryMatch) {
@@ -1702,30 +1794,38 @@
       name: name,
       complete: complete,
       summary: summary,
-      behavior: behavior,
-      instances: instances
+      fields: fields
     };
   }
 
   // Checks a parsed deliverable against the lesson's requirement. Returns
   // { valid: bool, missing: [strings describing what's missing or empty] }
-  // so the corrective message can be specific rather than generic.
+  // so the corrective message can be specific rather than generic. Walks
+  // config.fields generically instead of assuming a fixed shape.
   function validateDeliverable(parsed, config) {
     var missing = [];
-    var requiredCount = config.instanceCount || 3;
+    var data = parsed.fields || {};
 
-    if (!parsed.behavior) {
-      missing.push('the ' + (config.behaviorLabel || 'anchor behavior') + ' itself');
-    }
+    (config.fields || []).forEach(function (f) {
+      var label = f.label || f.key;
+      var val = data[f.key];
 
-    if (parsed.instances.length < requiredCount) {
-      missing.push((requiredCount - parsed.instances.length) + ' more ' +
-        (config.instanceLabel || 'instance') + (requiredCount - parsed.instances.length === 1 ? '' : 's'));
-    }
-
-    parsed.instances.forEach(function (inst) {
-      if (!inst.context || !inst.people || !inst.action) {
-        missing.push('a complete context/people/action for instance ' + inst.index + ' (one or more fields were left blank)');
+      if (f.type === 'list') {
+        var required = f.count || 3;
+        var have = Array.isArray(val) ? val.length : 0;
+        if (have < required) {
+          missing.push((required - have) + ' more ' + label + (required - have === 1 ? '' : 's'));
+        }
+        (val || []).forEach(function (item, i) {
+          if (Array.isArray(f.parts) && f.parts.length) {
+            var incomplete = f.parts.some(function (p) { return !item || !item[p]; });
+            if (incomplete) missing.push('a complete ' + f.parts.join('/') + ' for ' + label + ' ' + (i + 1) + ' (one or more parts were left blank)');
+          } else if (!item) {
+            missing.push('a complete ' + label + ' ' + (i + 1) + ' (it was left blank)');
+          }
+        });
+      } else {
+        if (!val) missing.push('the ' + label + ' itself');
       }
     });
 
@@ -1735,10 +1835,11 @@
   function reportLessonComplete(summaryText) {
     if (!STUDENT_ID) return;
     var body = { studentId: STUDENT_ID, lesson: LESSON_ID, summary: summaryText || null };
-    // Send the validated structured deliverable (behavior + instances)
-    // alongside the summary when this lesson has one - lets the admin
-    // audit view (GET /admin/deliverables) show exactly what a student's
-    // session produced, not just the one-sentence summary.
+    // Send the validated structured deliverable (whatever fields this
+    // lesson's config defines) alongside the summary when this lesson has
+    // one - lets the admin audit view (GET /admin/deliverables) show
+    // exactly what a student's session produced, not just the one-sentence
+    // summary.
     if (lastDeliverable) body.deliverable = lastDeliverable;
     fetch(PROXY_URL + '/complete', {
       method: 'POST',
@@ -1816,24 +1917,48 @@
       .catch(function () { return null; });
   }
 
+  // Turns a parsed list-item value (either a plain string, or a
+  // {part: value, ...} object when the field defines `parts`) into one
+  // display line - joining parts with an em dash the same way the
+  // original context/people/action instances always displayed.
+  function formatListItemText(item, field) {
+    if (item && typeof item === 'object' && Array.isArray(field.parts)) {
+      return field.parts.map(function (p) { return item[p] || ''; }).filter(Boolean).join(' — ');
+    }
+    return String(item || '');
+  }
+
   // Renders a clean, plain-language snapshot of the captured deliverable -
   // shown both at the moment of completion and folded into the Word doc.
   // Kept as its own function so both call sites stay in sync automatically.
+  // Generalized (Sept 2026) to render any number of named fields, each
+  // either a single value or a numbered list, rather than one hardcoded
+  // behavior + instances layout.
   function buildDeliverableSnapshotEl(deliverable, config) {
     var box = el('div', 'srx-deliverable');
-    mount(box, el('div', 'srx-deliverable-label', config && config.behaviorLabel ? config.behaviorLabel.toUpperCase() : 'ANCHOR BEHAVIOR'));
-    mount(box, el('div', 'srx-deliverable-behavior', deliverable.behavior));
+    var data = (deliverable && deliverable.fields) ? deliverable.fields : {};
 
-    var list = el('div', 'srx-deliverable-instances');
-    deliverable.instances.forEach(function (inst, i) {
-      var row = el('div', 'srx-deliverable-instance');
-      mount(row, el('div', 'srx-deliverable-instance-num', String(i + 1)));
-      var text = el('div', 'srx-deliverable-instance-text');
-      text.textContent = inst.context + ' — with ' + inst.people + ' — ' + inst.action;
-      mount(row, text);
-      mount(list, row);
+    (config && config.fields ? config.fields : []).forEach(function (f) {
+      var label = (f.label || f.key).toUpperCase();
+      var val = data[f.key];
+
+      if (f.type === 'list') {
+        mount(box, el('div', 'srx-deliverable-label', label));
+        var list = el('div', 'srx-deliverable-instances');
+        (val || []).forEach(function (item, i) {
+          var row = el('div', 'srx-deliverable-instance');
+          mount(row, el('div', 'srx-deliverable-instance-num', String(i + 1)));
+          var text = el('div', 'srx-deliverable-instance-text');
+          text.textContent = formatListItemText(item, f);
+          mount(row, text);
+          mount(list, row);
+        });
+        mount(box, list);
+      } else {
+        mount(box, el('div', 'srx-deliverable-label', label));
+        mount(box, el('div', 'srx-deliverable-behavior', val || ''));
+      }
     });
-    mount(box, list);
 
     return box;
   }
@@ -1884,20 +2009,27 @@
 
     if (lastDeliverable) {
       var cfg = getDeliverableConfig();
-      var behaviorLabel = (cfg && cfg.behaviorLabel) || 'Anchor Behavior';
-      var instanceLabel = (cfg && cfg.instanceLabel) || 'Instance';
+      var data = lastDeliverable.fields || {};
 
       body += otag('div', 'style="background:#F5EFE0;border:1px solid #DDD0B8;border-left:4px solid #C9A46C;padding:16px 20px;margin:0 0 22px;"');
-      body += otag('p', 'style="margin:0 0 4px;font-family:Calibri,Arial,sans-serif;font-size:10pt;letter-spacing:1px;text-transform:uppercase;color:#8b6340;font-weight:bold;"') +
-              escapeHtml(behaviorLabel.toUpperCase()) + ctag('p');
-      body += otag('p', 'style="margin:0 0 14px;font-family:Georgia,serif;font-size:14pt;color:#2e1f0e;"') +
-              escapeHtml(lastDeliverable.behavior) + ctag('p');
 
-      lastDeliverable.instances.forEach(function (inst, i) {
-        body += otag('p', 'style="margin:0 0 8px;"') +
-                otag('strong') + escapeHtml(instanceLabel) + ' ' + (i + 1) + ':' + ctag('strong') + ' ' +
-                escapeHtml(inst.context) + ' — with ' + escapeHtml(inst.people) + ' — ' + escapeHtml(inst.action) +
-                ctag('p');
+      (cfg && cfg.fields ? cfg.fields : []).forEach(function (f) {
+        var label = f.label || f.key;
+        var val = data[f.key];
+
+        if (f.type === 'list') {
+          (val || []).forEach(function (item, i) {
+            body += otag('p', 'style="margin:0 0 8px;"') +
+                    otag('strong') + escapeHtml(label) + ' ' + (i + 1) + ':' + ctag('strong') + ' ' +
+                    escapeHtml(formatListItemText(item, f)) +
+                    ctag('p');
+          });
+        } else {
+          body += otag('p', 'style="margin:0 0 4px;font-family:Calibri,Arial,sans-serif;font-size:10pt;letter-spacing:1px;text-transform:uppercase;color:#8b6340;font-weight:bold;"') +
+                  escapeHtml(label.toUpperCase()) + ctag('p');
+          body += otag('p', 'style="margin:0 0 14px;font-family:Georgia,serif;font-size:14pt;color:#2e1f0e;"') +
+                  escapeHtml(val || '') + ctag('p');
+        }
       });
       body += ctag('div');
     }
@@ -1908,12 +2040,11 @@
       var content = msg.content;
       if (msg.role === 'assistant') {
         content = stripAsteriskEmphasis(
-          content.replace(/^\[NAME:\s*[^\]]+\]\s*/i, '')
-                 .replace(/\[BEHAVIOR:\s*[^\]]+\]\s*/i, '')
-                 .replace(/\[INSTANCE_\d+:\s*[^\]]+\]\s*/gi, '')
-                 .replace(/\[SUMMARY:\s*[^\]]+\]\s*/i, '')
-                 .replace('[REFLECTION_COMPLETE]', '')
-                 .trim()
+          stripDeliverableTags(content, getDeliverableConfig())
+            .replace(/^\[NAME:\s*[^\]]+\]\s*/i, '')
+            .replace(/\[SUMMARY:\s*[^\]]+\]\s*/i, '')
+            .replace('[REFLECTION_COMPLETE]', '')
+            .trim()
         );
       }
       if (!content) return;
@@ -2031,10 +2162,8 @@
           if (!check.valid && deliverableRetryCount < MAX_DELIVERABLE_RETRIES) {
             hideTyping();
 
-            var cleanedContent = raw
+            var cleanedContent = stripDeliverableTags(raw, deliverableConfig)
               .replace(/^\[NAME:\s*[^\]]+\]\s*/i, '')
-              .replace(/\[BEHAVIOR:\s*[^\]]+\]\s*/i, '')
-              .replace(/\[INSTANCE_\d+:\s*[^\]]+\]\s*/gi, '')
               .replace(/\[SUMMARY:\s*[^\]]+\]\s*/i, '')
               .replace('[REFLECTION_COMPLETE]', '')
               .trim();
@@ -2058,12 +2187,7 @@
             parsed.complete = false;
             raw = raw.replace('[REFLECTION_COMPLETE]', '');
           } else {
-            lastDeliverable = {
-              behavior: parsed.behavior,
-              instances: parsed.instances.map(function (inst) {
-                return { context: inst.context, people: inst.people, action: inst.action };
-              })
-            };
+            lastDeliverable = { fields: parsed.fields };
           }
         }
 
