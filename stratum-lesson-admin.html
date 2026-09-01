@@ -5,159 +5,147 @@
 <title>Stratum Lesson Admin</title>
 <style>
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
     font-family: 'Inter', Arial, sans-serif;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 40px 24px 100px;
-    color: #222;
-    background: #faf8f4;
+    margin: 0;
+    color: #2A241C;
+    background: #F7F5F0;
+    display: flex;
+    min-height: 100vh;
   }
-  h1 {
+
+  /* ===== Sidebar ===== */
+  .sidebar {
+    width: 236px;
+    flex-shrink: 0;
+    background: #FFFFFF;
+    border-right: 1px solid #ECE7DC;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 14px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .brand {
     font-family: 'Bebas Neue', Arial, sans-serif;
-    font-size: 30px;
-    letter-spacing: .04em;
-    color: #281e16;
+    font-size: 20px;
+    letter-spacing: .06em;
+    color: #1E1810;
+    padding: 4px 10px 24px;
+  }
+  .brand span { color: #C9A46C; }
+  .nav-group { display: flex; flex-direction: column; gap: 3px; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #6B6355;
+    cursor: pointer;
+    border: none;
+    background: none;
+    text-align: left;
+    width: 100%;
+    font-family: 'Inter', Arial, sans-serif;
+    transition: background .12s ease, color .12s ease;
+  }
+  .nav-item:hover { background: #F7F3EA; color: #2A241C; }
+  .nav-item.active { background: #FBF3E3; color: #8A6630; }
+  .nav-item.active .nav-dot { background: #C9A46C; }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: #D9D2C2; flex-shrink: 0; }
+  .nav-spacer { flex: 1; }
+  .nav-bottom { border-top: 1px solid #ECE7DC; margin-top: 10px; padding-top: 10px; }
+
+  /* ===== Main ===== */
+  .main { flex: 1; padding: 30px 40px 80px; max-width: 1080px; }
+  .page-head { margin-bottom: 22px; }
+  .page-head h1 {
+    font-family: 'Bebas Neue', Arial, sans-serif;
+    font-size: 27px;
+    letter-spacing: .03em;
+    color: #1E1810;
     margin: 0 0 4px;
   }
-  .sub { color: #8a7a5e; font-size: 13px; margin-bottom: 28px; }
+  .sub { color: #9A927E; font-size: 13px; }
 
   #authBar {
-    background: #fff;
-    border: 1px solid #e2d9c4;
-    padding: 18px 20px;
-    margin-bottom: 24px;
     display: flex;
     gap: 10px;
     align-items: center;
   }
   #authBar input {
     flex: 1;
-    padding: 9px 10px;
+    padding: 10px 12px;
     font-size: 13px;
-    border: 1px solid #ccc;
+    border: 1px solid #E3DCC9;
+    border-radius: 8px;
+    background: #FCFAF5;
   }
-  #authBar button, .btn {
-    padding: 9px 18px;
+  #authBar input:focus { outline: none; border-color: #C9A46C; background: #fff; }
+  .btn, #authBar button {
+    padding: 10px 18px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
     font-family: 'Inter', Arial, sans-serif;
     background: #3B2F24;
     color: #F5EFE0;
     border: none;
+    border-radius: 8px;
     cursor: pointer;
   }
-  #authBar button:hover, .btn:hover { background: #5a4535; }
-  .btn.secondary { background: #fff; color: #3B2F24; border: 1px solid #3B2F24; }
-  .btn.secondary:hover { background: #f5f0e6; }
-  .btn.danger { background: #fff; color: #b3261e; border: 1px solid #b3261e; }
+  .btn:hover, #authBar button:hover { background: #5a4535; }
+  .btn.secondary { background: #fff; color: #3B2F24; border: 1px solid #E3DCC9; }
+  .btn.secondary:hover { background: #F7F3EA; }
+  .btn.danger { background: #fff; color: #b3261e; border: 1px solid #f3c9c4; }
   .btn.danger:hover { background: #fdecea; }
-  #authStatus { font-size: 12.5px; color: #b3261e; }
+  #authStatus { font-size: 12.5px; color: #b3261e; font-weight: 600; }
   #authStatus.ok { color: #2e7d32; }
 
   #panel { display: none; }
 
-  .top-tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 22px;
-    border-bottom: 1px solid #e2d9c4;
-  }
-  .top-tab {
-    background: none;
-    border: none;
-    padding: 10px 18px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: .03em;
-    text-transform: uppercase;
-    color: #8a7a5e;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    font-family: 'Inter', Arial, sans-serif;
-  }
-  .top-tab:hover { color: #3B2F24; }
-  .top-tab.active { color: #3B2F24; border-bottom-color: #8a6630; }
-
-  .sub-tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #ece2cc;
-  }
-  .sub-tab {
-    background: none;
-    border: none;
-    padding: 8px 14px;
-    font-size: 11.5px;
-    font-weight: 700;
-    letter-spacing: .05em;
-    text-transform: uppercase;
-    color: #a99878;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    font-family: 'Inter', Arial, sans-serif;
-  }
-  .sub-tab:hover { color: #3B2F24; }
-  .sub-tab.active { color: #3B2F24; border-bottom-color: #C9A46C; }
-
-  #dashboardView {
+  #dashboardView, #excavationView, #deliverablesView, #testimonialsView {
     background: #fff;
-    border: 1px solid #e2d9c4;
-    padding: 18px 22px;
+    border: 1px solid #ECE7DC;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 1px 2px rgba(30,24,16,.03);
   }
-
   .dash-toolbar {
     display: flex;
     gap: 10px;
     align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
   .dash-toolbar input[type="text"] {
     flex: 1;
-    padding: 8px 10px;
+    padding: 9px 12px;
     font-size: 13px;
     font-family: 'Inter', Arial, sans-serif;
-    border: 1px solid #ccc;
+    border: 1px solid #E3DCC9;
+    border-radius: 8px;
+    background: #FCFAF5;
   }
-
   #addStudentPanel {
     display: none;
-    background: #fbf8f1;
-    border: 1px solid #e2d9c4;
+    background: #FBF9F4;
+    border: 1px solid #ECE7DC;
+    border-radius: 10px;
     padding: 16px 18px;
     margin-bottom: 16px;
   }
-  #addStudentPanel .row {
-    display: flex;
-    gap: 10px;
-    align-items: flex-end;
-    flex-wrap: wrap;
-  }
+  #addStudentPanel .row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
   #addStudentPanel .field { flex: 1; min-width: 200px; }
-  #addStudentPanel label {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    color: #3B2F24;
-    margin-bottom: 4px;
+  #addStudentPanel label { display: block; font-size: 11px; font-weight: 700; color: #3B2F24; margin-bottom: 4px; }
+  #addStudentPanel input[type="email"], #addStudentPanel select {
+    width: 100%; padding: 9px 11px; font-size: 13px; font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #E3DCC9; border-radius: 8px; background: #FCFAF5;
   }
-  #addStudentPanel input[type="email"],
-  #addStudentPanel select {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 13px;
-    font-family: 'Inter', Arial, sans-serif;
-    border: 1px solid #ccc;
-  }
-  #addStudentStatus {
-    font-size: 12.5px;
-    color: #666;
-    font-style: italic;
-    margin-top: 10px;
-  }
+  #addStudentStatus { font-size: 12.5px; color: #666; font-style: italic; margin-top: 10px; }
   #addStudentStatus.ok { color: #2e7d32; font-style: normal; }
   #addStudentStatus.err { color: #b3261e; font-style: normal; }
 
@@ -167,16 +155,13 @@
     align-items: center;
     flex-wrap: wrap;
     background: #fff;
-    border: 1px solid #e2d9c4;
+    border: 1px solid #ECE7DC;
+    border-radius: 12px;
     padding: 14px 16px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 2px rgba(30,24,16,.03);
   }
-  .toolbar select {
-    padding: 8px 10px;
-    font-size: 13px;
-    border: 1px solid #ccc;
-    min-width: 240px;
-  }
+  .toolbar select { padding: 9px 11px; font-size: 13px; border: 1px solid #E3DCC9; border-radius: 8px; min-width: 240px; background: #FCFAF5; }
   .toolbar .spacer { flex: 1; }
   .save-status { font-size: 12.5px; color: #666; font-style: italic; }
   .save-status.ok { color: #2e7d32; font-style: normal; }
@@ -184,13 +169,15 @@
 
   .card {
     background: #fff;
-    border: 1px solid #e2d9c4;
+    border: 1px solid #ECE7DC;
+    border-radius: 12px;
     padding: 20px 22px;
     margin-bottom: 16px;
+    box-shadow: 0 1px 2px rgba(30,24,16,.03);
   }
   .card-title {
     font-family: 'Inter', Arial, sans-serif;
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 700;
     letter-spacing: .04em;
     text-transform: uppercase;
@@ -200,11 +187,10 @@
     align-items: center;
     justify-content: space-between;
   }
-
   .card { padding: 0; }
   .card > summary.card-title {
     margin-bottom: 0;
-    padding: 20px 22px;
+    padding: 18px 22px;
     cursor: pointer;
     list-style: none;
     user-select: none;
@@ -219,1187 +205,779 @@
     flex-shrink: 0;
   }
   .card[open] > summary.card-title::before { transform: rotate(90deg); }
-  .card[open] > summary.card-title { border-bottom: 1px solid #e2d9c4; }
+  .card[open] > summary.card-title { border-bottom: 1px solid #ECE7DC; }
   .card-body { padding: 18px 22px 20px; }
-  .card > summary.card-title:hover { color: #000; }
-
-  .accordion-bar {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-  .accordion-bar button {
-    font-size: 12px;
-    padding: 6px 12px;
-  }
+  .card > summary.card-title:hover { color: #3B2F24; }
+  .accordion-bar { display: flex; gap: 10px; margin-bottom: 16px; }
+  .accordion-bar button { font-size: 12px; padding: 7px 12px; }
 
   .field { margin-bottom: 14px; }
   .field:last-child { margin-bottom: 0; }
-  .field label {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    color: #3B2F24;
-    margin-bottom: 3px;
+  .field label { display: block; font-size: 12px; font-weight: 700; color: #3B2F24; margin-bottom: 3px; }
+  .field .hint { display: block; font-size: 11px; color: #9A927E; font-style: italic; margin-bottom: 5px; }
+  .field input[type="text"], .field textarea {
+    width: 100%; padding: 9px 11px; font-size: 13px; font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #E3DCC9; border-radius: 8px; line-height: 1.4; background: #FCFAF5;
   }
-  .field .hint {
-    display: block;
-    font-size: 11px;
-    color: #8a7a5e;
-    font-style: italic;
-    margin-bottom: 5px;
-  }
-  .field input[type="text"],
-  .field textarea {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 13px;
-    font-family: 'Inter', Arial, sans-serif;
-    border: 1px solid #ccc;
-    line-height: 1.4;
-  }
+  .field input[type="text"]:focus, .field textarea:focus { outline: none; border-color: #C9A46C; background: #fff; }
   .field textarea { resize: vertical; }
   .row2 { display: flex; gap: 16px; }
   .row2 .field { flex: 1; }
   .row3 { display: flex; gap: 16px; }
   .row3 .field { flex: 1; }
 
-  .area-block {
-    border: 1px solid #e2d9c4;
-    background: #fbf8f1;
-    padding: 12px 14px;
-    margin-bottom: 10px;
-  }
-  .area-block-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-  .area-block-head input {
-    flex: 1;
-    font-weight: 600;
-  }
-  .area-num {
-    font-size: 11px;
-    color: #8a7a5e;
-    min-width: 16px;
-  }
+  .area-block { border: 1px solid #ECE7DC; background: #FBF9F4; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+  .area-block-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .area-block-head input { flex: 1; font-weight: 600; }
+  .area-num { font-size: 11px; color: #9A927E; min-width: 16px; }
   .area-instructions {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 13px;
-    font-family: 'Inter', Arial, sans-serif;
-    border: 1px solid #ccc;
-    line-height: 1.4;
-    resize: vertical;
+    width: 100%; padding: 9px 11px; font-size: 13px; font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #E3DCC9; border-radius: 8px; line-height: 1.4; resize: vertical; background: #fff;
   }
   .pdf-url-input {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 13px;
-    font-family: 'Inter', Arial, sans-serif;
-    border: 1px solid #ccc;
-    margin-top: 6px;
+    width: 100%; padding: 9px 11px; font-size: 13px; font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #E3DCC9; border-radius: 8px; margin-top: 6px; background: #fff;
   }
-  .remove-btn {
-    background: none;
-    border: none;
-    color: #b3261e;
-    cursor: pointer;
-    font-size: 13px;
-    padding: 4px 8px;
-  }
+  .remove-btn { background: none; border: none; color: #b3261e; cursor: pointer; font-size: 13px; padding: 4px 8px; }
   .remove-btn:hover { text-decoration: underline; }
   .add-btn {
-    background: none;
-    border: 1px dashed #8a7a5e;
-    color: #8a7a5e;
-    padding: 8px;
-    width: 100%;
-    text-align: center;
-    font-size: 12.5px;
-    cursor: pointer;
+    background: none; border: 1px dashed #C9B792; color: #9A927E; padding: 9px; width: 100%;
+    text-align: center; font-size: 12.5px; cursor: pointer; border-radius: 8px;
   }
-  .add-btn:hover { background: #f5f0e6; color: #000; }
+  .add-btn:hover { background: #F7F3EA; color: #3B2F24; }
 
   .deliv-field-block .area-block-head input[type="text"] { font-weight: 400; }
   .deliv-field-block .deliv-field-key { max-width: 220px; font-family: 'Courier New', monospace; font-size: 12.5px; }
   .deliv-field-block select.deliv-field-type {
-    padding: 8px 6px;
-    font-size: 12.5px;
-    font-family: 'Inter', Arial, sans-serif;
-    border: 1px solid #ccc;
-    max-width: 160px;
+    padding: 9px 6px; font-size: 12.5px; font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #E3DCC9; border-radius: 8px; max-width: 160px; background: #fff;
   }
   .deliv-field-list-opts { display: flex; gap: 10px; margin-top: 8px; }
-  .deliv-field-list-opts input.deliv-field-count { max-width: 140px; padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; }
-  .deliv-field-list-opts input.deliv-field-parts { flex: 1; padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; }
+  .deliv-field-list-opts input.deliv-field-count { max-width: 140px; padding: 9px 11px; font-size: 13px; border: 1px solid #E3DCC9; border-radius: 8px; }
+  .deliv-field-list-opts input.deliv-field-parts { flex: 1; padding: 9px 11px; font-size: 13px; border: 1px solid #E3DCC9; border-radius: 8px; }
 
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12.5px;
-    color: #3B2F24;
-    margin-bottom: 12px;
-  }
+  .toggle-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #3B2F24; margin-bottom: 12px; }
   .resource-fields.disabled { opacity: .4; pointer-events: none; }
 
-  .lang-block {
-    border: 1px solid #e2d9c4;
-    background: #fbf8f1;
-    padding: 12px 14px;
-    margin-bottom: 10px;
-  }
-  .lang-block-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-weight: 700;
-    font-size: 12.5px;
-    color: #3B2F24;
-  }
+  .lang-block { border: 1px solid #ECE7DC; background: #FBF9F4; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+  .lang-block-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-weight: 700; font-size: 12.5px; color: #3B2F24; }
   .add-lang-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
-  .add-lang-row select { flex: 1; padding: 8px; font-size: 13px; }
+  .add-lang-row select { flex: 1; padding: 9px; font-size: 13px; border: 1px solid #E3DCC9; border-radius: 8px; background: #fff; }
 
   details.json-preview { margin-top: 20px; }
-  details.json-preview summary {
-    cursor: pointer;
-    font-size: 12px;
-    color: #8a7a5e;
-    padding: 6px 0;
-  }
+  details.json-preview summary { cursor: pointer; font-size: 12px; color: #9A927E; padding: 6px 0; }
   details.json-preview pre {
-    background: #f5f0e6;
-    padding: 12px;
-    font-size: 11px;
-    max-height: 300px;
-    overflow: auto;
-    white-space: pre-wrap;
+    background: #F7F3EA; padding: 12px; font-size: 11px; max-height: 300px; overflow: auto;
+    white-space: pre-wrap; border-radius: 8px;
   }
 
   #courseAssistantView .card { padding: 0; margin-bottom: 0; }
   .chat-window { display: flex; flex-direction: column; height: 540px; }
-  .chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 18px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    background: #fff;
-  }
-  .chat-msg {
-    max-width: 80%;
-    padding: 10px 14px;
-    font-size: 13px;
-    line-height: 1.55;
-    white-space: pre-wrap;
-  }
-  .chat-msg.user {
-    align-self: flex-end;
-    background: #3B2F24;
-    color: #F5EFE0;
-  }
-  .chat-msg.assistant {
-    align-self: flex-start;
-    background: #fbf8f1;
-    border: 1px solid #e2d9c4;
-    color: #222;
-  }
-  .chat-msg.system-note {
-    align-self: center;
-    font-size: 11.5px;
-    color: #8a7a5e;
-    font-style: italic;
-    background: none;
-    padding: 4px 0;
-  }
-  .chat-empty {
-    align-self: center;
-    font-size: 12.5px;
-    color: #8a7a5e;
-    text-align: center;
-    max-width: 420px;
-    margin: auto;
-    line-height: 1.6;
-  }
-  .chat-options-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px 0;
-    font-size: 11.5px;
-    color: #8a7a5e;
-    border-top: 1px solid #e2d9c4;
-  }
-  .chat-input-row {
-    display: flex;
-    gap: 8px;
-    padding: 12px 16px 16px;
-    background: #fbf8f1;
-  }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; background: #fff; }
+  .chat-msg { max-width: 80%; padding: 10px 14px; font-size: 13px; line-height: 1.55; white-space: pre-wrap; border-radius: 12px; }
+  .chat-msg.user { align-self: flex-end; background: #3B2F24; color: #F5EFE0; }
+  .chat-msg.assistant { align-self: flex-start; background: #FBF9F4; border: 1px solid #ECE7DC; color: #2A241C; }
+  .chat-msg.system-note { align-self: center; font-size: 11.5px; color: #9A927E; font-style: italic; background: none; padding: 4px 0; border-radius: 0; }
+  .chat-empty { align-self: center; font-size: 12.5px; color: #9A927E; text-align: center; max-width: 420px; margin: auto; line-height: 1.6; }
+  .chat-options-row { display: flex; align-items: center; gap: 8px; padding: 10px 16px 0; font-size: 11.5px; color: #9A927E; border-top: 1px solid #ECE7DC; }
+  .chat-input-row { display: flex; gap: 8px; padding: 12px 16px 16px; background: #FBF9F4; }
   .chat-input-row textarea {
-    flex: 1;
-    padding: 9px 10px;
-    font-size: 13px;
-    font-family: 'Inter', Arial, sans-serif;
-    border: 1px solid #ccc;
-    resize: none;
-    line-height: 1.4;
+    flex: 1; padding: 10px 11px; font-size: 13px; font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #E3DCC9; border-radius: 8px; resize: none; line-height: 1.4; background: #fff;
   }
   .chat-input-row button:disabled { opacity: .5; cursor: default; }
 
-  #excavationView {
-    background: #fff;
-    border: 1px solid #e2d9c4;
-    padding: 18px 22px;
-  }
-  .exc-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 18px;
-  }
+  .exc-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
   .exc-toolbar .spacer { flex: 1; }
-  .exc-stat-row {
-    display: flex;
-    gap: 14px;
-    margin-bottom: 22px;
-    flex-wrap: wrap;
-  }
-  .exc-stat-card {
-    flex: 1;
-    min-width: 130px;
-    background: #fbf8f1;
-    border: 1px solid #e2d9c4;
-    padding: 14px 16px;
-  }
-  .exc-stat-num {
-    font-family: 'Bebas Neue', Arial, sans-serif;
-    font-size: 28px;
-    color: #281e16;
-    letter-spacing: .02em;
-  }
-  .exc-stat-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    color: #8a7a5e;
-    margin-top: 2px;
-  }
-  .exc-section-title {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    color: #8a6630;
-    margin: 24px 0 10px;
-  }
+  .exc-stat-row { display: flex; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
+  .exc-stat-card { flex: 1; min-width: 130px; background: #FBF9F4; border: 1px solid #ECE7DC; border-radius: 10px; padding: 14px 16px; }
+  .exc-stat-num { font-family: 'Bebas Neue', Arial, sans-serif; font-size: 28px; color: #1E1810; letter-spacing: .02em; }
+  .exc-stat-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #9A927E; margin-top: 2px; }
+  .exc-section-title { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8a6630; margin: 24px 0 10px; }
   .exc-section-title:first-of-type { margin-top: 0; }
-  table.exc-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    border: 1px solid #e2d9c4;
-    text-align: left;
-    margin-bottom: 6px;
-  }
-  table.exc-table th {
-    text-align: left;
-    padding: 8px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    color: #8a7a5e;
-    border-bottom: 1px solid #e2d9c4;
-  }
-  table.exc-table td {
-    padding: 8px 12px;
-    font-size: 13px;
-    color: #3B2F24;
-    border-bottom: 1px solid #f0e9d8;
-  }
-  .exc-bar-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 6px;
-  }
+  table.exc-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #ECE7DC; border-radius: 10px; text-align: left; margin-bottom: 6px; overflow: hidden; }
+  table.exc-table th { text-align: left; padding: 9px 12px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #9A927E; border-bottom: 1px solid #ECE7DC; }
+  table.exc-table td { padding: 9px 12px; font-size: 13px; color: #3B2F24; border-bottom: 1px solid #F3EFE4; }
+  .exc-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
   .exc-bar-label { width: 60px; font-size: 12px; color: #3B2F24; font-weight: 600; }
-  .exc-bar-track { flex: 1; background: #f0e9d8; height: 14px; position: relative; }
+  .exc-bar-track { flex: 1; background: #F3EFE4; height: 14px; border-radius: 7px; position: relative; overflow: hidden; }
   .exc-bar-fill { background: #C9A46C; height: 100%; }
-  .exc-bar-count { width: 34px; text-align: right; font-size: 12px; color: #8a7a5e; }
-  .exc-transcript-row td {
-    background: #fbf8f1;
-    padding: 14px 16px;
-  }
+  .exc-bar-count { width: 34px; text-align: right; font-size: 12px; color: #9A927E; }
+  .exc-transcript-row td { background: #FBF9F4; padding: 14px 16px; }
   .exc-transcript-qa { margin-bottom: 12px; }
   .exc-transcript-qa:last-child { margin-bottom: 0; }
-  .exc-transcript-q {
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
-    font-size: 15px;
-    color: #3B2F24;
-    margin-bottom: 4px;
-  }
-  .exc-transcript-a {
-    font-size: 12.5px;
-    color: #5a4535;
-    padding-left: 12px;
-    border-left: 2px solid #C9A46C;
-  }
-  .exc-transcript-closing {
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
-    font-size: 15px;
-    color: #8a6630;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed #e2d9c4;
-  }
-  .exc-view-link {
-    background: none;
-    border: none;
-    color: #8a6630;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 0;
-    text-decoration: underline;
-  }
+  .exc-transcript-q { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px; color: #3B2F24; margin-bottom: 4px; }
+  .exc-transcript-a { font-size: 12.5px; color: #5a4535; padding-left: 12px; border-left: 2px solid #C9A46C; }
+  .exc-transcript-closing { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px; color: #8a6630; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ECE7DC; }
+  .exc-view-link { background: none; border: none; color: #8a6630; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline; }
 
-  #deliverablesView {
-    background: #fff;
-    border: 1px solid #e2d9c4;
-    padding: 18px 22px;
-  }
-  .dlv-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
-  }
-  .dlv-toolbar select { padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; min-width: 200px; }
+  .dlv-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .dlv-toolbar select { padding: 9px 11px; font-size: 13px; border: 1px solid #E3DCC9; border-radius: 8px; min-width: 200px; background: #FCFAF5; }
   .dlv-toolbar .spacer { flex: 1; }
-  table.dlv-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    border: 1px solid #e2d9c4;
-    text-align: left;
-    margin-bottom: 6px;
-  }
-  table.dlv-table th {
-    text-align: left;
-    padding: 8px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    color: #8a7a5e;
-    border-bottom: 1px solid #e2d9c4;
-  }
-  table.dlv-table td {
-    padding: 8px 12px;
-    font-size: 13px;
-    color: #3B2F24;
-    border-bottom: 1px solid #f0e9d8;
-    vertical-align: top;
-  }
-  .dlv-view-link {
-    background: none;
-    border: none;
-    color: #8a6630;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 0;
-    text-decoration: underline;
-  }
-  .dlv-detail-row td {
-    background: #fbf8f1;
-    padding: 14px 16px;
-  }
-  .dlv-behavior-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    color: #8a6630;
-    margin-bottom: 4px;
-  }
-  .dlv-behavior-text {
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
-    font-size: 16px;
-    color: #281e16;
-    margin-bottom: 12px;
-  }
-  .dlv-instance {
-    font-size: 12.5px;
-    color: #5a4535;
-    padding: 6px 0 6px 12px;
-    border-left: 2px solid #C9A46C;
-    margin-bottom: 6px;
-  }
+  table.dlv-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #ECE7DC; border-radius: 10px; text-align: left; margin-bottom: 6px; overflow: hidden; }
+  table.dlv-table th { text-align: left; padding: 9px 12px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #9A927E; border-bottom: 1px solid #ECE7DC; }
+  table.dlv-table td { padding: 9px 12px; font-size: 13px; color: #3B2F24; border-bottom: 1px solid #F3EFE4; vertical-align: top; }
+  .dlv-view-link { background: none; border: none; color: #8a6630; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline; }
+  .dlv-detail-row td { background: #FBF9F4; padding: 14px 16px; }
+  .dlv-behavior-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8a6630; margin-bottom: 4px; }
+  .dlv-behavior-text { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 16px; color: #1E1810; margin-bottom: 12px; }
+  .dlv-instance { font-size: 12.5px; color: #5a4535; padding: 6px 0 6px 12px; border-left: 2px solid #C9A46C; margin-bottom: 6px; }
   .dlv-instance strong { color: #3B2F24; }
-  .dlv-count-pill {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 10px;
-  }
-  .dlv-count-pill.ok { background: #e6f2e6; color: #2e7d32; }
+  .dlv-count-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+  .dlv-count-pill.ok { background: #EFF6EE; color: #2e7d32; }
   .dlv-count-pill.short { background: #fdecea; color: #b3261e; }
 
-  #testimonialsView {
-    background: #fff;
-    border: 1px solid #e2d9c4;
-    padding: 18px 22px;
-  }
-  .tst-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
-  }
+  .tst-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
   .tst-toolbar .spacer { flex: 1; }
-  .tst-block {
-    border: 1px solid #e2d9c4;
-    background: #fbf8f1;
-    padding: 14px 16px;
-    margin-bottom: 12px;
-  }
-  .tst-block-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-  .tst-drag-handle { font-size: 11px; color: #8a7a5e; min-width: 20px; }
-  .tst-block-head input.tst-name { flex: 1; font-weight: 700; padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; }
-  .tst-block-head input.tst-detail { flex: 1; padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; }
+  .tst-block { border: 1px solid #ECE7DC; background: #FBF9F4; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+  .tst-block-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .tst-drag-handle { font-size: 11px; color: #9A927E; min-width: 20px; }
+  .tst-block-head input.tst-name { flex: 1; font-weight: 700; padding: 9px 11px; font-size: 13px; border: 1px solid #E3DCC9; border-radius: 8px; background: #fff; }
+  .tst-block-head input.tst-detail { flex: 1; padding: 9px 11px; font-size: 13px; border: 1px solid #E3DCC9; border-radius: 8px; background: #fff; }
   .tst-order-btns { display: flex; gap: 2px; }
-  .tst-order-btns button {
-    background: none;
-    border: 1px solid #ccc;
-    color: #3B2F24;
-    cursor: pointer;
-    font-size: 12px;
-    padding: 4px 8px;
-  }
-  .tst-order-btns button:hover { background: #f0e9d8; }
-  .tst-inactive-tag {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    color: #b3261e;
-    background: #fdecea;
-    padding: 2px 6px;
-    margin-left: 4px;
-  }
+  .tst-order-btns button { background: none; border: 1px solid #E3DCC9; color: #3B2F24; cursor: pointer; font-size: 12px; padding: 5px 9px; border-radius: 6px; }
+  .tst-order-btns button:hover { background: #F7F3EA; }
+  .tst-inactive-tag { font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #b3261e; background: #fdecea; padding: 2px 7px; margin-left: 4px; border-radius: 999px; }
   textarea.tst-quote {
-    width: 100%;
-    padding: 10px;
-    font-size: 13px;
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
-    border: 1px solid #ccc;
-    resize: vertical;
-    min-height: 90px;
-    margin-bottom: 10px;
+    width: 100%; padding: 10px; font-size: 13px; font-family: 'Cormorant Garamond', serif; font-style: italic;
+    border: 1px solid #E3DCC9; border-radius: 8px; resize: vertical; min-height: 90px; margin-bottom: 10px; background: #fff;
   }
   .tst-meta-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 10px; }
   .tst-meta-row .field { margin-bottom: 0; min-width: 180px; }
   .tst-meta-row .field.grow { flex: 1; }
   .tst-block-foot { display: flex; align-items: center; gap: 14px; }
-  .tst-save-btn {
-    background: #3B2F24;
-    color: #F5EFE0;
-    border: none;
-    padding: 8px 16px;
-    font-size: 12.5px;
-    font-weight: 700;
-    cursor: pointer;
-  }
+  .tst-save-btn { background: #3B2F24; color: #F5EFE0; border: none; padding: 9px 16px; font-size: 12.5px; font-weight: 700; cursor: pointer; border-radius: 8px; }
   .tst-save-btn:hover { background: #2a2118; }
-  .tst-save-status { font-size: 11.5px; color: #8a7a5e; font-style: italic; }
+  .tst-save-status { font-size: 11.5px; color: #9A927E; font-style: italic; }
 </style>
 </head>
 <body>
 
-<h1>Stratum Lesson Admin</h1>
-<div class="sub">Enter or edit any lesson's coaching content. Saves go straight to the database &mdash; the live lesson page picks up changes on next load.</div>
+<aside class="sidebar">
+  <div class="brand">STRATUM <span>ADMIN</span></div>
+  <div class="nav-group" id="mainNavGroup" style="display:none;">
+    <button class="nav-item" id="tabGuidedBtn" type="button"><span class="nav-dot"></span>Course</button>
+    <button class="nav-item" id="tabDashboardBtn" type="button"><span class="nav-dot"></span>Students</button>
+    <button class="nav-item" id="tabDeliverablesBtn" type="button"><span class="nav-dot"></span>Deliverables</button>
+    <button class="nav-item" id="tabTestimonialsBtn" type="button"><span class="nav-dot"></span>Testimonials</button>
+    <button class="nav-item" id="tabExcavationBtn" type="button"><span class="nav-dot"></span>Excavation</button>
+  </div>
+  <div class="nav-spacer"></div>
+  <div class="nav-bottom">
+    <button class="nav-item" id="tabAdminBtn" type="button"><span class="nav-dot"></span>Admin</button>
+  </div>
+  <!-- Self-Guided and Master Coach are temporarily hidden from the sidebar while only
+       Course (Coach) is being marketed. Underlying tabs/logic are untouched below -
+       restoring visibility later is a one-line change, not a rebuild. -->
+  <button id="tabEssentialsBtn" type="button" style="display:none;"></button>
+  <button id="tabMasteryBtn" type="button" style="display:none;"></button>
+</aside>
 
-<div id="authBar">
-  <input type="password" id="adminKeyInput" placeholder="Paste your admin key" />
-  <button id="unlockBtn" type="button">Unlock</button>
-  <span id="authStatus"></span>
-</div>
-
-<div id="panel">
-
-  <div class="top-tabs">
-    <button class="top-tab" id="tabDashboardBtn" type="button">Dashboard</button>
-    <button class="top-tab" id="tabDeliverablesBtn" type="button">Deliverables</button>
-    <button class="top-tab" id="tabTestimonialsBtn" type="button">Testimonials</button>
-    <button class="top-tab" id="tabExcavationBtn" type="button">Excavation</button>
-    <button class="top-tab" id="tabEssentialsBtn" type="button">Self-Guided</button>
-    <button class="top-tab" id="tabGuidedBtn" type="button">Coach</button>
-    <button class="top-tab" id="tabMasteryBtn" type="button">Master Coach</button>
+<main class="main">
+  <div class="page-head">
+    <h1 id="pageTitle">Admin</h1>
+    <div class="sub" id="pageSub">Unlock the panel to manage lessons, students, and site content.</div>
   </div>
 
-  <div id="dashboardView" style="display:none;">
-    <div class="dash-toolbar">
-      <input type="text" id="studentSearch" placeholder="Search by email..." />
-      <button class="btn secondary" id="addStudentToggleBtn" type="button">+ Add Student</button>
+  <div id="adminView">
+    <div class="card" style="padding:20px 22px;">
+      <div class="card-title" style="margin-bottom:14px;">Admin Key</div>
+      <div id="authBar">
+        <input type="password" id="adminKeyInput" placeholder="Paste your admin key" />
+        <button id="unlockBtn" type="button">Unlock</button>
+        <span id="authStatus"></span>
+      </div>
     </div>
+  </div>
 
-    <div id="addStudentPanel">
-      <div class="row">
-        <div class="field">
-          <label for="addStudentEmail">Email</label>
-          <input type="email" id="addStudentEmail" placeholder="student@example.com" />
+  <div id="panel">
+    <div id="dashboardView" style="display:none;">
+      <div class="dash-toolbar">
+        <input type="text" id="studentSearch" placeholder="Search by email..." />
+        <button class="btn secondary" id="addStudentToggleBtn" type="button">+ Add Student</button>
+      </div>
+      <div id="addStudentPanel">
+        <div class="row">
+          <div class="field">
+            <label for="addStudentEmail">Email</label>
+            <input type="email" id="addStudentEmail" placeholder="student@example.com" />
+          </div>
+          <div class="field">
+            <label for="addStudentPlan">Course</label>
+            <select id="addStudentPlan">
+              <option value="essentials">Self-Guided</option>
+              <option value="guided">Coach</option>
+              <option value="mastery">Master Coach</option>
+            </select>
+          </div>
+          <button class="btn" id="addStudentSubmitBtn" type="button">Add Student</button>
+          <button class="btn secondary" id="addStudentCancelBtn" type="button">Cancel</button>
         </div>
-        <div class="field">
-          <label for="addStudentPlan">Course</label>
-          <select id="addStudentPlan">
-            <option value="essentials">Self-Guided</option>
-            <option value="guided">Coach</option>
-            <option value="mastery">Master Coach</option>
-          </select>
-        </div>
-        <button class="btn" id="addStudentSubmitBtn" type="button">Add Student</button>
-        <button class="btn secondary" id="addStudentCancelBtn" type="button">Cancel</button>
+        <div id="addStudentStatus"></div>
       </div>
-      <div id="addStudentStatus"></div>
+      <table id="studentsTable" style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #ECE7DC;border-radius:10px;text-align:left;overflow:hidden;">
+        <thead>
+          <tr style="border-bottom:1px solid #ECE7DC;">
+            <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9A927E;">Email</th>
+            <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9A927E;">Plan</th>
+            <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9A927E;">Sessions Completed</th>
+            <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9A927E;">Sessions Used</th>
+            <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9A927E;">Status</th>
+            <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9A927E;">Last Seen</th>
+            <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9A927E;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTableBody"></tbody>
+      </table>
+      <div id="studentsStatus" style="padding:14px 2px;font-size:12px;color:#9A927E;font-style:italic;"></div>
     </div>
 
-    <table id="studentsTable" style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e2d9c4;text-align:left;">
-      <thead>
-        <tr style="border-bottom:1px solid #e2d9c4;">
-          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Email</th>
-          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Plan</th>
-          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Sessions Completed</th>
-          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Sessions Used</th>
-          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Status</th>
-          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Last Seen</th>
-          <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7a5e;">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="studentsTableBody"></tbody>
-    </table>
-    <div id="studentsStatus" style="padding:14px 2px;font-size:12px;color:#8a7a5e;font-style:italic;"></div>
-  </div>
-
-  <div id="deliverablesView" style="display:none;">
-    <div class="dlv-toolbar">
-      <span class="sub" style="margin:0;">Confirms every completed session actually captured a real, validated deliverable &mdash; not just the summary sentence.</span>
-    </div>
-    <div class="dlv-toolbar">
-      <select id="dlvLessonSelect"></select>
-      <button class="btn secondary" id="dlvLoadBtn" type="button">Load</button>
-      <div class="spacer"></div>
-    </div>
-    <table class="dlv-table">
-      <thead>
-        <tr><th>Student</th><th>Preview</th><th>Fields</th><th>Completed</th><th></th></tr>
-      </thead>
-      <tbody id="dlvTableBody"></tbody>
-    </table>
-    <div id="dlvStatus" style="padding:14px 2px;font-size:12px;color:#8a7a5e;font-style:italic;"></div>
-  </div>
-
-  <div id="testimonialsView" style="display:none;">
-    <div class="tst-toolbar">
-      <span class="sub" style="margin:0;">Testimonials shown in the homepage rotator, fading from one to the next. Order controls display order; inactive testimonials stay saved but are skipped on the live site.</span>
-    </div>
-    <div class="tst-toolbar">
-      <button class="btn secondary" id="tstReloadBtn" type="button">Reload</button>
-      <div class="spacer"></div>
-      <span id="tstStatus" style="font-size:12px;color:#8a7a5e;font-style:italic;"></span>
-    </div>
-    <div id="tstList"></div>
-    <button class="add-btn" id="tstAddBtn" type="button">+ Add testimonial</button>
-  </div>
-
-  <div id="excavationView" style="display:none;">
-    <div class="exc-toolbar">
-      <span class="sub" style="margin:0;">The 5-Minute Character Excavation &mdash; started / completed / traffic source / surprise rating.</span>
-      <div class="spacer"></div>
-      <button class="btn secondary" id="excRefreshBtn" type="button">Refresh</button>
-    </div>
-
-    <div class="exc-stat-row">
-      <div class="exc-stat-card">
-        <div class="exc-stat-num" id="excStatStarted">&mdash;</div>
-        <div class="exc-stat-label">Started</div>
+    <div id="deliverablesView" style="display:none;">
+      <div class="dlv-toolbar">
+        <span class="sub" style="margin:0;">Confirms every completed session actually captured a real, validated deliverable &mdash; not just the summary sentence.</span>
       </div>
-      <div class="exc-stat-card">
-        <div class="exc-stat-num" id="excStatCompleted">&mdash;</div>
-        <div class="exc-stat-label">Completed</div>
-      </div>
-      <div class="exc-stat-card">
-        <div class="exc-stat-num" id="excStatRate">&mdash;</div>
-        <div class="exc-stat-label">Completion Rate</div>
-      </div>
-      <div class="exc-stat-card">
-        <div class="exc-stat-num" id="excStatSurprise">&mdash;</div>
-        <div class="exc-stat-label">Avg Surprise (1&ndash;5)</div>
-      </div>
-    </div>
-
-    <div class="exc-section-title">Started &amp; completed by traffic source</div>
-    <table class="exc-table">
-      <thead>
-        <tr><th>Source</th><th>Started</th><th>Completed</th><th>Completion Rate</th></tr>
-      </thead>
-      <tbody id="excSourceTableBody"></tbody>
-    </table>
-
-    <div class="exc-section-title">Surprise score distribution</div>
-    <div id="excScoreDist"></div>
-
-    <div class="exc-section-title">Recent completed sessions &mdash; view transcript to see which questions landed</div>
-    <table class="exc-table">
-      <thead>
-        <tr><th>Completed</th><th>Source</th><th>Character</th><th>Score</th><th>Closing line</th><th></th></tr>
-      </thead>
-      <tbody id="excRecentTableBody"></tbody>
-    </table>
-    <div id="excStatus" style="padding:14px 2px;font-size:12px;color:#8a7a5e;font-style:italic;"></div>
-  </div>
-
-  <div id="guidedView">
-
-    <div class="sub-tabs">
-      <button class="sub-tab active" id="tabLessonEditorBtn" type="button">Lesson Editor</button>
-      <button class="sub-tab" id="tabCourseAssistantBtn" type="button">Course Assistant</button>
-    </div>
-
-    <div id="lessonEditorView">
-
-      <div class="toolbar">
-        <select id="gLessonSelect"></select>
-        <button class="btn secondary" id="gLoadBtn" type="button">Load</button>
-        <button class="btn secondary" id="gNewLessonBtn" type="button">+ New Lesson</button>
-        <button class="btn danger" id="gDeleteBtn" type="button">Delete Lesson</button>
+      <div class="dlv-toolbar">
+        <select id="dlvLessonSelect"></select>
+        <button class="btn secondary" id="dlvLoadBtn" type="button">Load</button>
         <div class="spacer"></div>
-        <span class="save-status" id="gSaveStatus"></span>
-        <button class="btn" id="gSaveBtn" type="button">Save Lesson</button>
       </div>
+      <table class="dlv-table">
+        <thead>
+          <tr><th>Student</th><th>Preview</th><th>Fields</th><th>Completed</th><th></th></tr>
+        </thead>
+        <tbody id="dlvTableBody"></tbody>
+      </table>
+      <div id="dlvStatus" style="padding:14px 2px;font-size:12px;color:#9A927E;font-style:italic;"></div>
+    </div>
 
-      <div class="accordion-bar">
-        <button class="btn secondary" id="gExpandAllBtn" type="button">Expand all</button>
-        <button class="btn secondary" id="gCollapseAllBtn" type="button">Collapse all</button>
+    <div id="testimonialsView" style="display:none;">
+      <div class="tst-toolbar">
+        <span class="sub" style="margin:0;">Testimonials shown in the homepage rotator, fading from one to the next. Order controls display order; inactive testimonials stay saved but are skipped on the live site.</span>
       </div>
+      <div class="tst-toolbar">
+        <button class="btn secondary" id="tstReloadBtn" type="button">Reload</button>
+        <div class="spacer"></div>
+        <span id="tstStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
+      </div>
+      <div id="tstList"></div>
+      <button class="add-btn" id="tstAddBtn" type="button">+ Add testimonial</button>
+    </div>
 
+    <div id="excavationView" style="display:none;">
+      <div class="exc-toolbar">
+        <span class="sub" style="margin:0;">The 5-Minute Character Excavation &mdash; started / completed / traffic source / surprise rating.</span>
+        <div class="spacer"></div>
+        <button class="btn secondary" id="excRefreshBtn" type="button">Refresh</button>
+      </div>
+      <div class="exc-stat-row">
+        <div class="exc-stat-card">
+          <div class="exc-stat-num" id="excStatStarted">&mdash;</div>
+          <div class="exc-stat-label">Started</div>
+        </div>
+        <div class="exc-stat-card">
+          <div class="exc-stat-num" id="excStatCompleted">&mdash;</div>
+          <div class="exc-stat-label">Completed</div>
+        </div>
+        <div class="exc-stat-card">
+          <div class="exc-stat-num" id="excStatRate">&mdash;</div>
+          <div class="exc-stat-label">Completion Rate</div>
+        </div>
+        <div class="exc-stat-card">
+          <div class="exc-stat-num" id="excStatSurprise">&mdash;</div>
+          <div class="exc-stat-label">Avg Surprise (1&ndash;5)</div>
+        </div>
+      </div>
+      <div class="exc-section-title">Started &amp; completed by traffic source</div>
+      <table class="exc-table">
+        <thead>
+          <tr><th>Source</th><th>Started</th><th>Completed</th><th>Completion Rate</th></tr>
+        </thead>
+        <tbody id="excSourceTableBody"></tbody>
+      </table>
+      <div class="exc-section-title">Surprise score distribution</div>
+      <div id="excScoreDist"></div>
+      <div class="exc-section-title">Recent completed sessions &mdash; view transcript to see which questions landed</div>
+      <table class="exc-table">
+        <thead>
+          <tr><th>Completed</th><th>Source</th><th>Character</th><th>Score</th><th>Closing line</th><th></th></tr>
+        </thead>
+        <tbody id="excRecentTableBody"></tbody>
+      </table>
+      <div id="excStatus" style="padding:14px 2px;font-size:12px;color:#9A927E;font-style:italic;"></div>
+    </div>
+
+    <div id="guidedView">
+      <div class="accordion-bar" style="margin-bottom:14px;">
+        <button class="btn secondary" id="tabLessonEditorBtn" type="button" style="border-radius:8px;">Lesson Editor</button>
+        <button class="btn secondary" id="tabCourseAssistantBtn" type="button" style="border-radius:8px;">Course Assistant</button>
+      </div>
+      <div id="lessonEditorView">
+        <div class="toolbar">
+          <select id="gLessonSelect"></select>
+          <button class="btn secondary" id="gLoadBtn" type="button">Load</button>
+          <button class="btn secondary" id="gNewLessonBtn" type="button">+ New Lesson</button>
+          <button class="btn danger" id="gDeleteBtn" type="button">Delete Lesson</button>
+          <div class="spacer"></div>
+          <span class="save-status" id="gSaveStatus"></span>
+          <button class="btn" id="gSaveBtn" type="button">Save Lesson</button>
+        </div>
+        <div class="accordion-bar">
+          <button class="btn secondary" id="gExpandAllBtn" type="button">Expand all</button>
+          <button class="btn secondary" id="gCollapseAllBtn" type="button">Collapse all</button>
+        </div>
+        <details class="card" data-group="open" open>
+          <summary class="card-title">Lesson identity</summary>
+          <div class="card-body">
+          <div class="row2">
+            <div class="field">
+              <label for="gLessonId">Lesson ID</label>
+              <span class="hint">e.g. 1.1, 2.3, 4.2</span>
+              <input type="text" id="gLessonId" placeholder="1.1" />
+            </div>
+            <div class="field">
+              <label for="gNextLessonLabel">Next lesson label</label>
+              <span class="hint">Used in the coach's closing message</span>
+              <input type="text" id="gNextLessonLabel" placeholder="Lecture 1.2" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="gScopeNote">Scope note</label>
+            <span class="hint">How the coach refers to this lesson internally &mdash; e.g. "Lecture 2.1 - Empty Your Cup"</span>
+            <input type="text" id="gScopeNote" placeholder="Lecture 1.1 - Welcome and What to Expect" />
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="open" open>
+          <summary class="card-title">Video</summary>
+          <div class="card-body">
+          <div class="field">
+            <label for="gMediaId">Wistia media ID</label>
+            <input type="text" id="gMediaId" placeholder="0owdas4mfp" />
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="open" open>
+          <summary class="card-title">Lecture transcript</summary>
+          <div class="card-body">
+          <div class="field">
+            <textarea id="gTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Resource</summary>
+          <div class="card-body">
+          <div class="toggle-row">
+            <input type="checkbox" id="gHasResource" />
+            <label for="gHasResource" style="margin:0;">This lesson has resource PDFs</label>
+          </div>
+          <div id="gResourceFields" class="resource-fields disabled">
+            <div id="gPdfsList"></div>
+            <button class="add-btn" id="gAddPdfBtn" type="button">+ Add PDF</button>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Coaching intro text</summary>
+          <div class="card-body">
+          <div class="toggle-row">
+            <input type="checkbox" id="gHasCoachingIntro" />
+            <label for="gHasCoachingIntro" style="margin:0;">This lesson shows an intro message at the top of Coaching, default closed</label>
+          </div>
+          <div id="gCoachingIntroFields" class="resource-fields disabled">
+            <div class="field">
+              <label for="gCoachingIntroTitle">Intro title</label>
+              <span class="hint">Shown on the labeled bar above the intro text</span>
+              <input type="text" id="gCoachingIntroTitle" placeholder="Preparation For First Coaching Session" />
+            </div>
+            <div class="field">
+              <label for="gCoachingIntroText">Intro content</label>
+              <span class="hint">Plain text &mdash; renders inline at the top of the Coaching tab</span>
+              <textarea id="gCoachingIntroText" rows="6"></textarea>
+            </div>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="auto">
+          <summary class="card-title">Reflection framework &mdash; areas</summary>
+          <div class="card-body">
+          <div id="gAreasList"></div>
+          <button class="add-btn" id="gAddAreaBtn" type="button">+ Add area</button>
+        </div>
+        </details>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Structured deliverable (optional)</summary>
+          <div class="card-body">
+          <div class="toggle-row">
+            <input type="checkbox" id="gHasDeliverable" />
+            <label for="gHasDeliverable" style="margin:0;">This lesson has a required, validated deliverable</label>
+          </div>
+          <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until every field below has been captured, real and specific &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done. Confirm captured deliverables under the Deliverables tab.</span>
+          <div id="gDeliverableFields" class="resource-fields disabled">
+            <div id="gDeliverableFieldsList"></div>
+            <button class="add-btn" id="gAddDeliverableFieldBtn" type="button">+ Add deliverable field</button>
+            <span class="hint" style="display:block;margin-top:8px;">Field key: a short camelCase identifier the coach's hidden tags will use (e.g. <code>hiddenTruth</code>). Single value: one field, one answer (e.g. a causal lock sentence). Repeatable list: N required items (e.g. 3 instances) &mdash; optionally split each item into comma-separated sub-parts (e.g. <code>context, people, action</code>) the way Lesson 1's instances work; leave sub-parts blank for a plain list of single strings.</span>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="auto">
+          <summary class="card-title">Coaching approach</summary>
+          <div class="card-body">
+          <div class="field">
+            <span class="hint">Private instructional guidance for the AI on how to conduct THIS lesson's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student, and separate from the resource document. Optional &mdash; most lessons will not need this.</span>
+            <textarea id="gCoachingApproach" rows="5"></textarea>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="auto">
+          <summary class="card-title">Calibration examples</summary>
+          <div class="card-body">
+          <div class="field">
+            <span class="hint">One per line. Shown to the coach only, never to the student.</span>
+            <textarea id="gCalibration" rows="4"></textarea>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Greeting</summary>
+          <div class="card-body">
+          <div class="field">
+            <label for="gGreetingFresh">Greeting</label>
+            <span class="hint">Shown instantly when the student opens Coaching, before the session begins</span>
+            <textarea id="gGreetingFresh" rows="3"></textarea>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Greeting translations (optional)</summary>
+          <div class="card-body">
+          <div class="field">
+            <span class="hint">Lessons without a translation for a language fall back to English automatically &mdash; these do not need to be filled in before launch.</span>
+          </div>
+          <div id="gTranslationsList"></div>
+          <div class="add-lang-row">
+            <select id="gAddLangSelect"></select>
+            <button class="btn secondary" id="gAddLangBtn" type="button">+ Add language</button>
+          </div>
+        </div>
+        </details>
+        <details class="json-preview">
+          <summary>View raw config JSON (for reference / debugging)</summary>
+          <pre id="gJsonPreview"></pre>
+        </details>
+      </div>
+      <div id="courseAssistantView" style="display:none;">
+        <div class="card">
+          <div class="chat-window">
+            <div class="chat-messages" id="chatMessages">
+              <div class="chat-empty" id="chatEmptyState">Ask about continuity across Coach lessons &mdash; tone, repeated questions, whether a reflection area overlaps one already covered elsewhere. This reads your saved Coach lesson configs; it doesn't write to them. Self-Guided lessons have no AI coach, so they aren't part of this corpus.</div>
+            </div>
+            <div class="chat-options-row">
+              <input type="checkbox" id="chatIncludeTranscripts" />
+              <label for="chatIncludeTranscripts">Include full transcripts &amp; resource text (slower, more context)</label>
+            </div>
+            <div class="chat-input-row">
+              <textarea id="chatInput" rows="2" placeholder="e.g. Does 3.2's reflection overlap with anything in 2.2?"></textarea>
+              <button class="btn" id="chatSendBtn" type="button">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="essentialsView" style="display:none;">
+      <div class="toolbar">
+        <select id="eLessonSelect"></select>
+        <button class="btn secondary" id="eLoadBtn" type="button">Load</button>
+        <button class="btn secondary" id="eNewLessonBtn" type="button">+ New Lesson</button>
+        <button class="btn danger" id="eDeleteBtn" type="button">Delete Lesson</button>
+        <div class="spacer"></div>
+        <span class="save-status" id="eSaveStatus"></span>
+        <button class="btn" id="eSaveBtn" type="button">Save Lesson</button>
+      </div>
       <details class="card" data-group="open" open>
         <summary class="card-title">Lesson identity</summary>
         <div class="card-body">
         <div class="row2">
           <div class="field">
-            <label for="gLessonId">Lesson ID</label>
+            <label for="eLessonId">Lesson ID</label>
             <span class="hint">e.g. 1.1, 2.3, 4.2</span>
-            <input type="text" id="gLessonId" placeholder="1.1" />
+            <input type="text" id="eLessonId" placeholder="1.1" />
           </div>
           <div class="field">
-            <label for="gNextLessonLabel">Next lesson label</label>
-            <span class="hint">Used in the coach's closing message</span>
-            <input type="text" id="gNextLessonLabel" placeholder="Lecture 1.2" />
+            <label for="eNextLessonLabel">Next lesson label</label>
+            <span class="hint">Shown on the page as the link to the next lesson</span>
+            <input type="text" id="eNextLessonLabel" placeholder="Lecture 1.2" />
           </div>
         </div>
         <div class="field">
-          <label for="gScopeNote">Scope note</label>
-          <span class="hint">How the coach refers to this lesson internally &mdash; e.g. "Lecture 2.1 - Empty Your Cup"</span>
-          <input type="text" id="gScopeNote" placeholder="Lecture 1.1 - Welcome and What to Expect" />
+          <label for="eScopeNote">Scope note</label>
+          <span class="hint">Internal reference label for this lesson</span>
+          <input type="text" id="eScopeNote" placeholder="Lecture 1.1 - Welcome and What to Expect" />
         </div>
       </div>
       </details>
-
       <details class="card" data-group="open" open>
         <summary class="card-title">Video</summary>
         <div class="card-body">
         <div class="field">
-          <label for="gMediaId">Wistia media ID</label>
-          <input type="text" id="gMediaId" placeholder="0owdas4mfp" />
+          <label for="eMediaId">Wistia media ID</label>
+          <input type="text" id="eMediaId" placeholder="0owdas4mfp" />
         </div>
       </div>
       </details>
-
       <details class="card" data-group="open" open>
         <summary class="card-title">Lecture transcript</summary>
         <div class="card-body">
         <div class="field">
-          <textarea id="gTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
+          <textarea id="eTranscript" rows="6" placeholder="Full transcript text shown on the lecture page..."></textarea>
         </div>
       </div>
       </details>
-
       <details class="card" data-group="plain">
         <summary class="card-title">Resource</summary>
         <div class="card-body">
         <div class="toggle-row">
-          <input type="checkbox" id="gHasResource" />
-          <label for="gHasResource" style="margin:0;">This lesson has resource PDFs</label>
+          <input type="checkbox" id="eHasResource" />
+          <label for="eHasResource" style="margin:0;">This lesson has resource PDFs</label>
         </div>
-        <div id="gResourceFields" class="resource-fields disabled">
-          <div id="gPdfsList"></div>
-          <button class="add-btn" id="gAddPdfBtn" type="button">+ Add PDF</button>
+        <div id="eResourceFields" class="resource-fields disabled">
+          <div id="ePdfsList"></div>
+          <button class="add-btn" id="eAddPdfBtn" type="button">+ Add PDF</button>
         </div>
       </div>
       </details>
-
       <details class="card" data-group="plain">
         <summary class="card-title">Coaching intro text</summary>
         <div class="card-body">
         <div class="toggle-row">
-          <input type="checkbox" id="gHasCoachingIntro" />
-          <label for="gHasCoachingIntro" style="margin:0;">This lesson shows an intro message at the top of Coaching, default closed</label>
+          <input type="checkbox" id="eHasCoachingIntro" />
+          <label for="eHasCoachingIntro" style="margin:0;">This lesson shows an intro message above the Exercise/Reflection forms, default closed</label>
         </div>
-        <div id="gCoachingIntroFields" class="resource-fields disabled">
+        <div id="eCoachingIntroFields" class="resource-fields disabled">
           <div class="field">
-            <label for="gCoachingIntroTitle">Intro title</label>
+            <label for="eCoachingIntroTitle">Intro title</label>
             <span class="hint">Shown on the labeled bar above the intro text</span>
-            <input type="text" id="gCoachingIntroTitle" placeholder="Preparation For First Coaching Session" />
+            <input type="text" id="eCoachingIntroTitle" placeholder="Before You Start" />
           </div>
           <div class="field">
-            <label for="gCoachingIntroText">Intro content</label>
-            <span class="hint">Plain text &mdash; renders inline at the top of the Coaching tab</span>
-            <textarea id="gCoachingIntroText" rows="6"></textarea>
+            <label for="eCoachingIntroText">Intro content</label>
+            <span class="hint">Plain text &mdash; renders inline above the Exercise/Reflection forms</span>
+            <textarea id="eCoachingIntroText" rows="6"></textarea>
           </div>
         </div>
       </div>
       </details>
-
-      <details class="card" data-group="auto">
-        <summary class="card-title">Reflection framework &mdash; areas</summary>
+      <details class="card" data-group="open" open>
+        <summary class="card-title">Self-Guided &mdash; Jotform tabs</summary>
         <div class="card-body">
-        <div id="gAreasList"></div>
-        <button class="add-btn" id="gAddAreaBtn" type="button">+ Add area</button>
-      </div>
-      </details>
-
-      <details class="card" data-group="plain">
-        <summary class="card-title">Structured deliverable (optional)</summary>
-        <div class="card-body">
-        <div class="toggle-row">
-          <input type="checkbox" id="gHasDeliverable" />
-          <label for="gHasDeliverable" style="margin:0;">This lesson has a required, validated deliverable</label>
-        </div>
-        <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until every field below has been captured, real and specific &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done. Confirm captured deliverables under the Deliverables tab.</span>
-        <div id="gDeliverableFields" class="resource-fields disabled">
-          <div id="gDeliverableFieldsList"></div>
-          <button class="add-btn" id="gAddDeliverableFieldBtn" type="button">+ Add deliverable field</button>
-          <span class="hint" style="display:block;margin-top:8px;">Field key: a short camelCase identifier the coach's hidden tags will use (e.g. <code>hiddenTruth</code>). Single value: one field, one answer (e.g. a causal lock sentence). Repeatable list: N required items (e.g. 3 instances) &mdash; optionally split each item into comma-separated sub-parts (e.g. <code>context, people, action</code>) the way Lesson 1's instances work; leave sub-parts blank for a plain list of single strings.</span>
-        </div>
-      </div>
-      </details>
-
-      <details class="card" data-group="auto">
-        <summary class="card-title">Coaching approach</summary>
-        <div class="card-body">
+        <span class="hint" style="display:block;margin-bottom:10px;">The self-guided lesson page shows an Exercise tab and a Reflection tab, each embedding the matching Jotform form. There is no AI coach on Self-Guided pages.</span>
         <div class="field">
-          <span class="hint">Private instructional guidance for the AI on how to conduct THIS lesson's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student, and separate from the resource document. Optional &mdash; most lessons will not need this.</span>
-          <textarea id="gCoachingApproach" rows="5"></textarea>
+          <label for="eExerciseFormId">Exercise &mdash; Jotform form ID</label>
+          <span class="hint">From the form's Jotform URL or share settings</span>
+          <input type="text" id="eExerciseFormId" placeholder="241234567890123" />
         </div>
-      </div>
-      </details>
-
-      <details class="card" data-group="auto">
-        <summary class="card-title">Calibration examples</summary>
-        <div class="card-body">
         <div class="field">
-          <span class="hint">One per line. Shown to the coach only, never to the student.</span>
-          <textarea id="gCalibration" rows="4"></textarea>
+          <label for="eReflectionFormId">Reflection &mdash; Jotform form ID</label>
+          <span class="hint">From the form's Jotform URL or share settings</span>
+          <input type="text" id="eReflectionFormId" placeholder="241234567890124" />
         </div>
       </div>
       </details>
-
-      <details class="card" data-group="plain">
-        <summary class="card-title">Greeting</summary>
-        <div class="card-body">
-        <div class="field">
-          <label for="gGreetingFresh">Greeting</label>
-          <span class="hint">Shown instantly when the student opens Coaching, before the session begins</span>
-          <textarea id="gGreetingFresh" rows="3"></textarea>
-        </div>
-      </div>
-      </details>
-
-      <details class="card" data-group="plain">
-        <summary class="card-title">Greeting translations (optional)</summary>
-        <div class="card-body">
-        <div class="field">
-          <span class="hint">Lessons without a translation for a language fall back to English automatically &mdash; these do not need to be filled in before launch.</span>
-        </div>
-        <div id="gTranslationsList"></div>
-        <div class="add-lang-row">
-          <select id="gAddLangSelect"></select>
-          <button class="btn secondary" id="gAddLangBtn" type="button">+ Add language</button>
-        </div>
-      </div>
-      </details>
-
       <details class="json-preview">
         <summary>View raw config JSON (for reference / debugging)</summary>
-        <pre id="gJsonPreview"></pre>
+        <pre id="eJsonPreview"></pre>
       </details>
-
     </div>
 
-    <div id="courseAssistantView" style="display:none;">
-      <div class="card">
-        <div class="chat-window">
-          <div class="chat-messages" id="chatMessages">
-            <div class="chat-empty" id="chatEmptyState">Ask about continuity across Coach lessons &mdash; tone, repeated questions, whether a reflection area overlaps one already covered elsewhere. This reads your saved Coach lesson configs; it doesn't write to them. Self-Guided lessons have no AI coach, so they aren't part of this corpus.</div>
+    <div id="masteryView" style="display:none;">
+      <div id="masteryEditorView">
+        <div class="toolbar">
+          <select id="mLessonSelect"></select>
+          <button class="btn secondary" id="mLoadBtn" type="button">Load</button>
+          <button class="btn secondary" id="mNewLessonBtn" type="button">+ New Lesson</button>
+          <button class="btn danger" id="mDeleteBtn" type="button">Delete Lesson</button>
+          <div class="spacer"></div>
+          <span class="save-status" id="mSaveStatus"></span>
+          <button class="btn" id="mSaveBtn" type="button">Save Lesson</button>
+        </div>
+        <div class="accordion-bar">
+          <button class="btn secondary" id="mExpandAllBtn" type="button">Expand all</button>
+          <button class="btn secondary" id="mCollapseAllBtn" type="button">Collapse all</button>
+        </div>
+        <details class="card" data-group="open" open>
+          <summary class="card-title">Lesson identity</summary>
+          <div class="card-body">
+          <div class="row2">
+            <div class="field">
+              <label for="mLessonId">Lesson ID</label>
+              <span class="hint">e.g. 5.1, 6.3</span>
+              <input type="text" id="mLessonId" placeholder="5.1" />
+            </div>
+            <div class="field">
+              <label for="mNextLessonLabel">Next lesson label</label>
+              <span class="hint">Used in the coach's closing message</span>
+              <input type="text" id="mNextLessonLabel" placeholder="Lecture 5.2" />
+            </div>
           </div>
-          <div class="chat-options-row">
-            <input type="checkbox" id="chatIncludeTranscripts" />
-            <label for="chatIncludeTranscripts">Include full transcripts &amp; resource text (slower, more context)</label>
-          </div>
-          <div class="chat-input-row">
-            <textarea id="chatInput" rows="2" placeholder="e.g. Does 3.2's reflection overlap with anything in 2.2?"></textarea>
-            <button class="btn" id="chatSendBtn" type="button">Send</button>
+          <div class="field">
+            <label for="mScopeNote">Scope note</label>
+            <span class="hint">How the coach refers to this lesson internally &mdash; e.g. "Lecture 2.1 - Empty Your Cup"</span>
+            <input type="text" id="mScopeNote" placeholder="Lecture 5.1 - The Surface Pattern" />
           </div>
         </div>
+        </details>
+        <details class="card" data-group="open" open>
+          <summary class="card-title">Video</summary>
+          <div class="card-body">
+          <div class="field">
+            <label for="mMediaId">Wistia media ID</label>
+            <input type="text" id="mMediaId" placeholder="0owdas4mfp" />
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="open" open>
+          <summary class="card-title">Lecture transcript</summary>
+          <div class="card-body">
+          <div class="field">
+            <textarea id="mTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Resource</summary>
+          <div class="card-body">
+          <div class="toggle-row">
+            <input type="checkbox" id="mHasResource" />
+            <label for="mHasResource" style="margin:0;">This lesson has resource PDFs</label>
+          </div>
+          <div id="mResourceFields" class="resource-fields disabled">
+            <div id="mPdfsList"></div>
+            <button class="add-btn" id="mAddPdfBtn" type="button">+ Add PDF</button>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Coaching intro text</summary>
+          <div class="card-body">
+          <div class="toggle-row">
+            <input type="checkbox" id="mHasCoachingIntro" />
+            <label for="mHasCoachingIntro" style="margin:0;">This lesson shows an intro message at the top of Coaching, default closed</label>
+          </div>
+          <div id="mCoachingIntroFields" class="resource-fields disabled">
+            <div class="field">
+              <label for="mCoachingIntroTitle">Intro title</label>
+              <span class="hint">Shown on the labeled bar above the intro text</span>
+              <input type="text" id="mCoachingIntroTitle" placeholder="Preparation For First Coaching Session" />
+            </div>
+            <div class="field">
+              <label for="mCoachingIntroText">Intro content</label>
+              <span class="hint">Plain text &mdash; renders inline at the top of the Coaching tab</span>
+              <textarea id="mCoachingIntroText" rows="6"></textarea>
+            </div>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="auto">
+          <summary class="card-title">Reflection framework &mdash; areas</summary>
+          <div class="card-body">
+          <div id="mAreasList"></div>
+          <button class="add-btn" id="mAddAreaBtn" type="button">+ Add area</button>
+        </div>
+        </details>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Structured deliverable (optional)</summary>
+          <div class="card-body">
+          <div class="toggle-row">
+            <input type="checkbox" id="mHasDeliverable" />
+            <label for="mHasDeliverable" style="margin:0;">This lesson has a required, validated deliverable</label>
+          </div>
+          <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until every field below has been captured, real and specific &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done. Confirm captured deliverables under the Deliverables tab.</span>
+          <div id="mDeliverableFields" class="resource-fields disabled">
+            <div id="mDeliverableFieldsList"></div>
+            <button class="add-btn" id="mAddDeliverableFieldBtn" type="button">+ Add deliverable field</button>
+            <span class="hint" style="display:block;margin-top:8px;">Field key: a short camelCase identifier the coach's hidden tags will use (e.g. <code>hiddenTruth</code>). Single value: one field, one answer. Repeatable list: N required items &mdash; optionally split each item into comma-separated sub-parts (e.g. <code>context, people, action</code>); leave sub-parts blank for a plain list of single strings.</span>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="auto">
+          <summary class="card-title">Coaching approach</summary>
+          <div class="card-body">
+          <div class="field">
+            <span class="hint">Private instructional guidance for the AI on how to conduct THIS lesson's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student, and separate from the resource document. Optional &mdash; most lessons will not need this.</span>
+            <textarea id="mCoachingApproach" rows="5"></textarea>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="auto">
+          <summary class="card-title">Calibration examples</summary>
+          <div class="card-body">
+          <div class="field">
+            <span class="hint">One per line. Shown to the coach only, never to the student.</span>
+            <textarea id="mCalibration" rows="4"></textarea>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Greeting</summary>
+          <div class="card-body">
+          <div class="field">
+            <label for="mGreetingFresh">Greeting</label>
+            <span class="hint">Shown instantly when the student opens Coaching, before the session begins</span>
+            <textarea id="mGreetingFresh" rows="3"></textarea>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Greeting translations (optional)</summary>
+          <div class="card-body">
+          <div class="field">
+            <span class="hint">Lessons without a translation for a language fall back to English automatically &mdash; these do not need to be filled in before launch.</span>
+          </div>
+          <div id="mTranslationsList"></div>
+          <div class="add-lang-row">
+            <select id="mAddLangSelect"></select>
+            <button class="btn secondary" id="mAddLangBtn" type="button">+ Add language</button>
+          </div>
+        </div>
+        </details>
+        <details class="json-preview">
+          <summary>View raw config JSON (for reference / debugging)</summary>
+          <pre id="mJsonPreview"></pre>
+        </details>
       </div>
     </div>
-
   </div>
-
-  <div id="essentialsView" style="display:none;">
-
-    <div class="toolbar">
-      <select id="eLessonSelect"></select>
-      <button class="btn secondary" id="eLoadBtn" type="button">Load</button>
-      <button class="btn secondary" id="eNewLessonBtn" type="button">+ New Lesson</button>
-      <button class="btn danger" id="eDeleteBtn" type="button">Delete Lesson</button>
-      <div class="spacer"></div>
-      <span class="save-status" id="eSaveStatus"></span>
-      <button class="btn" id="eSaveBtn" type="button">Save Lesson</button>
-    </div>
-
-    <details class="card" data-group="open" open>
-      <summary class="card-title">Lesson identity</summary>
-      <div class="card-body">
-      <div class="row2">
-        <div class="field">
-          <label for="eLessonId">Lesson ID</label>
-          <span class="hint">e.g. 1.1, 2.3, 4.2</span>
-          <input type="text" id="eLessonId" placeholder="1.1" />
-        </div>
-        <div class="field">
-          <label for="eNextLessonLabel">Next lesson label</label>
-          <span class="hint">Shown on the page as the link to the next lesson</span>
-          <input type="text" id="eNextLessonLabel" placeholder="Lecture 1.2" />
-        </div>
-      </div>
-      <div class="field">
-        <label for="eScopeNote">Scope note</label>
-        <span class="hint">Internal reference label for this lesson</span>
-        <input type="text" id="eScopeNote" placeholder="Lecture 1.1 - Welcome and What to Expect" />
-      </div>
-    </div>
-    </details>
-
-    <details class="card" data-group="open" open>
-      <summary class="card-title">Video</summary>
-      <div class="card-body">
-      <div class="field">
-        <label for="eMediaId">Wistia media ID</label>
-        <input type="text" id="eMediaId" placeholder="0owdas4mfp" />
-      </div>
-    </div>
-    </details>
-
-    <details class="card" data-group="open" open>
-      <summary class="card-title">Lecture transcript</summary>
-      <div class="card-body">
-      <div class="field">
-        <textarea id="eTranscript" rows="6" placeholder="Full transcript text shown on the lecture page..."></textarea>
-      </div>
-    </div>
-    </details>
-
-    <details class="card" data-group="plain">
-      <summary class="card-title">Resource</summary>
-      <div class="card-body">
-      <div class="toggle-row">
-        <input type="checkbox" id="eHasResource" />
-        <label for="eHasResource" style="margin:0;">This lesson has resource PDFs</label>
-      </div>
-      <div id="eResourceFields" class="resource-fields disabled">
-        <div id="ePdfsList"></div>
-        <button class="add-btn" id="eAddPdfBtn" type="button">+ Add PDF</button>
-      </div>
-    </div>
-    </details>
-
-    <details class="card" data-group="plain">
-      <summary class="card-title">Coaching intro text</summary>
-      <div class="card-body">
-      <div class="toggle-row">
-        <input type="checkbox" id="eHasCoachingIntro" />
-        <label for="eHasCoachingIntro" style="margin:0;">This lesson shows an intro message above the Exercise/Reflection forms, default closed</label>
-      </div>
-      <div id="eCoachingIntroFields" class="resource-fields disabled">
-        <div class="field">
-          <label for="eCoachingIntroTitle">Intro title</label>
-          <span class="hint">Shown on the labeled bar above the intro text</span>
-          <input type="text" id="eCoachingIntroTitle" placeholder="Before You Start" />
-        </div>
-        <div class="field">
-          <label for="eCoachingIntroText">Intro content</label>
-          <span class="hint">Plain text &mdash; renders inline above the Exercise/Reflection forms</span>
-          <textarea id="eCoachingIntroText" rows="6"></textarea>
-        </div>
-      </div>
-    </div>
-    </details>
-
-    <details class="card" data-group="open" open>
-      <summary class="card-title">Self-Guided &mdash; Jotform tabs</summary>
-      <div class="card-body">
-      <span class="hint" style="display:block;margin-bottom:10px;">The self-guided lesson page shows an Exercise tab and a Reflection tab, each embedding the matching Jotform form. There is no AI coach on Self-Guided pages.</span>
-      <div class="field">
-        <label for="eExerciseFormId">Exercise &mdash; Jotform form ID</label>
-        <span class="hint">From the form's Jotform URL or share settings</span>
-        <input type="text" id="eExerciseFormId" placeholder="241234567890123" />
-      </div>
-      <div class="field">
-        <label for="eReflectionFormId">Reflection &mdash; Jotform form ID</label>
-        <span class="hint">From the form's Jotform URL or share settings</span>
-        <input type="text" id="eReflectionFormId" placeholder="241234567890124" />
-      </div>
-    </div>
-    </details>
-
-    <details class="json-preview">
-      <summary>View raw config JSON (for reference / debugging)</summary>
-      <pre id="eJsonPreview"></pre>
-    </details>
-
-  </div>
-
-  <div id="masteryView" style="display:none;">
-
-    <div id="masteryEditorView">
-
-      <div class="toolbar">
-        <select id="mLessonSelect"></select>
-        <button class="btn secondary" id="mLoadBtn" type="button">Load</button>
-        <button class="btn secondary" id="mNewLessonBtn" type="button">+ New Lesson</button>
-        <button class="btn danger" id="mDeleteBtn" type="button">Delete Lesson</button>
-        <div class="spacer"></div>
-        <span class="save-status" id="mSaveStatus"></span>
-        <button class="btn" id="mSaveBtn" type="button">Save Lesson</button>
-      </div>
-
-      <div class="accordion-bar">
-        <button class="btn secondary" id="mExpandAllBtn" type="button">Expand all</button>
-        <button class="btn secondary" id="mCollapseAllBtn" type="button">Collapse all</button>
-      </div>
-
-      <details class="card" data-group="open" open>
-        <summary class="card-title">Lesson identity</summary>
-        <div class="card-body">
-        <div class="row2">
-          <div class="field">
-            <label for="mLessonId">Lesson ID</label>
-            <span class="hint">e.g. 5.1, 6.3</span>
-            <input type="text" id="mLessonId" placeholder="5.1" />
-          </div>
-          <div class="field">
-            <label for="mNextLessonLabel">Next lesson label</label>
-            <span class="hint">Used in the coach's closing message</span>
-            <input type="text" id="mNextLessonLabel" placeholder="Lecture 5.2" />
-          </div>
-        </div>
-        <div class="field">
-          <label for="mScopeNote">Scope note</label>
-          <span class="hint">How the coach refers to this lesson internally &mdash; e.g. "Lecture 2.1 - Empty Your Cup"</span>
-          <input type="text" id="mScopeNote" placeholder="Lecture 5.1 - The Surface Pattern" />
-        </div>
-      </div>
-      </details>
-
-      <details class="card" data-group="open" open>
-        <summary class="card-title">Video</summary>
-        <div class="card-body">
-        <div class="field">
-          <label for="mMediaId">Wistia media ID</label>
-          <input type="text" id="mMediaId" placeholder="0owdas4mfp" />
-        </div>
-      </div>
-      </details>
-
-      <details class="card" data-group="open" open>
-        <summary class="card-title">Lecture transcript</summary>
-        <div class="card-body">
-        <div class="field">
-          <textarea id="mTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
-        </div>
-      </div>
-      </details>
-
-      <details class="card" data-group="plain">
-        <summary class="card-title">Resource</summary>
-        <div class="card-body">
-        <div class="toggle-row">
-          <input type="checkbox" id="mHasResource" />
-          <label for="mHasResource" style="margin:0;">This lesson has resource PDFs</label>
-        </div>
-        <div id="mResourceFields" class="resource-fields disabled">
-          <div id="mPdfsList"></div>
-          <button class="add-btn" id="mAddPdfBtn" type="button">+ Add PDF</button>
-        </div>
-      </div>
-      </details>
-
-      <details class="card" data-group="plain">
-        <summary class="card-title">Coaching intro text</summary>
-        <div class="card-body">
-        <div class="toggle-row">
-          <input type="checkbox" id="mHasCoachingIntro" />
-          <label for="mHasCoachingIntro" style="margin:0;">This lesson shows an intro message at the top of Coaching, default closed</label>
-        </div>
-        <div id="mCoachingIntroFields" class="resource-fields disabled">
-          <div class="field">
-            <label for="mCoachingIntroTitle">Intro title</label>
-            <span class="hint">Shown on the labeled bar above the intro text</span>
-            <input type="text" id="mCoachingIntroTitle" placeholder="Preparation For First Coaching Session" />
-          </div>
-          <div class="field">
-            <label for="mCoachingIntroText">Intro content</label>
-            <span class="hint">Plain text &mdash; renders inline at the top of the Coaching tab</span>
-            <textarea id="mCoachingIntroText" rows="6"></textarea>
-          </div>
-        </div>
-      </div>
-      </details>
-
-      <details class="card" data-group="auto">
-        <summary class="card-title">Reflection framework &mdash; areas</summary>
-        <div class="card-body">
-        <div id="mAreasList"></div>
-        <button class="add-btn" id="mAddAreaBtn" type="button">+ Add area</button>
-      </div>
-      </details>
-
-      <details class="card" data-group="plain">
-        <summary class="card-title">Structured deliverable (optional)</summary>
-        <div class="card-body">
-        <div class="toggle-row">
-          <input type="checkbox" id="mHasDeliverable" />
-          <label for="mHasDeliverable" style="margin:0;">This lesson has a required, validated deliverable</label>
-        </div>
-        <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until every field below has been captured, real and specific &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done. Confirm captured deliverables under the Deliverables tab.</span>
-        <div id="mDeliverableFields" class="resource-fields disabled">
-          <div id="mDeliverableFieldsList"></div>
-          <button class="add-btn" id="mAddDeliverableFieldBtn" type="button">+ Add deliverable field</button>
-          <span class="hint" style="display:block;margin-top:8px;">Field key: a short camelCase identifier the coach's hidden tags will use (e.g. <code>hiddenTruth</code>). Single value: one field, one answer. Repeatable list: N required items &mdash; optionally split each item into comma-separated sub-parts (e.g. <code>context, people, action</code>); leave sub-parts blank for a plain list of single strings.</span>
-        </div>
-      </div>
-      </details>
-
-      <details class="card" data-group="auto">
-        <summary class="card-title">Coaching approach</summary>
-        <div class="card-body">
-        <div class="field">
-          <span class="hint">Private instructional guidance for the AI on how to conduct THIS lesson's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student, and separate from the resource document. Optional &mdash; most lessons will not need this.</span>
-          <textarea id="mCoachingApproach" rows="5"></textarea>
-        </div>
-      </div>
-      </details>
-
-      <details class="card" data-group="auto">
-        <summary class="card-title">Calibration examples</summary>
-        <div class="card-body">
-        <div class="field">
-          <span class="hint">One per line. Shown to the coach only, never to the student.</span>
-          <textarea id="mCalibration" rows="4"></textarea>
-        </div>
-      </div>
-      </details>
-
-      <details class="card" data-group="plain">
-        <summary class="card-title">Greeting</summary>
-        <div class="card-body">
-        <div class="field">
-          <label for="mGreetingFresh">Greeting</label>
-          <span class="hint">Shown instantly when the student opens Coaching, before the session begins</span>
-          <textarea id="mGreetingFresh" rows="3"></textarea>
-        </div>
-      </div>
-      </details>
-
-      <details class="card" data-group="plain">
-        <summary class="card-title">Greeting translations (optional)</summary>
-        <div class="card-body">
-        <div class="field">
-          <span class="hint">Lessons without a translation for a language fall back to English automatically &mdash; these do not need to be filled in before launch.</span>
-        </div>
-        <div id="mTranslationsList"></div>
-        <div class="add-lang-row">
-          <select id="mAddLangSelect"></select>
-          <button class="btn secondary" id="mAddLangBtn" type="button">+ Add language</button>
-        </div>
-      </div>
-      </details>
-
-      <details class="json-preview">
-        <summary>View raw config JSON (for reference / debugging)</summary>
-        <pre id="mJsonPreview"></pre>
-      </details>
-
-    </div>
-
-  </div>
-
-</div>
+</main>
 
 <script>
 var PROXY_URL = 'https://stratum-proxy.tedbaker0207.workers.dev';
 var ADMIN_KEY_STORAGE = 'stratum_admin_key';
-
 var LANGUAGES = [
   'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch',
   'Chinese', 'Japanese', 'Korean', 'Arabic', 'Hindi', 'Russian'
 ];
-
 var adminKey = '';
 var gAreaCounter = 0;
 var gPdfCounter = 0;
 var ePdfCounter = 0;
 var mAreaCounter = 0;
 var mPdfCounter = 0;
-
 var authInput = document.getElementById('adminKeyInput');
 var authStatus = document.getElementById('authStatus');
 var panel = document.getElementById('panel');
-
+var adminView = document.getElementById('adminView');
+var mainNavGroup = document.getElementById('mainNavGroup');
+var pageTitle = document.getElementById('pageTitle');
+var pageSub = document.getElementById('pageSub');
 var savedKey = localStorage.getItem(ADMIN_KEY_STORAGE);
 if (savedKey) authInput.value = savedKey;
-
 document.getElementById('unlockBtn').addEventListener('click', unlock);
-
 function unlock() {
   var key = authInput.value.trim();
   if (!key) { authStatus.textContent = 'Enter a key first.'; authStatus.className = ''; return; }
-
   authStatus.textContent = 'Checking...';
   authStatus.className = '';
-
   fetch(PROXY_URL + '/lesson-configs?tier=guided', {
     headers: { 'X-Stratum-Admin-Key': key }
   })
@@ -1410,7 +988,7 @@ function unlock() {
         localStorage.setItem(ADMIN_KEY_STORAGE, key);
         authStatus.textContent = 'Unlocked.';
         authStatus.className = 'ok';
-        panel.style.display = 'block';
+        mainNavGroup.style.display = '';
         populateSelect(gLessonSelect, (result.data.lessons || []).filter(function (l) { return !isMasteryLessonId(l.lesson_id); }));
         populateSelect(mLessonSelect, (result.data.lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); }));
         populateSelect(dlvLessonSelect, result.data.lessons || []);
@@ -1427,7 +1005,6 @@ function unlock() {
       authStatus.className = '';
     });
 }
-
 var tabDashboardBtn = document.getElementById('tabDashboardBtn');
 var tabDeliverablesBtn = document.getElementById('tabDeliverablesBtn');
 var tabTestimonialsBtn = document.getElementById('tabTestimonialsBtn');
@@ -1435,6 +1012,7 @@ var tabExcavationBtn = document.getElementById('tabExcavationBtn');
 var tabGuidedBtn = document.getElementById('tabGuidedBtn');
 var tabEssentialsBtn = document.getElementById('tabEssentialsBtn');
 var tabMasteryBtn = document.getElementById('tabMasteryBtn');
+var tabAdminBtn = document.getElementById('tabAdminBtn');
 var dashboardView = document.getElementById('dashboardView');
 var deliverablesView = document.getElementById('deliverablesView');
 var testimonialsView = document.getElementById('testimonialsView');
@@ -1442,15 +1020,29 @@ var excavationView = document.getElementById('excavationView');
 var guidedView = document.getElementById('guidedView');
 var essentialsView = document.getElementById('essentialsView');
 var masteryView = document.getElementById('masteryView');
-
+var PAGE_HEADERS = {
+  admin: ['Admin', 'Panel access and admin key.'],
+  dashboard: ['Students', 'Search, add, and manage student records.'],
+  deliverables: ['Deliverables', "Confirms every completed session actually captured a real, validated deliverable \u2014 not just the summary sentence."],
+  testimonials: ['Testimonials', 'Shown in the homepage rotator, fading from one to the next.'],
+  excavation: ['Excavation', 'The 5-Minute Character Excavation \u2014 started / completed / traffic source / surprise rating.'],
+  guided: ['Course', "Enter or edit any lesson's coaching content. Saves go straight to the database \u2014 the live lesson page picks up changes on next load."],
+  essentials: ['Self-Guided', 'Self-Guided lesson editor.'],
+  mastery: ['Master Coach', 'Master Coach lesson editor.']
+};
 function showTopTab(which) {
-  tabDashboardBtn.className = 'top-tab' + (which === 'dashboard' ? ' active' : '');
-  tabDeliverablesBtn.className = 'top-tab' + (which === 'deliverables' ? ' active' : '');
-  tabTestimonialsBtn.className = 'top-tab' + (which === 'testimonials' ? ' active' : '');
-  tabExcavationBtn.className = 'top-tab' + (which === 'excavation' ? ' active' : '');
-  tabGuidedBtn.className = 'top-tab' + (which === 'guided' ? ' active' : '');
-  tabEssentialsBtn.className = 'top-tab' + (which === 'essentials' ? ' active' : '');
-  tabMasteryBtn.className = 'top-tab' + (which === 'mastery' ? ' active' : '');
+  tabDashboardBtn.className = 'nav-item' + (which === 'dashboard' ? ' active' : '');
+  tabDeliverablesBtn.className = 'nav-item' + (which === 'deliverables' ? ' active' : '');
+  tabTestimonialsBtn.className = 'nav-item' + (which === 'testimonials' ? ' active' : '');
+  tabExcavationBtn.className = 'nav-item' + (which === 'excavation' ? ' active' : '');
+  tabGuidedBtn.className = 'nav-item' + (which === 'guided' ? ' active' : '');
+  tabEssentialsBtn.className = 'nav-item' + (which === 'essentials' ? ' active' : '');
+  tabMasteryBtn.className = 'nav-item' + (which === 'mastery' ? ' active' : '');
+  tabAdminBtn.className = 'nav-item' + (which === 'admin' ? ' active' : '');
+
+  adminView.style.display = which === 'admin' ? '' : 'none';
+  panel.style.display = which === 'admin' ? 'none' : 'block';
+
   dashboardView.style.display = which === 'dashboard' ? '' : 'none';
   deliverablesView.style.display = which === 'deliverables' ? '' : 'none';
   testimonialsView.style.display = which === 'testimonials' ? '' : 'none';
@@ -1458,8 +1050,14 @@ function showTopTab(which) {
   guidedView.style.display = which === 'guided' ? '' : 'none';
   essentialsView.style.display = which === 'essentials' ? '' : 'none';
   masteryView.style.display = which === 'mastery' ? '' : 'none';
-}
 
+  var t = PAGE_HEADERS[which] || ['Stratum Lesson Admin', ''];
+  pageTitle.textContent = t[0];
+  pageSub.textContent = t[1];
+}
+tabAdminBtn.addEventListener('click', function () {
+  showTopTab('admin');
+});
 tabDashboardBtn.addEventListener('click', function () {
   showTopTab('dashboard');
   loadStudents();
@@ -1478,13 +1076,11 @@ tabExcavationBtn.addEventListener('click', function () {
 tabGuidedBtn.addEventListener('click', function () { showTopTab('guided'); });
 tabEssentialsBtn.addEventListener('click', function () { showTopTab('essentials'); });
 tabMasteryBtn.addEventListener('click', function () { showTopTab('mastery'); });
-
 var studentsTableBody = document.getElementById('studentsTableBody');
 var studentsStatus = document.getElementById('studentsStatus');
 var studentSearch = document.getElementById('studentSearch');
 var allStudents = [];
 var studentsLoaded = false;
-
 var addStudentToggleBtn = document.getElementById('addStudentToggleBtn');
 var addStudentPanel = document.getElementById('addStudentPanel');
 var addStudentEmail = document.getElementById('addStudentEmail');
@@ -1492,7 +1088,6 @@ var addStudentPlan = document.getElementById('addStudentPlan');
 var addStudentSubmitBtn = document.getElementById('addStudentSubmitBtn');
 var addStudentCancelBtn = document.getElementById('addStudentCancelBtn');
 var addStudentStatus = document.getElementById('addStudentStatus');
-
 function openAddStudentPanel() {
   addStudentPanel.style.display = 'block';
   addStudentEmail.value = '';
@@ -1501,22 +1096,18 @@ function openAddStudentPanel() {
   addStudentStatus.className = '';
   addStudentEmail.focus();
 }
-
 function closeAddStudentPanel() {
   addStudentPanel.style.display = 'none';
   addStudentStatus.textContent = '';
   addStudentStatus.className = '';
 }
-
 addStudentToggleBtn.addEventListener('click', function () {
   if (addStudentPanel.style.display === 'block') { closeAddStudentPanel(); }
   else { openAddStudentPanel(); }
 });
 addStudentCancelBtn.addEventListener('click', closeAddStudentPanel);
-
 function submitAddStudent() {
   if (!adminKey) { addStudentStatus.textContent = 'Unlock the panel first.'; addStudentStatus.className = 'err'; return; }
-
   var email = addStudentEmail.value.trim();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     addStudentStatus.textContent = 'Enter a valid email first.';
@@ -1525,11 +1116,9 @@ function submitAddStudent() {
     return;
   }
   var plan = addStudentPlan.value;
-
   addStudentSubmitBtn.disabled = true;
   addStudentStatus.textContent = 'Adding...';
   addStudentStatus.className = '';
-
   fetch(PROXY_URL + '/admin/student/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
@@ -1559,26 +1148,20 @@ function submitAddStudent() {
       addStudentStatus.className = 'err';
     });
 }
-
 addStudentSubmitBtn.addEventListener('click', submitAddStudent);
 addStudentEmail.addEventListener('keydown', function (e) {
   if (e.key === 'Enter') { e.preventDefault(); submitAddStudent(); }
 });
-
 function formatLastSeen(iso) {
   if (!iso) return '\u2014';
-  // D1's datetime('now') stores 'YYYY-MM-DD HH:MM:SS' (UTC, no offset) -
-  // append 'Z' so the browser parses it as UTC rather than local time.
   var d = new Date(iso.indexOf('Z') === -1 ? iso.replace(' ', 'T') + 'Z' : iso);
   if (isNaN(d.getTime())) return iso;
   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
-
 function planDisplayLabel(plan) {
   var labels = { essentials: 'Self-Guided', guided: 'Coach', mastery: 'Master Coach' };
   return labels[plan] || plan || '\u2014';
 }
-
 function renderStudents(list) {
   studentsTableBody.innerHTML = '';
   if (!list.length) {
@@ -1588,8 +1171,7 @@ function renderStudents(list) {
   studentsStatus.textContent = list.length + ' student' + (list.length === 1 ? '' : 's');
   list.forEach(function (s) {
     var tr = document.createElement('tr');
-    tr.style.borderBottom = '1px solid #f0e9d8';
-
+    tr.style.borderBottom = '1px solid #F3EFE4';
     var cells = [
       s.email || '(no email on file)',
       planDisplayLabel(s.plan),
@@ -1608,38 +1190,31 @@ function renderStudents(list) {
       td.textContent = text;
       tr.appendChild(td);
     });
-
     var actionTd = document.createElement('td');
     actionTd.style.padding = '9px 12px';
     actionTd.style.textAlign = 'left';
-
     var editBtn = document.createElement('button');
     editBtn.type = 'button';
     editBtn.textContent = 'Edit email';
-    editBtn.style.cssText = 'padding:4px 12px;font-size:11px;font-family:Arial,sans-serif;background:#3B2F24;color:#F5EFE0;border:none;cursor:pointer;margin-right:6px;';
+    editBtn.style.cssText = 'padding:5px 12px;font-size:11px;font-family:Arial,sans-serif;background:#3B2F24;color:#F5EFE0;border:none;border-radius:6px;cursor:pointer;margin-right:6px;';
     editBtn.addEventListener('click', function () { editStudentEmail(s); });
     actionTd.appendChild(editBtn);
-
     var delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.textContent = 'Delete';
-    delBtn.style.cssText = 'padding:4px 12px;font-size:11px;font-family:Arial,sans-serif;background:#8a3a2e;color:#F5EFE0;border:none;cursor:pointer;';
+    delBtn.style.cssText = 'padding:5px 12px;font-size:11px;font-family:Arial,sans-serif;background:#8a3a2e;color:#F5EFE0;border:none;border-radius:6px;cursor:pointer;';
     delBtn.addEventListener('click', function () { deleteStudentRow(s, tr); });
     actionTd.appendChild(delBtn);
-
     tr.appendChild(actionTd);
-
     studentsTableBody.appendChild(tr);
   });
 }
-
 function editStudentEmail(s) {
   var current = s.email || '';
   var next = prompt('Correct email for this student (current: ' + (current || 'none on file') + '):', current);
   if (next === null) return;
   next = next.trim();
   if (!next || next === current) return;
-
   fetch(PROXY_URL + '/admin/student/email', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
@@ -1661,7 +1236,6 @@ function editStudentEmail(s) {
     })
     .catch(function () { alert('Network error while updating email.'); });
 }
-
 function deleteStudentRow(s, tr) {
   var label = s.email || s.studentId;
   if (!confirm('Permanently delete all data for ' + label + '? This cannot be undone.')) return;
@@ -1680,7 +1254,6 @@ function deleteStudentRow(s, tr) {
     })
     .catch(function () { alert('Network error while deleting.'); });
 }
-
 function applyStudentSearch() {
   var q = studentSearch.value.trim().toLowerCase();
   if (!q) { renderStudents(allStudents); return; }
@@ -1688,9 +1261,7 @@ function applyStudentSearch() {
     return (s.email || '').toLowerCase().indexOf(q) !== -1;
   }));
 }
-
 studentSearch.addEventListener('input', applyStudentSearch);
-
 function loadStudents() {
   if (studentsLoaded) return;
   if (!adminKey) { studentsStatus.textContent = 'Unlock the panel first.'; return; }
@@ -1706,32 +1277,27 @@ function loadStudents() {
       studentsStatus.textContent = 'Could not load students.';
     });
 }
-
 // ===== Deliverable audit =====
 var dlvLessonSelect = document.getElementById('dlvLessonSelect');
 var dlvTableBody = document.getElementById('dlvTableBody');
 var dlvStatus = document.getElementById('dlvStatus');
 var dlvOpenDetailRow = null;
-
 document.getElementById('dlvLoadBtn').addEventListener('click', function () {
   var id = dlvLessonSelect.value;
   if (!id) return;
   loadDeliverables(id);
 });
-
 function formatDlvDate(iso) {
   if (!iso) return '\u2014';
   var d = new Date(iso.indexOf('Z') === -1 ? iso.replace(' ', 'T') + 'Z' : iso);
   if (isNaN(d.getTime())) return iso;
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
-
 function loadDeliverables(lessonId) {
   if (!adminKey) { dlvStatus.textContent = 'Unlock the panel first.'; return; }
   dlvStatus.textContent = 'Loading...';
   dlvTableBody.innerHTML = '';
   dlvOpenDetailRow = null;
-
   fetch(PROXY_URL + '/admin/deliverables?lessonId=' + encodeURIComponent(lessonId), {
     headers: { 'X-Stratum-Admin-Key': adminKey }
   })
@@ -1749,11 +1315,6 @@ function loadDeliverables(lessonId) {
       dlvStatus.textContent = 'Could not load deliverables.';
     });
 }
-
-// Renders one value from a generic deliverable.fields object as a short,
-// single-line preview - a plain string as-is, a list as "N items", so the
-// summary table stays readable regardless of what fields a given lesson
-// actually configured.
 function dlvFieldPreview(fields) {
   var keys = Object.keys(fields || {});
   for (var i = 0; i < keys.length; i++) {
@@ -1762,25 +1323,20 @@ function dlvFieldPreview(fields) {
   }
   return '(no single-value field captured)';
 }
-
 function dlvFieldCount(fields) {
   return Object.keys(fields || {}).filter(function (k) {
     var v = fields[k];
     return (typeof v === 'string' && v) || (Array.isArray(v) && v.length);
   }).length;
 }
-
 function renderDeliverableRow(dv) {
   var tr = document.createElement('tr');
-
   var studentTd = document.createElement('td');
   studentTd.textContent = dv.email || dv.studentId;
   tr.appendChild(studentTd);
-
   var previewTd = document.createElement('td');
   previewTd.textContent = dlvFieldPreview(dv.fields);
   tr.appendChild(previewTd);
-
   var countTd = document.createElement('td');
   var count = dlvFieldCount(dv.fields);
   var pill = document.createElement('span');
@@ -1788,11 +1344,9 @@ function renderDeliverableRow(dv) {
   pill.textContent = count;
   countTd.appendChild(pill);
   tr.appendChild(countTd);
-
   var completedTd = document.createElement('td');
   completedTd.textContent = formatDlvDate(dv.completedAt);
   tr.appendChild(completedTd);
-
   var actionTd = document.createElement('td');
   var viewBtn = document.createElement('button');
   viewBtn.type = 'button';
@@ -1801,17 +1355,11 @@ function renderDeliverableRow(dv) {
   viewBtn.addEventListener('click', function () { toggleDeliverableDetail(dv, tr, viewBtn); });
   actionTd.appendChild(viewBtn);
   tr.appendChild(actionTd);
-
   dlvTableBody.appendChild(tr);
 }
-
-// Renders a value from deliverable.fields generically: a plain string
-// prints as one block, an array of plain strings prints as a numbered
-// list, and an array of {part: value} objects (Lesson 1-style instances
-// with sub-parts) prints each item's parts joined with an em dash.
 function dlvFormatFieldValue(val) {
   if (Array.isArray(val)) {
-    if (!val.length) return '<div style="font-size:12px;color:#8a7a5e;font-style:italic;">Nothing captured.</div>';
+    if (!val.length) return '<div style="font-size:12px;color:#9A927E;font-style:italic;">Nothing captured.</div>';
     return val.map(function (item, i) {
       var text;
       if (item && typeof item === 'object') {
@@ -1824,7 +1372,6 @@ function dlvFormatFieldValue(val) {
   }
   return '<div class="dlv-behavior-text">' + escapeDlvHtml(val || '(none captured)') + '</div>';
 }
-
 function toggleDeliverableDetail(dv, afterRow, viewBtn) {
   if (dlvOpenDetailRow && dlvOpenDetailRow.parentNode) {
     var wasSameRow = dlvOpenDetailRow.dataset.forRow === String(dv.studentId);
@@ -1832,19 +1379,17 @@ function toggleDeliverableDetail(dv, afterRow, viewBtn) {
     dlvOpenDetailRow = null;
     if (wasSameRow) { viewBtn.textContent = 'View'; return; }
   }
-
   viewBtn.textContent = 'Hide';
   var tr = document.createElement('tr');
   tr.className = 'dlv-detail-row';
   tr.dataset.forRow = String(dv.studentId);
   var td = document.createElement('td');
   td.colSpan = 5;
-
   var fields = dv.fields || {};
   var keys = Object.keys(fields);
   var html = '';
   if (!keys.length) {
-    html += '<div style="font-size:12px;color:#8a7a5e;font-style:italic;">No deliverable fields captured.</div>';
+    html += '<div style="font-size:12px;color:#9A927E;font-style:italic;">No deliverable fields captured.</div>';
   } else {
     keys.forEach(function (key) {
       html += '<div class="dlv-behavior-label">' + escapeDlvHtml(key.toUpperCase()) + '</div>';
@@ -1852,32 +1397,22 @@ function toggleDeliverableDetail(dv, afterRow, viewBtn) {
     });
   }
   if (dv.summary) {
-    html += '<div style="margin-top:10px;font-size:12px;color:#8a7a5e;font-style:italic;">Summary: ' + escapeDlvHtml(dv.summary) + '</div>';
+    html += '<div style="margin-top:10px;font-size:12px;color:#9A927E;font-style:italic;">Summary: ' + escapeDlvHtml(dv.summary) + '</div>';
   }
-
   td.innerHTML = html;
   tr.appendChild(td);
   afterRow.parentNode.insertBefore(tr, afterRow.nextSibling);
   dlvOpenDetailRow = tr;
 }
-
 function escapeDlvHtml(s) {
   var d = document.createElement('div');
   d.innerText = s;
   return d.innerHTML;
 }
-
 // ===== Testimonials =====
-// Manages the homepage rotator's testimonial content. Each block edits one
-// row from the `testimonials` D1 table and saves independently with its
-// own Save button (rather than one big form-wide save) so a mistake in one
-// testimonial can never block saving another. Reordering swaps
-// display_order between the moved block and its neighbor and saves both
-// immediately, so the list's on-screen order always matches what's stored.
 var tstList = document.getElementById('tstList');
 var tstStatus = document.getElementById('tstStatus');
-var tstData = []; // last-loaded rows, kept so reorder buttons can find neighbors
-
+var tstData = [];
 document.getElementById('tstReloadBtn').addEventListener('click', loadTestimonials);
 document.getElementById('tstAddBtn').addEventListener('click', function () {
   addTestimonialBlock({
@@ -1891,7 +1426,6 @@ document.getElementById('tstAddBtn').addEventListener('click', function () {
     isActive: true
   }, true);
 });
-
 function loadTestimonials() {
   if (!adminKey) { tstStatus.textContent = 'Unlock the panel first.'; return; }
   tstStatus.textContent = 'Loading...';
@@ -1911,27 +1445,17 @@ function loadTestimonials() {
       tstStatus.textContent = 'Could not load testimonials.';
     });
 }
-
-// Rough reading-time estimate (~200wpm, 3s floor for the name/photo to
-// register, 30s ceiling) shown as a placeholder so Ted can see what the
-// widget will use automatically when displaySeconds is left blank -
-// leaving it blank is the normal case; the field is only for manual
-// override on a testimonial that needs more or less time than its length
-// alone would suggest.
 function tstEstimateSeconds(quote) {
   var words = (quote || '').trim().split(/\s+/).filter(Boolean).length;
   var seconds = Math.round((words / 200) * 60) + 3;
   return Math.max(4, Math.min(30, seconds));
 }
-
 function addTestimonialBlock(t, isNew) {
   var block = document.createElement('div');
   block.className = 'tst-block';
   if (t.isActive === false) block.style.opacity = '0.65';
-
   var head = document.createElement('div');
   head.className = 'tst-block-head';
-
   var orderBtns = document.createElement('div');
   orderBtns.className = 'tst-order-btns';
   var upBtn = document.createElement('button');
@@ -1945,39 +1469,32 @@ function addTestimonialBlock(t, isNew) {
   orderBtns.appendChild(upBtn);
   orderBtns.appendChild(downBtn);
   head.appendChild(orderBtns);
-
   var nameInput = document.createElement('input');
   nameInput.type = 'text';
   nameInput.className = 'tst-name';
   nameInput.placeholder = 'Author name';
   nameInput.value = t.authorName || '';
   head.appendChild(nameInput);
-
   var detailInput = document.createElement('input');
   detailInput.type = 'text';
   detailInput.className = 'tst-detail';
   detailInput.placeholder = 'Detail line (e.g. Fantasy novelist, Beta Tester)';
   detailInput.value = t.authorDetail || '';
   head.appendChild(detailInput);
-
   if (t.isActive === false) {
     var tag = document.createElement('span');
     tag.className = 'tst-inactive-tag';
     tag.textContent = 'Inactive';
     head.appendChild(tag);
   }
-
   block.appendChild(head);
-
   var quoteArea = document.createElement('textarea');
   quoteArea.className = 'tst-quote';
   quoteArea.placeholder = 'The testimonial quote - can run long.';
   quoteArea.value = t.quoteText || '';
   block.appendChild(quoteArea);
-
   var metaRow = document.createElement('div');
   metaRow.className = 'tst-meta-row';
-
   var photoField = document.createElement('div');
   photoField.className = 'field grow';
   var photoLabel = document.createElement('label');
@@ -1990,7 +1507,6 @@ function addTestimonialBlock(t, isNew) {
   photoField.appendChild(photoLabel);
   photoField.appendChild(photoInput);
   metaRow.appendChild(photoField);
-
   var secField = document.createElement('div');
   secField.className = 'field';
   var secLabel = document.createElement('label');
@@ -2003,11 +1519,9 @@ function addTestimonialBlock(t, isNew) {
   secField.appendChild(secLabel);
   secField.appendChild(secInput);
   metaRow.appendChild(secField);
-
   quoteArea.addEventListener('input', function () {
     if (!secInput.value) secInput.placeholder = 'auto (~' + tstEstimateSeconds(quoteArea.value) + 's)';
   });
-
   var activeField = document.createElement('div');
   activeField.className = 'field';
   var activeLabel = document.createElement('label');
@@ -2029,35 +1543,27 @@ function addTestimonialBlock(t, isNew) {
   activeField.appendChild(activeLabel);
   activeField.appendChild(activeWrap);
   metaRow.appendChild(activeField);
-
   block.appendChild(metaRow);
-
   var foot = document.createElement('div');
   foot.className = 'tst-block-foot';
-
   var saveBtn = document.createElement('button');
   saveBtn.type = 'button';
   saveBtn.className = 'tst-save-btn';
   saveBtn.textContent = isNew ? 'Add testimonial' : 'Save';
   foot.appendChild(saveBtn);
-
   var deleteBtn = document.createElement('button');
   deleteBtn.type = 'button';
   deleteBtn.className = 'remove-btn';
   deleteBtn.textContent = 'Delete';
   deleteBtn.style.display = isNew ? 'none' : '';
   foot.appendChild(deleteBtn);
-
   var saveStatus = document.createElement('span');
   saveStatus.className = 'tst-save-status';
   foot.appendChild(saveStatus);
-
   block.appendChild(foot);
   tstList.appendChild(block);
-
   var currentId = t.id || null;
   var currentOrder = t.displayOrder || 0;
-
   function payload() {
     var secondsRaw = secInput.value.trim();
     return {
@@ -2071,7 +1577,6 @@ function addTestimonialBlock(t, isNew) {
       isActive: activeCb.checked
     };
   }
-
   function save(afterSave) {
     if (!payload().authorName || !payload().quoteText) {
       saveStatus.textContent = 'Name and quote are both required.';
@@ -2096,9 +1601,7 @@ function addTestimonialBlock(t, isNew) {
       })
       .catch(function () { saveStatus.textContent = 'Save failed.'; });
   }
-
   saveBtn.addEventListener('click', function () { save(); });
-
   deleteBtn.addEventListener('click', function () {
     if (!currentId) { block.remove(); return; }
     if (!confirm('Delete this testimonial? This cannot be undone.')) return;
@@ -2112,7 +1615,6 @@ function addTestimonialBlock(t, isNew) {
       })
       .catch(function () { saveStatus.textContent = 'Delete failed.'; });
   });
-
   function swapOrderWith(neighborBlock) {
     if (!neighborBlock) return;
     var neighborSave = neighborBlock.__tstSwapOrder;
@@ -2129,13 +1631,11 @@ function addTestimonialBlock(t, isNew) {
       tstList.insertBefore(neighborBlock, block);
     }
   }
-
   block.__tstSwapOrder = {
     getOrder: function () { return currentOrder; },
     setOrder: function (v) { currentOrder = v; },
     save: save
   };
-
   upBtn.addEventListener('click', function () {
     var prev = block.previousElementSibling;
     if (prev && prev.classList.contains('tst-block')) swapOrderWith(prev);
@@ -2145,7 +1645,6 @@ function addTestimonialBlock(t, isNew) {
     if (next && next.classList.contains('tst-block')) swapOrderWith(next);
   });
 }
-
 // ===== Excavation dashboard =====
 var excavationsLoaded = false;
 var excStatus = document.getElementById('excStatus');
@@ -2153,14 +1652,12 @@ var excSourceTableBody = document.getElementById('excSourceTableBody');
 var excScoreDist = document.getElementById('excScoreDist');
 var excRecentTableBody = document.getElementById('excRecentTableBody');
 var excOpenTranscriptRow = null;
-
 function formatExcDate(iso) {
   if (!iso) return '\u2014';
   var d = new Date(iso.indexOf('Z') === -1 ? iso.replace(' ', 'T') + 'Z' : iso);
   if (isNaN(d.getTime())) return iso;
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
-
 function loadExcavations() {
   if (!adminKey) { excStatus.textContent = 'Unlock the panel first.'; return; }
   excStatus.textContent = 'Loading...';
@@ -2175,12 +1672,10 @@ function loadExcavations() {
       excStatus.textContent = 'Could not load excavation data.';
     });
 }
-
 document.getElementById('excRefreshBtn').addEventListener('click', function () {
   excavationsLoaded = false;
   loadExcavations();
 });
-
 function renderExcavationStats(d) {
   var started = d.started || 0;
   var completed = d.completed || 0;
@@ -2189,7 +1684,6 @@ function renderExcavationStats(d) {
   document.getElementById('excStatCompleted').textContent = completed;
   document.getElementById('excStatRate').textContent = started ? rate + '%' : '\u2014';
   document.getElementById('excStatSurprise').textContent = d.avgSurprise != null ? (Math.round(d.avgSurprise * 10) / 10) : '\u2014';
-
   excSourceTableBody.innerHTML = '';
   (d.bySource || []).forEach(function (row) {
     var tr = document.createElement('tr');
@@ -2206,17 +1700,16 @@ function renderExcavationStats(d) {
     var emptyTd = document.createElement('td');
     emptyTd.colSpan = 4;
     emptyTd.style.fontStyle = 'italic';
-    emptyTd.style.color = '#8a7a5e';
+    emptyTd.style.color = '#9A927E';
     emptyTd.textContent = 'No sessions started yet.';
     emptyTr.appendChild(emptyTd);
     excSourceTableBody.appendChild(emptyTr);
   }
-
   excScoreDist.innerHTML = '';
   var dist = d.scoreDistribution || [];
   var maxCount = dist.reduce(function (m, r) { return Math.max(m, r.count); }, 0) || 1;
   if (!dist.length) {
-    excScoreDist.innerHTML = '<div style="font-size:12px;color:#8a7a5e;font-style:italic;">No ratings submitted yet.</div>';
+    excScoreDist.innerHTML = '<div style="font-size:12px;color:#9A927E;font-style:italic;">No ratings submitted yet.</div>';
   } else {
     [1, 2, 3, 4, 5].forEach(function (score) {
       var found = dist.filter(function (r) { return r.score === score; })[0];
@@ -2231,7 +1724,6 @@ function renderExcavationStats(d) {
       excScoreDist.appendChild(row);
     });
   }
-
   excRecentTableBody.innerHTML = '';
   var recent = d.recentSessions || [];
   if (!recent.length) {
@@ -2239,7 +1731,7 @@ function renderExcavationStats(d) {
     var rEmptyTd = document.createElement('td');
     rEmptyTd.colSpan = 6;
     rEmptyTd.style.fontStyle = 'italic';
-    rEmptyTd.style.color = '#8a7a5e';
+    rEmptyTd.style.color = '#9A927E';
     rEmptyTd.textContent = 'No completed sessions yet.';
     rEmptyTr.appendChild(rEmptyTd);
     excRecentTableBody.appendChild(rEmptyTr);
@@ -2270,7 +1762,6 @@ function renderExcavationStats(d) {
     excRecentTableBody.appendChild(tr);
   });
 }
-
 function toggleExcavationTranscript(sessionId, afterRow, viewBtn) {
   if (excOpenTranscriptRow && excOpenTranscriptRow.parentNode) {
     var wasSameSession = excOpenTranscriptRow.dataset.forSession === sessionId;
@@ -2278,7 +1769,6 @@ function toggleExcavationTranscript(sessionId, afterRow, viewBtn) {
     excOpenTranscriptRow = null;
     if (wasSameSession) { viewBtn.textContent = 'View transcript'; return; }
   }
-
   viewBtn.textContent = 'Loading...';
   fetch(PROXY_URL + '/admin/excavation?sessionId=' + encodeURIComponent(sessionId), {
     headers: { 'X-Stratum-Admin-Key': adminKey }
@@ -2291,7 +1781,6 @@ function toggleExcavationTranscript(sessionId, afterRow, viewBtn) {
       tr.dataset.forSession = sessionId;
       var td = document.createElement('td');
       td.colSpan = 6;
-
       var html = '';
       (d.exchanges || []).forEach(function (ex) {
         html += '<div class="exc-transcript-qa">' +
@@ -2302,8 +1791,7 @@ function toggleExcavationTranscript(sessionId, afterRow, viewBtn) {
       if (d.session && d.session.closing_line) {
         html += '<div class="exc-transcript-closing">' + escapeExcHtml(d.session.closing_line) + '</div>';
       }
-      if (!html) html = '<div style="font-size:12px;color:#8a7a5e;font-style:italic;">No exchange data recorded for this session.</div>';
-
+      if (!html) html = '<div style="font-size:12px;color:#9A927E;font-style:italic;">No exchange data recorded for this session.</div>';
       td.innerHTML = html;
       tr.appendChild(td);
       afterRow.parentNode.insertBefore(tr, afterRow.nextSibling);
@@ -2314,40 +1802,49 @@ function toggleExcavationTranscript(sessionId, afterRow, viewBtn) {
       alert('Could not load that transcript.');
     });
 }
-
 function escapeExcHtml(s) {
   var d = document.createElement('div');
   d.innerText = s;
   return d.innerHTML;
 }
-
 var tabLessonEditorBtn = document.getElementById('tabLessonEditorBtn');
 var tabCourseAssistantBtn = document.getElementById('tabCourseAssistantBtn');
 var lessonEditorView = document.getElementById('lessonEditorView');
 var masteryEditorView = document.getElementById('masteryEditorView');
 var courseAssistantView = document.getElementById('courseAssistantView');
-
 tabLessonEditorBtn.addEventListener('click', function () {
-  tabLessonEditorBtn.className = 'sub-tab active';
-  tabCourseAssistantBtn.className = 'sub-tab';
+  tabLessonEditorBtn.className = 'btn secondary';
+  tabLessonEditorBtn.style.background = '#3B2F24';
+  tabLessonEditorBtn.style.color = '#F5EFE0';
+  tabLessonEditorBtn.style.borderColor = '#3B2F24';
+  tabCourseAssistantBtn.className = 'btn secondary';
+  tabCourseAssistantBtn.style.background = '';
+  tabCourseAssistantBtn.style.color = '';
+  tabCourseAssistantBtn.style.borderColor = '';
   lessonEditorView.style.display = '';
   courseAssistantView.style.display = 'none';
 });
-
 tabCourseAssistantBtn.addEventListener('click', function () {
-  tabCourseAssistantBtn.className = 'sub-tab active';
-  tabLessonEditorBtn.className = 'sub-tab';
+  tabCourseAssistantBtn.className = 'btn secondary';
+  tabCourseAssistantBtn.style.background = '#3B2F24';
+  tabCourseAssistantBtn.style.color = '#F5EFE0';
+  tabCourseAssistantBtn.style.borderColor = '#3B2F24';
+  tabLessonEditorBtn.className = 'btn secondary';
+  tabLessonEditorBtn.style.background = '';
+  tabLessonEditorBtn.style.color = '';
+  tabLessonEditorBtn.style.borderColor = '';
   courseAssistantView.style.display = '';
   lessonEditorView.style.display = 'none';
 });
-
+tabLessonEditorBtn.style.background = '#3B2F24';
+tabLessonEditorBtn.style.color = '#F5EFE0';
+tabLessonEditorBtn.style.borderColor = '#3B2F24';
 var chatHistory = [];
 var chatMessages = document.getElementById('chatMessages');
 var chatEmptyState = document.getElementById('chatEmptyState');
 var chatInput = document.getElementById('chatInput');
 var chatSendBtn = document.getElementById('chatSendBtn');
 var chatIncludeTranscripts = document.getElementById('chatIncludeTranscripts');
-
 function appendChatMessage(role, text) {
   if (chatEmptyState) { chatEmptyState.remove(); chatEmptyState = null; }
   var div = document.createElement('div');
@@ -2357,7 +1854,6 @@ function appendChatMessage(role, text) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
   return div;
 }
-
 function appendSystemNote(text) {
   if (chatEmptyState) { chatEmptyState.remove(); chatEmptyState = null; }
   var div = document.createElement('div');
@@ -2380,13 +1876,11 @@ function sendChatMessage() {
   var text = chatInput.value.trim();
   if (!text) return;
   if (!adminKey) { appendSystemNote('Unlock the panel first.'); return; }
-
   appendChatMessage('user', text);
   chatHistory.push({ role: 'user', content: text });
   chatInput.value = '';
   chatSendBtn.disabled = true;
   var thinkingNote = appendSystemNote('Thinking...');
-
   fetch(PROXY_URL + '/admin/chat', {
     method: 'POST',
     headers: {
@@ -2418,7 +1912,6 @@ function sendChatMessage() {
       chatSendBtn.disabled = false;
     });
 }
-
 chatSendBtn.addEventListener('click', sendChatMessage);
 chatInput.addEventListener('keydown', function (e) {
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -2426,7 +1919,6 @@ chatInput.addEventListener('keydown', function (e) {
     sendChatMessage();
   }
 });
-
 function populateSelect(selectEl, lessons) {
   selectEl.innerHTML = '';
   if (!lessons || lessons.length === 0) {
@@ -2443,7 +1935,6 @@ function populateSelect(selectEl, lessons) {
     selectEl.appendChild(opt);
   });
 }
-
 var gLessonSelect = document.getElementById('gLessonSelect');
 var gAreasList = document.getElementById('gAreasList');
 var gResourceFields = document.getElementById('gResourceFields');
@@ -2453,50 +1944,35 @@ var gCoachingIntroFields = document.getElementById('gCoachingIntroFields');
 var gHasCoachingIntroCb = document.getElementById('gHasCoachingIntro');
 var gDeliverableFields = document.getElementById('gDeliverableFields');
 var gHasDeliverableCb = document.getElementById('gHasDeliverable');
-
-// ===== Generalized deliverable field editor =====
-// Shared factory (Sept 2026) - a lesson's deliverable is now any number of
-// independently named fields (single value or repeatable list) instead of
-// one hardcoded behavior+instances shape. Instantiated once per tier below
-// so Guided and Mastery each get their own independent list container but
-// share identical add/collect/normalize logic - no per-tier drift.
 function makeDeliverableFieldEditor(listEl) {
   var counter = 0;
-
   function renumber() {
     listEl.querySelectorAll('.deliv-field-block').forEach(function (b, i) {
       b.querySelector('.deliv-field-num').textContent = (i + 1);
     });
   }
-
   function addFieldBlock(field) {
     field = field || {};
     counter++;
-
     var block = document.createElement('div');
     block.className = 'area-block deliv-field-block';
-
     var head = document.createElement('div');
     head.className = 'area-block-head';
-
     var num = document.createElement('span');
     num.className = 'area-num deliv-field-num';
     head.appendChild(num);
-
     var keyInput = document.createElement('input');
     keyInput.type = 'text';
     keyInput.className = 'deliv-field-key';
     keyInput.placeholder = 'fieldKey';
     keyInput.value = field.key || '';
     head.appendChild(keyInput);
-
     var labelInput = document.createElement('input');
     labelInput.type = 'text';
     labelInput.className = 'deliv-field-label';
     labelInput.placeholder = 'Label shown in the summary (e.g. Hidden Truth)';
     labelInput.value = field.label || '';
     head.appendChild(labelInput);
-
     var typeSelect = document.createElement('select');
     typeSelect.className = 'deliv-field-type';
     [['single', 'Single value'], ['list', 'Repeatable list']].forEach(function (pair) {
@@ -2507,7 +1983,6 @@ function makeDeliverableFieldEditor(listEl) {
     });
     typeSelect.value = field.type === 'list' ? 'list' : 'single';
     head.appendChild(typeSelect);
-
     var removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'remove-btn';
@@ -2517,37 +1992,29 @@ function makeDeliverableFieldEditor(listEl) {
       renumber();
     });
     head.appendChild(removeBtn);
-
     block.appendChild(head);
-
     var listOpts = document.createElement('div');
     listOpts.className = 'deliv-field-list-opts';
     listOpts.style.display = typeSelect.value === 'list' ? 'flex' : 'none';
-
     var countInput = document.createElement('input');
     countInput.type = 'text';
     countInput.className = 'deliv-field-count';
     countInput.placeholder = 'Count required (e.g. 3)';
     countInput.value = field.count != null ? String(field.count) : '';
     listOpts.appendChild(countInput);
-
     var partsInput = document.createElement('input');
     partsInput.type = 'text';
     partsInput.className = 'deliv-field-parts';
     partsInput.placeholder = 'Sub-parts, comma separated (optional - e.g. context, people, action)';
     partsInput.value = Array.isArray(field.parts) ? field.parts.join(', ') : '';
     listOpts.appendChild(partsInput);
-
     block.appendChild(listOpts);
-
     typeSelect.addEventListener('change', function () {
       listOpts.style.display = typeSelect.value === 'list' ? 'flex' : 'none';
     });
-
     listEl.appendChild(block);
     renumber();
   }
-
   function collectFields() {
     var fields = [];
     listEl.querySelectorAll('.deliv-field-block').forEach(function (b) {
@@ -2568,20 +2035,12 @@ function makeDeliverableFieldEditor(listEl) {
     });
     return fields;
   }
-
   return {
     addFieldBlock: addFieldBlock,
     collectFields: collectFields,
     clear: function () { listEl.innerHTML = ''; }
   };
 }
-
-// Auto-upgrades an OLD-shape deliverable config (behaviorLabel /
-// instanceLabel / instanceCount, no fields[]) into the new fields[] shape
-// for display in the editor - mirrors normalizeDeliverableConfig() in
-// engine.js exactly (including the legacy field keys "behavior" /
-// "instance", which must match so a lesson saved before this change and
-// then re-saved through this UI keeps emitting the exact same tag names).
 function normalizeDeliverableConfigForAdmin(raw) {
   if (!raw || !raw.required) return null;
   if (Array.isArray(raw.fields) && raw.fields.length) return { required: true, fields: raw.fields };
@@ -2599,29 +2058,24 @@ function normalizeDeliverableConfigForAdmin(raw) {
     ]
   };
 }
-
 var gDeliverableEditor = makeDeliverableFieldEditor(document.getElementById('gDeliverableFieldsList'));
 document.getElementById('gAddDeliverableFieldBtn').addEventListener('click', function () {
   gDeliverableEditor.addFieldBlock({});
 });
-
 var gTranslationsList = document.getElementById('gTranslationsList');
 var gAddLangSelect = document.getElementById('gAddLangSelect');
 var gSaveStatus = document.getElementById('gSaveStatus');
-
 document.getElementById('gLoadBtn').addEventListener('click', function () {
   var id = gLessonSelect.value;
   if (!id) return;
   loadGuidedLesson(id);
 });
-
 document.getElementById('gNewLessonBtn').addEventListener('click', function () {
   var id = prompt('New Coach lesson ID (e.g. 1.2):');
   if (!id) return;
   clearGuidedForm();
   document.getElementById('gLessonId').value = id.trim();
 });
-
 function loadGuidedLesson(lessonId) {
   fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided')
     .then(function (r) { return r.json(); })
@@ -2631,29 +2085,23 @@ function loadGuidedLesson(lessonId) {
     })
     .catch(function () { alert('Could not load that lesson.'); });
 }
-
 function gAddAreaBlock(title, instructions) {
   gAreaCounter++;
   var id = 'garea_' + gAreaCounter;
-
   var block = document.createElement('div');
   block.className = 'area-block';
   block.dataset.id = id;
-
   var head = document.createElement('div');
   head.className = 'area-block-head';
-
   var num = document.createElement('span');
   num.className = 'area-num';
   head.appendChild(num);
-
   var titleInput = document.createElement('input');
   titleInput.type = 'text';
   titleInput.className = 'area-title';
   titleInput.placeholder = 'AREA TITLE';
   titleInput.value = title || '';
   head.appendChild(titleInput);
-
   var removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'remove-btn';
@@ -2663,53 +2111,42 @@ function gAddAreaBlock(title, instructions) {
     gRenumberAreas();
   });
   head.appendChild(removeBtn);
-
   block.appendChild(head);
-
   var instrTextarea = document.createElement('textarea');
   instrTextarea.className = 'area-instructions';
   instrTextarea.rows = 5;
   instrTextarea.placeholder = 'Instructions for the coach on drawing out this area...';
   instrTextarea.value = instructions || '';
   block.appendChild(instrTextarea);
-
   gAreasList.appendChild(block);
   gRenumberAreas();
 }
-
 function gRenumberAreas() {
   var blocks = gAreasList.querySelectorAll('.area-block');
   blocks.forEach(function (b, i) {
     b.querySelector('.area-num').textContent = (i + 1);
   });
 }
-
 document.getElementById('gAddAreaBtn').addEventListener('click', function () {
   gAddAreaBlock('', '');
 });
-
 function gAddPdfBlock(title, url) {
   gPdfCounter++;
   var id = 'gpdf_' + gPdfCounter;
-
   var block = document.createElement('div');
   block.className = 'area-block pdf-block';
   block.dataset.id = id;
-
   var head = document.createElement('div');
   head.className = 'area-block-head';
-
   var num = document.createElement('span');
   num.className = 'area-num';
   head.appendChild(num);
-
   var titleInput = document.createElement('input');
   titleInput.type = 'text';
   titleInput.className = 'pdf-title';
   titleInput.placeholder = 'Document title';
   titleInput.value = title || '';
   head.appendChild(titleInput);
-
   var removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'remove-btn';
@@ -2719,31 +2156,25 @@ function gAddPdfBlock(title, url) {
     gRenumberPdfs();
   });
   head.appendChild(removeBtn);
-
   block.appendChild(head);
-
   var urlInput = document.createElement('input');
   urlInput.type = 'text';
   urlInput.className = 'pdf-url pdf-url-input';
   urlInput.placeholder = 'https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf';
   urlInput.value = url || '';
   block.appendChild(urlInput);
-
   gPdfsList.appendChild(block);
   gRenumberPdfs();
 }
-
 function gRenumberPdfs() {
   var blocks = gPdfsList.querySelectorAll('.pdf-block');
   blocks.forEach(function (b, i) {
     b.querySelector('.area-num').textContent = (i + 1);
   });
 }
-
 document.getElementById('gAddPdfBtn').addEventListener('click', function () {
   gAddPdfBlock('', '');
 });
-
 document.getElementById('gExpandAllBtn').addEventListener('click', function () {
   lessonEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
 });
@@ -2758,7 +2189,6 @@ lessonEditorView.querySelectorAll('details.card[data-group="auto"]').forEach(fun
     if (!card.open) card.open = true;
   });
 });
-
 gHasResourceCb.addEventListener('change', function () {
   gResourceFields.className = 'resource-fields' + (gHasResourceCb.checked ? '' : ' disabled');
 });
@@ -2768,10 +2198,6 @@ gHasCoachingIntroCb.addEventListener('change', function () {
 gHasDeliverableCb.addEventListener('change', function () {
   gDeliverableFields.className = 'resource-fields' + (gHasDeliverableCb.checked ? '' : ' disabled');
 });
-
-// Normalises a resource config's PDFs into a flat array of { title, url }
-// pairs, regardless of whether it was saved under the new pdfs[] schema or
-// the older single pdfUrl/pdfTitle schema. Shared by both tiers.
 function getConfigPdfs(resource) {
   if (!resource) return [];
   if (Array.isArray(resource.pdfs)) {
@@ -2782,7 +2208,6 @@ function getConfigPdfs(resource) {
   }
   return [];
 }
-
 function gRefreshAddLangOptions() {
   var existing = Array.prototype.map.call(
     gTranslationsList.querySelectorAll('.lang-block'),
@@ -2796,16 +2221,13 @@ function gRefreshAddLangOptions() {
     gAddLangSelect.appendChild(opt);
   });
 }
-
 function gAddLangBlock(lang, fresh) {
   var block = document.createElement('div');
   block.className = 'lang-block';
   block.dataset.lang = lang;
-
   var head = document.createElement('div');
   head.className = 'lang-block-head';
   head.appendChild(document.createTextNode(lang));
-
   var removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'remove-btn';
@@ -2816,7 +2238,6 @@ function gAddLangBlock(lang, fresh) {
   });
   head.appendChild(removeBtn);
   block.appendChild(head);
-
   var freshField = document.createElement('div');
   freshField.className = 'field';
   var freshLabel = document.createElement('label');
@@ -2828,17 +2249,14 @@ function gAddLangBlock(lang, fresh) {
   freshTa.value = fresh || '';
   freshField.appendChild(freshTa);
   block.appendChild(freshField);
-
   gTranslationsList.appendChild(block);
   gRefreshAddLangOptions();
 }
-
 document.getElementById('gAddLangBtn').addEventListener('click', function () {
   var lang = gAddLangSelect.value;
   if (!lang) return;
   gAddLangBlock(lang, '', '');
 });
-
 function clearGuidedForm() {
   document.getElementById('gLessonId').value = '';
   document.getElementById('gNextLessonLabel').value = '';
@@ -2863,30 +2281,17 @@ function clearGuidedForm() {
   gRefreshAddLangOptions();
   updateGuidedJsonPreview();
 }
-
 function fillGuidedForm(config) {
   clearGuidedForm();
-
   document.getElementById('gLessonId').value = config.lessonId || '';
   document.getElementById('gNextLessonLabel').value = config.nextLessonLabel || '';
   document.getElementById('gScopeNote').value = config.scopeNote || '';
   document.getElementById('gMediaId').value = (config.video && config.video.mediaId) || '';
   document.getElementById('gTranscript').value = config.transcript || '';
-
   var pdfs = getConfigPdfs(config.resource);
-  // Set checked-state and the disabled class TOGETHER, unconditionally, on
-  // every load - not only inside an "if there's content" branch. The
-  // disabled class carries pointer-events:none, so if it were ever left on
-  // by mistake while the checkbox reads checked, the +Add PDF button would
-  // render normally but be completely unclickable with no visible error.
   gHasResourceCb.checked = pdfs.length > 0;
   gResourceFields.className = 'resource-fields' + (pdfs.length > 0 ? '' : ' disabled');
   pdfs.forEach(function (p) { gAddPdfBlock(p.title, p.url); });
-
-  // A lesson saved before the coaching-intro split kept this text under
-  // resource.title/resource.text. If coachingIntro hasn't been saved yet,
-  // fall back to that legacy pair so the text isn't lost on first load -
-  // saving again writes it under the new schema.
   var ci = config.coachingIntro;
   if (!ci && config.resource && config.resource.title && config.resource.text) {
     ci = { title: config.resource.title, text: config.resource.text };
@@ -2900,12 +2305,10 @@ function fillGuidedForm(config) {
     gHasCoachingIntroCb.checked = false;
     gCoachingIntroFields.className = 'resource-fields disabled';
   }
-
   var rf = config.reflectionFramework || {};
   (rf.areas || []).forEach(function (a) { gAddAreaBlock(a.title, a.instructions); });
   document.getElementById('gCoachingApproach').value = rf.coachingApproach || '';
   document.getElementById('gCalibration').value = (rf.calibrationExamples || []).join('\n');
-
   var dv = normalizeDeliverableConfigForAdmin(rf.deliverable);
   gDeliverableEditor.clear();
   if (dv && dv.required) {
@@ -2916,18 +2319,14 @@ function fillGuidedForm(config) {
     gHasDeliverableCb.checked = false;
     gDeliverableFields.className = 'resource-fields disabled';
   }
-
   var g = config.greeting || {};
   document.getElementById('gGreetingFresh').value = g.fresh || '';
-
   var translations = g.translations || {};
   Object.keys(translations).forEach(function (lang) {
     gAddLangBlock(lang, translations[lang].fresh);
   });
-
   updateGuidedJsonPreview();
 }
-
 function collectGuidedConfig() {
   var areas = [];
   gAreasList.querySelectorAll('.area-block').forEach(function (b) {
@@ -2935,39 +2334,32 @@ function collectGuidedConfig() {
     var instructions = b.querySelector('.area-instructions').value.trim();
     if (title || instructions) areas.push({ title: title, instructions: instructions });
   });
-
   var calibrationExamples = document.getElementById('gCalibration').value
     .split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
-
   var translations = {};
   gTranslationsList.querySelectorAll('.lang-block').forEach(function (b) {
     var lang = b.dataset.lang;
     var fresh = b.querySelector('.lang-fresh').value.trim();
     if (fresh) translations[lang] = { fresh: fresh };
   });
-
   var pdfs = [];
   gPdfsList.querySelectorAll('.pdf-block').forEach(function (b) {
     var title = b.querySelector('.pdf-title').value.trim();
     var url = b.querySelector('.pdf-url').value.trim();
     if (url) pdfs.push({ title: title, url: url });
   });
-
   var resourceObj = (gHasResourceCb.checked && pdfs.length) ? { pdfs: pdfs } : null;
-
   var coachingIntroObj = null;
   if (gHasCoachingIntroCb.checked) {
     var ciTitle = document.getElementById('gCoachingIntroTitle').value.trim();
     var ciText = document.getElementById('gCoachingIntroText').value.trim();
     if (ciTitle || ciText) coachingIntroObj = { title: ciTitle, text: ciText };
   }
-
   var deliverableObj = null;
   if (gHasDeliverableCb.checked) {
     var gFields = gDeliverableEditor.collectFields();
     if (gFields.length) deliverableObj = { required: true, fields: gFields };
   }
-
   return {
     lessonId: document.getElementById('gLessonId').value.trim(),
     tier: 'guided',
@@ -2990,21 +2382,15 @@ function collectGuidedConfig() {
     }
   };
 }
-
 function updateGuidedJsonPreview() {
   document.getElementById('gJsonPreview').textContent = JSON.stringify(collectGuidedConfig(), null, 2);
 }
-
 var gPreviewTimer = null;
 lessonEditorView.addEventListener('input', function () {
   clearTimeout(gPreviewTimer);
   gPreviewTimer = setTimeout(updateGuidedJsonPreview, 300);
 });
 lessonEditorView.addEventListener('change', updateGuidedJsonPreview);
-
-// Triggers a browser download of a JSON object with no server involvement -
-// just a Blob + a temporary link click, standard client-side download
-// pattern.
 function downloadJSON(filename, dataObj) {
   var blob = new Blob([JSON.stringify(dataObj, null, 2)], { type: 'application/json' });
   var url = URL.createObjectURL(blob);
@@ -3016,7 +2402,6 @@ function downloadJSON(filename, dataObj) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-
 function downloadText(filename, text) {
   var blob = new Blob([text], { type: 'text/plain' });
   var url = URL.createObjectURL(blob);
@@ -3028,51 +2413,37 @@ function downloadText(filename, text) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-
-// Turns a lesson config into a plain-English, field-by-field record -
-// every field labeled clearly, in reading order, with sections that don't
-// apply (e.g. reflection areas on a Self-Guided lesson) simply omitted
-// rather than shown empty. This is the human-readable history file, as
-// opposed to downloadExistingConfig's raw JSON safety-net backup.
 function configToReadableText(config, savedAt) {
   var lines = [];
   var rule = '============================================================';
-
   function section(title) {
     lines.push('');
     lines.push(rule);
     lines.push(title);
     lines.push(rule);
   }
-
   lines.push('STRATUM LESSON RECORD');
   lines.push('Lesson: ' + (config.lessonId || '(no ID)') + '   Tier: ' + (config.tier || ''));
   lines.push('Saved: ' + savedAt.toLocaleString());
-
   section('LESSON IDENTITY');
   lines.push('Scope note: ' + (config.scopeNote || '(none)'));
   lines.push('Next lesson label: ' + (config.nextLessonLabel || '(none)'));
-
   section('VIDEO');
   lines.push('Wistia media ID: ' + ((config.video && config.video.mediaId) || '(none)'));
-
   section('TRANSCRIPT');
   lines.push(config.transcript || '(none)');
-
   if (config.resource && Array.isArray(config.resource.pdfs) && config.resource.pdfs.length) {
     section('RESOURCE');
     config.resource.pdfs.forEach(function (p, i) {
       lines.push((i + 1) + '. ' + (p.title || '(untitled)') + '  -  ' + p.url);
     });
   }
-
   if (config.coachingIntro && (config.coachingIntro.title || config.coachingIntro.text)) {
     section('COACHING INTRO (shown before first session)');
     lines.push('Title: ' + (config.coachingIntro.title || '(none)'));
     lines.push('');
     lines.push(config.coachingIntro.text || '(none)');
   }
-
   var areas = (config.reflectionFramework && config.reflectionFramework.areas) || [];
   if (areas.length) {
     section('REFLECTION AREAS (' + areas.length + ')');
@@ -3082,7 +2453,6 @@ function configToReadableText(config, savedAt) {
       lines.push('');
     });
   }
-
   if (config.reflectionFramework && config.reflectionFramework.deliverable && config.reflectionFramework.deliverable.required) {
     var dv = normalizeDeliverableConfigForAdmin(config.reflectionFramework.deliverable);
     section('STRUCTURED DELIVERABLE (validated by the engine before the session can close)');
@@ -3094,12 +2464,10 @@ function configToReadableText(config, savedAt) {
       }
     });
   }
-
   if (config.reflectionFramework && config.reflectionFramework.coachingApproach) {
     section('COACHING APPROACH (coach-only, never shown to student)');
     lines.push(config.reflectionFramework.coachingApproach);
   }
-
   var cal = (config.reflectionFramework && config.reflectionFramework.calibrationExamples) || [];
   if (cal.length) {
     section('CALIBRATION EXAMPLES (coach-only)');
@@ -3108,34 +2476,22 @@ function configToReadableText(config, savedAt) {
       lines.push('');
     });
   }
-
   if (config.greeting && config.greeting.fresh) {
     section('GREETING');
     lines.push(config.greeting.fresh);
   }
-
   var langs = config.greeting && config.greeting.translations ? Object.keys(config.greeting.translations) : [];
   if (langs.length) {
     lines.push('');
     lines.push('Translations available: ' + langs.join(', '));
   }
-
   if (config.essentials && (config.essentials.exerciseFormId || config.essentials.reflectionFormId)) {
     section('SELF-GUIDED JOTFORM IDS');
     lines.push('Exercise form ID: ' + (config.essentials.exerciseFormId || '(none)'));
     lines.push('Reflection form ID: ' + (config.essentials.reflectionFormId || '(none)'));
   }
-
   return lines.join('\n');
 }
-
-// Fetches whatever is CURRENTLY stored for this exact lessonId+tier and
-// auto-downloads it before any save overwrites it - specifically guards
-// against a blank or bad save silently clobbering real content, since the
-// last-known-good state is captured to disk with no extra click required.
-// Best-effort: a failed backup fetch (network hiccup, nothing existed yet
-// for a genuinely new lesson) never blocks the save itself - it just skips
-// straight to onDone().
 function backupExistingConfig(lessonId, tier, onDone) {
   fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=' + encodeURIComponent(tier))
     .then(function (r) { return r.json(); })
@@ -3149,10 +2505,8 @@ function backupExistingConfig(lessonId, tier, onDone) {
     .catch(function () { /* best-effort - proceed to save regardless */ })
     .then(onDone);
 }
-
 document.getElementById('gSaveBtn').addEventListener('click', function () {
   var config = collectGuidedConfig();
-
   if (!config.lessonId) {
     gSaveStatus.textContent = 'Lesson ID is required.';
     gSaveStatus.className = 'save-status err';
@@ -3163,13 +2517,10 @@ document.getElementById('gSaveBtn').addEventListener('click', function () {
     gSaveStatus.className = 'save-status err';
     return;
   }
-
   gSaveStatus.textContent = 'Backing up current version...';
   gSaveStatus.className = 'save-status';
-
   backupExistingConfig(config.lessonId, 'guided', function () {
     gSaveStatus.textContent = 'Saving...';
-
     fetch(PROXY_URL + '/lesson-config', {
       method: 'POST',
       headers: {
@@ -3198,7 +2549,6 @@ document.getElementById('gSaveBtn').addEventListener('click', function () {
       });
   });
 });
-
 function refreshGuidedList() {
   fetch(PROXY_URL + '/lesson-configs?tier=guided', { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
@@ -3208,15 +2558,12 @@ function refreshGuidedList() {
     })
     .catch(function () {});
 }
-
 document.getElementById('gDeleteBtn').addEventListener('click', function () {
   var id = gLessonSelect.value || document.getElementById('gLessonId').value.trim();
   if (!id) { gSaveStatus.textContent = 'No lesson selected.'; gSaveStatus.className = 'save-status err'; return; }
   if (!confirm('Delete Coach lesson "' + id + '"? This cannot be undone.')) return;
-
   gSaveStatus.textContent = 'Deleting...';
   gSaveStatus.className = 'save-status';
-
   fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=guided', {
     method: 'DELETE',
     headers: { 'X-Stratum-Admin-Key': adminKey }
@@ -3238,26 +2585,15 @@ document.getElementById('gDeleteBtn').addEventListener('click', function () {
       gSaveStatus.className = 'save-status err';
     });
 });
-
-// Both Coach and Master Coach lessons are stored under the same D1
-// tier ('guided') since the lesson FORMAT is identical - Master Coach's
-// 8 new lessons (5.x/6.x) are just more lessons of the same shape. The
-// two admin tabs are a pure client-side split over that one shared list.
 function isMasteryLessonId(id) {
   return /^[56]\./.test(String(id || ''));
 }
-
-// Keeps the Deliverables tab's lesson dropdown in sync with whatever
-// lessons currently exist across Coach + Master Coach, without needing its
-// own separate fetch - reuses whichever list (guided or mastery) just
-// changed. Called after every guided/mastery save or delete.
 function refreshDeliverablesLessonList() {
   fetch(PROXY_URL + '/lesson-configs?tier=guided', { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) { populateSelect(dlvLessonSelect, d.lessons || []); })
     .catch(function () {});
 }
-
 var mLessonSelect = document.getElementById('mLessonSelect');
 var mAreasList = document.getElementById('mAreasList');
 var mResourceFields = document.getElementById('mResourceFields');
@@ -3274,20 +2610,17 @@ document.getElementById('mAddDeliverableFieldBtn').addEventListener('click', fun
 var mTranslationsList = document.getElementById('mTranslationsList');
 var mAddLangSelect = document.getElementById('mAddLangSelect');
 var mSaveStatus = document.getElementById('mSaveStatus');
-
 document.getElementById('mLoadBtn').addEventListener('click', function () {
   var id = mLessonSelect.value;
   if (!id) return;
   loadMasteryLesson(id);
 });
-
 document.getElementById('mNewLessonBtn').addEventListener('click', function () {
   var id = prompt('New Master Coach lesson ID (e.g. 5.2):');
   if (!id) return;
   clearMasteryForm();
   document.getElementById('mLessonId').value = id.trim();
 });
-
 function loadMasteryLesson(lessonId) {
   fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided')
     .then(function (r) { return r.json(); })
@@ -3297,29 +2630,23 @@ function loadMasteryLesson(lessonId) {
     })
     .catch(function () { alert('Could not load that lesson.'); });
 }
-
 function mAddAreaBlock(title, instructions) {
   mAreaCounter++;
   var id = 'garea_' + mAreaCounter;
-
   var block = document.createElement('div');
   block.className = 'area-block';
   block.dataset.id = id;
-
   var head = document.createElement('div');
   head.className = 'area-block-head';
-
   var num = document.createElement('span');
   num.className = 'area-num';
   head.appendChild(num);
-
   var titleInput = document.createElement('input');
   titleInput.type = 'text';
   titleInput.className = 'area-title';
   titleInput.placeholder = 'AREA TITLE';
   titleInput.value = title || '';
   head.appendChild(titleInput);
-
   var removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'remove-btn';
@@ -3329,53 +2656,42 @@ function mAddAreaBlock(title, instructions) {
     mRenumberAreas();
   });
   head.appendChild(removeBtn);
-
   block.appendChild(head);
-
   var instrTextarea = document.createElement('textarea');
   instrTextarea.className = 'area-instructions';
   instrTextarea.rows = 5;
   instrTextarea.placeholder = 'Instructions for the coach on drawing out this area...';
   instrTextarea.value = instructions || '';
   block.appendChild(instrTextarea);
-
   mAreasList.appendChild(block);
   mRenumberAreas();
 }
-
 function mRenumberAreas() {
   var blocks = mAreasList.querySelectorAll('.area-block');
   blocks.forEach(function (b, i) {
     b.querySelector('.area-num').textContent = (i + 1);
   });
 }
-
 document.getElementById('mAddAreaBtn').addEventListener('click', function () {
   mAddAreaBlock('', '');
 });
-
 function mAddPdfBlock(title, url) {
   mPdfCounter++;
   var id = 'gpdf_' + mPdfCounter;
-
   var block = document.createElement('div');
   block.className = 'area-block pdf-block';
   block.dataset.id = id;
-
   var head = document.createElement('div');
   head.className = 'area-block-head';
-
   var num = document.createElement('span');
   num.className = 'area-num';
   head.appendChild(num);
-
   var titleInput = document.createElement('input');
   titleInput.type = 'text';
   titleInput.className = 'pdf-title';
   titleInput.placeholder = 'Document title';
   titleInput.value = title || '';
   head.appendChild(titleInput);
-
   var removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'remove-btn';
@@ -3385,31 +2701,25 @@ function mAddPdfBlock(title, url) {
     mRenumberPdfs();
   });
   head.appendChild(removeBtn);
-
   block.appendChild(head);
-
   var urlInput = document.createElement('input');
   urlInput.type = 'text';
   urlInput.className = 'pdf-url pdf-url-input';
   urlInput.placeholder = 'https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf';
   urlInput.value = url || '';
   block.appendChild(urlInput);
-
   mPdfsList.appendChild(block);
   mRenumberPdfs();
 }
-
 function mRenumberPdfs() {
   var blocks = mPdfsList.querySelectorAll('.pdf-block');
   blocks.forEach(function (b, i) {
     b.querySelector('.area-num').textContent = (i + 1);
   });
 }
-
 document.getElementById('mAddPdfBtn').addEventListener('click', function () {
   mAddPdfBlock('', '');
 });
-
 document.getElementById('mExpandAllBtn').addEventListener('click', function () {
   masteryEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
 });
@@ -3424,7 +2734,6 @@ masteryEditorView.querySelectorAll('details.card[data-group="auto"]').forEach(fu
     if (!card.open) card.open = true;
   });
 });
-
 mHasResourceCb.addEventListener('change', function () {
   mResourceFields.className = 'resource-fields' + (mHasResourceCb.checked ? '' : ' disabled');
 });
@@ -3434,21 +2743,6 @@ mHasCoachingIntroCb.addEventListener('change', function () {
 mHasDeliverableCb.addEventListener('change', function () {
   mDeliverableFields.className = 'resource-fields' + (mHasDeliverableCb.checked ? '' : ' disabled');
 });
-
-// Normalises a resource config's PDFs into a flat array of { title, url }
-// pairs, regardless of whether it was saved under the new pdfs[] schema or
-// the older single pdfUrl/pdfTitle schema. Shared by both tiers.
-function getConfigPdfs(resource) {
-  if (!resource) return [];
-  if (Array.isArray(resource.pdfs)) {
-    return resource.pdfs.filter(function (p) { return p && p.url; });
-  }
-  if (resource.pdfUrl) {
-    return [{ title: resource.pdfTitle || resource.title || '', url: resource.pdfUrl }];
-  }
-  return [];
-}
-
 function mRefreshAddLangOptions() {
   var existing = Array.prototype.map.call(
     mTranslationsList.querySelectorAll('.lang-block'),
@@ -3462,16 +2756,13 @@ function mRefreshAddLangOptions() {
     mAddLangSelect.appendChild(opt);
   });
 }
-
 function mAddLangBlock(lang, fresh) {
   var block = document.createElement('div');
   block.className = 'lang-block';
   block.dataset.lang = lang;
-
   var head = document.createElement('div');
   head.className = 'lang-block-head';
   head.appendChild(document.createTextNode(lang));
-
   var removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'remove-btn';
@@ -3482,7 +2773,6 @@ function mAddLangBlock(lang, fresh) {
   });
   head.appendChild(removeBtn);
   block.appendChild(head);
-
   var freshField = document.createElement('div');
   freshField.className = 'field';
   var freshLabel = document.createElement('label');
@@ -3494,17 +2784,14 @@ function mAddLangBlock(lang, fresh) {
   freshTa.value = fresh || '';
   freshField.appendChild(freshTa);
   block.appendChild(freshField);
-
   mTranslationsList.appendChild(block);
   mRefreshAddLangOptions();
 }
-
 document.getElementById('mAddLangBtn').addEventListener('click', function () {
   var lang = mAddLangSelect.value;
   if (!lang) return;
   mAddLangBlock(lang, '', '');
 });
-
 function clearMasteryForm() {
   document.getElementById('mLessonId').value = '';
   document.getElementById('mNextLessonLabel').value = '';
@@ -3529,25 +2816,17 @@ function clearMasteryForm() {
   mRefreshAddLangOptions();
   updateMasteryJsonPreview();
 }
-
 function fillMasteryForm(config) {
   clearMasteryForm();
-
   document.getElementById('mLessonId').value = config.lessonId || '';
   document.getElementById('mNextLessonLabel').value = config.nextLessonLabel || '';
   document.getElementById('mScopeNote').value = config.scopeNote || '';
   document.getElementById('mMediaId').value = (config.video && config.video.mediaId) || '';
   document.getElementById('mTranscript').value = config.transcript || '';
-
   var pdfs = getConfigPdfs(config.resource);
   mHasResourceCb.checked = pdfs.length > 0;
   mResourceFields.className = 'resource-fields' + (pdfs.length > 0 ? '' : ' disabled');
   pdfs.forEach(function (p) { mAddPdfBlock(p.title, p.url); });
-
-  // A lesson saved before the coaching-intro split kept this text under
-  // resource.title/resource.text. If coachingIntro hasn't been saved yet,
-  // fall back to that legacy pair so the text isn't lost on first load -
-  // saving again writes it under the new schema.
   var ci = config.coachingIntro;
   if (!ci && config.resource && config.resource.title && config.resource.text) {
     ci = { title: config.resource.title, text: config.resource.text };
@@ -3561,12 +2840,10 @@ function fillMasteryForm(config) {
     mHasCoachingIntroCb.checked = false;
     mCoachingIntroFields.className = 'resource-fields disabled';
   }
-
   var rf = config.reflectionFramework || {};
   (rf.areas || []).forEach(function (a) { mAddAreaBlock(a.title, a.instructions); });
   document.getElementById('mCoachingApproach').value = rf.coachingApproach || '';
   document.getElementById('mCalibration').value = (rf.calibrationExamples || []).join('\n');
-
   var dv = normalizeDeliverableConfigForAdmin(rf.deliverable);
   mDeliverableEditor.clear();
   if (dv && dv.required) {
@@ -3577,18 +2854,14 @@ function fillMasteryForm(config) {
     mHasDeliverableCb.checked = false;
     mDeliverableFields.className = 'resource-fields disabled';
   }
-
   var g = config.greeting || {};
   document.getElementById('mGreetingFresh').value = g.fresh || '';
-
   var translations = g.translations || {};
   Object.keys(translations).forEach(function (lang) {
     mAddLangBlock(lang, translations[lang].fresh);
   });
-
   updateMasteryJsonPreview();
 }
-
 function collectMasteryConfig() {
   var areas = [];
   mAreasList.querySelectorAll('.area-block').forEach(function (b) {
@@ -3596,39 +2869,32 @@ function collectMasteryConfig() {
     var instructions = b.querySelector('.area-instructions').value.trim();
     if (title || instructions) areas.push({ title: title, instructions: instructions });
   });
-
   var calibrationExamples = document.getElementById('mCalibration').value
     .split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
-
   var translations = {};
   mTranslationsList.querySelectorAll('.lang-block').forEach(function (b) {
     var lang = b.dataset.lang;
     var fresh = b.querySelector('.lang-fresh').value.trim();
     if (fresh) translations[lang] = { fresh: fresh };
   });
-
   var pdfs = [];
   mPdfsList.querySelectorAll('.pdf-block').forEach(function (b) {
     var title = b.querySelector('.pdf-title').value.trim();
     var url = b.querySelector('.pdf-url').value.trim();
     if (url) pdfs.push({ title: title, url: url });
   });
-
   var resourceObj = (mHasResourceCb.checked && pdfs.length) ? { pdfs: pdfs } : null;
-
   var coachingIntroObj = null;
   if (mHasCoachingIntroCb.checked) {
     var ciTitle = document.getElementById('mCoachingIntroTitle').value.trim();
     var ciText = document.getElementById('mCoachingIntroText').value.trim();
     if (ciTitle || ciText) coachingIntroObj = { title: ciTitle, text: ciText };
   }
-
   var deliverableObj = null;
   if (mHasDeliverableCb.checked) {
     var mFields = mDeliverableEditor.collectFields();
     if (mFields.length) deliverableObj = { required: true, fields: mFields };
   }
-
   return {
     lessonId: document.getElementById('mLessonId').value.trim(),
     tier: 'guided',
@@ -3651,21 +2917,17 @@ function collectMasteryConfig() {
     }
   };
 }
-
 function updateMasteryJsonPreview() {
   document.getElementById('mJsonPreview').textContent = JSON.stringify(collectMasteryConfig(), null, 2);
 }
-
 var mPreviewTimer = null;
 masteryEditorView.addEventListener('input', function () {
   clearTimeout(mPreviewTimer);
   mPreviewTimer = setTimeout(updateMasteryJsonPreview, 300);
 });
 masteryEditorView.addEventListener('change', updateMasteryJsonPreview);
-
 document.getElementById('mSaveBtn').addEventListener('click', function () {
   var config = collectMasteryConfig();
-
   if (!config.lessonId) {
     mSaveStatus.textContent = 'Lesson ID is required.';
     mSaveStatus.className = 'save-status err';
@@ -3676,13 +2938,10 @@ document.getElementById('mSaveBtn').addEventListener('click', function () {
     mSaveStatus.className = 'save-status err';
     return;
   }
-
   mSaveStatus.textContent = 'Backing up current version...';
   mSaveStatus.className = 'save-status';
-
   backupExistingConfig(config.lessonId, 'guided', function () {
     mSaveStatus.textContent = 'Saving...';
-
     fetch(PROXY_URL + '/lesson-config', {
       method: 'POST',
       headers: {
@@ -3711,7 +2970,6 @@ document.getElementById('mSaveBtn').addEventListener('click', function () {
       });
   });
 });
-
 function refreshMasteryList() {
   fetch(PROXY_URL + '/lesson-configs?tier=guided', { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
@@ -3721,15 +2979,12 @@ function refreshMasteryList() {
     })
     .catch(function () {});
 }
-
 document.getElementById('mDeleteBtn').addEventListener('click', function () {
   var id = mLessonSelect.value || document.getElementById('mLessonId').value.trim();
   if (!id) { mSaveStatus.textContent = 'No lesson selected.'; mSaveStatus.className = 'save-status err'; return; }
   if (!confirm('Delete Master Coach lesson "' + id + '"? This cannot be undone.')) return;
-
   mSaveStatus.textContent = 'Deleting...';
   mSaveStatus.className = 'save-status';
-
   fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=guided', {
     method: 'DELETE',
     headers: { 'X-Stratum-Admin-Key': adminKey }
@@ -3751,8 +3006,6 @@ document.getElementById('mDeleteBtn').addEventListener('click', function () {
       mSaveStatus.className = 'save-status err';
     });
 });
-
-
 var eLessonSelect = document.getElementById('eLessonSelect');
 var eResourceFields = document.getElementById('eResourceFields');
 var ePdfsList = document.getElementById('ePdfsList');
@@ -3760,20 +3013,17 @@ var eHasResourceCb = document.getElementById('eHasResource');
 var eCoachingIntroFields = document.getElementById('eCoachingIntroFields');
 var eHasCoachingIntroCb = document.getElementById('eHasCoachingIntro');
 var eSaveStatus = document.getElementById('eSaveStatus');
-
 document.getElementById('eLoadBtn').addEventListener('click', function () {
   var id = eLessonSelect.value;
   if (!id) return;
   loadEssentialsLesson(id);
 });
-
 document.getElementById('eNewLessonBtn').addEventListener('click', function () {
   var id = prompt('New Self-Guided lesson ID (e.g. 1.2):');
   if (!id) return;
   clearEssentialsForm();
   document.getElementById('eLessonId').value = id.trim();
 });
-
 function loadEssentialsLesson(lessonId) {
   fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=essentials')
     .then(function (r) { return r.json(); })
@@ -3783,29 +3033,23 @@ function loadEssentialsLesson(lessonId) {
     })
     .catch(function () { alert('Could not load that lesson.'); });
 }
-
 function eAddPdfBlock(title, url) {
   ePdfCounter++;
   var id = 'epdf_' + ePdfCounter;
-
   var block = document.createElement('div');
   block.className = 'area-block pdf-block';
   block.dataset.id = id;
-
   var head = document.createElement('div');
   head.className = 'area-block-head';
-
   var num = document.createElement('span');
   num.className = 'area-num';
   head.appendChild(num);
-
   var titleInput = document.createElement('input');
   titleInput.type = 'text';
   titleInput.className = 'pdf-title';
   titleInput.placeholder = 'Document title';
   titleInput.value = title || '';
   head.appendChild(titleInput);
-
   var removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'remove-btn';
@@ -3815,38 +3059,31 @@ function eAddPdfBlock(title, url) {
     eRenumberPdfs();
   });
   head.appendChild(removeBtn);
-
   block.appendChild(head);
-
   var urlInput = document.createElement('input');
   urlInput.type = 'text';
   urlInput.className = 'pdf-url pdf-url-input';
   urlInput.placeholder = 'https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf';
   urlInput.value = url || '';
   block.appendChild(urlInput);
-
   ePdfsList.appendChild(block);
   eRenumberPdfs();
 }
-
 function eRenumberPdfs() {
   var blocks = ePdfsList.querySelectorAll('.pdf-block');
   blocks.forEach(function (b, i) {
     b.querySelector('.area-num').textContent = (i + 1);
   });
 }
-
 document.getElementById('eAddPdfBtn').addEventListener('click', function () {
   eAddPdfBlock('', '');
 });
-
 eHasResourceCb.addEventListener('change', function () {
   eResourceFields.className = 'resource-fields' + (eHasResourceCb.checked ? '' : ' disabled');
 });
 eHasCoachingIntroCb.addEventListener('change', function () {
   eCoachingIntroFields.className = 'resource-fields' + (eHasCoachingIntroCb.checked ? '' : ' disabled');
 });
-
 function clearEssentialsForm() {
   document.getElementById('eLessonId').value = '';
   document.getElementById('eNextLessonLabel').value = '';
@@ -3864,25 +3101,17 @@ function clearEssentialsForm() {
   document.getElementById('eReflectionFormId').value = '';
   updateEssentialsJsonPreview();
 }
-
 function fillEssentialsForm(config) {
   clearEssentialsForm();
-
   document.getElementById('eLessonId').value = config.lessonId || '';
   document.getElementById('eNextLessonLabel').value = config.nextLessonLabel || '';
   document.getElementById('eScopeNote').value = config.scopeNote || '';
   document.getElementById('eMediaId').value = (config.video && config.video.mediaId) || '';
   document.getElementById('eTranscript').value = config.transcript || '';
-
   var pdfs = getConfigPdfs(config.resource);
   eHasResourceCb.checked = pdfs.length > 0;
   eResourceFields.className = 'resource-fields' + (pdfs.length > 0 ? '' : ' disabled');
   pdfs.forEach(function (p) { eAddPdfBlock(p.title, p.url); });
-
-  // A lesson saved before this field existed kept any intro text under
-  // resource.title/resource.text (the pre-restructure schema). Fall back to
-  // that pair so nothing is silently lost - saving again writes it under
-  // the new coachingIntro field.
   var ci = config.coachingIntro;
   if (!ci && config.resource && config.resource.title && config.resource.text) {
     ci = { title: config.resource.title, text: config.resource.text };
@@ -3896,14 +3125,11 @@ function fillEssentialsForm(config) {
     eHasCoachingIntroCb.checked = false;
     eCoachingIntroFields.className = 'resource-fields disabled';
   }
-
   var ess = config.essentials || {};
   document.getElementById('eExerciseFormId').value = ess.exerciseFormId || '';
   document.getElementById('eReflectionFormId').value = ess.reflectionFormId || '';
-
   updateEssentialsJsonPreview();
 }
-
 function collectEssentialsConfig() {
   var pdfs = [];
   ePdfsList.querySelectorAll('.pdf-block').forEach(function (b) {
@@ -3911,16 +3137,13 @@ function collectEssentialsConfig() {
     var url = b.querySelector('.pdf-url').value.trim();
     if (url) pdfs.push({ title: title, url: url });
   });
-
   var resourceObj = (eHasResourceCb.checked && pdfs.length) ? { pdfs: pdfs } : null;
-
   var coachingIntroObj = null;
   if (eHasCoachingIntroCb.checked) {
     var ciTitle = document.getElementById('eCoachingIntroTitle').value.trim();
     var ciText = document.getElementById('eCoachingIntroText').value.trim();
     if (ciTitle || ciText) coachingIntroObj = { title: ciTitle, text: ciText };
   }
-
   return {
     lessonId: document.getElementById('eLessonId').value.trim(),
     tier: 'essentials',
@@ -3938,21 +3161,17 @@ function collectEssentialsConfig() {
     greeting: { fresh: '', translations: {} }
   };
 }
-
 function updateEssentialsJsonPreview() {
   document.getElementById('eJsonPreview').textContent = JSON.stringify(collectEssentialsConfig(), null, 2);
 }
-
 var ePreviewTimer = null;
 essentialsView.addEventListener('input', function () {
   clearTimeout(ePreviewTimer);
   ePreviewTimer = setTimeout(updateEssentialsJsonPreview, 300);
 });
 essentialsView.addEventListener('change', updateEssentialsJsonPreview);
-
 document.getElementById('eSaveBtn').addEventListener('click', function () {
   var config = collectEssentialsConfig();
-
   if (!config.lessonId) {
     eSaveStatus.textContent = 'Lesson ID is required.';
     eSaveStatus.className = 'save-status err';
@@ -3963,13 +3182,10 @@ document.getElementById('eSaveBtn').addEventListener('click', function () {
     eSaveStatus.className = 'save-status err';
     return;
   }
-
   eSaveStatus.textContent = 'Backing up current version...';
   eSaveStatus.className = 'save-status';
-
   backupExistingConfig(config.lessonId, 'essentials', function () {
     eSaveStatus.textContent = 'Saving...';
-
     fetch(PROXY_URL + '/lesson-config', {
       method: 'POST',
       headers: {
@@ -3998,22 +3214,18 @@ document.getElementById('eSaveBtn').addEventListener('click', function () {
       });
   });
 });
-
 function refreshEssentialsList() {
   fetch(PROXY_URL + '/lesson-configs?tier=essentials', { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) { populateSelect(eLessonSelect, d.lessons || []); })
     .catch(function () {});
 }
-
 document.getElementById('eDeleteBtn').addEventListener('click', function () {
   var id = eLessonSelect.value || document.getElementById('eLessonId').value.trim();
   if (!id) { eSaveStatus.textContent = 'No lesson selected.'; eSaveStatus.className = 'save-status err'; return; }
   if (!confirm('Delete Self-Guided lesson "' + id + '"? This cannot be undone.')) return;
-
   eSaveStatus.textContent = 'Deleting...';
   eSaveStatus.className = 'save-status';
-
   fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=essentials', {
     method: 'DELETE',
     headers: { 'X-Stratum-Admin-Key': adminKey }
@@ -4035,10 +3247,10 @@ document.getElementById('eDeleteBtn').addEventListener('click', function () {
       eSaveStatus.className = 'save-status err';
     });
 });
-
 gRefreshAddLangOptions();
+mainNavGroup.style.display = 'none';
+showTopTab('admin');
 if (savedKey) unlock();
 </script>
-
 </body>
 </html>
