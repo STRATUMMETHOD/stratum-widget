@@ -377,6 +377,58 @@
   <div class="page-head">
     <h1 id="pageTitle">Admin</h1>
     <div class="sub" id="pageSub">Unlock the panel to manage lessons, students, and site content.</div>
+    <div id="adminLangBar" style="display:none;margin-top:10px;">
+      <span id="adminLangSwitcher" style="display:none;">
+        <label for="adminLangSelect" style="font-size:12px;color:#8a7a5e;margin-right:8px;">Editing content in:</label>
+        <select id="adminLangSelect"></select>
+        <span id="adminLangHint" style="font-size:12px;color:#8a7a5e;margin-left:10px;"></span>
+      </span>
+      <button class="btn secondary" id="manageLanguagesBtn" type="button" style="margin-left:8px;">Manage Languages</button>
+    </div>
+    <div id="manageLanguagesPanel" style="display:none;margin-top:12px;">
+      <div class="card" style="padding:18px 20px;">
+        <div class="card-title" style="margin-bottom:12px;">Languages</div>
+        <table id="languagesTable" style="width:100%;border-collapse:collapse;background:#fff;text-align:left;">
+          <thead>
+            <tr style="border-bottom:1px solid #ECE7DC;">
+              <th style="padding:6px 8px;">Code</th>
+              <th style="padding:6px 8px;">Label (shown to students)</th>
+              <th style="padding:6px 8px;">Coaching language name</th>
+              <th style="padding:6px 8px;">Order</th>
+              <th style="padding:6px 8px;">Active</th>
+              <th style="padding:6px 8px;"></th>
+            </tr>
+          </thead>
+          <tbody id="languagesTableBody"></tbody>
+        </table>
+        <div style="margin-top:16px;border-top:1px solid #ECE7DC;padding-top:16px;">
+          <div class="card-title" style="font-size:13px;margin-bottom:10px;">Add a language</div>
+          <div class="row" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+            <div class="field">
+              <label for="newLangCode">Code</label>
+              <input type="text" id="newLangCode" placeholder="e.g. es" maxlength="20" style="width:80px;" />
+            </div>
+            <div class="field">
+              <label for="newLangLabel">Label</label>
+              <input type="text" id="newLangLabel" placeholder="e.g. Espa&ntilde;ol" maxlength="60" />
+            </div>
+            <div class="field">
+              <label for="newLangCoachingName">Coaching language name</label>
+              <input type="text" id="newLangCoachingName" placeholder="e.g. Spanish - blank means English" maxlength="40" />
+            </div>
+            <div class="field">
+              <label for="newLangOrder">Order</label>
+              <input type="number" id="newLangOrder" value="0" style="width:70px;" />
+            </div>
+            <label style="display:flex;align-items:center;gap:6px;white-space:nowrap;">
+              <input type="checkbox" id="newLangActive" /> Active immediately
+            </label>
+            <button class="btn" id="addLanguageBtn" type="button">Add Language</button>
+          </div>
+          <div id="languagesStatus" style="margin-top:8px;font-size:13px;"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div id="adminView">
@@ -953,6 +1005,14 @@
 <script>
 var PROXY_URL = 'https://stratum-proxy.tedbaker0207.workers.dev';
 var ADMIN_KEY_STORAGE = 'stratum_admin_key';
+// Dashboard/lesson-content language currently being viewed/edited in this
+// panel - NOT the same thing as the LANGUAGES array below (that one is the
+// AI coach's spoken-language list used inside the greeting-translations
+// editor). ADMIN_LANG selects which lesson_configs row (lesson_id, tier,
+// lang) every fetch/save on this page targets. Defaults to 'en'; populated
+// from /admin/languages once the panel unlocks.
+var ADMIN_LANG = 'en';
+var ADMIN_LANGUAGES_LOADED = false;
 var LANGUAGES = [
   'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch',
   'Chinese', 'Japanese', 'Korean', 'Arabic', 'Hindi', 'Russian'
@@ -978,7 +1038,7 @@ function unlock() {
   if (!key) { authStatus.textContent = 'Enter a key first.'; authStatus.className = ''; return; }
   authStatus.textContent = 'Checking...';
   authStatus.className = '';
-  fetch(PROXY_URL + '/lesson-configs?tier=guided', {
+  fetch(PROXY_URL + '/lesson-configs?tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), {
     headers: { 'X-Stratum-Admin-Key': key }
   })
     .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
@@ -989,10 +1049,8 @@ function unlock() {
         authStatus.textContent = 'Unlocked.';
         authStatus.className = 'ok';
         mainNavGroup.style.display = '';
-        populateSelect(gLessonSelect, (result.data.lessons || []).filter(function (l) { return !isMasteryLessonId(l.lesson_id); }));
-        populateSelect(mLessonSelect, (result.data.lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); }));
-        populateSelect(dlvLessonSelect, result.data.lessons || []);
-        refreshEssentialsList();
+        refreshLessonListsForLang(result.data.lessons || []);
+        loadAdminLanguages();
         showTopTab('dashboard');
         loadStudents();
       } else {
@@ -1005,6 +1063,191 @@ function unlock() {
       authStatus.className = '';
     });
 }
+function refreshLessonListsForLang(lessons) {
+  populateSelect(gLessonSelect, (lessons || []).filter(function (l) { return !isMasteryLessonId(l.lesson_id); }));
+  populateSelect(mLessonSelect, (lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); }));
+  populateSelect(dlvLessonSelect, lessons || []);
+  refreshEssentialsList();
+}
+// Populates the "Editing content in:" picker from the languages registry
+// and re-pulls the lesson lists under whichever language is selected.
+// Does NOT touch a lesson editor that's already open with unsaved changes
+// - switching language only affects which lessons show up in the list
+// selects and what a fresh Load pulls in, so nothing gets silently
+// overwritten mid-edit.
+function loadAdminLanguages() {
+  if (!adminKey) return;
+  fetch(PROXY_URL + '/admin/languages', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var langs = (d && Array.isArray(d.languages) && d.languages.length)
+        ? d.languages
+        : [{ code: 'en', label: 'English', active: 1 }];
+      var bar = document.getElementById('adminLangBar');
+      var switcher = document.getElementById('adminLangSwitcher');
+      var select = document.getElementById('adminLangSelect');
+      var hint = document.getElementById('adminLangHint');
+      select.innerHTML = '';
+      langs.forEach(function (lang) {
+        var opt = document.createElement('option');
+        opt.value = lang.code;
+        opt.textContent = lang.label + (lang.active ? '' : ' (inactive)');
+        if (lang.code === ADMIN_LANG) opt.selected = true;
+        select.appendChild(opt);
+      });
+      // The bar itself (holding the "Manage Languages" button) is always
+      // visible once unlocked, so there's always a way to add the first
+      // additional language. The switcher dropdown only appears once
+      // there's an actual content-language choice to make.
+      bar.style.display = '';
+      switcher.style.display = langs.length > 1 ? '' : 'none';
+      hint.textContent = (langs.length > 1)
+        ? 'Inactive languages are hidden from students until turned on.'
+        : '';
+      ADMIN_LANGUAGES_LOADED = true;
+      window.LATEST_ADMIN_LANGUAGES = langs;
+      if (document.getElementById('manageLanguagesPanel').style.display !== 'none') {
+        renderLanguagesTable(langs);
+      }
+    })
+    .catch(function () {});
+}
+document.getElementById('manageLanguagesBtn').addEventListener('click', function () {
+  var panel = document.getElementById('manageLanguagesPanel');
+  var opening = panel.style.display === 'none';
+  panel.style.display = opening ? '' : 'none';
+  if (opening) renderLanguagesTable(window.LATEST_ADMIN_LANGUAGES || []);
+});
+function renderLanguagesTable(langs) {
+  var body = document.getElementById('languagesTableBody');
+  body.innerHTML = '';
+  langs.forEach(function (lang) {
+    var tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid #F1EBDD';
+    var codeTd = document.createElement('td');
+    codeTd.style.padding = '6px 8px';
+    codeTd.textContent = lang.code;
+    tr.appendChild(codeTd);
+    var labelTd = document.createElement('td');
+    labelTd.style.padding = '6px 8px';
+    var labelInput = document.createElement('input');
+    labelInput.type = 'text';
+    labelInput.value = lang.label || '';
+    labelInput.style.width = '100%';
+    labelTd.appendChild(labelInput);
+    tr.appendChild(labelTd);
+    var coachTd = document.createElement('td');
+    coachTd.style.padding = '6px 8px';
+    var coachInput = document.createElement('input');
+    coachInput.type = 'text';
+    coachInput.value = lang.coachingName || '';
+    coachInput.placeholder = lang.code === 'en' ? '(English - leave blank)' : '';
+    coachInput.style.width = '100%';
+    coachTd.appendChild(coachInput);
+    tr.appendChild(coachTd);
+    var orderTd = document.createElement('td');
+    orderTd.style.padding = '6px 8px';
+    var orderInput = document.createElement('input');
+    orderInput.type = 'number';
+    orderInput.value = lang.displayOrder != null ? lang.displayOrder : 0;
+    orderInput.style.width = '60px';
+    orderTd.appendChild(orderInput);
+    tr.appendChild(orderTd);
+    var activeTd = document.createElement('td');
+    activeTd.style.padding = '6px 8px';
+    var activeCb = document.createElement('input');
+    activeCb.type = 'checkbox';
+    activeCb.checked = !!lang.active;
+    activeTd.appendChild(activeCb);
+    tr.appendChild(activeTd);
+    var actionsTd = document.createElement('td');
+    actionsTd.style.padding = '6px 8px';
+    actionsTd.style.whiteSpace = 'nowrap';
+    var saveBtn = document.createElement('button');
+    saveBtn.className = 'btn secondary';
+    saveBtn.type = 'button';
+    saveBtn.textContent = 'Save';
+    saveBtn.addEventListener('click', function () {
+      saveLanguage({
+        code: lang.code,
+        label: labelInput.value.trim(),
+        coachingName: coachInput.value.trim(),
+        displayOrder: Number(orderInput.value) || 0,
+        active: activeCb.checked
+      });
+    });
+    actionsTd.appendChild(saveBtn);
+    if (lang.code !== 'en') {
+      var delBtn = document.createElement('button');
+      delBtn.className = 'btn secondary';
+      delBtn.type = 'button';
+      delBtn.textContent = 'Delete';
+      delBtn.style.marginLeft = '6px';
+      delBtn.addEventListener('click', function () {
+        if (!confirm('Delete "' + lang.label + '"? This does not delete any lesson content already entered under this language - it only removes it from the registry, so it will stop appearing as an option. Re-adding the same code later restores access to that content.')) return;
+        fetch(PROXY_URL + '/admin/languages?code=' + encodeURIComponent(lang.code), {
+          method: 'DELETE',
+          headers: { 'X-Stratum-Admin-Key': adminKey }
+        })
+          .then(function (r) { return r.json(); })
+          .then(function () { loadAdminLanguages(); })
+          .catch(function () {});
+      });
+      actionsTd.appendChild(delBtn);
+    }
+    tr.appendChild(actionsTd);
+    body.appendChild(tr);
+  });
+}
+function saveLanguage(payload) {
+  var status = document.getElementById('languagesStatus');
+  status.textContent = 'Saving...';
+  status.style.color = '#8a7a5e';
+  fetch(PROXY_URL + '/admin/languages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+    body: JSON.stringify(payload)
+  })
+    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+    .then(function (result) {
+      if (result.status === 200 && result.data && result.data.ok) {
+        status.textContent = 'Saved "' + payload.label + '".';
+        status.style.color = '#3f7a4a';
+        loadAdminLanguages();
+      } else {
+        status.textContent = 'Could not save: ' + (result.data && (result.data.error || result.data.reason) || 'unknown error');
+        status.style.color = '#a33';
+      }
+    })
+    .catch(function () {
+      status.textContent = 'Network error - could not reach the Worker.';
+      status.style.color = '#a33';
+    });
+}
+document.getElementById('addLanguageBtn').addEventListener('click', function () {
+  var code = document.getElementById('newLangCode').value.trim().toLowerCase();
+  var label = document.getElementById('newLangLabel').value.trim();
+  var coachingName = document.getElementById('newLangCoachingName').value.trim();
+  var displayOrder = Number(document.getElementById('newLangOrder').value) || 0;
+  var active = document.getElementById('newLangActive').checked;
+  var status = document.getElementById('languagesStatus');
+  if (!code) { status.textContent = 'Enter a code (e.g. "es").'; status.style.color = '#a33'; return; }
+  if (!label) { status.textContent = 'Enter a label (e.g. "Espa\u00f1ol").'; status.style.color = '#a33'; return; }
+  saveLanguage({ code: code, label: label, coachingName: coachingName, displayOrder: displayOrder, active: active });
+  document.getElementById('newLangCode').value = '';
+  document.getElementById('newLangLabel').value = '';
+  document.getElementById('newLangCoachingName').value = '';
+  document.getElementById('newLangOrder').value = '0';
+  document.getElementById('newLangActive').checked = false;
+});
+document.getElementById('adminLangSelect').addEventListener('change', function () {
+  ADMIN_LANG = this.value;
+  if (!adminKey) return;
+  fetch(PROXY_URL + '/lesson-configs?lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { refreshLessonListsForLang(d.lessons || []); })
+    .catch(function () {});
+});
 var tabDashboardBtn = document.getElementById('tabDashboardBtn');
 var tabDeliverablesBtn = document.getElementById('tabDeliverablesBtn');
 var tabTestimonialsBtn = document.getElementById('tabTestimonialsBtn');
@@ -2077,7 +2320,7 @@ document.getElementById('gNewLessonBtn').addEventListener('click', function () {
   document.getElementById('gLessonId').value = id.trim();
 });
 function loadGuidedLesson(lessonId) {
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided')
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided&lang=' + encodeURIComponent(ADMIN_LANG))
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (!d || !d.known) { alert('No Coach config found for ' + lessonId + ' yet.'); return; }
@@ -2363,6 +2606,7 @@ function collectGuidedConfig() {
   return {
     lessonId: document.getElementById('gLessonId').value.trim(),
     tier: 'guided',
+    lang: ADMIN_LANG,
     scopeNote: document.getElementById('gScopeNote').value.trim(),
     nextLessonLabel: document.getElementById('gNextLessonLabel').value.trim(),
     video: { mediaId: document.getElementById('gMediaId').value.trim() },
@@ -2493,13 +2737,13 @@ function configToReadableText(config, savedAt) {
   return lines.join('\n');
 }
 function backupExistingConfig(lessonId, tier, onDone) {
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=' + encodeURIComponent(tier))
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=' + encodeURIComponent(tier) + '&lang=' + encodeURIComponent(ADMIN_LANG))
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d && d.known && d.config) {
         var stamp = new Date().toISOString().replace(/[:.]/g, '-');
         var safeId = String(lessonId).replace(/\./g, '-');
-        downloadJSON('stratum-backup_' + safeId + '_' + tier + '_' + stamp + '.json', d.config);
+        downloadJSON('stratum-backup_' + safeId + '_' + tier + '_' + ADMIN_LANG + '_' + stamp + '.json', d.config);
       }
     })
     .catch(function () { /* best-effort - proceed to save regardless */ })
@@ -2527,7 +2771,7 @@ document.getElementById('gSaveBtn').addEventListener('click', function () {
         'Content-Type': 'application/json',
         'X-Stratum-Admin-Key': adminKey
       },
-      body: JSON.stringify({ lessonId: config.lessonId, tier: 'guided', config: config })
+      body: JSON.stringify({ lessonId: config.lessonId, tier: 'guided', lang: ADMIN_LANG, config: config })
     })
       .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
       .then(function (result) {
@@ -2550,7 +2794,7 @@ document.getElementById('gSaveBtn').addEventListener('click', function () {
   });
 });
 function refreshGuidedList() {
-  fetch(PROXY_URL + '/lesson-configs?tier=guided', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+  fetch(PROXY_URL + '/lesson-configs?tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) {
       populateSelect(gLessonSelect, (d.lessons || []).filter(function (l) { return !isMasteryLessonId(l.lesson_id); }));
@@ -2564,7 +2808,7 @@ document.getElementById('gDeleteBtn').addEventListener('click', function () {
   if (!confirm('Delete Coach lesson "' + id + '"? This cannot be undone.')) return;
   gSaveStatus.textContent = 'Deleting...';
   gSaveStatus.className = 'save-status';
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=guided', {
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), {
     method: 'DELETE',
     headers: { 'X-Stratum-Admin-Key': adminKey }
   })
@@ -2589,7 +2833,7 @@ function isMasteryLessonId(id) {
   return /^[56]\./.test(String(id || ''));
 }
 function refreshDeliverablesLessonList() {
-  fetch(PROXY_URL + '/lesson-configs?tier=guided', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+  fetch(PROXY_URL + '/lesson-configs?tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) { populateSelect(dlvLessonSelect, d.lessons || []); })
     .catch(function () {});
@@ -2622,7 +2866,7 @@ document.getElementById('mNewLessonBtn').addEventListener('click', function () {
   document.getElementById('mLessonId').value = id.trim();
 });
 function loadMasteryLesson(lessonId) {
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided')
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided&lang=' + encodeURIComponent(ADMIN_LANG))
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (!d || !d.known) { alert('No Master Coach config found for ' + lessonId + ' yet.'); return; }
@@ -2898,6 +3142,7 @@ function collectMasteryConfig() {
   return {
     lessonId: document.getElementById('mLessonId').value.trim(),
     tier: 'guided',
+    lang: ADMIN_LANG,
     scopeNote: document.getElementById('mScopeNote').value.trim(),
     nextLessonLabel: document.getElementById('mNextLessonLabel').value.trim(),
     video: { mediaId: document.getElementById('mMediaId').value.trim() },
@@ -2948,7 +3193,7 @@ document.getElementById('mSaveBtn').addEventListener('click', function () {
         'Content-Type': 'application/json',
         'X-Stratum-Admin-Key': adminKey
       },
-      body: JSON.stringify({ lessonId: config.lessonId, tier: 'guided', config: config })
+      body: JSON.stringify({ lessonId: config.lessonId, tier: 'guided', lang: ADMIN_LANG, config: config })
     })
       .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
       .then(function (result) {
@@ -2971,7 +3216,7 @@ document.getElementById('mSaveBtn').addEventListener('click', function () {
   });
 });
 function refreshMasteryList() {
-  fetch(PROXY_URL + '/lesson-configs?tier=guided', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+  fetch(PROXY_URL + '/lesson-configs?tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) {
       populateSelect(mLessonSelect, (d.lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); }));
@@ -2985,7 +3230,7 @@ document.getElementById('mDeleteBtn').addEventListener('click', function () {
   if (!confirm('Delete Master Coach lesson "' + id + '"? This cannot be undone.')) return;
   mSaveStatus.textContent = 'Deleting...';
   mSaveStatus.className = 'save-status';
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=guided', {
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), {
     method: 'DELETE',
     headers: { 'X-Stratum-Admin-Key': adminKey }
   })
@@ -3025,7 +3270,7 @@ document.getElementById('eNewLessonBtn').addEventListener('click', function () {
   document.getElementById('eLessonId').value = id.trim();
 });
 function loadEssentialsLesson(lessonId) {
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=essentials')
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=essentials&lang=' + encodeURIComponent(ADMIN_LANG))
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (!d || !d.known) { alert('No Self-Guided config found for ' + lessonId + ' yet.'); return; }
@@ -3147,6 +3392,7 @@ function collectEssentialsConfig() {
   return {
     lessonId: document.getElementById('eLessonId').value.trim(),
     tier: 'essentials',
+    lang: ADMIN_LANG,
     scopeNote: document.getElementById('eScopeNote').value.trim(),
     nextLessonLabel: document.getElementById('eNextLessonLabel').value.trim(),
     video: { mediaId: document.getElementById('eMediaId').value.trim() },
@@ -3192,7 +3438,7 @@ document.getElementById('eSaveBtn').addEventListener('click', function () {
         'Content-Type': 'application/json',
         'X-Stratum-Admin-Key': adminKey
       },
-      body: JSON.stringify({ lessonId: config.lessonId, tier: 'essentials', config: config })
+      body: JSON.stringify({ lessonId: config.lessonId, tier: 'essentials', lang: ADMIN_LANG, config: config })
     })
       .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
       .then(function (result) {
@@ -3215,7 +3461,7 @@ document.getElementById('eSaveBtn').addEventListener('click', function () {
   });
 });
 function refreshEssentialsList() {
-  fetch(PROXY_URL + '/lesson-configs?tier=essentials', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+  fetch(PROXY_URL + '/lesson-configs?tier=essentials&lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) { populateSelect(eLessonSelect, d.lessons || []); })
     .catch(function () {});
@@ -3226,7 +3472,7 @@ document.getElementById('eDeleteBtn').addEventListener('click', function () {
   if (!confirm('Delete Self-Guided lesson "' + id + '"? This cannot be undone.')) return;
   eSaveStatus.textContent = 'Deleting...';
   eSaveStatus.className = 'save-status';
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=essentials', {
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=essentials&lang=' + encodeURIComponent(ADMIN_LANG), {
     method: 'DELETE',
     headers: { 'X-Stratum-Admin-Key': adminKey }
   })
