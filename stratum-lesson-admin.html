@@ -14,7 +14,6 @@
     display: flex;
     min-height: 100vh;
   }
-
   /* ===== Sidebar ===== */
   .sidebar {
     width: 236px;
@@ -60,7 +59,6 @@
   .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: #D9D2C2; flex-shrink: 0; }
   .nav-spacer { flex: 1; }
   .nav-bottom { border-top: 1px solid #ECE7DC; margin-top: 10px; padding-top: 10px; }
-
   /* ===== Main ===== */
   .main { flex: 1; padding: 30px 40px 80px; max-width: 1080px; }
   .page-head { margin-bottom: 22px; }
@@ -72,7 +70,6 @@
     margin: 0 0 4px;
   }
   .sub { color: #9A927E; font-size: 13px; }
-
   #authBar {
     display: flex;
     gap: 10px;
@@ -105,9 +102,7 @@
   .btn.danger:hover { background: #fdecea; }
   #authStatus { font-size: 12.5px; color: #b3261e; font-weight: 600; }
   #authStatus.ok { color: #2e7d32; }
-
   #panel { display: none; }
-
   #dashboardView, #excavationView, #deliverablesView, #testimonialsView {
     background: #fff;
     border: 1px solid #ECE7DC;
@@ -148,7 +143,6 @@
   #addStudentStatus { font-size: 12.5px; color: #666; font-style: italic; margin-top: 10px; }
   #addStudentStatus.ok { color: #2e7d32; font-style: normal; }
   #addStudentStatus.err { color: #b3261e; font-style: normal; }
-
   .toolbar {
     display: flex;
     gap: 10px;
@@ -166,7 +160,6 @@
   .save-status { font-size: 12.5px; color: #666; font-style: italic; }
   .save-status.ok { color: #2e7d32; font-style: normal; }
   .save-status.err { color: #b3261e; font-style: normal; }
-
   .card {
     background: #fff;
     border: 1px solid #ECE7DC;
@@ -210,7 +203,6 @@
   .card > summary.card-title:hover { color: #3B2F24; }
   .accordion-bar { display: flex; gap: 10px; margin-bottom: 16px; }
   .accordion-bar button { font-size: 12px; padding: 7px 12px; }
-
   .field { margin-bottom: 14px; }
   .field:last-child { margin-bottom: 0; }
   .field label { display: block; font-size: 12px; font-weight: 700; color: #3B2F24; margin-bottom: 3px; }
@@ -225,7 +217,6 @@
   .row2 .field { flex: 1; }
   .row3 { display: flex; gap: 16px; }
   .row3 .field { flex: 1; }
-
   .area-block { border: 1px solid #ECE7DC; background: #FBF9F4; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
   .area-block-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .area-block-head input { flex: 1; font-weight: 600; }
@@ -245,7 +236,6 @@
     text-align: center; font-size: 12.5px; cursor: pointer; border-radius: 8px;
   }
   .add-btn:hover { background: #F7F3EA; color: #3B2F24; }
-
   .deliv-field-block .area-block-head input[type="text"] { font-weight: 400; }
   .deliv-field-block .deliv-field-key { max-width: 220px; font-family: 'Courier New', monospace; font-size: 12.5px; }
   .deliv-field-block select.deliv-field-type {
@@ -255,22 +245,18 @@
   .deliv-field-list-opts { display: flex; gap: 10px; margin-top: 8px; }
   .deliv-field-list-opts input.deliv-field-count { max-width: 140px; padding: 9px 11px; font-size: 13px; border: 1px solid #E3DCC9; border-radius: 8px; }
   .deliv-field-list-opts input.deliv-field-parts { flex: 1; padding: 9px 11px; font-size: 13px; border: 1px solid #E3DCC9; border-radius: 8px; }
-
   .toggle-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #3B2F24; margin-bottom: 12px; }
   .resource-fields.disabled { opacity: .4; pointer-events: none; }
-
   .lang-block { border: 1px solid #ECE7DC; background: #FBF9F4; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
   .lang-block-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-weight: 700; font-size: 12.5px; color: #3B2F24; }
   .add-lang-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
   .add-lang-row select { flex: 1; padding: 9px; font-size: 13px; border: 1px solid #E3DCC9; border-radius: 8px; background: #fff; }
-
   details.json-preview { margin-top: 20px; }
   details.json-preview summary { cursor: pointer; font-size: 12px; color: #9A927E; padding: 6px 0; }
   details.json-preview pre {
     background: #F7F3EA; padding: 12px; font-size: 11px; max-height: 300px; overflow: auto;
     white-space: pre-wrap; border-radius: 8px;
   }
-
   #courseAssistantView .card { padding: 0; margin-bottom: 0; }
   .chat-window { display: flex; flex-direction: column; height: 540px; }
   .chat-messages { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; background: #fff; }
@@ -286,7 +272,6 @@
     border: 1px solid #E3DCC9; border-radius: 8px; resize: none; line-height: 1.4; background: #fff;
   }
   .chat-input-row button:disabled { opacity: .5; cursor: default; }
-
   .exc-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
   .exc-toolbar .spacer { flex: 1; }
   .exc-stat-row { display: flex; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
@@ -310,7 +295,6 @@
   .exc-transcript-a { font-size: 12.5px; color: #5a4535; padding-left: 12px; border-left: 2px solid #C9A46C; }
   .exc-transcript-closing { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px; color: #8a6630; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ECE7DC; }
   .exc-view-link { background: none; border: none; color: #8a6630; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline; }
-
   .dlv-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
   .dlv-toolbar select { padding: 9px 11px; font-size: 13px; border: 1px solid #E3DCC9; border-radius: 8px; min-width: 200px; background: #FCFAF5; }
   .dlv-toolbar .spacer { flex: 1; }
@@ -326,7 +310,6 @@
   .dlv-count-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
   .dlv-count-pill.ok { background: #EFF6EE; color: #2e7d32; }
   .dlv-count-pill.short { background: #fdecea; color: #b3261e; }
-
   .tst-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
   .tst-toolbar .spacer { flex: 1; }
   .tst-block { border: 1px solid #ECE7DC; background: #FBF9F4; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
@@ -352,7 +335,6 @@
 </style>
 </head>
 <body>
-
 <aside class="sidebar">
   <div class="brand">STRATUM <span>ADMIN</span></div>
   <div class="nav-group" id="mainNavGroup" style="display:none;">
@@ -372,7 +354,6 @@
   <button id="tabEssentialsBtn" type="button" style="display:none;"></button>
   <button id="tabMasteryBtn" type="button" style="display:none;"></button>
 </aside>
-
 <main class="main">
   <div class="page-head">
     <h1 id="pageTitle">Admin</h1>
@@ -430,7 +411,6 @@
       </div>
     </div>
   </div>
-
   <div id="adminView">
     <div class="card" style="padding:20px 22px;">
       <div class="card-title" style="margin-bottom:14px;">Admin Key</div>
@@ -441,7 +421,6 @@
       </div>
     </div>
   </div>
-
   <div id="panel">
     <div id="dashboardView" style="display:none;">
       <div class="dash-toolbar">
@@ -483,7 +462,6 @@
       </table>
       <div id="studentsStatus" style="padding:14px 2px;font-size:12px;color:#9A927E;font-style:italic;"></div>
     </div>
-
     <div id="deliverablesView" style="display:none;">
       <div class="dlv-toolbar">
         <span class="sub" style="margin:0;">Confirms every completed session actually captured a real, validated deliverable &mdash; not just the summary sentence.</span>
@@ -501,7 +479,6 @@
       </table>
       <div id="dlvStatus" style="padding:14px 2px;font-size:12px;color:#9A927E;font-style:italic;"></div>
     </div>
-
     <div id="testimonialsView" style="display:none;">
       <div class="tst-toolbar">
         <span class="sub" style="margin:0;">Testimonials shown in the homepage rotator, fading from one to the next. Order controls display order; inactive testimonials stay saved but are skipped on the live site.</span>
@@ -514,7 +491,6 @@
       <div id="tstList"></div>
       <button class="add-btn" id="tstAddBtn" type="button">+ Add testimonial</button>
     </div>
-
     <div id="excavationView" style="display:none;">
       <div class="exc-toolbar">
         <span class="sub" style="margin:0;">The 5-Minute Character Excavation &mdash; started / completed / traffic source / surprise rating.</span>
@@ -557,7 +533,6 @@
       </table>
       <div id="excStatus" style="padding:14px 2px;font-size:12px;color:#9A927E;font-style:italic;"></div>
     </div>
-
     <div id="guidedView">
       <div class="accordion-bar" style="margin-bottom:14px;">
         <button class="btn secondary" id="tabLessonEditorBtn" type="button" style="border-radius:8px;">Lesson Editor</button>
@@ -736,7 +711,6 @@
         </div>
       </div>
     </div>
-
     <div id="essentialsView" style="display:none;">
       <div class="toolbar">
         <select id="eLessonSelect"></select>
@@ -841,7 +815,6 @@
         <pre id="eJsonPreview"></pre>
       </details>
     </div>
-
     <div id="masteryView" style="display:none;">
       <div id="masteryEditorView">
         <div class="toolbar">
@@ -1001,7 +974,6 @@
     </div>
   </div>
 </main>
-
 <script>
 var PROXY_URL = 'https://stratum-proxy.tedbaker0207.workers.dev';
 var ADMIN_KEY_STORAGE = 'stratum_admin_key';
@@ -1063,10 +1035,66 @@ function unlock() {
       authStatus.className = '';
     });
 }
+// Keeps only the most-recently-updated row per lesson_id. This works around
+// duplicate rows for the same lesson_id showing up in a single
+// /lesson-configs response (e.g. one row saved under a different tier or
+// language landing in the same list).
+function dedupeLessonsByLatest(lessons) {
+  var map = {};
+  (lessons || []).forEach(function (l) {
+    if (!l || !l.lesson_id) return;
+    var existing = map[l.lesson_id];
+    if (!existing || String(l.updated_at || '') > String(existing.updated_at || '')) {
+      map[l.lesson_id] = l;
+    }
+  });
+  return Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b) {
+    return String(a.lesson_id).localeCompare(String(b.lesson_id), undefined, { numeric: true });
+  });
+}
+// The /lesson-configs?tier=guided endpoint has been observed returning
+// lesson_ids that only actually have an Essentials-tier config saved (no
+// Coach config exists for them yet) - loading one of those from the Course
+// dropdown fails with "No Coach config found". This does a real per-lesson
+// verification against /lesson-config (singular, tier=guided) and only
+// keeps entries that are confirmed to exist under the Coach tier, so the
+// Course/Deliverables dropdowns only ever show real Coach lessons.
+function verifyGuidedLessons(lessons, callback) {
+  var candidates = dedupeLessonsByLatest(lessons).filter(function (l) { return !isMasteryLessonId(l.lesson_id); });
+  if (!adminKey || !candidates.length) { callback([]); return; }
+  var confirmed = [];
+  var pending = candidates.length;
+  candidates.forEach(function (l) {
+    fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(l.lesson_id) + '&tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), {
+      headers: { 'X-Stratum-Admin-Key': adminKey }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.known) confirmed.push(l);
+      })
+      .catch(function () {})
+      .finally(function () {
+        pending--;
+        if (pending === 0) {
+          confirmed.sort(function (a, b) {
+            return String(a.lesson_id).localeCompare(String(b.lesson_id), undefined, { numeric: true });
+          });
+          callback(confirmed);
+        }
+      });
+  });
+}
 function refreshLessonListsForLang(lessons) {
-  populateSelect(gLessonSelect, (lessons || []).filter(function (l) { return !isMasteryLessonId(l.lesson_id); }));
+  // Course dropdown (and the Deliverables dropdown, which mirrors it):
+  // verified, deduped Coach-tier lessons only. Essentials-only and
+  // not-yet-confirmed entries are filtered out.
+  verifyGuidedLessons(lessons, function (guidedOnly) {
+    populateSelect(gLessonSelect, guidedOnly);
+    populateSelect(dlvLessonSelect, guidedOnly);
+  });
+  // Master Coach tab is hidden from the sidebar for now; leave its list on
+  // the simpler raw/ID-pattern filter since it isn't user-facing today.
   populateSelect(mLessonSelect, (lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); }));
-  populateSelect(dlvLessonSelect, lessons || []);
   refreshEssentialsList();
 }
 // Populates the "Editing content in:" picker from the languages registry
@@ -1282,10 +1310,8 @@ function showTopTab(which) {
   tabEssentialsBtn.className = 'nav-item' + (which === 'essentials' ? ' active' : '');
   tabMasteryBtn.className = 'nav-item' + (which === 'mastery' ? ' active' : '');
   tabAdminBtn.className = 'nav-item' + (which === 'admin' ? ' active' : '');
-
   adminView.style.display = which === 'admin' ? '' : 'none';
   panel.style.display = which === 'admin' ? 'none' : 'block';
-
   dashboardView.style.display = which === 'dashboard' ? '' : 'none';
   deliverablesView.style.display = which === 'deliverables' ? '' : 'none';
   testimonialsView.style.display = which === 'testimonials' ? '' : 'none';
@@ -1293,7 +1319,6 @@ function showTopTab(which) {
   guidedView.style.display = which === 'guided' ? '' : 'none';
   essentialsView.style.display = which === 'essentials' ? '' : 'none';
   masteryView.style.display = which === 'mastery' ? '' : 'none';
-
   var t = PAGE_HEADERS[which] || ['Stratum Lesson Admin', ''];
   pageTitle.textContent = t[0];
   pageSub.textContent = t[1];
@@ -2797,8 +2822,10 @@ function refreshGuidedList() {
   fetch(PROXY_URL + '/lesson-configs?tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) {
-      populateSelect(gLessonSelect, (d.lessons || []).filter(function (l) { return !isMasteryLessonId(l.lesson_id); }));
-      refreshDeliverablesLessonList();
+      verifyGuidedLessons(d.lessons || [], function (guidedOnly) {
+        populateSelect(gLessonSelect, guidedOnly);
+        refreshDeliverablesLessonList();
+      });
     })
     .catch(function () {});
 }
@@ -2835,7 +2862,11 @@ function isMasteryLessonId(id) {
 function refreshDeliverablesLessonList() {
   fetch(PROXY_URL + '/lesson-configs?tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
-    .then(function (d) { populateSelect(dlvLessonSelect, d.lessons || []); })
+    .then(function (d) {
+      verifyGuidedLessons(d.lessons || [], function (guidedOnly) {
+        populateSelect(dlvLessonSelect, guidedOnly);
+      });
+    })
     .catch(function () {});
 }
 var mLessonSelect = document.getElementById('mLessonSelect');
