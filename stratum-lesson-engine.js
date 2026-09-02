@@ -39,10 +39,154 @@
   var TRACKER_KEY = 'systemeCourseTasks';
   var STRATUM_SID_COOKIE = 'stratum_sid';
   var STRATUM_SID_MAX_AGE = 60 * 60 * 24 * 365 * 2; // ~2 years
+  var LANG_STORE_KEY = 'wlfc_preferred_lang';
   var LESSON = null;
   var LESSON_ID = null;
   var TIER = 'guided';
   var STORE_KEY = null;
+  var LANG = 'en';
+  var AVAILABLE_LANGUAGES = null; // populated by fetchLanguages(), used by the one-time picker
+  /* ==========================================================
+     STRINGS / t()
+     ------------------------------------------------------------
+     Open-ended dictionary for dashboard chrome (nav, tab headers,
+     gates, buttons, empty/fatal states). Keyed by the same `lang`
+     codes as the `languages` table (e.g. 'en', 'es'). Every key must
+     exist under 'en' - t() falls back to the English string (then the
+     raw key) if the active language is missing a translation, so a
+     partially-translated language can never show blank or broken UI.
+     Lesson CONTENT (video, transcript, resources, reflection areas,
+     greeting) is a separate system - it comes from LESSON, fetched
+     per-language from lesson_configs via /lesson-config?...&lang=.
+     Adding a language here is purely additive: add a new top-level
+     key under STRINGS with the same key set as 'en'. No code changes.
+     ========================================================== */
+  var STRINGS = {
+    en: {
+      navDashboard: 'Dashboard',
+      navLesson: 'This Lesson',
+      navContact: 'Contact',
+      subVideo: 'Video & Transcript',
+      subResources: 'Lesson Resources',
+      subCoaching: 'Coaching',
+      notesTitle: 'Notes',
+      notesDownloadBtn: 'Download Notes',
+      tasksTitle: 'Tasks',
+      tasksPlaceholder: "Add a task — e.g. Rewrite Eleanor's kitchen scene",
+      tasksAddBtn: 'Add',
+      tasksDownloadBtn: 'Download Tasks',
+      tasksClearCompletedBtn: 'Clear Completed',
+      tasksResetBtn: 'Reset All',
+      tasksEmpty: 'No tasks yet. Add one above.',
+      tasksAllComplete: 'All tasks complete.',
+      tasksRemaining: '{remaining} of {total} remaining.',
+      tasksResetConfirm: 'Delete all tasks? This cannot be undone.',
+      tasksNoneToDownload: 'No tasks to download.',
+      tasksDeleteTitle: 'Delete task',
+      tasksDue: 'Due {date}',
+      tasksOverdue: 'Overdue — was due {date}',
+      projectTitle: 'My Project',
+      projectReminder: 'Complete and save this before using Notes, Tasks, or starting your first coaching session — that\u2019s what ties everything to you.',
+      projectSaveBtn: 'Save Project Details',
+      projectSaving: 'Saving…',
+      projectSavedOk: "Saved. Every lesson's coach will know your project.",
+      projectSavedLocalOnly: "Saved on this device only - couldn't reach the server.",
+      projectEmailLabel: 'Your email',
+      projectEmailHint: 'Required — this is what keeps your notes, tasks, and coaching history with you.',
+      projectEmailInvalid: 'Enter a valid email first — it keeps your notes, tasks, and coaching history with you.',
+      projectEmailConfirming: 'Confirming your email…',
+      projectEmailCouldNotConfirm: "Couldn't confirm that email. Double-check it and try again.",
+      projectNameRequired: 'Enter your first name too — it lets your coach greet you by name instead of asking every time.',
+      projectLanguageTitle: 'Language',
+      projectLanguageHint: 'Changes both your dashboard and your coach\u2019s language. Your notes, tasks, and coaching history are unaffected.',
+      projectLanguageBtn: 'Change Language',
+      projectLanguageConfirm: 'Switch to {label}? The page will reload - your notes, tasks, and coaching history all stay exactly as they are.',
+      gateTitle: 'Keep your {item}',
+      gateText: 'This makes sure your {item} actually stays with you. Add your email in My Project on the Dashboard, then come straight back.',
+      gateBtn: 'Go to My Project',
+      gateItemNotes: 'notes',
+      gateItemTasks: 'tasks',
+      gateItemCoaching: 'coaching history',
+      resourcesEmpty: 'This lesson has no additional resources.',
+      resourceOpenPdf: 'Open the PDF directly',
+      resourceTroubleViewing: 'Having trouble viewing it? ',
+      transcriptTitle: 'Transcript',
+      transcriptHint: 'Click any word to jump straight to that point in the video.',
+      transcriptFallback: 'The transcript for this lecture is still being prepared. In the meantime, captions are available from the CC button in the player.',
+      contactStuck: 'Stuck? ',
+      contactEmail: 'Email Ted',
+      contactWhatsapp: 'WhatsApp',
+      lessonMissingIdError: 'This lesson is missing its lesson ID and cannot load.',
+      lessonNotConfiguredError: 'This lesson has not been configured yet. If you are seeing this as a student, please let Ted know.',
+      lessonMissingVideoError: 'This lesson is missing its video and cannot load.',
+      lessonLoadError: "Couldn't load this lesson right now. Please refresh the page, and if it keeps happening, let Ted know.",
+      identityWelcomeTitle: 'Welcome To Stratum',
+      identityWelcomeText: 'Enter your email and first name to keep your notes, tasks, and coaching history tied to you throughout the course.',
+      identityEmailLabel: 'Email',
+      identityNameLabel: 'First name',
+      identityLanguageLabel: 'Dashboard & coaching language',
+      identityLanguageHint: 'This sets both the dashboard and your coach\u2019s language, permanently.',
+      identityContinueBtn: 'Continue',
+      identityChecking: 'Checking…',
+      identityInvalidEmail: 'Enter a valid email.',
+      identityNameRequired: 'Enter your first name too.',
+      identityCouldNotConfirm: "Couldn't confirm that email. Double-check it and try again.",
+      coachInputPlaceholder: 'Type your reply...',
+      coachSendAriaLabel: 'Send',
+      downloadCardTitle: 'YOUR REFLECTION IS READY',
+      downloadCardSub: 'Keep a copy of this conversation for yourself.',
+      downloadCardBtn: 'Download as Word Document',
+      exhaustedTitle: 'YOU HAVE USED ALL YOUR COACHING SESSIONS',
+      exhaustedP1: 'Your included sessions with the built-in Excavation Coach are finished — but the method is not tied to this tool.',
+      exhaustedP2: 'The Training Your AI to Coach guide in your resources gives you the exact setup language to paste into Claude, ChatGPT or Gemini. It works on the free tier of all three, and it is the same coach — you are simply running it yourself.',
+      exhaustedP3: 'If you need more sessions here, message Ted and he will sort it out.',
+      accountSuspendedMsg: "Something's wrong with the access on this account. Send me a message and I'll get it sorted out.",
+      lostTrainOfThoughtMsg: 'I lost my train of thought there for a second. Could you say that again?',
+      lostConnectionMsg: 'Hang on - I lost the connection for a second. Mind sending that again?'
+    }
+  };
+  function t(key, vars) {
+    var table = (STRINGS[LANG] && STRINGS[LANG][key] != null) ? STRINGS[LANG] : STRINGS.en;
+    var str = table[key] != null ? table[key] : key;
+    if (vars) {
+      Object.keys(vars).forEach(function (k) {
+        str = str.replace('{' + k + '}', vars[k]);
+      });
+    }
+    return str;
+  }
+  function fetchLanguages() {
+    if (AVAILABLE_LANGUAGES) return Promise.resolve(AVAILABLE_LANGUAGES);
+    return fetch(PROXY_URL + '/languages')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        AVAILABLE_LANGUAGES = (d && Array.isArray(d.languages) && d.languages.length)
+          ? d.languages
+          : [{ code: 'en', label: 'English', coachingName: '' }];
+        return AVAILABLE_LANGUAGES;
+      })
+      .catch(function () {
+        AVAILABLE_LANGUAGES = [{ code: 'en', label: 'English', coachingName: '' }];
+        return AVAILABLE_LANGUAGES;
+      });
+  }
+  function setPreferredLang(code, coachingName) {
+    LANG = code || 'en';
+    lsSet(LANG_STORE_KEY, LANG);
+    // Keep the existing "Preferred coaching language" field (My Project /
+    // buildSystemPrompt / getGreetingText) in sync so a student who picks
+    // Spanish gets a Spanish dashboard AND a Spanish-speaking coach from
+    // the very first session, without a second decision to make. They can
+    // still change coaching language independently afterward on My Project.
+    if (coachingName != null) lsSet(PROJ_KEYS.language, coachingName);
+    if (STUDENT_ID) {
+      fetch(PROXY_URL + '/student/lang', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: STUDENT_ID, lang: LANG })
+      }).catch(function () {});
+    }
+  }
   function readCookie(name) {
     var parts = document.cookie ? document.cookie.split(';') : [];
     for (var i = 0; i < parts.length; i++) {
@@ -171,13 +315,11 @@
     var details = el('details', 'lec-transcript lec-resource');
     details.id = 'lecTranscript';
     details.open = startOpen !== false;
-    var summary = el('summary', 'lec-resource-bar', 'Transcript');
+    var summary = el('summary', 'lec-resource-bar', t('transcriptTitle'));
     mount(details, summary);
     var body = el('div', 'lec-transcript-body');
-    mount(body, el('p', 'lec-transcript-hint',
-      'Click any word to jump straight to that point in the video.'));
-    var fallback = el('p', 'lec-transcript-fallback',
-      'The transcript for this lecture is still being prepared. In the meantime, captions are available from the CC button in the player.');
+    mount(body, el('p', 'lec-transcript-hint', t('transcriptHint')));
+    var fallback = el('p', 'lec-transcript-fallback', t('transcriptFallback'));
     fallback.id = 'lecTranscriptFallback';
     mount(body, fallback);
     var wt = document.createElement('wistia-transcript');
@@ -199,15 +341,15 @@
   }
   function buildContactLine(container) {
     var div = el('div', 'lec-contact');
-    div.appendChild(document.createTextNode('Stuck? '));
-    var mail = el('a', null, 'Email Ted');
+    div.appendChild(document.createTextNode(t('contactStuck')));
+    var mail = el('a', null, t('contactEmail'));
     mail.href = 'https://mail.google.com/mail/?view=cm&fs=1&to=' +
                 encodeURIComponent(CONTACT_EMAIL) + '&su=Course%20Question';
     mail.target = '_blank';
     mail.rel = 'noopener';
     mount(div, mail);
     div.appendChild(document.createTextNode(' \u00B7 '));
-    var wa = el('a', null, 'WhatsApp');
+    var wa = el('a', null, t('contactWhatsapp'));
     wa.href = CONTACT_WHATSAPP;
     wa.target = '_blank';
     wa.rel = 'noopener';
@@ -229,12 +371,12 @@
         iframe.title = pdf.title;
         mount(body, iframe);
         var fallback = el('p', 'lec-resource-pdf-fallback');
-        fallback.appendChild(document.createTextNode('Having trouble viewing it? '));
+        fallback.appendChild(document.createTextNode(t('resourceTroubleViewing')));
         var link = document.createElement('a');
         link.href = pdf.url;
         link.target = '_blank';
         link.rel = 'noopener';
-        link.textContent = 'Open the PDF directly';
+        link.textContent = t('resourceOpenPdf');
         fallback.appendChild(link);
         mount(body, fallback);
         mount(details, body);
@@ -263,9 +405,9 @@
     return out;
   }
   var SUB_TABS = [
-    { id: 'Video',     label: 'Video & Transcript', build: buildVideoTranscriptPanel },
-    { id: 'Resources', label: 'Lesson Resources',   build: buildResourcesPanel },
-    { id: 'Coaching',  label: 'Coaching',           build: buildCoachTab }
+    { id: 'Video',     labelKey: 'subVideo',     build: buildVideoTranscriptPanel },
+    { id: 'Resources', labelKey: 'subResources', build: buildResourcesPanel },
+    { id: 'Coaching',  labelKey: 'subCoaching',  build: buildCoachTab }
   ];
   function buildVideoTranscriptPanel(panel) {
     buildVideo(panel, LESSON.video.mediaId);
@@ -276,7 +418,7 @@
       LESSON.resource.pdfs.some(function (p) { return p && p.title && p.url; });
     var hasLegacy = LESSON.resource && LESSON.resource.title;
     if (!hasPdfs && !hasLegacy) {
-      mount(panel, el('p', 'lec-resource-empty', 'This lesson has no additional resources.'));
+      mount(panel, el('p', 'lec-resource-empty', t('resourcesEmpty')));
       return;
     }
     buildResource(panel, LESSON.resource);
@@ -284,7 +426,7 @@
   function buildSubNav(container) {
     var bar = el('div', 'stratum-subnav');
     SUB_TABS.forEach(function (tab, index) {
-      var btn = el('button', 'sublink', tab.label);
+      var btn = el('button', 'sublink', t(tab.labelKey));
       btn.type = 'button';
       btn.addEventListener('click', function (evt) { openSubTab(evt, tab.id); });
       if (index === 0) btn.id = 'defaultOpen';
@@ -311,14 +453,14 @@
     evt.currentTarget.className += ' active';
   }
   var TOP_DESTINATIONS = [
-    { id: 'view-dashboard', label: 'Dashboard',   build: buildDashboardView },
-    { id: 'view-lesson',    label: 'This Lesson', build: buildLessonView },
-    { id: 'view-contact',   label: 'Contact',     build: buildContactView }
+    { id: 'view-dashboard', labelKey: 'navDashboard', build: buildDashboardView },
+    { id: 'view-lesson',    labelKey: 'navLesson',    build: buildLessonView },
+    { id: 'view-contact',   labelKey: 'navContact',   build: buildContactView }
   ];
   function buildTopNav(container) {
     var nav = el('div', 'stratum-topnav');
     TOP_DESTINATIONS.forEach(function (dest, index) {
-      var btn = el('button', 'toplink' + (index === 0 ? ' active' : ''), dest.label);
+      var btn = el('button', 'toplink' + (index === 0 ? ' active' : ''), t(dest.labelKey));
       btn.type = 'button';
       btn.addEventListener('click', function (evt) { showTopView(evt, dest.id); });
       mount(nav, btn);
@@ -433,14 +575,14 @@
       projectPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
-  function buildIdentityGate(panel, itemLabel) {
+  function buildIdentityGate(panel, itemKey) {
+    var item = t(itemKey);
     var wrap = el('div', 'proj-gate');
-    var title = el('div', 'proj-gate-title', 'Keep your ' + itemLabel);
+    var title = el('div', 'proj-gate-title', t('gateTitle', { item: item }));
     mount(wrap, title);
-    var msg = el('p', 'proj-gate-text',
-      'This makes sure your ' + itemLabel + ' actually stays with you. Add your email in My Project on the Dashboard, then come straight back.');
+    var msg = el('p', 'proj-gate-text', t('gateText', { item: item }));
     mount(wrap, msg);
-    var btn = el('button', 'proj-gate-btn', 'Go to My Project');
+    var btn = el('button', 'proj-gate-btn', t('gateBtn'));
     btn.type = 'button';
     btn.addEventListener('click', goToProjectTab);
     mount(wrap, btn);
@@ -455,13 +597,13 @@
     if (coachPanel) { coachPanel.innerHTML = ''; buildCoachTab(coachPanel); }
   }
   function buildNotesTab(panel) {
-    if (!isEmailConfirmed()) { buildIdentityGate(panel, 'notes'); return; }
-    mount(panel, el('h3', null, 'Notes'));
+    if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemNotes'); return; }
+    mount(panel, el('h3', null, t('notesTitle')));
     var ta = document.createElement('textarea');
     ta.id = 'studentNotes';
     mount(panel, ta);
     mount(panel, document.createElement('br'));
-    var btn = el('button', 'download-btn', 'Download Notes');
+    var btn = el('button', 'download-btn', t('notesDownloadBtn'));
     btn.type = 'button';
     btn.addEventListener('click', downloadNotes);
     mount(panel, btn);
@@ -517,8 +659,8 @@
     link.click();
   }
   function buildTasksTab(panel) {
-    if (!isEmailConfirmed()) { buildIdentityGate(panel, 'tasks'); return; }
-    mount(panel, el('h3', null, 'Tasks'));
+    if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemTasks'); return; }
+    mount(panel, el('h3', null, t('tasksTitle')));
     var count = el('div', 'tracker-count');
     count.id = 'trackerCount';
     mount(panel, count);
@@ -526,7 +668,7 @@
     var input = document.createElement('input');
     input.type = 'text';
     input.id = 'trackerInput';
-    input.placeholder = "Add a task — e.g. Rewrite Eleanor's kitchen scene";
+    input.placeholder = t('tasksPlaceholder');
     input.maxLength = 200;
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') addTrackerTask();
@@ -538,7 +680,7 @@
     dateInput.className = 'tracker-date-input';
     dateInput.setAttribute('aria-label', 'Due date (optional)');
     mount(row, dateInput);
-    var addBtn = el('button', 'tracker-add-btn', 'Add');
+    var addBtn = el('button', 'tracker-add-btn', t('tasksAddBtn'));
     addBtn.type = 'button';
     addBtn.addEventListener('click', addTrackerTask);
     mount(row, addBtn);
@@ -548,9 +690,9 @@
     mount(panel, list);
     var actions = el('div', 'tracker-actions');
     [
-      ['Download Tasks',  downloadTracker],
-      ['Clear Completed', clearCompletedTasks],
-      ['Reset All',       resetTracker]
+      [t('tasksDownloadBtn'),        downloadTracker],
+      [t('tasksClearCompletedBtn'),  clearCompletedTasks],
+      [t('tasksResetBtn'),           resetTracker]
     ].forEach(function (pair) {
       var b = el('button', 'tracker-action-btn', pair[0]);
       b.type = 'button';
@@ -613,15 +755,15 @@
     if (!list || !count) return;
     list.innerHTML = '';
     if (tasks.length === 0) {
-      var empty = el('li', 'tracker-empty', 'No tasks yet. Add one above.');
+      var empty = el('li', 'tracker-empty', t('tasksEmpty'));
       mount(list, empty);
       count.textContent = '';
       return;
     }
-    var remaining = tasks.filter(function (t) { return !t.done; }).length;
+    var remaining = tasks.filter(function (tk) { return !tk.done; }).length;
     count.textContent = remaining === 0
-      ? 'All tasks complete.'
-      : remaining + ' of ' + tasks.length + ' remaining.';
+      ? t('tasksAllComplete')
+      : t('tasksRemaining', { remaining: remaining, total: tasks.length });
     var todayStr = new Date().toISOString().slice(0, 10);
     tasks.forEach(function (task) {
       var li = el('li', 'tracker-item' + (task.done ? ' done' : ''));
@@ -636,14 +778,14 @@
         var overdue = !task.done && task.dueDate < todayStr;
         var label = formatDueDate(task.dueDate);
         var due = el('div', 'tracker-due' + (overdue ? ' overdue' : ''),
-          overdue ? 'Overdue — was due ' + label : 'Due ' + label);
+          overdue ? t('tasksOverdue', { date: label }) : t('tasksDue', { date: label }));
         mount(wrap, due);
       }
       mount(li, wrap);
       var del = el('button', 'tracker-delete');
       del.type = 'button';
       del.innerHTML = '&times;';
-      del.title = 'Delete task';
+      del.title = t('tasksDeleteTitle');
       del.addEventListener('click', function () { deleteTask(task.id); });
       mount(li, del);
       mount(list, li);
@@ -664,41 +806,41 @@
   }
   function toggleTask(id) {
     var tasks = loadTasks();
-    var task = tasks.find(function (t) { return t.id === id; });
+    var task = tasks.find(function (tk) { return tk.id === id; });
     if (task) task.done = !task.done;
     saveTasks(tasks);
     renderTracker();
   }
   function deleteTask(id) {
-    var tasks = loadTasks().filter(function (t) { return t.id !== id; });
+    var tasks = loadTasks().filter(function (tk) { return tk.id !== id; });
     saveTasks(tasks);
     renderTracker();
   }
   function clearCompletedTasks() {
-    var tasks = loadTasks().filter(function (t) { return !t.done; });
+    var tasks = loadTasks().filter(function (tk) { return !tk.done; });
     saveTasks(tasks);
     renderTracker();
   }
   function resetTracker() {
-    if (confirm('Delete all tasks? This cannot be undone.')) {
+    if (confirm(t('tasksResetConfirm'))) {
       saveTasks([]);
       renderTracker();
     }
   }
   function downloadTracker() {
     var tasks = loadTasks();
-    if (tasks.length === 0) { alert('No tasks to download.'); return; }
+    if (tasks.length === 0) { alert(t('tasksNoneToDownload')); return; }
     var date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     var txt = 'WRITE LIVING CHARACTERS — MY TASKS\n';
     txt += 'thestratummethod.com\n';
     txt += 'Exported: ' + date + '\n';
     txt += '==========================================\n\n';
-    tasks.forEach(function (t) {
-      txt += (t.done ? '[x] ' : '[ ] ') + t.text;
-      if (t.dueDate) txt += '  (due ' + formatDueDate(t.dueDate) + ')';
+    tasks.forEach(function (tk) {
+      txt += (tk.done ? '[x] ' : '[ ] ') + tk.text;
+      if (tk.dueDate) txt += '  (due ' + formatDueDate(tk.dueDate) + ')';
       txt += '\n';
     });
-    var remaining = tasks.filter(function (t) { return !t.done; }).length;
+    var remaining = tasks.filter(function (tk) { return !tk.done; }).length;
     txt += '\n==========================================\n';
     txt += remaining + ' of ' + tasks.length + ' remaining.\n';
     var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
@@ -796,28 +938,15 @@
         ['consistency', "Whether my character's choices feel consistent — or interestingly not"],
         ['not_sure', "I'm not sure yet — help me find it"]
       ]
-    },
-    {
-      key: 'language', id: 'projLanguage', type: 'select',
-      label: 'Preferred coaching language',
-      hint: "Your coach will conduct the conversation in this language. Leave as English if that's your preference.",
-      options: [
-        ['', 'English'],
-        ['Spanish', 'Español (Spanish)'],
-        ['French', 'Français (French)'],
-        ['German', 'Deutsch (German)'],
-        ['Italian', 'Italiano (Italian)'],
-        ['Portuguese', 'Português (Portuguese)'],
-        ['Dutch', 'Nederlands (Dutch)'],
-        ['Chinese', '中文 (Chinese, Simplified)'],
-        ['Japanese', '日本語 (Japanese)'],
-        ['Korean', '한국어 (Korean)'],
-        ['Arabic', 'العربية (Arabic)'],
-        ['Hindi', 'हिन्दी (Hindi)'],
-        ['Russian', 'Русский (Russian)']
-      ]
     }
   ];
+  // Coaching language is no longer a separate, re-pickable field here - it
+  // is derived entirely from the one-time language choice made in the
+  // identity modal (see setPreferredLang()). PROJ_KEYS.language and the
+  // server's project_language column are still the values buildSystemPrompt()
+  // reads (via buildProjectContextBlock()'s v.language), and are kept in
+  // sync with that one-time choice rather than exposed as an editable
+  // PROJECT_FIELDS entry.
   function buildProjectField(spec) {
     var field = el('div', 'proj-field');
     var label = el('label', 'proj-label', spec.label);
@@ -855,10 +984,10 @@
     if (isEmailConfirmed()) return;
     var wrap = el('div', 'proj-field proj-email-field');
     wrap.id = 'projEmailWrap';
-    var label = el('label', 'proj-label', 'Your email');
+    var label = el('label', 'proj-label', t('projectEmailLabel'));
     label.setAttribute('for', 'projEmail');
     mount(wrap, label);
-    var hint = el('span', 'proj-hint', 'Required \u2014 this is what keeps your notes, tasks, and coaching history with you.');
+    var hint = el('span', 'proj-hint', t('projectEmailHint'));
     mount(wrap, hint);
     var input = document.createElement('input');
     input.type = 'email';
@@ -870,14 +999,13 @@
     mount(panel, wrap);
   }
   function buildProjectTab(panel) {
-    mount(panel, el('h3', null, 'My Project'));
-    var reminder = el('p', null,
-      'Complete and save this before using Notes, Tasks, or starting your first coaching session \u2014 that\u2019s what ties everything to you.');
+    mount(panel, el('h3', null, t('projectTitle')));
+    var reminder = el('p', null, t('projectReminder'));
     reminder.style.cssText = 'font-size:13px;font-style:italic;color:#8a7a5e;line-height:1.5;margin:4px 0 18px;';
     mount(panel, reminder);
     var topActions = el('div', 'proj-actions proj-actions-top');
     topActions.style.marginBottom = '28px';
-    var topSave = el('button', 'proj-save-btn', 'Save Project Details');
+    var topSave = el('button', 'proj-save-btn', t('projectSaveBtn'));
     topSave.type = 'button';
     topSave.id = 'projSaveBtnTop';
     topSave.addEventListener('click', saveProjectFields);
@@ -897,7 +1025,7 @@
       }
     });
     var actions = el('div', 'proj-actions');
-    var save = el('button', 'proj-save-btn', 'Save Project Details');
+    var save = el('button', 'proj-save-btn', t('projectSaveBtn'));
     save.type = 'button';
     save.id = 'projSaveBtn';
     save.addEventListener('click', saveProjectFields);
@@ -906,7 +1034,65 @@
     status.id = 'projStatus';
     mount(actions, status);
     mount(panel, actions);
+    buildLanguageSection(panel);
     loadProjectFields();
+  }
+  // Lets a student change their language after the one-time signup pick,
+  // now that it's safe to: notes, tasks, completions, deliverables, and
+  // conversation transcripts are all keyed by studentId only, never by
+  // language, so switching never touches or loses any of that history -
+  // it only changes which lesson_configs row loads and what language the
+  // coach writes in going forward. Hidden entirely when fewer than 2
+  // languages are active, same rule as the identity-modal picker.
+  function buildLanguageSection(panel) {
+    var wrap = el('div', 'proj-field proj-language-field');
+    wrap.style.cssText = 'margin-top:8px;padding-top:18px;border-top:1px solid #ECE7DC;';
+    wrap.style.display = 'none';
+    var label = el('label', 'proj-label', t('projectLanguageTitle'));
+    mount(wrap, label);
+    var hint = el('span', 'proj-hint', t('projectLanguageHint'));
+    mount(wrap, hint);
+    var row = el('div', 'proj-row2');
+    var select = document.createElement('select');
+    select.className = 'proj-select';
+    select.id = 'projLanguageSelect';
+    mount(row, select);
+    var btn = el('button', 'proj-save-btn', t('projectLanguageBtn'));
+    btn.type = 'button';
+    mount(row, btn);
+    mount(wrap, row);
+    var status = el('span', 'proj-status');
+    status.id = 'projLanguageStatus';
+    mount(wrap, status);
+    mount(panel, wrap);
+    fetchLanguages().then(function (langs) {
+      if (!langs || langs.length < 2) return;
+      langs.forEach(function (lang) {
+        var opt = document.createElement('option');
+        opt.value = lang.code;
+        opt.textContent = lang.label;
+        opt.setAttribute('data-coaching-name', lang.coachingName || '');
+        if (lang.code === LANG) opt.selected = true;
+        select.appendChild(opt);
+      });
+      wrap.style.display = '';
+    });
+    btn.addEventListener('click', function () {
+      var chosenOpt = select.options[select.selectedIndex];
+      if (!chosenOpt) return;
+      var chosenCode = chosenOpt.value;
+      var chosenLabel = chosenOpt.textContent;
+      var chosenCoachingName = chosenOpt.getAttribute('data-coaching-name');
+      if (chosenCode === LANG) {
+        status.textContent = '';
+        return;
+      }
+      if (!confirm(t('projectLanguageConfirm', { label: chosenLabel }))) return;
+      status.textContent = t('projectSaving');
+      status.className = 'proj-status';
+      setPreferredLang(chosenCode, chosenCoachingName);
+      location.reload();
+    });
   }
   function eachProjectSpec(fn) {
     PROJECT_FIELDS.forEach(function (spec) {
@@ -937,6 +1123,12 @@
         eachProjectSpec(function (spec) {
           lsSet(PROJ_KEYS[spec.key], merged[spec.key] || '');
         });
+        // Coaching language isn't a PROJECT_FIELDS entry anymore (it's
+        // derived from the one-time language pick), so it isn't covered by
+        // the loop above. Sync it from the server's stored value here too,
+        // in case this is a different device than the one the student
+        // originally signed up on and the local cache doesn't have it yet.
+        if (merged.language) lsSet(PROJ_KEYS.language, merged.language);
       })
       .catch(function () {});
   }
@@ -958,6 +1150,11 @@
       var value = node ? node.value : '';
       fields[spec.key] = (spec.type === 'select') ? value : value.trim();
     });
+    // Coaching language is set once, at signup, and isn't a visible/editable
+    // form field anymore - carry the cached value through explicitly on
+    // every save so it doesn't get overwritten with an empty string just
+    // because it's no longer part of the PROJECT_FIELDS loop above.
+    fields.language = lsGet(PROJ_KEYS.language) || '';
     function persistFieldsLocally() {
       eachProjectSpec(function (spec) {
         lsSet(PROJ_KEYS[spec.key], fields[spec.key]);
@@ -965,7 +1162,7 @@
     }
     function doServerSave() {
       setDisabled(true);
-      setStatus('Saving…', 'proj-status');
+      setStatus(t('projectSaving'), 'proj-status');
       fetch(PROXY_URL + '/project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -975,14 +1172,14 @@
         .then(function (d) {
           setDisabled(false);
           if (d && d.ok) {
-            setStatus("Saved. Every lesson's coach will know your project.", 'proj-status ok');
+            setStatus(t('projectSavedOk'), 'proj-status ok');
           } else {
-            setStatus("Saved on this device only - couldn't reach the server.", 'proj-status err');
+            setStatus(t('projectSavedLocalOnly'), 'proj-status err');
           }
         })
         .catch(function () {
           setDisabled(false);
-          setStatus("Saved on this device only - couldn't reach the server.", 'proj-status err');
+          setStatus(t('projectSavedLocalOnly'), 'proj-status err');
         });
     }
     if (isEmailConfirmed()) {
@@ -993,16 +1190,16 @@
     var emailInput = document.getElementById('projEmail');
     var email = emailInput ? emailInput.value.trim() : '';
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setStatus('Enter a valid email first — it keeps your notes, tasks, and coaching history with you.', 'proj-status err');
+      setStatus(t('projectEmailInvalid'), 'proj-status err');
       if (emailInput) emailInput.focus();
       return;
     }
     setDisabled(true);
-    setStatus('Confirming your email…', 'proj-status');
+    setStatus(t('projectEmailConfirming'), 'proj-status');
     ensureDurableIdentity(email).then(function (result) {
       if (!result.ok) {
         setDisabled(false);
-        setStatus("Couldn't confirm that email. Double-check it and try again.", 'proj-status err');
+        setStatus(t('projectEmailCouldNotConfirm'), 'proj-status err');
         return;
       }
       if (result.isNew) {
@@ -1010,7 +1207,7 @@
         var studentNameValue = nameInput ? nameInput.value.trim() : '';
         if (!studentNameValue) {
           setDisabled(false);
-          setStatus('Enter your first name too — it lets your coach greet you by name instead of asking every time.', 'proj-status err');
+          setStatus(t('projectNameRequired'), 'proj-status err');
           if (nameInput) nameInput.focus();
           return;
         }
@@ -1028,11 +1225,10 @@
     var overlay = el('div', 'srx-identity-overlay');
     overlay.id = 'srxIdentityOverlay';
     var modal = el('div', 'srx-identity-modal');
-    mount(modal, el('div', 'srx-identity-title', 'Welcome To Stratum'));
-    mount(modal, el('p', 'srx-identity-text',
-      'Enter your email and first name to keep your notes, tasks, and coaching history tied to you throughout the course.'));
+    mount(modal, el('div', 'srx-identity-title', t('identityWelcomeTitle')));
+    mount(modal, el('p', 'srx-identity-text', t('identityWelcomeText')));
     var emailField = el('div', 'srx-identity-field');
-    mount(emailField, el('label', 'srx-identity-label', 'Email'));
+    mount(emailField, el('label', 'srx-identity-label', t('identityEmailLabel')));
     var emailInput = document.createElement('input');
     emailInput.type = 'email';
     emailInput.className = 'srx-identity-input';
@@ -1040,7 +1236,7 @@
     mount(emailField, emailInput);
     mount(modal, emailField);
     var nameField = el('div', 'srx-identity-field');
-    mount(nameField, el('label', 'srx-identity-label', 'First name'));
+    mount(nameField, el('label', 'srx-identity-label', t('identityNameLabel')));
     var nameInput = document.createElement('input');
     nameInput.type = 'text';
     nameInput.className = 'srx-identity-input';
@@ -1048,7 +1244,19 @@
     nameInput.maxLength = 60;
     mount(nameField, nameInput);
     mount(modal, nameField);
-    var btn = el('button', 'srx-identity-btn', 'Continue');
+    // One-time dashboard-language pick, right alongside the identity
+    // capture this modal already gates on. Only rendered once we know
+    // more than one language is actually active - so a course offering
+    // only English never shows a pointless single-option dropdown.
+    var langField = el('div', 'srx-identity-field');
+    langField.style.display = 'none';
+    mount(langField, el('label', 'srx-identity-label', t('identityLanguageLabel')));
+    var langSelect = document.createElement('select');
+    langSelect.className = 'srx-identity-input';
+    mount(langField, langSelect);
+    mount(langField, el('span', 'srx-identity-lang-hint', t('identityLanguageHint')));
+    mount(modal, langField);
+    var btn = el('button', 'srx-identity-btn', t('identityContinueBtn'));
     btn.type = 'button';
     mount(modal, btn);
     var status = el('div', 'srx-identity-status');
@@ -1056,33 +1264,59 @@
     mount(overlay, modal);
     mount(document.body, overlay);
     emailInput.focus();
+    fetchLanguages().then(function (langs) {
+      if (!langs || langs.length < 2) return;
+      langs.forEach(function (lang) {
+        var opt = document.createElement('option');
+        opt.value = lang.code;
+        opt.textContent = lang.label;
+        opt.setAttribute('data-coaching-name', lang.coachingName || '');
+        if (lang.code === LANG) opt.selected = true;
+        langSelect.appendChild(opt);
+      });
+      langField.style.display = '';
+    });
     function submit() {
       var email = emailInput.value.trim();
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        status.textContent = 'Enter a valid email.';
+        status.textContent = t('identityInvalidEmail');
         status.className = 'srx-identity-status err';
         emailInput.focus();
         return;
       }
       var name = nameInput.value.trim();
       if (!name) {
-        status.textContent = 'Enter your first name too.';
+        status.textContent = t('identityNameRequired');
         status.className = 'srx-identity-status err';
         nameInput.focus();
         return;
       }
       btn.disabled = true;
-      status.textContent = 'Checking…';
+      status.textContent = t('identityChecking');
       status.className = 'srx-identity-status';
       ensureDurableIdentity(email).then(function (result) {
         if (!result.ok) {
           btn.disabled = false;
-          status.textContent = "Couldn't confirm that email. Double-check it and try again.";
+          status.textContent = t('identityCouldNotConfirm');
           status.className = 'srx-identity-status err';
           return;
         }
         studentName = name;
         lsSet(PROJ_KEYS.studentName, name);
+        var chosenOpt = langSelect.options[langSelect.selectedIndex];
+        var chosenCode = chosenOpt ? chosenOpt.value : LANG;
+        var chosenCoachingName = chosenOpt ? chosenOpt.getAttribute('data-coaching-name') : null;
+        var langChanged = chosenCode && chosenCode !== LANG;
+        if (langChanged) {
+          // A full reload re-runs init() with the new language now cached,
+          // so LESSON (video/transcript/resources) is re-fetched in the
+          // chosen language and every already-rendered chrome element
+          // rebuilds translated too - simpler and more reliable than
+          // trying to re-translate a live DOM tree in place.
+          setPreferredLang(chosenCode, chosenCoachingName);
+          location.reload();
+          return;
+        }
         if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
         refreshGatedTabs();
       });
@@ -1283,7 +1517,7 @@
     mount(panel, details);
   }
   function buildCoachTab(panel) {
-    if (!isEmailConfirmed()) { buildIdentityGate(panel, 'coaching history'); return; }
+    if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemCoaching'); return; }
     buildCoachingIntro(panel);
     var bleed = el('div', 'syio-bleed');
     var wrap = el('div', 'srx-wrap');
@@ -1294,12 +1528,12 @@
     formEl.className = 'srx-form';
     inputEl = document.createElement('textarea');
     inputEl.className = 'srx-input';
-    inputEl.placeholder = 'Type your reply...';
+    inputEl.placeholder = t('coachInputPlaceholder');
     inputEl.rows = 1;
     mount(formEl, inputEl);
     sendBtn = el('button', 'srx-send');
     sendBtn.type = 'submit';
-    sendBtn.setAttribute('aria-label', 'Send');
+    sendBtn.setAttribute('aria-label', t('coachSendAriaLabel'));
     sendBtn.innerHTML = '&#8594;';
     mount(formEl, sendBtn);
     mount(wrap, formEl);
@@ -1584,9 +1818,9 @@
     if (lastDeliverable) {
       mount(card, buildDeliverableSnapshotEl(lastDeliverable, getDeliverableConfig()));
     }
-    mount(card, el('div', 'srx-dc-title', 'YOUR REFLECTION IS READY'));
-    mount(card, el('div', 'srx-dc-sub', 'Keep a copy of this conversation for yourself.'));
-    var btn = el('button', 'srx-dc-btn', 'Download as Word Document');
+    mount(card, el('div', 'srx-dc-title', t('downloadCardTitle')));
+    mount(card, el('div', 'srx-dc-sub', t('downloadCardSub')));
+    var btn = el('button', 'srx-dc-btn', t('downloadCardBtn'));
     btn.type = 'button';
     btn.addEventListener('click', generateDoc);
     mount(card, btn);
@@ -1598,10 +1832,10 @@
     sendBtn.disabled = true;
     inputEl.disabled = true;
     var card = el('div', 'srx-exhausted-card');
-    mount(card, el('div', 'srx-ec-title', 'YOU HAVE USED ALL YOUR COACHING SESSIONS'));
-    mount(card, el('p', null, 'Your included sessions with the built-in Excavation Coach are finished — but the method is not tied to this tool.'));
-    mount(card, el('p', null, 'The Training Your AI to Coach guide in your resources gives you the exact setup language to paste into Claude, ChatGPT or Gemini. It works on the free tier of all three, and it is the same coach — you are simply running it yourself.'));
-    mount(card, el('p', null, 'If you need more sessions here, message Ted and he will sort it out.'));
+    mount(card, el('div', 'srx-ec-title', t('exhaustedTitle')));
+    mount(card, el('p', null, t('exhaustedP1')));
+    mount(card, el('p', null, t('exhaustedP2')));
+    mount(card, el('p', null, t('exhaustedP3')));
     mount(chatEl, card);
     scrollToBottom();
   }
@@ -1726,11 +1960,11 @@
         if (data.stratum_error === 'account_suspended') {
           hideTyping();
           setBusy(false);
-          addMessage('assistant', "Something's wrong with the access on this account. Send me a message and I'll get it sorted out.");
+          addMessage('assistant', t('accountSuspendedMsg'));
           return;
         }
         var block = (data.content || []).find(function (b) { return b.type === 'text'; });
-        var raw = block ? block.text : 'I lost my train of thought there for a second. Could you say that again?';
+        var raw = block ? block.text : t('lostTrainOfThoughtMsg');
         var parsed = extractTags(raw);
         var deliverableConfig = getDeliverableConfig();
         if (parsed.complete && deliverableConfig) {
@@ -1774,7 +2008,7 @@
       .catch(function () {
         hideTyping();
         setBusy(false);
-        addMessage('assistant', 'Hang on - I lost the connection for a second. Mind sending that again?');
+        addMessage('assistant', t('lostConnectionMsg'));
       });
   }
   function handleSend() {
@@ -1832,21 +2066,53 @@
   function init() {
     LESSON_ID = window.STRATUM_LESSON_ID;
     TIER = window.STRATUM_TIER === 'essentials' ? 'essentials' : 'guided';
+    LANG = lsGet(LANG_STORE_KEY) || 'en'; // synchronous best-guess; resolvePreferredLang() may refine it below
     var container = document.getElementById('stratum-lesson');
     if (!container) {
       console.error('[Stratum] No #stratum-lesson container found on this page.');
       return;
     }
     if (!LESSON_ID) {
-      showFatalError(container, 'This lesson is missing its lesson ID and cannot load.');
+      showFatalError(container, t('lessonMissingIdError'));
       return;
     }
     STORE_KEY = 'wlfc_coach_' + LESSON_ID.replace(/\./g, '_');
-    fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(LESSON_ID) + '&tier=' + TIER)
+    resolvePreferredLang().then(function () {
+      loadLessonConfig(container);
+    });
+  }
+  // Resolves LANG before the lesson-config fetch, so the very first
+  // network call already asks for the right language: local cache first
+  // (instant, the common case), then - only for a returning student whose
+  // cache is empty (new device, cleared storage) - one lookup via
+  // /project, which already returns preferredLang alongside everything
+  // else that tab needs. Never blocks on network for a first-time visitor;
+  // LANG simply stays 'en' until the identity modal's picker sets it.
+  function resolvePreferredLang() {
+    var cached = lsGet(LANG_STORE_KEY);
+    if (cached) { LANG = cached; return Promise.resolve(); }
+    if (!STUDENT_ID) return Promise.resolve();
+    return fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(STUDENT_ID))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.known && d.preferredLang) {
+          LANG = d.preferredLang;
+          lsSet(LANG_STORE_KEY, LANG);
+        }
+        // Same fresh-device sync as loadProjectFields(): pull the stored
+        // coaching-language name over too, so buildSystemPrompt() has it
+        // immediately rather than only after the student happens to open
+        // My Project.
+        if (d && d.known && d.language) lsSet(PROJ_KEYS.language, d.language);
+      })
+      .catch(function () {});
+  }
+  function loadLessonConfig(container) {
+    fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(LESSON_ID) + '&tier=' + TIER + '&lang=' + encodeURIComponent(LANG))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || !d.known || !d.config) {
-          showFatalError(container, 'This lesson has not been configured yet. If you are seeing this as a student, please let Ted know.');
+          showFatalError(container, t('lessonNotConfiguredError'));
           return;
         }
         LESSON = d.config;
@@ -1856,13 +2122,13 @@
         LESSON.reflectionFramework = LESSON.reflectionFramework || { areas: [], calibrationExamples: [] };
         LESSON.greeting = LESSON.greeting || {};
         if (!LESSON.video || !LESSON.video.mediaId) {
-          showFatalError(container, 'This lesson is missing its video and cannot load.');
+          showFatalError(container, t('lessonMissingVideoError'));
           return;
         }
         buildLessonPage(container);
       })
       .catch(function () {
-        showFatalError(container, "Couldn't load this lesson right now. Please refresh the page, and if it keeps happening, let Ted know.");
+        showFatalError(container, t('lessonLoadError'));
       });
   }
   window.addEventListener('pagehide', function () {
