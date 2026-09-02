@@ -1035,10 +1035,12 @@ function unlock() {
       authStatus.className = '';
     });
 }
-// Keeps only the most-recently-updated row per lesson_id. This works around
-// duplicate rows for the same lesson_id showing up in a single
-// /lesson-configs response (e.g. one row saved under a different tier or
-// language landing in the same list).
+// Keeps only the most-recently-updated row per lesson_id. lesson_configs is
+// keyed (lesson_id, tier, lang) on the Worker/D1 side, so a tier+lang-scoped
+// /lesson-configs response should already be unique per lesson_id - this is
+// a cheap, synchronous safety net against any stray duplicate, not a fix
+// for a real server-side bug (there isn't one: confirmed against the live
+// Worker source, which filters tier/lang in the SQL WHERE clause itself).
 function dedupeLessonsByLatest(lessons) {
   var map = {};
   (lessons || []).forEach(function (l) {
@@ -1052,46 +1054,16 @@ function dedupeLessonsByLatest(lessons) {
     return String(a.lesson_id).localeCompare(String(b.lesson_id), undefined, { numeric: true });
   });
 }
-// The /lesson-configs?tier=guided endpoint has been observed returning
-// lesson_ids that only actually have an Essentials-tier config saved (no
-// Coach config exists for them yet) - loading one of those from the Course
-// dropdown fails with "No Coach config found". This does a real per-lesson
-// verification against /lesson-config (singular, tier=guided) and only
-// keeps entries that are confirmed to exist under the Coach tier, so the
-// Course/Deliverables dropdowns only ever show real Coach lessons.
-function verifyGuidedLessons(lessons, callback) {
-  var candidates = dedupeLessonsByLatest(lessons).filter(function (l) { return !isMasteryLessonId(l.lesson_id); });
-  if (!adminKey || !candidates.length) { callback([]); return; }
-  var confirmed = [];
-  var pending = candidates.length;
-  candidates.forEach(function (l) {
-    fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(l.lesson_id) + '&tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), {
-      headers: { 'X-Stratum-Admin-Key': adminKey }
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d && d.known) confirmed.push(l);
-      })
-      .catch(function () {})
-      .finally(function () {
-        pending--;
-        if (pending === 0) {
-          confirmed.sort(function (a, b) {
-            return String(a.lesson_id).localeCompare(String(b.lesson_id), undefined, { numeric: true });
-          });
-          callback(confirmed);
-        }
-      });
-  });
+// Course/Deliverables dropdowns show Coach-tier lessons only (IDs starting
+// 5./6. are Master Coach, filtered out here even though they currently
+// share the same tier="guided" rows - see isMasteryLessonId below).
+function guidedOnlyLessons(lessons) {
+  return dedupeLessonsByLatest(lessons).filter(function (l) { return !isMasteryLessonId(l.lesson_id); });
 }
 function refreshLessonListsForLang(lessons) {
-  // Course dropdown (and the Deliverables dropdown, which mirrors it):
-  // verified, deduped Coach-tier lessons only. Essentials-only and
-  // not-yet-confirmed entries are filtered out.
-  verifyGuidedLessons(lessons, function (guidedOnly) {
-    populateSelect(gLessonSelect, guidedOnly);
-    populateSelect(dlvLessonSelect, guidedOnly);
-  });
+  var guidedOnly = guidedOnlyLessons(lessons);
+  populateSelect(gLessonSelect, guidedOnly);
+  populateSelect(dlvLessonSelect, guidedOnly);
   // Master Coach tab is hidden from the sidebar for now; leave its list on
   // the simpler raw/ID-pattern filter since it isn't user-facing today.
   populateSelect(mLessonSelect, (lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); }));
@@ -2822,10 +2794,8 @@ function refreshGuidedList() {
   fetch(PROXY_URL + '/lesson-configs?tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) {
-      verifyGuidedLessons(d.lessons || [], function (guidedOnly) {
-        populateSelect(gLessonSelect, guidedOnly);
-        refreshDeliverablesLessonList();
-      });
+      populateSelect(gLessonSelect, guidedOnlyLessons(d.lessons || []));
+      refreshDeliverablesLessonList();
     })
     .catch(function () {});
 }
@@ -2862,11 +2832,7 @@ function isMasteryLessonId(id) {
 function refreshDeliverablesLessonList() {
   fetch(PROXY_URL + '/lesson-configs?tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
-    .then(function (d) {
-      verifyGuidedLessons(d.lessons || [], function (guidedOnly) {
-        populateSelect(dlvLessonSelect, guidedOnly);
-      });
-    })
+    .then(function (d) { populateSelect(dlvLessonSelect, guidedOnlyLessons(d.lessons || [])); })
     .catch(function () {});
 }
 var mLessonSelect = document.getElementById('mLessonSelect');
