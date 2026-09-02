@@ -264,17 +264,23 @@
   function setPreferredLang(code, coachingName) {
     LANG = code || 'en';
     lsSet(LANG_STORE_KEY, LANG);
-    // Keep the existing "Preferred coaching language" field (My Project /
-    // buildSystemPrompt / getGreetingText) in sync so a student who picks
-    // Spanish gets a Spanish dashboard AND a Spanish-speaking coach from
-    // the very first session, without a second decision to make. They can
-    // still change coaching language independently afterward on My Project.
+    // Keep the coaching-language value (buildSystemPrompt / getGreetingText)
+    // in sync so a student who picks Spanish gets a Spanish dashboard AND a
+    // Spanish-speaking coach from the very first session, without a second
+    // decision to make.
     if (coachingName != null) lsSet(PROJ_KEYS.language, coachingName);
     if (STUDENT_ID) {
+      // Both values are pushed to the server in this same request, not
+      // left to be picked up by some later, unrelated project save. Without
+      // this, a student who switches language on one device and then opens
+      // the dashboard on a second device before ever saving a project field
+      // would get the right dashboard language (preferred_lang syncs
+      // immediately) but the coach could still greet them in the old
+      // language, since project_language would still be stale server-side.
       fetch(PROXY_URL + '/student/lang', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId: STUDENT_ID, lang: LANG })
+        body: JSON.stringify({ studentId: STUDENT_ID, lang: LANG, language: coachingName != null ? coachingName : undefined })
       }).catch(function () {});
     }
   }
@@ -1068,8 +1074,29 @@
       if (spec.placeholder) input.placeholder = spec.placeholder;
     }
     input.id = spec.id;
+    // Autosave: commit this field the moment the student leaves it,
+    // rather than requiring an explicit Save click. Only fires once the
+    // student's identity is already established - a blur on an
+    // as-yet-unconfirmed form shouldn't trigger identity creation as a
+    // side effect, since that's meant to be an intentional action tied to
+    // the visible Save button, not something that happens quietly because
+    // someone tabbed through a field.
+    input.addEventListener('blur', function () {
+      if (isEmailConfirmed()) autosaveProjectFields();
+    });
     mount(field, input);
     return field;
+  }
+  var AUTOSAVE_TIMER = null;
+  // Debounced so tabbing through several fields in quick succession (each
+  // one blurring in turn) triggers a single save shortly after the
+  // student pauses, rather than a burst of redundant requests mid-tab.
+  function autosaveProjectFields() {
+    if (AUTOSAVE_TIMER) clearTimeout(AUTOSAVE_TIMER);
+    AUTOSAVE_TIMER = setTimeout(function () {
+      AUTOSAVE_TIMER = null;
+      saveProjectFields();
+    }, 500);
   }
   function buildEmailField(panel) {
     if (isEmailConfirmed()) return;
