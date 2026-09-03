@@ -2299,6 +2299,12 @@ function normalizeDeliverableConfigForAdmin(raw) {
   };
 }
 var gDeliverableEditor = makeDeliverableFieldEditor(document.getElementById('gDeliverableFieldsList'));
+// Tracks whether the lesson most recently loaded into this form had a
+// required deliverable, so the Save handler can warn before a save
+// silently drops it (e.g. from the checkbox being left unchecked after
+// switching lessons, or a legacy-shape load that didn't populate fields
+// correctly). Set in fillGuidedForm(), reset in clearGuidedForm().
+var gLoadedHadDeliverable = false;
 document.getElementById('gAddDeliverableFieldBtn').addEventListener('click', function () {
   gDeliverableEditor.addFieldBlock({});
 });
@@ -2514,6 +2520,7 @@ function clearGuidedForm() {
   gHasDeliverableCb.checked = false;
   gDeliverableFields.className = 'resource-fields disabled';
   gDeliverableEditor.clear();
+  gLoadedHadDeliverable = false;
   document.getElementById('gCoachingApproach').value = '';
   document.getElementById('gCalibration').value = '';
   document.getElementById('gGreetingFresh').value = '';
@@ -2559,6 +2566,7 @@ function fillGuidedForm(config) {
     gHasDeliverableCb.checked = false;
     gDeliverableFields.className = 'resource-fields disabled';
   }
+  gLoadedHadDeliverable = !!(dv && dv.required);
   var g = config.greeting || {};
   document.getElementById('gGreetingFresh').value = g.fresh || '';
   var translations = g.translations || {};
@@ -2748,6 +2756,18 @@ function backupExistingConfig(lessonId, tier, onDone) {
 }
 document.getElementById('gSaveBtn').addEventListener('click', function () {
   var config = collectGuidedConfig();
+  var gStillHasDeliverable = !!(config.reflectionFramework.deliverable && config.reflectionFramework.deliverable.required);
+  if (gLoadedHadDeliverable && !gStillHasDeliverable) {
+    var gConfirmWipe = confirm(
+      'This lesson currently has a required deliverable, but the deliverable section is now unchecked or empty.\n\n' +
+      'Saving will remove it. Are you sure you want to continue?'
+    );
+    if (!gConfirmWipe) {
+      gSaveStatus.textContent = 'Save cancelled - deliverable was not removed.';
+      gSaveStatus.className = 'save-status';
+      return;
+    }
+  }
   if (!config.lessonId) {
     gSaveStatus.textContent = 'Lesson ID is required.';
     gSaveStatus.className = 'save-status err';
@@ -2845,6 +2865,9 @@ var mHasCoachingIntroCb = document.getElementById('mHasCoachingIntro');
 var mDeliverableFields = document.getElementById('mDeliverableFields');
 var mHasDeliverableCb = document.getElementById('mHasDeliverable');
 var mDeliverableEditor = makeDeliverableFieldEditor(document.getElementById('mDeliverableFieldsList'));
+// See gLoadedHadDeliverable above - identical purpose for the Master Coach
+// form. Set in fillMasteryForm(), reset in clearMasteryForm().
+var mLoadedHadDeliverable = false;
 document.getElementById('mAddDeliverableFieldBtn').addEventListener('click', function () {
   mDeliverableEditor.addFieldBlock({});
 });
@@ -3050,6 +3073,7 @@ function clearMasteryForm() {
   mHasDeliverableCb.checked = false;
   mDeliverableFields.className = 'resource-fields disabled';
   mDeliverableEditor.clear();
+  mLoadedHadDeliverable = false;
   document.getElementById('mCoachingApproach').value = '';
   document.getElementById('mCalibration').value = '';
   document.getElementById('mGreetingFresh').value = '';
@@ -3095,6 +3119,7 @@ function fillMasteryForm(config) {
     mHasDeliverableCb.checked = false;
     mDeliverableFields.className = 'resource-fields disabled';
   }
+  mLoadedHadDeliverable = !!(dv && dv.required);
   var g = config.greeting || {};
   document.getElementById('mGreetingFresh').value = g.fresh || '';
   var translations = g.translations || {};
@@ -3170,6 +3195,18 @@ masteryEditorView.addEventListener('input', function () {
 masteryEditorView.addEventListener('change', updateMasteryJsonPreview);
 document.getElementById('mSaveBtn').addEventListener('click', function () {
   var config = collectMasteryConfig();
+  var mStillHasDeliverable = !!(config.reflectionFramework.deliverable && config.reflectionFramework.deliverable.required);
+  if (mLoadedHadDeliverable && !mStillHasDeliverable) {
+    var mConfirmWipe = confirm(
+      'This lesson currently has a required deliverable, but the deliverable section is now unchecked or empty.\n\n' +
+      'Saving will remove it. Are you sure you want to continue?'
+    );
+    if (!mConfirmWipe) {
+      mSaveStatus.textContent = 'Save cancelled - deliverable was not removed.';
+      mSaveStatus.className = 'save-status';
+      return;
+    }
+  }
   if (!config.lessonId) {
     mSaveStatus.textContent = 'Lesson ID is required.';
     mSaveStatus.className = 'save-status err';
