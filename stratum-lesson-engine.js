@@ -35,6 +35,15 @@
     focus:          'wlfc_project_focus',
     language:       'wlfc_project_language'
   };
+  // NOTE: internal storage keys, element IDs, and function names below
+  // (NOTES_KEY, TRACKER_KEY, buildNotesTab, buildTasksTab, etc.) are left
+  // exactly as they were before the Sept 2026 "Idea Log" / "Action Items"
+  // relabel - only user-facing strings changed (see STRINGS below and the
+  // dropdown added in buildTasksTab()). Renaming these would risk losing a
+  // returning student's saved data or breaking the D1 sync, for a purely
+  // cosmetic change. The /notes and /tasks Worker endpoints and D1 tables
+  // never see these labels - they just store whatever text/JSON is sent,
+  // keyed by studentId.
   var NOTES_KEY = 'wlfc_notes';
   var TRACKER_KEY = 'systemeCourseTasks';
   var STRATUM_SID_COOKIE = 'stratum_sid';
@@ -46,6 +55,52 @@
   var STORE_KEY = null;
   var LANG = 'en';
   var AVAILABLE_LANGUAGES = null; // populated by fetchLanguages(), used by the one-time picker
+  /* ==========================================================
+     ACTION ITEM PRESETS
+     ------------------------------------------------------------
+     Dropdown options offered above the Action Items input on the
+     Dashboard. Purely a convenience for filling the text field faster -
+     picking one sets the input's value (which the student can still edit
+     before adding), it does not create a separate category field or
+     change what's sent to /tasks. Lang-aware like STRINGS/t(), with the
+     same English fallback if a language is missing (getActionItemPresets()
+     below).
+     ========================================================== */
+  var ACTION_ITEM_PRESETS = {
+    en: [
+      'Finish a chapter draft',
+      'Revise a scene',
+      'Outline next section',
+      'Character deep dive',
+      'Check continuity',
+      'Polish opening paragraph',
+      'Deadline for manuscript changes',
+      'Submit to beta reader',
+      'Research setting details',
+      'Track word count goal',
+      'Prepare query letter',
+      'Finalize antagonist arc'
+    ],
+    // DRAFT - same status as the rest of the 'es' block: worth a
+    // native-speaker pass before 'es' goes active.
+    es: [
+      'Terminar el borrador de un cap\u00edtulo',
+      'Revisar una escena',
+      'Esquematizar la pr\u00f3xima secci\u00f3n',
+      'Profundizar en un personaje',
+      'Revisar la continuidad',
+      'Pulir el p\u00e1rrafo inicial',
+      'Fecha l\u00edmite para cambios al manuscrito',
+      'Enviar a un lector beta',
+      'Investigar detalles del entorno',
+      'Registrar la meta de palabras',
+      'Preparar la carta de presentaci\u00f3n (query letter)',
+      'Finalizar el arco del antagonista'
+    ]
+  };
+  function getActionItemPresets() {
+    return ACTION_ITEM_PRESETS[LANG] || ACTION_ITEM_PRESETS.en;
+  }
   /* ==========================================================
      STRINGS / t()
      ------------------------------------------------------------
@@ -60,6 +115,13 @@
      per-language from lesson_configs via /lesson-config?...&lang=.
      Adding a language here is purely additive: add a new top-level
      key under STRINGS with the same key set as 'en'. No code changes.
+
+     RENAMED Sept 2026: "Tasks" -> "Action Items" and "Notes" -> "Idea Log"
+     across every user-facing string in both en and es (Ted: "tasks" isn't
+     a familiar term for writers). Internal keys (notesTitle, tasksTitle,
+     gateItemNotes, gateItemTasks, etc.) keep their original names - only
+     the string values changed - so nothing else in the file needed to
+     change to pick this up.
      ========================================================== */
   var STRINGS = {
     en: {
@@ -69,43 +131,45 @@
       subVideo: 'Video & Transcript',
       subResources: 'Lesson Resources',
       subCoaching: 'Coaching',
-      notesTitle: 'Notes',
-      notesDownloadBtn: 'Download Notes',
-      tasksTitle: 'Tasks',
-      tasksPlaceholder: "Add a task — e.g. Rewrite Eleanor's kitchen scene",
+      notesTitle: 'Idea Log',
+      notesDownloadBtn: 'Download Idea Log',
+      tasksTitle: 'Action Items',
+      tasksCategoryPlaceholder: 'Choose a type\u2026',
+      tasksCategoryCustom: 'Write your own\u2026',
+      tasksPlaceholder: "Add an action item — e.g. Rewrite Eleanor's kitchen scene",
       tasksAddBtn: 'Add',
-      tasksDownloadBtn: 'Download Tasks',
+      tasksDownloadBtn: 'Download Action Items',
       tasksClearCompletedBtn: 'Clear Completed',
       tasksResetBtn: 'Reset All',
-      tasksEmpty: 'No tasks yet. Add one above.',
-      tasksAllComplete: 'All tasks complete.',
+      tasksEmpty: 'No action items yet. Add one above.',
+      tasksAllComplete: 'All action items complete.',
       tasksRemaining: '{remaining} of {total} remaining.',
-      tasksResetConfirm: 'Delete all tasks? This cannot be undone.',
-      tasksNoneToDownload: 'No tasks to download.',
-      tasksDeleteTitle: 'Delete task',
+      tasksResetConfirm: 'Delete all action items? This cannot be undone.',
+      tasksNoneToDownload: 'No action items to download.',
+      tasksDeleteTitle: 'Delete action item',
       tasksDue: 'Due {date}',
       tasksOverdue: 'Overdue — was due {date}',
       projectTitle: 'My Project',
-      projectReminder: 'Complete and save this before using Notes, Tasks, or starting your first coaching session — that\u2019s what ties everything to you.',
+      projectReminder: 'Complete and save this before using Idea Log, Action Items, or starting your first coaching session — that\u2019s what ties everything to you.',
       projectSaveBtn: 'Save Project Details',
       projectSaving: 'Saving…',
       projectSavedOk: "Saved. Every lesson's coach will know your project.",
       projectSavedLocalOnly: "Saved on this device only - couldn't reach the server.",
       projectEmailLabel: 'Your email',
-      projectEmailHint: 'Required — this is what keeps your notes, tasks, and coaching history with you.',
-      projectEmailInvalid: 'Enter a valid email first — it keeps your notes, tasks, and coaching history with you.',
+      projectEmailHint: 'Required — this is what keeps your idea log, action items, and coaching history with you.',
+      projectEmailInvalid: 'Enter a valid email first — it keeps your idea log, action items, and coaching history with you.',
       projectEmailConfirming: 'Confirming your email…',
       projectEmailCouldNotConfirm: "Couldn't confirm that email. Double-check it and try again.",
       projectNameRequired: 'Enter your first name too — it lets your coach greet you by name instead of asking every time.',
       projectLanguageTitle: 'Language',
-      projectLanguageHint: 'Changes both your dashboard and your coach\u2019s language. Your notes, tasks, and coaching history are unaffected.',
+      projectLanguageHint: 'Changes both your dashboard and your coach\u2019s language. Your idea log, action items, and coaching history are unaffected.',
       projectLanguageBtn: 'Change Language',
-      projectLanguageConfirm: 'Switch to {label}? The page will reload - your notes, tasks, and coaching history all stay exactly as they are.',
+      projectLanguageConfirm: 'Switch to {label}? The page will reload - your idea log, action items, and coaching history all stay exactly as they are.',
       gateTitle: 'Keep your {item}',
       gateText: 'This makes sure your {item} actually stays with you. Add your email in My Project on the Dashboard, then come straight back.',
       gateBtn: 'Go to My Project',
-      gateItemNotes: 'notes',
-      gateItemTasks: 'tasks',
+      gateItemNotes: 'idea log',
+      gateItemTasks: 'action items',
       gateItemCoaching: 'coaching history',
       resourcesEmpty: 'This lesson has no additional resources.',
       resourceOpenPdf: 'Open the PDF directly',
@@ -121,7 +185,7 @@
       lessonMissingVideoError: 'This lesson is missing its video and cannot load.',
       lessonLoadError: "Couldn't load this lesson right now. Please refresh the page, and if it keeps happening, let Ted know.",
       identityWelcomeTitle: 'Welcome To Stratum',
-      identityWelcomeText: 'Enter your email and first name to keep your notes, tasks, and coaching history tied to you throughout the course.',
+      identityWelcomeText: 'Enter your email and first name to keep your idea log, action items, and coaching history tied to you throughout the course.',
       identityEmailLabel: 'Email',
       identityNameLabel: 'First name',
       identityLanguageLabel: 'Dashboard & coaching language',
@@ -152,7 +216,9 @@
     // as-is. A couple of strings (identityWelcomeTitle, contactStuck) had
     // gendered-Spanish-adjective calls to make (bienvenido/a, etc.) -
     // resolved toward gender-neutral phrasing where a natural option
-    // existed; worth a second look.
+    // existed; worth a second look. Sept 2026: "Notas" -> "Registro de
+    // Ideas" and "Tareas" -> "Elementos de Acci\u00f3n" throughout, matching
+    // the English relabel - also draft, needs the same native-speaker pass.
     es: {
       navDashboard: 'Panel',
       navLesson: 'Esta Lecci\u00f3n',
@@ -160,43 +226,45 @@
       subVideo: 'Video y Transcripci\u00f3n',
       subResources: 'Recursos de la Lecci\u00f3n',
       subCoaching: 'Coaching',
-      notesTitle: 'Notas',
-      notesDownloadBtn: 'Descargar Notas',
-      tasksTitle: 'Tareas',
-      tasksPlaceholder: 'Agrega una tarea \u2014 p. ej. Reescribir la escena de la cocina de Eleanor',
+      notesTitle: 'Registro de Ideas',
+      notesDownloadBtn: 'Descargar Registro de Ideas',
+      tasksTitle: 'Elementos de Acci\u00f3n',
+      tasksCategoryPlaceholder: 'Elige un tipo\u2026',
+      tasksCategoryCustom: 'Escribe el tuyo\u2026',
+      tasksPlaceholder: 'Agrega un elemento de acci\u00f3n \u2014 p. ej. Reescribir la escena de la cocina de Eleanor',
       tasksAddBtn: 'Agregar',
-      tasksDownloadBtn: 'Descargar Tareas',
-      tasksClearCompletedBtn: 'Borrar Completadas',
+      tasksDownloadBtn: 'Descargar Elementos de Acci\u00f3n',
+      tasksClearCompletedBtn: 'Borrar Completados',
       tasksResetBtn: 'Reiniciar Todo',
-      tasksEmpty: 'A\u00fan no hay tareas. Agrega una arriba.',
-      tasksAllComplete: 'Todas las tareas est\u00e1n completas.',
+      tasksEmpty: 'A\u00fan no hay elementos de acci\u00f3n. Agrega uno arriba.',
+      tasksAllComplete: 'Todos los elementos de acci\u00f3n est\u00e1n completos.',
       tasksRemaining: '{remaining} de {total} pendientes.',
-      tasksResetConfirm: '\u00bfEliminar todas las tareas? Esta acci\u00f3n no se puede deshacer.',
-      tasksNoneToDownload: 'No hay tareas para descargar.',
-      tasksDeleteTitle: 'Eliminar tarea',
+      tasksResetConfirm: '\u00bfEliminar todos los elementos de acci\u00f3n? Esta acci\u00f3n no se puede deshacer.',
+      tasksNoneToDownload: 'No hay elementos de acci\u00f3n para descargar.',
+      tasksDeleteTitle: 'Eliminar elemento de acci\u00f3n',
       tasksDue: 'Vence el {date}',
-      tasksOverdue: 'Vencida \u2014 deb\u00eda completarse el {date}',
+      tasksOverdue: 'Vencido \u2014 deb\u00eda completarse el {date}',
       projectTitle: 'Mi Proyecto',
-      projectReminder: 'Completa y guarda esto antes de usar Notas, Tareas, o comenzar tu primera sesi\u00f3n de coaching \u2014 esto es lo que conecta todo contigo.',
+      projectReminder: 'Completa y guarda esto antes de usar el Registro de Ideas, los Elementos de Acci\u00f3n, o comenzar tu primera sesi\u00f3n de coaching \u2014 esto es lo que conecta todo contigo.',
       projectSaveBtn: 'Guardar Detalles del Proyecto',
       projectSaving: 'Guardando\u2026',
       projectSavedOk: 'Guardado. El coach de cada lecci\u00f3n conocer\u00e1 tu proyecto.',
       projectSavedLocalOnly: 'Guardado solo en este dispositivo \u2014 no se pudo conectar con el servidor.',
       projectEmailLabel: 'Tu correo electr\u00f3nico',
-      projectEmailHint: 'Obligatorio \u2014 esto es lo que conserva tus notas, tareas e historial de coaching contigo.',
-      projectEmailInvalid: 'Ingresa un correo electr\u00f3nico v\u00e1lido primero \u2014 esto conserva tus notas, tareas e historial de coaching contigo.',
+      projectEmailHint: 'Obligatorio \u2014 esto es lo que conserva tu registro de ideas, tus elementos de acci\u00f3n y tu historial de coaching contigo.',
+      projectEmailInvalid: 'Ingresa un correo electr\u00f3nico v\u00e1lido primero \u2014 esto conserva tu registro de ideas, tus elementos de acci\u00f3n y tu historial de coaching contigo.',
       projectEmailConfirming: 'Confirmando tu correo electr\u00f3nico\u2026',
       projectEmailCouldNotConfirm: 'No pudimos confirmar ese correo. Verif\u00edcalo e intenta de nuevo.',
       projectNameRequired: 'Ingresa tambi\u00e9n tu nombre \u2014 as\u00ed tu coach podr\u00e1 saludarte por tu nombre en lugar de pregunt\u00e1rtelo cada vez.',
       projectLanguageTitle: 'Idioma',
-      projectLanguageHint: 'Cambia tanto el idioma del panel como el de tu coach. Tus notas, tareas e historial de coaching no se ven afectados.',
+      projectLanguageHint: 'Cambia tanto el idioma del panel como el de tu coach. Tu registro de ideas, tus elementos de acci\u00f3n y tu historial de coaching no se ven afectados.',
       projectLanguageBtn: 'Cambiar Idioma',
-      projectLanguageConfirm: '\u00bfCambiar a {label}? La p\u00e1gina se recargar\u00e1 \u2014 tus notas, tareas e historial de coaching permanecer\u00e1n exactamente igual.',
-      gateTitle: 'Conserva tus {item}',
-      gateText: 'Esto asegura que tus {item} realmente permanezcan contigo. Agrega tu correo electr\u00f3nico en Mi Proyecto, en el Panel, y regresa enseguida.',
+      projectLanguageConfirm: '\u00bfCambiar a {label}? La p\u00e1gina se recargar\u00e1 \u2014 tu registro de ideas, tus elementos de acci\u00f3n y tu historial de coaching permanecer\u00e1n exactamente igual.',
+      gateTitle: 'Conserva tu {item}',
+      gateText: 'Esto asegura que tu {item} realmente permanezca contigo. Agrega tu correo electr\u00f3nico en Mi Proyecto, en el Panel, y regresa enseguida.',
       gateBtn: 'Ir a Mi Proyecto',
-      gateItemNotes: 'notas',
-      gateItemTasks: 'tareas',
+      gateItemNotes: 'registro de ideas',
+      gateItemTasks: 'elementos de acci\u00f3n',
       gateItemCoaching: 'historial de coaching',
       resourcesEmpty: 'Esta lecci\u00f3n no tiene recursos adicionales.',
       resourceOpenPdf: 'Abrir el PDF directamente',
@@ -212,7 +280,7 @@
       lessonMissingVideoError: 'A esta lecci\u00f3n le falta su video y no se puede cargar.',
       lessonLoadError: 'No pudimos cargar esta lecci\u00f3n en este momento. Actualiza la p\u00e1gina, y si sigue ocurriendo, av\u00edsale a Ted.',
       identityWelcomeTitle: 'Bienvenido/a a Stratum',
-      identityWelcomeText: 'Ingresa tu correo electr\u00f3nico y tu nombre para mantener tus notas, tareas e historial de coaching contigo durante todo el curso.',
+      identityWelcomeText: 'Ingresa tu correo electr\u00f3nico y tu nombre para mantener tu registro de ideas, tus elementos de acci\u00f3n y tu historial de coaching contigo durante todo el curso.',
       identityEmailLabel: 'Correo electr\u00f3nico',
       identityNameLabel: 'Nombre',
       identityLanguageLabel: 'Idioma del panel y del coaching',
@@ -752,7 +820,7 @@
     var blob = new Blob([field ? field.value : ''], { type: 'text/plain' });
     var link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'MyCourseNotes.txt';
+    link.download = 'MyIdeaLog.txt';
     link.click();
   }
   function buildTasksTab(panel) {
@@ -761,6 +829,33 @@
     var count = el('div', 'tracker-count');
     count.id = 'trackerCount';
     mount(panel, count);
+    // Category dropdown: a convenience for filling the input below, not a
+    // separate stored field. Selecting a preset sets the input's value
+    // (still editable before Add); selecting "Write your own..." just
+    // clears/focuses the input. Either way, what actually gets saved to
+    // /tasks is only ever the plain text in #trackerInput, exactly as
+    // before this dropdown existed.
+    var categoryRow = el('div', 'tracker-category-row');
+    var categorySelect = document.createElement('select');
+    categorySelect.id = 'trackerCategorySelect';
+    categorySelect.className = 'tracker-category-select';
+    categorySelect.setAttribute('aria-label', t('tasksCategoryPlaceholder'));
+    var placeholderOpt = document.createElement('option');
+    placeholderOpt.value = '';
+    placeholderOpt.textContent = t('tasksCategoryPlaceholder');
+    categorySelect.appendChild(placeholderOpt);
+    getActionItemPresets().forEach(function (preset) {
+      var opt = document.createElement('option');
+      opt.value = preset;
+      opt.textContent = preset;
+      categorySelect.appendChild(opt);
+    });
+    var customOpt = document.createElement('option');
+    customOpt.value = '__custom__';
+    customOpt.textContent = t('tasksCategoryCustom');
+    categorySelect.appendChild(customOpt);
+    mount(categoryRow, categorySelect);
+    mount(panel, categoryRow);
     var row = el('div', 'tracker-input-row');
     var input = document.createElement('input');
     input.type = 'text';
@@ -771,6 +866,13 @@
       if (e.key === 'Enter') addTrackerTask();
     });
     mount(row, input);
+    categorySelect.addEventListener('change', function () {
+      var val = categorySelect.value;
+      if (!val) return;
+      input.value = (val === '__custom__') ? '' : val;
+      input.focus();
+      categorySelect.value = '';
+    });
     var dateInput = document.createElement('input');
     dateInput.type = 'date';
     dateInput.id = 'trackerDueDate';
@@ -928,7 +1030,7 @@
     var tasks = loadTasks();
     if (tasks.length === 0) { alert(t('tasksNoneToDownload')); return; }
     var date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    var txt = 'WRITE LIVING CHARACTERS — MY TASKS\n';
+    var txt = 'WRITE LIVING CHARACTERS — MY ACTION ITEMS\n';
     txt += 'thestratummethod.com\n';
     txt += 'Exported: ' + date + '\n';
     txt += '==========================================\n\n';
@@ -943,7 +1045,7 @@
     var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
     var link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'MyCourseTasks.txt';
+    link.download = 'MyActionItems.txt';
     link.click();
   }
   var PROJECT_FIELDS = [
