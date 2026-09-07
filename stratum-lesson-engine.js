@@ -19,7 +19,7 @@
   var MODEL = 'claude-sonnet-4-5';
   var CONTACT_EMAIL = 'ted@thestratummethod.com';
   var CONTACT_WHATSAPP = 'https://wa.me/50684192287';
-  // localStorage keys. Shared with the coach so the My Project tab and the
+  // localStorage keys. Shared with the coach so the WIP tab and the
   // coaching session stay in sync without any direct JS coupling.
   var PROJ_KEYS = {
     studentName:    'wlfc_student_name',
@@ -36,14 +36,14 @@
     language:       'wlfc_project_language'
   };
   // NOTE: internal storage keys, element IDs, and function names below
-  // (NOTES_KEY, TRACKER_KEY, buildNotesTab, buildTasksTab, etc.) are left
-  // exactly as they were before the Sept 2026 "Idea Log" / "Action Items"
-  // relabel - only user-facing strings changed (see STRINGS below and the
-  // dropdown added in buildTasksTab()). Renaming these would risk losing a
-  // returning student's saved data or breaking the D1 sync, for a purely
-  // cosmetic change. The /notes and /tasks Worker endpoints and D1 tables
-  // never see these labels - they just store whatever text/JSON is sent,
-  // keyed by studentId.
+  // (NOTES_KEY, TRACKER_KEY, buildNotesTab, buildTasksTab, PROJ_KEYS,
+  // buildProjectTab, panel id "Project", etc.) are left exactly as they
+  // were before the Sept 2026 relabels ("Idea Log" / "Action Items" /
+  // "WIP") - only user-facing strings and layout changed. Renaming these
+  // would risk losing a returning student's saved data or breaking the D1
+  // sync, for a purely cosmetic change. The /notes and /tasks Worker
+  // endpoints and D1 tables never see these labels - they just store
+  // whatever text/JSON is sent, keyed by studentId.
   var NOTES_KEY = 'wlfc_notes';
   var TRACKER_KEY = 'systemeCourseTasks';
   var STRATUM_SID_COOKIE = 'stratum_sid';
@@ -54,7 +54,7 @@
   var TIER = 'guided';
   var STORE_KEY = null;
   var LANG = 'en';
-  var AVAILABLE_LANGUAGES = null; // populated by fetchLanguages(), used by the one-time picker
+  var AVAILABLE_LANGUAGES = null; // populated by fetchLanguages(), used by the one-time picker and the nav language control
   /* ==========================================================
      ACTION ITEM PRESETS
      ------------------------------------------------------------
@@ -102,6 +102,30 @@
     return ACTION_ITEM_PRESETS[LANG] || ACTION_ITEM_PRESETS.en;
   }
   /* ==========================================================
+     IDEA LOG CATEGORIES
+     ------------------------------------------------------------
+     Fixed taxonomy for Idea Log entries (unlike Action Item presets,
+     there is no "write your own" - every entry must pick one of these).
+     Lang-aware like ACTION_ITEM_PRESETS. NOTE: an entry stores the literal
+     category text at the moment it's created (same approach as Action
+     Item presets) - it is not re-translated if the student later switches
+     language, so an entry made in English still reads "Character" after
+     switching to Spanish. Same accepted trade-off as Action Items; not
+     worth solving before 'es' is even active.
+     "General" (ideaLogGeneralCategory in STRINGS) is kept identical in
+     both languages on purpose, since legacy migrated entries are tagged
+     with that literal string in code, not through t() - keeping it
+     untranslated avoids a mismatch if a student switches language after
+     migration.
+     ========================================================== */
+  var IDEA_LOG_CATEGORIES = {
+    en: ['Character', 'Plot', 'Theme', 'Revision', 'Research', 'Deadlines', 'Inspiration'],
+    es: ['Personaje', 'Trama', 'Tema', 'Revisi\u00f3n', 'Investigaci\u00f3n', 'Fechas L\u00edmite', 'Inspiraci\u00f3n']
+  };
+  function getIdeaLogCategories() {
+    return IDEA_LOG_CATEGORIES[LANG] || IDEA_LOG_CATEGORIES.en;
+  }
+  /* ==========================================================
      STRINGS / t()
      ------------------------------------------------------------
      Open-ended dictionary for dashboard chrome (nav, tab headers,
@@ -115,24 +139,32 @@
      per-language from lesson_configs via /lesson-config?...&lang=.
      Adding a language here is purely additive: add a new top-level
      key under STRINGS with the same key set as 'en'. No code changes.
-
-     RENAMED Sept 2026: "Tasks" -> "Action Items" and "Notes" -> "Idea Log"
-     across every user-facing string in both en and es (Ted: "tasks" isn't
-     a familiar term for writers). Internal keys (notesTitle, tasksTitle,
-     gateItemNotes, gateItemTasks, etc.) keep their original names - only
-     the string values changed - so nothing else in the file needed to
-     change to pick this up.
      ========================================================== */
   var STRINGS = {
     en: {
       navDashboard: 'Dashboard',
+      navDashboardTooltip: 'Your WIP, Idea Log, and Action Items',
       navLesson: 'This Lesson',
+      navLessonTooltip: 'Video, resources, and coaching for this lesson',
       navContact: 'Contact',
+      navContactTooltip: 'Get in touch with Ted',
       subVideo: 'Video & Transcript',
       subResources: 'Lesson Resources',
       subCoaching: 'Coaching',
+      dashTabWip: 'WIP',
       notesTitle: 'Idea Log',
       notesDownloadBtn: 'Download Idea Log',
+      ideaLogFilterLabel: 'Filter',
+      ideaLogFilterAll: 'All',
+      ideaLogGeneralCategory: 'General',
+      ideaLogCategoryPlaceholder: 'Choose a category\u2026',
+      ideaLogTextPlaceholder: 'Write your note\u2026',
+      ideaLogDateHint: 'Dated automatically when you add it',
+      ideaLogAddBtn: 'Add Entry',
+      ideaLogEmpty: 'No entries yet. Add one above.',
+      ideaLogEmptyFiltered: 'No entries in this category yet.',
+      ideaLogDeleteTitle: 'Delete entry',
+      ideaLogNoneToDownload: 'No entries to download.',
       tasksTitle: 'Action Items',
       tasksCategoryPlaceholder: 'Choose a type\u2026',
       tasksCategoryCustom: 'Write your own\u2026',
@@ -149,9 +181,9 @@
       tasksDeleteTitle: 'Delete action item',
       tasksDue: 'Due {date}',
       tasksOverdue: 'Overdue — was due {date}',
-      projectTitle: 'My Project',
+      projectTitle: 'My WIP',
       projectReminder: 'Complete and save this before using Idea Log, Action Items, or starting your first coaching session — that\u2019s what ties everything to you.',
-      projectSaveBtn: 'Save Project Details',
+      projectSaveBtn: 'Save WIP Details',
       projectSaving: 'Saving…',
       projectSavedOk: "Saved. Every lesson's coach will know your project.",
       projectSavedLocalOnly: "Saved on this device only - couldn't reach the server.",
@@ -166,8 +198,8 @@
       projectLanguageBtn: 'Change Language',
       projectLanguageConfirm: 'Switch to {label}? The page will reload - your idea log, action items, and coaching history all stay exactly as they are.',
       gateTitle: 'Keep your {item}',
-      gateText: 'This makes sure your {item} actually stays with you. Add your email in My Project on the Dashboard, then come straight back.',
-      gateBtn: 'Go to My Project',
+      gateText: 'This makes sure your {item} actually stays with you. Add your email in My WIP on the Dashboard, then come straight back.',
+      gateBtn: 'Go to My WIP',
       gateItemNotes: 'idea log',
       gateItemTasks: 'action items',
       gateItemCoaching: 'coaching history',
@@ -217,17 +249,33 @@
     // gendered-Spanish-adjective calls to make (bienvenido/a, etc.) -
     // resolved toward gender-neutral phrasing where a natural option
     // existed; worth a second look. Sept 2026: "Notas" -> "Registro de
-    // Ideas" and "Tareas" -> "Elementos de Acci\u00f3n" throughout, matching
-    // the English relabel - also draft, needs the same native-speaker pass.
+    // Ideas", "Tareas" -> "Elementos de Acci\u00f3n", "Proyecto" -> "WIP"
+    // (left untranslated, same treatment as "Coaching") throughout -
+    // also draft, needs the same native-speaker pass.
     es: {
       navDashboard: 'Panel',
+      navDashboardTooltip: 'Tu WIP, tu Registro de Ideas y tus Elementos de Acci\u00f3n',
       navLesson: 'Esta Lecci\u00f3n',
+      navLessonTooltip: 'Video, recursos y coaching para esta lecci\u00f3n',
       navContact: 'Contacto',
+      navContactTooltip: 'Ponte en contacto con Ted',
       subVideo: 'Video y Transcripci\u00f3n',
       subResources: 'Recursos de la Lecci\u00f3n',
       subCoaching: 'Coaching',
+      dashTabWip: 'WIP',
       notesTitle: 'Registro de Ideas',
       notesDownloadBtn: 'Descargar Registro de Ideas',
+      ideaLogFilterLabel: 'Filtro',
+      ideaLogFilterAll: 'Todo',
+      ideaLogGeneralCategory: 'General',
+      ideaLogCategoryPlaceholder: 'Elige una categor\u00eda\u2026',
+      ideaLogTextPlaceholder: 'Escribe tu nota\u2026',
+      ideaLogDateHint: 'Se fecha autom\u00e1ticamente al agregarla',
+      ideaLogAddBtn: 'Agregar Entrada',
+      ideaLogEmpty: 'A\u00fan no hay entradas. Agrega una arriba.',
+      ideaLogEmptyFiltered: 'A\u00fan no hay entradas en esta categor\u00eda.',
+      ideaLogDeleteTitle: 'Eliminar entrada',
+      ideaLogNoneToDownload: 'No hay entradas para descargar.',
       tasksTitle: 'Elementos de Acci\u00f3n',
       tasksCategoryPlaceholder: 'Elige un tipo\u2026',
       tasksCategoryCustom: 'Escribe el tuyo\u2026',
@@ -244,9 +292,9 @@
       tasksDeleteTitle: 'Eliminar elemento de acci\u00f3n',
       tasksDue: 'Vence el {date}',
       tasksOverdue: 'Vencido \u2014 deb\u00eda completarse el {date}',
-      projectTitle: 'Mi Proyecto',
+      projectTitle: 'Mi WIP',
       projectReminder: 'Completa y guarda esto antes de usar el Registro de Ideas, los Elementos de Acci\u00f3n, o comenzar tu primera sesi\u00f3n de coaching \u2014 esto es lo que conecta todo contigo.',
-      projectSaveBtn: 'Guardar Detalles del Proyecto',
+      projectSaveBtn: 'Guardar Detalles del WIP',
       projectSaving: 'Guardando\u2026',
       projectSavedOk: 'Guardado. El coach de cada lecci\u00f3n conocer\u00e1 tu proyecto.',
       projectSavedLocalOnly: 'Guardado solo en este dispositivo \u2014 no se pudo conectar con el servidor.',
@@ -261,8 +309,8 @@
       projectLanguageBtn: 'Cambiar Idioma',
       projectLanguageConfirm: '\u00bfCambiar a {label}? La p\u00e1gina se recargar\u00e1 \u2014 tu registro de ideas, tus elementos de acci\u00f3n y tu historial de coaching permanecer\u00e1n exactamente igual.',
       gateTitle: 'Conserva tu {item}',
-      gateText: 'Esto asegura que tu {item} realmente permanezca contigo. Agrega tu correo electr\u00f3nico en Mi Proyecto, en el Panel, y regresa enseguida.',
-      gateBtn: 'Ir a Mi Proyecto',
+      gateText: 'Esto asegura que tu {item} realmente permanezca contigo. Agrega tu correo electr\u00f3nico en Mi WIP, en el Panel, y regresa enseguida.',
+      gateBtn: 'Ir a Mi WIP',
       gateItemNotes: 'registro de ideas',
       gateItemTasks: 'elementos de acci\u00f3n',
       gateItemCoaching: 'historial de coaching',
@@ -569,6 +617,47 @@
     }
     return out;
   }
+  /* ==========================================================
+     GENERIC SUB-TAB GROUP BUILDER
+     ------------------------------------------------------------
+     Shared by "This Lesson" (Video/Resources/Coaching) and "Dashboard"
+     (WIP/Idea Log/Action Items) - same row-of-buttons-plus-panels
+     pattern, parameterized by class names so each group's show/hide
+     logic only touches its own panels. Sharing one class between the two
+     groups would break things: clicking a Dashboard tab would hide every
+     element with that shared class document-wide, including whichever
+     Lesson subtab happened to be open, leaving it blank until the
+     student manually re-clicked it.
+     ========================================================== */
+  function buildTabGroup(container, tabs, navClass, linkClass, panelClass) {
+    var bar = el('div', navClass);
+    tabs.forEach(function (tab, index) {
+      var btn = el('button', linkClass, t(tab.labelKey));
+      btn.type = 'button';
+      if (index === 0) btn.setAttribute('data-tab-default', '1');
+      btn.addEventListener('click', function (evt) { openTabPanel(evt, tab.id, linkClass, panelClass); });
+      mount(bar, btn);
+    });
+    mount(container, bar);
+    tabs.forEach(function (tab) {
+      var panel = el('div', panelClass);
+      panel.id = tab.id;
+      tab.build(panel);
+      mount(container, panel);
+    });
+    var defaultBtn = bar.querySelector('[data-tab-default]');
+    if (defaultBtn) defaultBtn.click();
+  }
+  function openTabPanel(evt, tabId, linkClass, panelClass) {
+    var panels = document.getElementsByClassName(panelClass);
+    for (var i = 0; i < panels.length; i++) panels[i].style.display = 'none';
+    var links = document.getElementsByClassName(linkClass);
+    for (var j = 0; j < links.length; j++) {
+      links[j].className = links[j].className.replace(' active', '');
+    }
+    document.getElementById(tabId).style.display = 'block';
+    evt.currentTarget.className += ' active';
+  }
   var SUB_TABS = [
     { id: 'Video',     labelKey: 'subVideo',     build: buildVideoTranscriptPanel },
     { id: 'Resources', labelKey: 'subResources', build: buildResourcesPanel },
@@ -589,47 +678,28 @@
     buildResource(panel, LESSON.resource);
   }
   function buildSubNav(container) {
-    var bar = el('div', 'stratum-subnav');
-    SUB_TABS.forEach(function (tab, index) {
-      var btn = el('button', 'sublink', t(tab.labelKey));
-      btn.type = 'button';
-      btn.addEventListener('click', function (evt) { openSubTab(evt, tab.id); });
-      if (index === 0) btn.id = 'defaultOpen';
-      mount(bar, btn);
-    });
-    mount(container, bar);
-    SUB_TABS.forEach(function (tab) {
-      var panel = el('div', 'stratum-subsection');
-      panel.id = tab.id;
-      tab.build(panel);
-      mount(container, panel);
-    });
-    var defaultBtn = document.getElementById('defaultOpen');
-    if (defaultBtn) defaultBtn.click();
+    buildTabGroup(container, SUB_TABS, 'stratum-subnav', 'sublink', 'stratum-subsection');
   }
-  function openSubTab(evt, tabName) {
-    var panels = document.getElementsByClassName('stratum-subsection');
-    for (var i = 0; i < panels.length; i++) panels[i].style.display = 'none';
-    var links = document.getElementsByClassName('sublink');
-    for (var j = 0; j < links.length; j++) {
-      links[j].className = links[j].className.replace(' active', '');
-    }
-    document.getElementById(tabName).style.display = 'block';
-    evt.currentTarget.className += ' active';
-  }
+  var DASH_TABS = [
+    { id: 'Project', labelKey: 'dashTabWip', build: buildProjectTab },
+    { id: 'Notes',    labelKey: 'notesTitle', build: buildNotesTab },
+    { id: 'Tasks',    labelKey: 'tasksTitle', build: buildTasksTab }
+  ];
   var TOP_DESTINATIONS = [
-    { id: 'view-dashboard', labelKey: 'navDashboard', build: buildDashboardView },
-    { id: 'view-lesson',    labelKey: 'navLesson',    build: buildLessonView },
-    { id: 'view-contact',   labelKey: 'navContact',   build: buildContactView }
+    { id: 'view-dashboard', labelKey: 'navDashboard', tooltipKey: 'navDashboardTooltip', build: buildDashboardView },
+    { id: 'view-lesson',    labelKey: 'navLesson',    tooltipKey: 'navLessonTooltip',    build: buildLessonView },
+    { id: 'view-contact',   labelKey: 'navContact',   tooltipKey: 'navContactTooltip',   build: buildContactView }
   ];
   function buildTopNav(container) {
     var nav = el('div', 'stratum-topnav');
     TOP_DESTINATIONS.forEach(function (dest, index) {
       var btn = el('button', 'toplink' + (index === 0 ? ' active' : ''), t(dest.labelKey));
       btn.type = 'button';
+      btn.setAttribute('data-tooltip', t(dest.tooltipKey));
       btn.addEventListener('click', function (evt) { showTopView(evt, dest.id); });
       mount(nav, btn);
     });
+    buildNavLanguageControl(nav);
     mount(container, nav);
     TOP_DESTINATIONS.forEach(function (dest, index) {
       var view = el('div', 'stratum-section');
@@ -637,6 +707,79 @@
       if (index !== 0) view.style.display = 'none';
       mount(container, view);
       dest.build(view);
+    });
+  }
+  // Compact language control for the top nav (relocated Sept 2026 from
+  // the bottom of the WIP form, where it was easy to miss). Same
+  // underlying logic as before (fetchLanguages / confirm-before-reload /
+  // setPreferredLang) - just a different home. Hidden entirely below 2
+  // active languages, same rule as everywhere else language-related, so
+  // it stays invisible today and will simply appear once 'es' goes live.
+  function buildNavLanguageControl(nav) {
+    var wrap = el('div', 'nav-lang-control');
+    wrap.style.display = 'none';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'nav-lang-btn';
+    var label = el('span', 'nav-lang-label');
+    mount(btn, label);
+    var caret = el('span', 'nav-lang-caret', '\u25BE');
+    mount(btn, caret);
+    mount(wrap, btn);
+    var panel = el('div', 'nav-lang-panel');
+    panel.style.display = 'none';
+    var select = document.createElement('select');
+    select.className = 'nav-lang-select';
+    mount(panel, select);
+    var confirmBtn = el('button', 'nav-lang-confirm-btn', t('projectLanguageBtn'));
+    confirmBtn.type = 'button';
+    mount(panel, confirmBtn);
+    var status = el('span', 'nav-lang-status');
+    mount(panel, status);
+    mount(wrap, panel);
+    mount(nav, wrap);
+    fetchLanguages().then(function (langs) {
+      if (!langs || langs.length < 2) return;
+      langs.forEach(function (lang) {
+        var opt = document.createElement('option');
+        opt.value = lang.code;
+        opt.textContent = lang.label;
+        opt.setAttribute('data-coaching-name', lang.coachingName || '');
+        if (lang.code === LANG) {
+          opt.selected = true;
+          label.textContent = lang.label;
+        }
+        select.appendChild(opt);
+      });
+      wrap.style.display = '';
+    });
+    function togglePanel(forceClose) {
+      var isOpen = panel.style.display !== 'none';
+      var next = forceClose ? false : !isOpen;
+      panel.style.display = next ? 'block' : 'none';
+      wrap.classList.toggle('open', next);
+    }
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      togglePanel();
+    });
+    document.addEventListener('click', function (e) {
+      if (!wrap.contains(e.target)) togglePanel(true);
+    });
+    confirmBtn.addEventListener('click', function () {
+      var chosenOpt = select.options[select.selectedIndex];
+      if (!chosenOpt) return;
+      var chosenCode = chosenOpt.value;
+      var chosenLabel = chosenOpt.textContent;
+      var chosenCoachingName = chosenOpt.getAttribute('data-coaching-name');
+      if (chosenCode === LANG) {
+        status.textContent = '';
+        return;
+      }
+      if (!confirm(t('projectLanguageConfirm', { label: chosenLabel }))) return;
+      status.textContent = t('projectSaving');
+      setPreferredLang(chosenCode, chosenCoachingName);
+      location.reload();
     });
   }
   function showTopView(evt, viewId) {
@@ -651,20 +794,7 @@
     buildSubNav(container);
   }
   function buildDashboardView(container) {
-    var grid = el('div', 'dash-grid');
-    var notesPanel = el('div', 'dash-card');
-    notesPanel.id = 'Notes';
-    buildNotesTab(notesPanel);
-    mount(grid, notesPanel);
-    var tasksPanel = el('div', 'dash-card');
-    tasksPanel.id = 'Tasks';
-    buildTasksTab(tasksPanel);
-    mount(grid, tasksPanel);
-    mount(container, grid);
-    var projectPanel = el('div', 'dash-card dash-project');
-    projectPanel.id = 'Project';
-    buildProjectTab(projectPanel);
-    mount(container, projectPanel);
+    buildTabGroup(container, DASH_TABS, 'dash-subnav', 'dash-sublink', 'dash-panel');
     if (!isEmailConfirmed()) {
       showIdentityModal();
     }
@@ -761,23 +891,41 @@
     var coachPanel = document.getElementById('Coaching');
     if (coachPanel) { coachPanel.innerHTML = ''; buildCoachTab(coachPanel); }
   }
-  function buildNotesTab(panel) {
-    if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemNotes'); return; }
-    mount(panel, el('h3', null, t('notesTitle')));
-    var ta = document.createElement('textarea');
-    ta.id = 'studentNotes';
-    mount(panel, ta);
-    mount(panel, document.createElement('br'));
-    var btn = el('button', 'download-btn', t('notesDownloadBtn'));
-    btn.type = 'button';
-    btn.addEventListener('click', downloadNotes);
-    mount(panel, btn);
-    ta.value = lsGet(NOTES_KEY) || '';
-    ta.addEventListener('input', function () {
-      lsSet(NOTES_KEY, ta.value);
-      saveNotesToD1();
-    });
-    loadNotesFromD1();
+  /* ==========================================================
+     IDEA LOG
+     ------------------------------------------------------------
+     Multiple dated, categorized entries (Sept 2026), replacing the old
+     single free-text blob. Still sent through the existing /notes
+     endpoint as a JSON-stringified array under the same "text" field -
+     no worker.js change, since that endpoint just stores/returns
+     whatever string it's given. A student's pre-existing single-blob
+     note is migrated into one "General"-tagged entry the first time
+     loadIdeaLogEntries() sees old-format data.
+     ========================================================== */
+  function loadIdeaLogEntries() {
+    var raw = lsGet(NOTES_KEY);
+    if (!raw) return [];
+    var parsed;
+    try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+    if (Array.isArray(parsed)) return parsed;
+    // Legacy single free-text blob (or anything that didn't parse as an
+    // array) - migrate into one entry, once, rather than dropping it.
+    if (raw.trim()) {
+      var migrated = [{
+        id: 'legacy-' + Date.now().toString(36),
+        category: 'General',
+        date: new Date().toISOString().slice(0, 10),
+        createdAt: Date.now(),
+        text: raw
+      }];
+      lsSet(NOTES_KEY, JSON.stringify(migrated));
+      return migrated;
+    }
+    return [];
+  }
+  function saveIdeaLogEntries(entries) {
+    lsSet(NOTES_KEY, JSON.stringify(entries));
+    saveNotesToD1();
   }
   function loadNotesFromD1() {
     if (!STUDENT_ID) return;
@@ -785,47 +933,185 @@
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || !d.known) return;
-        var field = document.getElementById('studentNotes');
-        if (!field) return;
-        field.value = d.text || '';
         lsSet(NOTES_KEY, d.text || '');
+        renderIdeaLog();
       })
       .catch(function () {});
   }
   var saveNotesToD1 = debounce(function () {
     if (!STUDENT_ID) return;
-    var field = document.getElementById('studentNotes');
-    if (!field) return;
     fetch(PROXY_URL + '/notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: STUDENT_ID, text: field.value })
+      body: JSON.stringify({ studentId: STUDENT_ID, text: lsGet(NOTES_KEY) || '[]' })
     }).catch(function () {});
   }, 2000);
   function flushNotesToD1() {
     if (!STUDENT_ID) return;
-    var field = document.getElementById('studentNotes');
-    if (!field) return;
     try {
       fetch(PROXY_URL + '/notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId: STUDENT_ID, text: field.value }),
+        body: JSON.stringify({ studentId: STUDENT_ID, text: lsGet(NOTES_KEY) || '[]' }),
         keepalive: true
       });
     } catch (e) {}
   }
-  function downloadNotes() {
-    var field = document.getElementById('studentNotes');
-    var blob = new Blob([field ? field.value : ''], { type: 'text/plain' });
+  function formatIdeaLogDate(isoDate) {
+    var parts = isoDate.split('-');
+    var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  function buildNotesTab(panel) {
+    panel.setAttribute('aria-label', t('notesTitle'));
+    if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemNotes'); return; }
+
+    var toolbar = el('div', 'idealog-toolbar');
+    var filterWrap = el('div', 'idealog-filter-wrap');
+    mount(filterWrap, el('span', 'idealog-filter-label', t('ideaLogFilterLabel')));
+    var filterSelect = document.createElement('select');
+    filterSelect.id = 'ideaLogFilterSelect';
+    filterSelect.className = 'idealog-filter-select';
+    var allOpt = document.createElement('option');
+    allOpt.value = '';
+    allOpt.textContent = t('ideaLogFilterAll');
+    filterSelect.appendChild(allOpt);
+    getIdeaLogCategories().forEach(function (cat) {
+      var opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      filterSelect.appendChild(opt);
+    });
+    var generalOpt = document.createElement('option');
+    generalOpt.value = t('ideaLogGeneralCategory');
+    generalOpt.textContent = t('ideaLogGeneralCategory');
+    filterSelect.appendChild(generalOpt);
+    filterSelect.addEventListener('change', renderIdeaLog);
+    mount(filterWrap, filterSelect);
+    mount(toolbar, filterWrap);
+    mount(panel, toolbar);
+
+    var form = el('div', 'idealog-entry-form');
+    var formRow = el('div', 'idealog-entry-form-row');
+    var categorySelect = document.createElement('select');
+    categorySelect.id = 'ideaLogCategorySelect';
+    categorySelect.className = 'idealog-category-select';
+    var catPlaceholder = document.createElement('option');
+    catPlaceholder.value = '';
+    catPlaceholder.textContent = t('ideaLogCategoryPlaceholder');
+    categorySelect.appendChild(catPlaceholder);
+    getIdeaLogCategories().forEach(function (cat) {
+      var opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      categorySelect.appendChild(opt);
+    });
+    mount(formRow, categorySelect);
+    var textArea = document.createElement('textarea');
+    textArea.id = 'ideaLogTextInput';
+    textArea.className = 'idealog-entry-textarea';
+    textArea.placeholder = t('ideaLogTextPlaceholder');
+    textArea.maxLength = 2000;
+    mount(formRow, textArea);
+    mount(form, formRow);
+    var formFoot = el('div', 'idealog-form-foot');
+    mount(formFoot, el('span', 'idealog-form-hint', t('ideaLogDateHint')));
+    var addBtn = el('button', 'idealog-add-btn', t('ideaLogAddBtn'));
+    addBtn.type = 'button';
+    addBtn.addEventListener('click', addIdeaLogEntry);
+    mount(formFoot, addBtn);
+    mount(form, formFoot);
+    mount(panel, form);
+
+    var list = el('ul', 'idealog-list');
+    list.id = 'ideaLogList';
+    mount(panel, list);
+
+    var actions = el('div', 'idealog-actions');
+    var dl = el('button', 'download-btn', t('notesDownloadBtn'));
+    dl.type = 'button';
+    dl.addEventListener('click', downloadIdeaLog);
+    mount(actions, dl);
+    mount(panel, actions);
+
+    renderIdeaLog();
+    loadNotesFromD1();
+  }
+  function addIdeaLogEntry() {
+    var categorySelect = document.getElementById('ideaLogCategorySelect');
+    var textArea = document.getElementById('ideaLogTextInput');
+    var category = categorySelect.value;
+    var text = textArea.value.trim();
+    if (!category || !text) return;
+    var entries = loadIdeaLogEntries();
+    entries.unshift({
+      id: Date.now().toString(),
+      category: category,
+      date: new Date().toISOString().slice(0, 10),
+      createdAt: Date.now(),
+      text: text
+    });
+    saveIdeaLogEntries(entries);
+    categorySelect.value = '';
+    textArea.value = '';
+    renderIdeaLog();
+  }
+  function deleteIdeaLogEntry(id) {
+    var entries = loadIdeaLogEntries().filter(function (e) { return e.id !== id; });
+    saveIdeaLogEntries(entries);
+    renderIdeaLog();
+  }
+  function renderIdeaLog() {
+    var list = document.getElementById('ideaLogList');
+    if (!list) return;
+    var filterSelect = document.getElementById('ideaLogFilterSelect');
+    var entries = loadIdeaLogEntries().slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    var filterVal = filterSelect ? filterSelect.value : '';
+    var filtered = filterVal ? entries.filter(function (e) { return e.category === filterVal; }) : entries;
+    list.innerHTML = '';
+    if (filtered.length === 0) {
+      var emptyMsg = filterVal ? t('ideaLogEmptyFiltered') : t('ideaLogEmpty');
+      mount(list, el('li', 'idealog-empty', emptyMsg));
+      return;
+    }
+    filtered.forEach(function (entry) {
+      var isLegacy = entry.category === t('ideaLogGeneralCategory');
+      var li = el('li', 'idealog-entry' + (isLegacy ? ' legacy' : ''));
+      var head = el('div', 'idealog-entry-head');
+      mount(head, el('span', 'idealog-tag', entry.category));
+      mount(head, el('span', 'idealog-date', formatIdeaLogDate(entry.date)));
+      mount(li, head);
+      mount(li, el('div', 'idealog-text', entry.text));
+      var del = el('button', 'idealog-delete');
+      del.type = 'button';
+      del.innerHTML = '&times;';
+      del.title = t('ideaLogDeleteTitle');
+      del.addEventListener('click', function () { deleteIdeaLogEntry(entry.id); });
+      mount(li, del);
+      mount(list, li);
+    });
+  }
+  function downloadIdeaLog() {
+    var entries = loadIdeaLogEntries().slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    if (entries.length === 0) { alert(t('ideaLogNoneToDownload')); return; }
+    var date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    var txt = 'WRITE LIVING CHARACTERS — MY IDEA LOG\n';
+    txt += 'thestratummethod.com\n';
+    txt += 'Exported: ' + date + '\n';
+    txt += '==========================================\n\n';
+    entries.forEach(function (e) {
+      txt += '[' + e.category + '] ' + formatIdeaLogDate(e.date) + '\n';
+      txt += e.text + '\n\n';
+    });
+    var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
     var link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'MyIdeaLog.txt';
     link.click();
   }
   function buildTasksTab(panel) {
+    panel.setAttribute('aria-label', t('tasksTitle'));
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemTasks'); return; }
-    mount(panel, el('h3', null, t('tasksTitle')));
     var count = el('div', 'tracker-count');
     count.id = 'trackerCount';
     mount(panel, count);
@@ -1141,11 +1427,12 @@
   ];
   // Coaching language is no longer a separate, re-pickable field here - it
   // is derived entirely from the one-time language choice made in the
-  // identity modal (see setPreferredLang()). PROJ_KEYS.language and the
-  // server's project_language column are still the values buildSystemPrompt()
-  // reads (via buildProjectContextBlock()'s v.language), and are kept in
-  // sync with that one-time choice rather than exposed as an editable
-  // PROJECT_FIELDS entry.
+  // identity modal (see setPreferredLang()), and changed afterward via the
+  // nav language control rather than a WIP form field. PROJ_KEYS.language
+  // and the server's project_language column are still the values
+  // buildSystemPrompt() reads (via buildProjectContextBlock()'s
+  // v.language), and are kept in sync with that choice rather than
+  // exposed as an editable PROJECT_FIELDS entry.
   function buildProjectField(spec) {
     var field = el('div', 'proj-field');
     var label = el('label', 'proj-label', spec.label);
@@ -1219,7 +1506,7 @@
     mount(panel, wrap);
   }
   function buildProjectTab(panel) {
-    mount(panel, el('h3', null, t('projectTitle')));
+    panel.setAttribute('aria-label', t('projectTitle'));
     var reminder = el('p', null, t('projectReminder'));
     reminder.style.cssText = 'font-size:13px;font-style:italic;color:#8a7a5e;line-height:1.5;margin:4px 0 18px;';
     mount(panel, reminder);
@@ -1254,65 +1541,7 @@
     status.id = 'projStatus';
     mount(actions, status);
     mount(panel, actions);
-    buildLanguageSection(panel);
     loadProjectFields();
-  }
-  // Lets a student change their language after the one-time signup pick,
-  // now that it's safe to: notes, tasks, completions, deliverables, and
-  // conversation transcripts are all keyed by studentId only, never by
-  // language, so switching never touches or loses any of that history -
-  // it only changes which lesson_configs row loads and what language the
-  // coach writes in going forward. Hidden entirely when fewer than 2
-  // languages are active, same rule as the identity-modal picker.
-  function buildLanguageSection(panel) {
-    var wrap = el('div', 'proj-field proj-language-field');
-    wrap.style.cssText = 'margin-top:8px;padding-top:18px;border-top:1px solid #ECE7DC;';
-    wrap.style.display = 'none';
-    var label = el('label', 'proj-label', t('projectLanguageTitle'));
-    mount(wrap, label);
-    var hint = el('span', 'proj-hint', t('projectLanguageHint'));
-    mount(wrap, hint);
-    var row = el('div', 'proj-row2');
-    var select = document.createElement('select');
-    select.className = 'proj-select';
-    select.id = 'projLanguageSelect';
-    mount(row, select);
-    var btn = el('button', 'proj-save-btn', t('projectLanguageBtn'));
-    btn.type = 'button';
-    mount(row, btn);
-    mount(wrap, row);
-    var status = el('span', 'proj-status');
-    status.id = 'projLanguageStatus';
-    mount(wrap, status);
-    mount(panel, wrap);
-    fetchLanguages().then(function (langs) {
-      if (!langs || langs.length < 2) return;
-      langs.forEach(function (lang) {
-        var opt = document.createElement('option');
-        opt.value = lang.code;
-        opt.textContent = lang.label;
-        opt.setAttribute('data-coaching-name', lang.coachingName || '');
-        if (lang.code === LANG) opt.selected = true;
-        select.appendChild(opt);
-      });
-      wrap.style.display = '';
-    });
-    btn.addEventListener('click', function () {
-      var chosenOpt = select.options[select.selectedIndex];
-      if (!chosenOpt) return;
-      var chosenCode = chosenOpt.value;
-      var chosenLabel = chosenOpt.textContent;
-      var chosenCoachingName = chosenOpt.getAttribute('data-coaching-name');
-      if (chosenCode === LANG) {
-        status.textContent = '';
-        return;
-      }
-      if (!confirm(t('projectLanguageConfirm', { label: chosenLabel }))) return;
-      status.textContent = t('projectSaving');
-      status.className = 'proj-status';
-      setPreferredLang(chosenCode, chosenCoachingName);
-      location.reload();
-    });
   }
   function eachProjectSpec(fn) {
     PROJECT_FIELDS.forEach(function (spec) {
@@ -2322,7 +2551,7 @@
         // Same fresh-device sync as loadProjectFields(): pull the stored
         // coaching-language name over too, so buildSystemPrompt() has it
         // immediately rather than only after the student happens to open
-        // My Project.
+        // the WIP tab.
         if (d && d.known && d.language) lsSet(PROJ_KEYS.language, d.language);
       })
       .catch(function () {});
