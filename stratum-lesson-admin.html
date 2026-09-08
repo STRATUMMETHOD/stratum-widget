@@ -342,6 +342,7 @@
     <button class="nav-item" id="tabDashboardBtn" type="button"><span class="nav-dot"></span>Students</button>
     <button class="nav-item" id="tabDeliverablesBtn" type="button"><span class="nav-dot"></span>Deliverables</button>
     <button class="nav-item" id="tabTestimonialsBtn" type="button"><span class="nav-dot"></span>Testimonials</button>
+    <button class="nav-item" id="tabVocabularyBtn" type="button"><span class="nav-dot"></span>Vocabulary</button>
     <button class="nav-item" id="tabExcavationBtn" type="button"><span class="nav-dot"></span>Excavation</button>
   </div>
   <div class="nav-spacer"></div>
@@ -490,6 +491,18 @@
       </div>
       <div id="tstList"></div>
       <button class="add-btn" id="tstAddBtn" type="button">+ Add testimonial</button>
+    </div>
+    <div id="vocabularyView" style="display:none;">
+      <div class="tst-toolbar">
+        <span class="sub" style="margin:0;">Writer's Vocabulary glossary shown on the student Vocabulary tab. Coaching cue is private &mdash; never shown to students, reserved for a future coach integration. Ordered alphabetically by word; no manual reordering needed.</span>
+      </div>
+      <div class="tst-toolbar">
+        <button class="btn secondary" id="vcbReloadBtn" type="button">Reload</button>
+        <div class="spacer"></div>
+        <span id="vcbStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
+      </div>
+      <div id="vcbList"></div>
+      <button class="add-btn" id="vcbAddBtn" type="button">+ Add vocabulary term</button>
     </div>
     <div id="excavationView" style="display:none;">
       <div class="exc-toolbar">
@@ -1253,6 +1266,7 @@ document.getElementById('adminLangSelect').addEventListener('change', function (
 var tabDashboardBtn = document.getElementById('tabDashboardBtn');
 var tabDeliverablesBtn = document.getElementById('tabDeliverablesBtn');
 var tabTestimonialsBtn = document.getElementById('tabTestimonialsBtn');
+var tabVocabularyBtn = document.getElementById('tabVocabularyBtn');
 var tabExcavationBtn = document.getElementById('tabExcavationBtn');
 var tabGuidedBtn = document.getElementById('tabGuidedBtn');
 var tabEssentialsBtn = document.getElementById('tabEssentialsBtn');
@@ -1261,6 +1275,7 @@ var tabAdminBtn = document.getElementById('tabAdminBtn');
 var dashboardView = document.getElementById('dashboardView');
 var deliverablesView = document.getElementById('deliverablesView');
 var testimonialsView = document.getElementById('testimonialsView');
+var vocabularyView = document.getElementById('vocabularyView');
 var excavationView = document.getElementById('excavationView');
 var guidedView = document.getElementById('guidedView');
 var essentialsView = document.getElementById('essentialsView');
@@ -1270,6 +1285,7 @@ var PAGE_HEADERS = {
   dashboard: ['Students', 'Search, add, and manage student records.'],
   deliverables: ['Deliverables', "Confirms every completed session actually captured a real, validated deliverable \u2014 not just the summary sentence."],
   testimonials: ['Testimonials', 'Shown in the homepage rotator, fading from one to the next.'],
+  vocabulary: ['Vocabulary', "Writer's Vocabulary glossary shown on the student Vocabulary tab."],
   excavation: ['Excavation', 'The 5-Minute Character Excavation \u2014 started / completed / traffic source / surprise rating.'],
   guided: ['Course', "Enter or edit any lesson's coaching content. Saves go straight to the database \u2014 the live lesson page picks up changes on next load."],
   essentials: ['Self-Guided', 'Self-Guided lesson editor.'],
@@ -1279,6 +1295,7 @@ function showTopTab(which) {
   tabDashboardBtn.className = 'nav-item' + (which === 'dashboard' ? ' active' : '');
   tabDeliverablesBtn.className = 'nav-item' + (which === 'deliverables' ? ' active' : '');
   tabTestimonialsBtn.className = 'nav-item' + (which === 'testimonials' ? ' active' : '');
+  tabVocabularyBtn.className = 'nav-item' + (which === 'vocabulary' ? ' active' : '');
   tabExcavationBtn.className = 'nav-item' + (which === 'excavation' ? ' active' : '');
   tabGuidedBtn.className = 'nav-item' + (which === 'guided' ? ' active' : '');
   tabEssentialsBtn.className = 'nav-item' + (which === 'essentials' ? ' active' : '');
@@ -1289,6 +1306,7 @@ function showTopTab(which) {
   dashboardView.style.display = which === 'dashboard' ? '' : 'none';
   deliverablesView.style.display = which === 'deliverables' ? '' : 'none';
   testimonialsView.style.display = which === 'testimonials' ? '' : 'none';
+  vocabularyView.style.display = which === 'vocabulary' ? '' : 'none';
   excavationView.style.display = which === 'excavation' ? '' : 'none';
   guidedView.style.display = which === 'guided' ? '' : 'none';
   essentialsView.style.display = which === 'essentials' ? '' : 'none';
@@ -1310,6 +1328,10 @@ tabDeliverablesBtn.addEventListener('click', function () {
 tabTestimonialsBtn.addEventListener('click', function () {
   showTopTab('testimonials');
   loadTestimonials();
+});
+tabVocabularyBtn.addEventListener('click', function () {
+  showTopTab('vocabulary');
+  loadVocabulary();
 });
 tabExcavationBtn.addEventListener('click', function () {
   showTopTab('excavation');
@@ -1885,6 +1907,225 @@ function addTestimonialBlock(t, isNew) {
   downBtn.addEventListener('click', function () {
     var next = block.nextElementSibling;
     if (next && next.classList.contains('tst-block')) swapOrderWith(next);
+  });
+}
+// ===== Writer's Vocabulary =====
+var vcbList = document.getElementById('vcbList');
+var vcbStatus = document.getElementById('vcbStatus');
+var VCB_CRAFT_CATEGORIES = ['Character', 'Plot', 'Dialogue', 'Setting', 'Theme', 'Structure', 'Pacing', 'Point of View'];
+var VCB_NARRATIVE_STAGES = ['Setup', 'Rising Action', 'Climax', 'Falling Action', 'Resolution'];
+var VCB_FUNCTIONS = ['Diagnostic', 'Generative', 'Revision', 'Analytical'];
+var VCB_COMPLEXITY_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
+document.getElementById('vcbReloadBtn').addEventListener('click', loadVocabulary);
+document.getElementById('vcbAddBtn').addEventListener('click', function () {
+  addVocabularyBlock({
+    id: null,
+    word: '',
+    definition: '',
+    coachingCue: '',
+    craftCategory: '',
+    narrativeStage: '',
+    function: '',
+    complexityLevel: '',
+    isActive: true
+  }, true);
+});
+function loadVocabulary() {
+  if (!adminKey) { vcbStatus.textContent = 'Unlock the panel first.'; return; }
+  vcbStatus.textContent = 'Loading...';
+  vcbList.innerHTML = '';
+  fetch(PROXY_URL + '/admin/vocabulary', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var terms = (d && d.terms) || [];
+      if (!terms.length) {
+        vcbStatus.textContent = 'No vocabulary terms yet - add the first one below.';
+        return;
+      }
+      vcbStatus.textContent = terms.length + ' term' + (terms.length === 1 ? '' : 's') + '.';
+      terms.forEach(function (term) { addVocabularyBlock(term, false); });
+    })
+    .catch(function () {
+      vcbStatus.textContent = 'Could not load vocabulary.';
+    });
+}
+function vcbBuildSelect(className, options, currentValue) {
+  var select = document.createElement('select');
+  select.className = className;
+  var blankOpt = document.createElement('option');
+  blankOpt.value = '';
+  blankOpt.textContent = 'Choose one\u2026';
+  select.appendChild(blankOpt);
+  options.forEach(function (opt) {
+    var o = document.createElement('option');
+    o.value = opt;
+    o.textContent = opt;
+    if (opt === currentValue) o.selected = true;
+    select.appendChild(o);
+  });
+  return select;
+}
+function addVocabularyBlock(term, isNew) {
+  var block = document.createElement('div');
+  block.className = 'tst-block';
+  if (term.isActive === false) block.style.opacity = '0.65';
+  var head = document.createElement('div');
+  head.className = 'tst-block-head';
+  var wordInput = document.createElement('input');
+  wordInput.type = 'text';
+  wordInput.className = 'tst-name';
+  wordInput.placeholder = 'Vocabulary word';
+  wordInput.value = term.word || '';
+  head.appendChild(wordInput);
+  if (term.isActive === false) {
+    var tag = document.createElement('span');
+    tag.className = 'tst-inactive-tag';
+    tag.textContent = 'Inactive';
+    head.appendChild(tag);
+  }
+  block.appendChild(head);
+  var defLabel = document.createElement('div');
+  defLabel.style.cssText = 'font-size:11px;font-weight:700;color:#3B2F24;margin-bottom:4px;';
+  defLabel.textContent = 'Definition (shown to students)';
+  block.appendChild(defLabel);
+  var defArea = document.createElement('textarea');
+  defArea.className = 'tst-quote';
+  defArea.style.fontFamily = "'Inter', Arial, sans-serif";
+  defArea.style.fontStyle = 'normal';
+  defArea.placeholder = 'Plain-language definition a student would see on the Vocabulary tab.';
+  defArea.value = term.definition || '';
+  block.appendChild(defArea);
+  var cueLabel = document.createElement('div');
+  cueLabel.style.cssText = 'font-size:11px;font-weight:700;color:#3B2F24;margin-bottom:4px;';
+  cueLabel.textContent = 'Coaching cue (private - never shown to students, reserved for a future coach integration)';
+  block.appendChild(cueLabel);
+  var cueArea = document.createElement('textarea');
+  cueArea.className = 'tst-quote';
+  cueArea.style.fontFamily = "'Inter', Arial, sans-serif";
+  cueArea.style.fontStyle = 'normal';
+  cueArea.placeholder = 'How the coach should use this term once vocabulary is wired into coaching.';
+  cueArea.value = term.coachingCue || '';
+  block.appendChild(cueArea);
+  var metaRow = document.createElement('div');
+  metaRow.className = 'tst-meta-row';
+  var craftField = document.createElement('div');
+  craftField.className = 'field';
+  var craftLabel = document.createElement('label');
+  craftLabel.textContent = 'Craft category';
+  var craftSelect = vcbBuildSelect('vcb-craft-select', VCB_CRAFT_CATEGORIES, term.craftCategory);
+  craftSelect.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  craftField.appendChild(craftLabel);
+  craftField.appendChild(craftSelect);
+  metaRow.appendChild(craftField);
+  var stageField = document.createElement('div');
+  stageField.className = 'field';
+  var stageLabel = document.createElement('label');
+  stageLabel.textContent = 'Narrative stage';
+  var stageSelect = vcbBuildSelect('vcb-stage-select', VCB_NARRATIVE_STAGES, term.narrativeStage);
+  stageSelect.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  stageField.appendChild(stageLabel);
+  stageField.appendChild(stageSelect);
+  metaRow.appendChild(stageField);
+  var funcField = document.createElement('div');
+  funcField.className = 'field';
+  var funcLabel = document.createElement('label');
+  funcLabel.textContent = 'Function';
+  var funcSelect = vcbBuildSelect('vcb-func-select', VCB_FUNCTIONS, term.function);
+  funcSelect.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  funcField.appendChild(funcLabel);
+  funcField.appendChild(funcSelect);
+  metaRow.appendChild(funcField);
+  var levelField = document.createElement('div');
+  levelField.className = 'field';
+  var levelLabel = document.createElement('label');
+  levelLabel.textContent = 'Complexity level';
+  var levelSelect = vcbBuildSelect('vcb-level-select', VCB_COMPLEXITY_LEVELS, term.complexityLevel);
+  levelSelect.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  levelField.appendChild(levelLabel);
+  levelField.appendChild(levelSelect);
+  metaRow.appendChild(levelField);
+  block.appendChild(metaRow);
+  var activeRow = document.createElement('div');
+  activeRow.className = 'toggle-row';
+  activeRow.style.marginTop = '4px';
+  var activeCb = document.createElement('input');
+  activeCb.type = 'checkbox';
+  activeCb.checked = term.isActive !== false;
+  activeCb.id = 'vcbActive_' + (term.id || 'new_' + Math.random().toString(36).slice(2));
+  var activeCbLabel = document.createElement('label');
+  activeCbLabel.setAttribute('for', activeCb.id);
+  activeCbLabel.style.margin = '0';
+  activeCbLabel.textContent = 'Visible to students';
+  activeRow.appendChild(activeCb);
+  activeRow.appendChild(activeCbLabel);
+  block.appendChild(activeRow);
+  var foot = document.createElement('div');
+  foot.className = 'tst-block-foot';
+  var saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = 'tst-save-btn';
+  saveBtn.textContent = isNew ? 'Add term' : 'Save';
+  foot.appendChild(saveBtn);
+  var deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'remove-btn';
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.style.display = isNew ? 'none' : '';
+  foot.appendChild(deleteBtn);
+  var saveStatus = document.createElement('span');
+  saveStatus.className = 'tst-save-status';
+  foot.appendChild(saveStatus);
+  block.appendChild(foot);
+  vcbList.appendChild(block);
+  var currentId = term.id || null;
+  function payload() {
+    return {
+      id: currentId,
+      word: wordInput.value.trim(),
+      definition: defArea.value.trim(),
+      coachingCue: cueArea.value.trim(),
+      craftCategory: craftSelect.value,
+      narrativeStage: stageSelect.value,
+      function: funcSelect.value,
+      complexityLevel: levelSelect.value,
+      isActive: activeCb.checked
+    };
+  }
+  saveBtn.addEventListener('click', function () {
+    if (!payload().word || !payload().definition) {
+      saveStatus.textContent = 'Word and definition are both required.';
+      return;
+    }
+    saveStatus.textContent = 'Saving...';
+    fetch(PROXY_URL + '/admin/vocabulary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+      body: JSON.stringify(payload())
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) { saveStatus.textContent = 'Save failed.'; return; }
+        currentId = d.id;
+        isNew = false;
+        saveBtn.textContent = 'Save';
+        deleteBtn.style.display = '';
+        saveStatus.textContent = 'Saved.';
+        setTimeout(function () { saveStatus.textContent = ''; }, 2000);
+      })
+      .catch(function () { saveStatus.textContent = 'Save failed.'; });
+  });
+  deleteBtn.addEventListener('click', function () {
+    if (!currentId) { block.remove(); return; }
+    if (!confirm('Delete "' + (payload().word || 'this term') + '"? This cannot be undone.')) return;
+    fetch(PROXY_URL + '/admin/vocabulary?id=' + encodeURIComponent(currentId), {
+      method: 'DELETE',
+      headers: { 'X-Stratum-Admin-Key': adminKey }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok) { block.remove(); } else { saveStatus.textContent = 'Delete failed.'; }
+      })
+      .catch(function () { saveStatus.textContent = 'Delete failed.'; });
   });
 }
 // ===== Excavation dashboard =====
