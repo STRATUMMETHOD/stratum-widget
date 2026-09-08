@@ -33,7 +33,10 @@
     theme:          'wlfc_project_theme',
     challenges:     'wlfc_project_challenges',
     focus:          'wlfc_project_focus',
-    language:       'wlfc_project_language'
+    language:       'wlfc_project_language',
+    storyStyle:     'wlfc_project_story_style',
+    pov:            'wlfc_project_pov',
+    antagonistType: 'wlfc_project_antagonist_type'
   };
   // NOTE: internal storage keys, element IDs, and function names below
   // (NOTES_KEY, TRACKER_KEY, buildNotesTab, buildTasksTab, PROJ_KEYS,
@@ -126,6 +129,21 @@
     return IDEA_LOG_CATEGORIES[LANG] || IDEA_LOG_CATEGORIES.en;
   }
   /* ==========================================================
+     WRITER'S VOCABULARY - FILTER TAXONOMY (Sept 2026)
+     ------------------------------------------------------------
+     Fixed option lists for the four filter dropdowns on the student-
+     facing Vocabulary tab. English-only for now, regardless of LANG -
+     the admin panel that authors these terms has no language switching
+     yet (unlike lesson_configs), so every stored term's category values
+     are English strings; translating just the filter labels while the
+     underlying data stays English would silently break filtering. Revisit
+     if/when vocabulary authoring itself goes bilingual.
+     ========================================================== */
+  var VOCAB_CRAFT_CATEGORIES = ['Character', 'Plot', 'Dialogue', 'Setting', 'Theme', 'Structure', 'Pacing', 'Point of View'];
+  var VOCAB_NARRATIVE_STAGES = ['Setup', 'Rising Action', 'Climax', 'Falling Action', 'Resolution'];
+  var VOCAB_FUNCTIONS = ['Diagnostic', 'Generative', 'Revision', 'Analytical'];
+  var VOCAB_COMPLEXITY_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
+  /* ==========================================================
      STRINGS / t()
      ------------------------------------------------------------
      Open-ended dictionary for dashboard chrome (nav, tab headers,
@@ -148,10 +166,21 @@
       navLessonTooltip: 'Video, resources, and coaching for this lesson',
       navContact: 'Writer Support',
       navContactTooltip: 'Get in touch with Ted',
-      subVideo: 'Video & Transcript',
+      subVideo: 'Video',
       subResources: 'Lesson Handouts',
       subCoaching: 'Stratum Coaching',
-      dashTabWip: 'WIP',
+      dashTabWip: 'Work In Progress',
+      vocabTitle: "Writer's Vocabulary",
+      vocabIntro: 'A working glossary of craft terms. Filter by category, narrative stage, function, or complexity level to find what you need.',
+      vocabFilterCraft: 'Craft Category',
+      vocabFilterStage: 'Narrative Stage',
+      vocabFilterFunction: 'Function',
+      vocabFilterComplexity: 'Complexity Level',
+      vocabLoading: 'Loading\u2026',
+      vocabEmpty: 'No terms yet.',
+      vocabEmptyFiltered: 'No terms match these filters.',
+      coachDownloadBtn: 'Download conversation',
+      coachDownloadNothingYet: 'Nothing to download yet \u2014 send a message first.',
       notesTitle: 'Idea Log',
       notesDownloadBtn: 'Download Idea Log',
       ideaLogIntro: 'Idea Log is where you capture anything that comes to you between lessons — a character insight, a plot thread, a research note, a deadline, a spark of inspiration. Tag each entry as Character, Plot, Theme, Revision, Research, Deadlines, or Inspiration, then filter by category any time you want to find it again. Your coach reads this before each session, so it becomes part of the conversation without you having to repeat yourself.',
@@ -261,10 +290,21 @@
       navLessonTooltip: 'Video, recursos y coaching para esta lecci\u00f3n',
       navContact: 'Soporte para Escritores',
       navContactTooltip: 'Ponte en contacto con Ted',
-      subVideo: 'Video y Transcripci\u00f3n',
+      subVideo: 'Video',
       subResources: 'Materiales de la Lecci\u00f3n',
       subCoaching: 'Coaching Stratum',
-      dashTabWip: 'WIP',
+      dashTabWip: 'Trabajo en Progreso',
+      vocabTitle: 'Vocabulario del Escritor',
+      vocabIntro: 'Un glosario de trabajo con t\u00e9rminos de oficio. Filtra por categor\u00eda, etapa narrativa, funci\u00f3n o nivel de complejidad para encontrar lo que necesitas.',
+      vocabFilterCraft: 'Categor\u00eda de Oficio',
+      vocabFilterStage: 'Etapa Narrativa',
+      vocabFilterFunction: 'Funci\u00f3n',
+      vocabFilterComplexity: 'Nivel de Complejidad',
+      vocabLoading: 'Cargando\u2026',
+      vocabEmpty: 'A\u00fan no hay t\u00e9rminos.',
+      vocabEmptyFiltered: 'Ning\u00fan t\u00e9rmino coincide con estos filtros.',
+      coachDownloadBtn: 'Descargar conversaci\u00f3n',
+      coachDownloadNothingYet: 'A\u00fan no hay nada para descargar \u2014 env\u00eda un mensaje primero.',
       notesTitle: 'Registro de Ideas',
       notesDownloadBtn: 'Descargar Registro de Ideas',
       ideaLogIntro: 'El Registro de Ideas es donde guardas lo que se te ocurra entre lecciones: una idea sobre un personaje, un hilo de la trama, una nota de investigaci\u00f3n, una fecha l\u00edmite, un destello de inspiraci\u00f3n. Etiqueta cada entrada como Personaje, Trama, Tema, Revisi\u00f3n, Investigaci\u00f3n, Fechas L\u00edmite o Inspiraci\u00f3n, y filtra por categor\u00eda cuando quieras encontrarla de nuevo. Tu coach lee esto antes de cada sesi\u00f3n, as\u00ed que forma parte de la conversaci\u00f3n sin que tengas que repetirlo.',
@@ -638,6 +678,7 @@
     tabs.forEach(function (tab, index) {
       var btn = el('button', linkClass, t(tab.labelKey));
       btn.type = 'button';
+      btn.setAttribute('data-tab-target', tab.id);
       if (index === 0) btn.setAttribute('data-tab-default', '1');
       btn.addEventListener('click', function (evt) { openTabPanel(evt, tab.id, linkClass, panelClass); });
       mount(bar, btn);
@@ -662,11 +703,19 @@
     document.getElementById(tabId).style.display = 'block';
     evt.currentTarget.className += ' active';
   }
-  var SUB_TABS = [
-    { id: 'Video',     labelKey: 'subVideo',     build: buildVideoTranscriptPanel },
-    { id: 'Resources', labelKey: 'subResources', build: buildResourcesPanel },
-    { id: 'Coaching',  labelKey: 'subCoaching',  build: buildCoachTab }
-  ];
+  /* ==========================================================
+     FLAT NAV (Sept 2026)
+     ------------------------------------------------------------
+     Replaced the old two-tier nav (This Lesson > Video/Resources/
+     Coaching, Dashboard > WIP/Idea Log/Action Items, plus a separate
+     Contact destination) with one flat row of 8 tabs, all siblings, per
+     Ted's request. Guided/Mastery only - Essentials still uses its own
+     single continuous page (buildEssentialsPage) and never reaches this.
+     Video opens by default (first in the array). The hover tooltips that
+     used to explain what was grouped under "This Lesson"/"Dashboard" are
+     dropped here - there's no grouping left to explain, each tab already
+     names itself directly.
+     ========================================================== */
   function buildVideoTranscriptPanel(panel) {
     buildVideo(panel, LESSON.video.mediaId);
     buildTranscript(panel, LESSON.video.mediaId);
@@ -681,49 +730,23 @@
     }
     buildResource(panel, LESSON.resource);
   }
-  function buildSubNav(container) {
-    buildTabGroup(container, SUB_TABS, 'stratum-subnav', 'sublink', 'stratum-subsection');
-  }
-  var DASH_TABS = [
-    { id: 'Project', labelKey: 'dashTabWip', build: buildProjectTab },
-    { id: 'Notes',    labelKey: 'notesTitle', build: buildNotesTab },
-    { id: 'Tasks',    labelKey: 'tasksTitle', build: buildTasksTab }
+  var FLAT_TABS = [
+    { id: 'Video',      labelKey: 'subVideo',     build: buildVideoTranscriptPanel },
+    { id: 'Resources',  labelKey: 'subResources', build: buildResourcesPanel },
+    { id: 'Coaching',   labelKey: 'subCoaching',  build: buildCoachTab },
+    { id: 'Project',    labelKey: 'dashTabWip',   build: buildProjectTab },
+    { id: 'Notes',      labelKey: 'notesTitle',   build: buildNotesTab },
+    { id: 'Tasks',      labelKey: 'tasksTitle',   build: buildTasksTab },
+    { id: 'Vocabulary', labelKey: 'vocabTitle',   build: buildVocabularyTab },
+    { id: 'Contact',    labelKey: 'navContact',   build: buildContactView }
   ];
-  // Order reordered Sept 2026 so This Lesson opens by default (was
-  // Dashboard). goToProjectTab() below looks up its nav link by
-  // data-view-id rather than assuming index 0 is Dashboard, so it stays
-  // correct regardless of this array's order.
-  var TOP_DESTINATIONS = [
-    { id: 'view-lesson',    labelKey: 'navLesson',    tooltipKey: 'navLessonTooltip',    build: buildLessonView },
-    { id: 'view-dashboard', labelKey: 'navDashboard', tooltipKey: 'navDashboardTooltip', build: buildDashboardView },
-    { id: 'view-contact',   labelKey: 'navContact',   tooltipKey: 'navContactTooltip',   build: buildContactView }
-  ];
-  function buildTopNav(container) {
-    var nav = el('div', 'stratum-topnav');
-    TOP_DESTINATIONS.forEach(function (dest, index) {
-      var btn = el('button', 'toplink' + (index === 0 ? ' active' : ''), t(dest.labelKey));
-      btn.type = 'button';
-      btn.setAttribute('data-tooltip', t(dest.tooltipKey));
-      btn.setAttribute('data-view-id', dest.id);
-      btn.addEventListener('click', function (evt) { showTopView(evt, dest.id); });
-      mount(nav, btn);
-    });
-    buildNavLanguageControl(nav);
-    mount(container, nav);
-    TOP_DESTINATIONS.forEach(function (dest, index) {
-      var view = el('div', 'stratum-section');
-      view.id = dest.id;
-      if (index !== 0) view.style.display = 'none';
-      mount(container, view);
-      dest.build(view);
-    });
-  }
-  // Compact language control for the top nav (relocated Sept 2026 from
-  // the bottom of the WIP form, where it was easy to miss). Same
-  // underlying logic as before (fetchLanguages / confirm-before-reload /
-  // setPreferredLang) - just a different home. Hidden entirely below 2
-  // active languages, same rule as everywhere else language-related, so
-  // it stays invisible today and will simply appear once 'es' goes live.
+  // Compact language control for the nav (relocated Sept 2026, first from
+  // the bottom of the WIP form, then from a separate top nav row - now
+  // appended to the single flat nav bar, still pushed right via
+  // margin-left:auto on .nav-lang-control). Same underlying logic as
+  // before (fetchLanguages / confirm-before-reload / setPreferredLang).
+  // Hidden entirely below 2 active languages, so it stays invisible today
+  // and will simply appear once 'es' goes live.
   function buildNavLanguageControl(nav) {
     var wrap = el('div', 'nav-lang-control');
     wrap.style.display = 'none';
@@ -791,23 +814,6 @@
       location.reload();
     });
   }
-  function showTopView(evt, viewId) {
-    var views = document.getElementsByClassName('stratum-section');
-    for (var i = 0; i < views.length; i++) views[i].style.display = 'none';
-    var links = document.getElementsByClassName('toplink');
-    for (var j = 0; j < links.length; j++) links[j].className = links[j].className.replace(' active', '');
-    document.getElementById(viewId).style.display = 'block';
-    evt.currentTarget.className += ' active';
-  }
-  function buildLessonView(container) {
-    buildSubNav(container);
-  }
-  function buildDashboardView(container) {
-    buildTabGroup(container, DASH_TABS, 'dash-subnav', 'dash-sublink', 'dash-panel');
-    if (!isEmailConfirmed()) {
-      showIdentityModal();
-    }
-  }
   function buildJotformEmbed(container, formId, label) {
     if (!formId) return;
     var domId = 'JotFormIFrame-' + formId;
@@ -830,6 +836,108 @@
   }
   function buildContactView(container) {
     buildJotformEmbed(container, '261614223369860', 'Contact Form');
+  }
+  /* ==========================================================
+     WRITER'S VOCABULARY (Sept 2026)
+     ------------------------------------------------------------
+     Read-only, student-facing glossary - no identity gate, since it's
+     reference material, not personal data. Fetches the public /vocabulary
+     endpoint once per page load and filters client-side across the four
+     taxonomy dimensions. coachingCue is deliberately never requested here
+     (the public endpoint doesn't return it) - it's private direction for
+     a future coach integration, same treatment as coachingApproach on
+     lesson_configs.
+     ========================================================== */
+  var vocabTermsCache = null;
+  function buildVocabularyTab(panel) {
+    panel.setAttribute('aria-label', t('vocabTitle'));
+    mount(panel, el('p', 'panel-intro', t('vocabIntro')));
+    var toolbar = el('div', 'vocab-toolbar');
+    var filterDefs = [
+      { id: 'vocabFilterCraft', label: t('vocabFilterCraft'), options: VOCAB_CRAFT_CATEGORIES },
+      { id: 'vocabFilterStage', label: t('vocabFilterStage'), options: VOCAB_NARRATIVE_STAGES },
+      { id: 'vocabFilterFunction', label: t('vocabFilterFunction'), options: VOCAB_FUNCTIONS },
+      { id: 'vocabFilterComplexity', label: t('vocabFilterComplexity'), options: VOCAB_COMPLEXITY_LEVELS }
+    ];
+    filterDefs.forEach(function (f) {
+      var wrap = el('div', 'vocab-filter-wrap');
+      mount(wrap, el('span', 'vocab-filter-label', f.label));
+      var select = document.createElement('select');
+      select.id = f.id;
+      select.className = 'vocab-filter-select';
+      var allOpt = document.createElement('option');
+      allOpt.value = '';
+      allOpt.textContent = t('ideaLogFilterAll');
+      select.appendChild(allOpt);
+      f.options.forEach(function (optVal) {
+        var opt = document.createElement('option');
+        opt.value = optVal;
+        opt.textContent = optVal;
+        select.appendChild(opt);
+      });
+      select.addEventListener('change', renderVocabList);
+      mount(wrap, select);
+      mount(toolbar, wrap);
+    });
+    mount(panel, toolbar);
+    var list = el('ul', 'vocab-list');
+    list.id = 'vocabList';
+    mount(panel, list);
+    loadVocabTerms();
+  }
+  function loadVocabTerms() {
+    var list = document.getElementById('vocabList');
+    if (list) list.innerHTML = '';
+    if (list) mount(list, el('li', 'vocab-empty', t('vocabLoading')));
+    fetch(PROXY_URL + '/vocabulary')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        vocabTermsCache = (d && Array.isArray(d.terms)) ? d.terms : [];
+        renderVocabList();
+      })
+      .catch(function () {
+        vocabTermsCache = [];
+        renderVocabList();
+      });
+  }
+  function renderVocabList() {
+    var list = document.getElementById('vocabList');
+    if (!list) return;
+    var terms = vocabTermsCache || [];
+    var craftEl = document.getElementById('vocabFilterCraft');
+    var stageEl = document.getElementById('vocabFilterStage');
+    var funcEl = document.getElementById('vocabFilterFunction');
+    var levelEl = document.getElementById('vocabFilterComplexity');
+    var craft = craftEl ? craftEl.value : '';
+    var stage = stageEl ? stageEl.value : '';
+    var func = funcEl ? funcEl.value : '';
+    var level = levelEl ? levelEl.value : '';
+    var filtered = terms.filter(function (term) {
+      if (craft && term.craftCategory !== craft) return false;
+      if (stage && term.narrativeStage !== stage) return false;
+      if (func && term.function !== func) return false;
+      if (level && term.complexityLevel !== level) return false;
+      return true;
+    });
+    list.innerHTML = '';
+    if (!filtered.length) {
+      var emptyMsg = terms.length ? t('vocabEmptyFiltered') : t('vocabEmpty');
+      mount(list, el('li', 'vocab-empty', emptyMsg));
+      return;
+    }
+    filtered.forEach(function (term) {
+      var li = el('li', 'vocab-entry');
+      var head = el('div', 'vocab-entry-head');
+      mount(head, el('span', 'vocab-word', term.word));
+      mount(li, head);
+      var tags = el('div', 'vocab-tags');
+      [term.craftCategory, term.narrativeStage, term.function, term.complexityLevel].forEach(function (v) {
+        if (v) mount(tags, el('span', 'vocab-tag', v));
+      });
+      mount(li, tags);
+      mount(li, el('div', 'vocab-definition', term.definition));
+      mount(list, li);
+    });
   }
   function buildEssentialsDropdowns(container) {
     var items = [
@@ -867,14 +975,8 @@
     buildEssentialsDropdowns(container);
   }
   function goToProjectTab() {
-    var views = document.getElementsByClassName('stratum-section');
-    for (var i = 0; i < views.length; i++) views[i].style.display = 'none';
-    var links = document.getElementsByClassName('toplink');
-    for (var j = 0; j < links.length; j++) links[j].className = links[j].className.replace(' active', '');
-    var dashView = document.getElementById('view-dashboard');
-    if (dashView) dashView.style.display = 'block';
-    var dashLink = document.querySelector('.toplink[data-view-id="view-dashboard"]');
-    if (dashLink) dashLink.className += ' active';
+    var navBtn = document.querySelector('.navlink[data-tab-target="Project"]');
+    if (navBtn) navBtn.click();
     var projectPanel = document.getElementById('Project');
     if (projectPanel && projectPanel.scrollIntoView) {
       projectPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1390,6 +1492,30 @@
       ]
     },
     {
+      row: [
+        {
+          key: 'storyStyle', id: 'projStoryStyle', type: 'select',
+          label: 'Story style',
+          hint: 'Is this driven more by plot or by character?',
+          options: [
+            ['', 'Choose one…'], ['Plot Driven', 'Plot Driven'], ['Character Driven', 'Character Driven']
+          ]
+        },
+        {
+          key: 'pov', id: 'projPov', type: 'select',
+          label: 'Point of view', hint: '\u00A0',
+          options: [
+            ['', 'Choose one…'],
+            ['First Person', 'First Person'],
+            ['Second Person', 'Second Person'],
+            ['Third Person Limited', 'Third Person Limited'],
+            ['Third Person Omniscient', 'Third Person Omniscient'],
+            ['Third Person Objective', 'Third Person Objective']
+          ]
+        }
+      ]
+    },
+    {
       key: 'wipTitle', id: 'projTitle', type: 'text', maxLength: 150,
       label: 'Working title', hint: '\u00A0', placeholder: 'e.g. What the River Kept'
     },
@@ -1405,6 +1531,22 @@
           label: "Antagonist's name", hint: 'Leave blank if not applicable',
           placeholder: 'e.g. Marcus Kellan'
         }
+      ]
+    },
+    {
+      key: 'antagonistType', id: 'projAntagonistType', type: 'select',
+      label: 'Type of antagonist',
+      hint: 'Leave blank if not applicable',
+      options: [
+        ['', 'Choose one…'],
+        ['Villain', 'Villain'],
+        ['Ideological', 'Ideological'],
+        ['Societal', 'Societal'],
+        ['Nature or Circumstance', 'Nature or Circumstance'],
+        ['Internal', 'Internal'],
+        ['Moral Foil', 'Moral Foil'],
+        ['Ally', 'Ally'],
+        ['Inanimate', 'Inanimate']
       ]
     },
     {
@@ -2044,6 +2186,12 @@
   function buildCoachTab(panel) {
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemCoaching'); return; }
     buildCoachingIntro(panel);
+    var topDownloadWrap = el('div', 'srx-download-anytime-wrap');
+    var topDownloadBtn = el('button', 'srx-download-anytime-btn', t('coachDownloadBtn'));
+    topDownloadBtn.type = 'button';
+    topDownloadBtn.addEventListener('click', downloadConversationSoFar);
+    mount(topDownloadWrap, topDownloadBtn);
+    mount(panel, topDownloadWrap);
     var bleed = el('div', 'syio-bleed');
     var wrap = el('div', 'srx-wrap');
     chatEl = el('div', 'srx-chat');
@@ -2056,6 +2204,13 @@
     inputEl.placeholder = t('coachInputPlaceholder');
     inputEl.rows = 1;
     mount(formEl, inputEl);
+    var inlineDownloadBtn = el('button', 'srx-inline-download-btn');
+    inlineDownloadBtn.type = 'button';
+    inlineDownloadBtn.title = t('coachDownloadBtn');
+    inlineDownloadBtn.setAttribute('aria-label', t('coachDownloadBtn'));
+    inlineDownloadBtn.innerHTML = '&#8681;';
+    inlineDownloadBtn.addEventListener('click', downloadConversationSoFar);
+    mount(formEl, inlineDownloadBtn);
     sendBtn = el('button', 'srx-send');
     sendBtn.type = 'submit';
     sendBtn.setAttribute('aria-label', t('coachSendAriaLabel'));
@@ -2079,6 +2234,19 @@
       inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
     });
     bootConversation();
+  }
+  // Sept 2026: lets a student export the transcript at any point, not just
+  // after the closing [REFLECTION_COMPLETE] flow. Reuses generateDoc()
+  // unchanged - it already renders from whatever's in conversationHistory
+  // plus lastDeliverable if set, with no dependency on reflectionComplete,
+  // so calling it early is safe. Only new behavior here is the guard for
+  // "nothing real to export yet" (just the primer + greeting, index 0-1).
+  function downloadConversationSoFar() {
+    if (!conversationHistory || conversationHistory.length <= 2) {
+      alert(t('coachDownloadNothingYet'));
+      return;
+    }
+    generateDoc();
   }
   function scrollToBottom() {
     chatEl.scrollTop = chatEl.scrollHeight;
@@ -2586,7 +2754,12 @@
       buildEssentialsPage(container);
       return;
     }
-    buildTopNav(container);
+    buildTabGroup(container, FLAT_TABS, 'stratum-nav', 'navlink', 'stratum-panel');
+    var navBar = container.querySelector('.stratum-nav');
+    if (navBar) buildNavLanguageControl(navBar);
+    if (!isEmailConfirmed()) {
+      showIdentityModal();
+    }
   }
   function init() {
     LESSON_ID = window.STRATUM_LESSON_ID;
