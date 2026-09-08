@@ -339,6 +339,7 @@
   <div class="brand">STRATUM <span>ADMIN</span></div>
   <div class="nav-group" id="mainNavGroup" style="display:none;">
     <button class="nav-item" id="tabGuidedBtn" type="button"><span class="nav-dot"></span>Course</button>
+    <button class="nav-item" id="tabGlobalInstructionsBtn" type="button"><span class="nav-dot"></span>Global Instructions</button>
     <button class="nav-item" id="tabDashboardBtn" type="button"><span class="nav-dot"></span>Students</button>
     <button class="nav-item" id="tabDeliverablesBtn" type="button"><span class="nav-dot"></span>Deliverables</button>
     <button class="nav-item" id="tabTestimonialsBtn" type="button"><span class="nav-dot"></span>Testimonials</button>
@@ -423,6 +424,19 @@
     </div>
   </div>
   <div id="panel">
+    <div id="globalInstructionsView" style="display:none;">
+      <div class="tst-toolbar">
+        <span class="sub" style="margin:0;">Standing coaching direction that applies to every lesson's coach, folded into the system prompt on every message alongside that lesson's own Coaching Approach. Private &mdash; never shown to students. Each entry is capped at 1200 characters; only active entries are sent.</span>
+      </div>
+      <div class="tst-toolbar">
+        <button class="btn secondary" id="giReloadBtn" type="button">Reload</button>
+        <div class="spacer"></div>
+        <span id="giAggregateCount" style="font-size:12px;color:#9A927E;font-weight:600;margin-right:14px;"></span>
+        <span id="giStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
+      </div>
+      <div id="giList"></div>
+      <button class="add-btn" id="giAddBtn" type="button">+ Add global instruction</button>
+    </div>
     <div id="dashboardView" style="display:none;">
       <div class="dash-toolbar">
         <input type="text" id="studentSearch" placeholder="Search by email..." />
@@ -1267,6 +1281,7 @@ var tabDashboardBtn = document.getElementById('tabDashboardBtn');
 var tabDeliverablesBtn = document.getElementById('tabDeliverablesBtn');
 var tabTestimonialsBtn = document.getElementById('tabTestimonialsBtn');
 var tabVocabularyBtn = document.getElementById('tabVocabularyBtn');
+var tabGlobalInstructionsBtn = document.getElementById('tabGlobalInstructionsBtn');
 var tabExcavationBtn = document.getElementById('tabExcavationBtn');
 var tabGuidedBtn = document.getElementById('tabGuidedBtn');
 var tabEssentialsBtn = document.getElementById('tabEssentialsBtn');
@@ -1276,6 +1291,7 @@ var dashboardView = document.getElementById('dashboardView');
 var deliverablesView = document.getElementById('deliverablesView');
 var testimonialsView = document.getElementById('testimonialsView');
 var vocabularyView = document.getElementById('vocabularyView');
+var globalInstructionsView = document.getElementById('globalInstructionsView');
 var excavationView = document.getElementById('excavationView');
 var guidedView = document.getElementById('guidedView');
 var essentialsView = document.getElementById('essentialsView');
@@ -1286,6 +1302,7 @@ var PAGE_HEADERS = {
   deliverables: ['Deliverables', "Confirms every completed session actually captured a real, validated deliverable \u2014 not just the summary sentence."],
   testimonials: ['Testimonials', 'Shown in the homepage rotator, fading from one to the next.'],
   vocabulary: ['Vocabulary', "Writer's Vocabulary glossary shown on the student Vocabulary tab."],
+  globalInstructions: ['Global Instructions', 'Standing coaching direction that applies to every lesson, every session.'],
   excavation: ['Excavation', 'The 5-Minute Character Excavation \u2014 started / completed / traffic source / surprise rating.'],
   guided: ['Course', "Enter or edit any lesson's coaching content. Saves go straight to the database \u2014 the live lesson page picks up changes on next load."],
   essentials: ['Self-Guided', 'Self-Guided lesson editor.'],
@@ -1296,6 +1313,7 @@ function showTopTab(which) {
   tabDeliverablesBtn.className = 'nav-item' + (which === 'deliverables' ? ' active' : '');
   tabTestimonialsBtn.className = 'nav-item' + (which === 'testimonials' ? ' active' : '');
   tabVocabularyBtn.className = 'nav-item' + (which === 'vocabulary' ? ' active' : '');
+  tabGlobalInstructionsBtn.className = 'nav-item' + (which === 'globalInstructions' ? ' active' : '');
   tabExcavationBtn.className = 'nav-item' + (which === 'excavation' ? ' active' : '');
   tabGuidedBtn.className = 'nav-item' + (which === 'guided' ? ' active' : '');
   tabEssentialsBtn.className = 'nav-item' + (which === 'essentials' ? ' active' : '');
@@ -1307,6 +1325,7 @@ function showTopTab(which) {
   deliverablesView.style.display = which === 'deliverables' ? '' : 'none';
   testimonialsView.style.display = which === 'testimonials' ? '' : 'none';
   vocabularyView.style.display = which === 'vocabulary' ? '' : 'none';
+  globalInstructionsView.style.display = which === 'globalInstructions' ? '' : 'none';
   excavationView.style.display = which === 'excavation' ? '' : 'none';
   guidedView.style.display = which === 'guided' ? '' : 'none';
   essentialsView.style.display = which === 'essentials' ? '' : 'none';
@@ -1332,6 +1351,10 @@ tabTestimonialsBtn.addEventListener('click', function () {
 tabVocabularyBtn.addEventListener('click', function () {
   showTopTab('vocabulary');
   loadVocabulary();
+});
+tabGlobalInstructionsBtn.addEventListener('click', function () {
+  showTopTab('globalInstructions');
+  loadGlobalInstructions();
 });
 tabExcavationBtn.addEventListener('click', function () {
   showTopTab('excavation');
@@ -2126,6 +2149,226 @@ function addVocabularyBlock(term, isNew) {
         if (d && d.ok) { block.remove(); } else { saveStatus.textContent = 'Delete failed.'; }
       })
       .catch(function () { saveStatus.textContent = 'Delete failed.'; });
+  });
+}
+// ===== Global Instructions =====
+var giList = document.getElementById('giList');
+var giStatus = document.getElementById('giStatus');
+var giAggregateCount = document.getElementById('giAggregateCount');
+var GI_CATEGORIES = ['Tone & Voice', 'Technique & Method', 'Student Data Usage', 'Boundaries', 'Pacing & Session Flow'];
+var GI_CONTENT_CAP = 1200;
+var giBlocks = []; // { getContentLength: fn, isActive: fn } for every rendered block, used to recompute the aggregate counter
+document.getElementById('giReloadBtn').addEventListener('click', loadGlobalInstructions);
+document.getElementById('giAddBtn').addEventListener('click', function () {
+  addGlobalInstructionBlock({
+    id: null,
+    title: '',
+    category: '',
+    shortDescription: '',
+    content: '',
+    isActive: true
+  }, true);
+});
+function loadGlobalInstructions() {
+  if (!adminKey) { giStatus.textContent = 'Unlock the panel first.'; return; }
+  giStatus.textContent = 'Loading...';
+  giList.innerHTML = '';
+  giBlocks = [];
+  fetch(PROXY_URL + '/admin/global-instructions', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var items = (d && d.instructions) || [];
+      if (!items.length) {
+        giStatus.textContent = 'No global instructions yet - add the first one below.';
+        recomputeGiAggregate();
+        return;
+      }
+      giStatus.textContent = items.length + ' entr' + (items.length === 1 ? 'y' : 'ies') + '.';
+      items.forEach(function (item) { addGlobalInstructionBlock(item, false); });
+      recomputeGiAggregate();
+    })
+    .catch(function () {
+      giStatus.textContent = 'Could not load global instructions.';
+    });
+}
+function recomputeGiAggregate() {
+  var activeCount = 0;
+  var activeChars = 0;
+  giBlocks.forEach(function (b) {
+    if (b.isActive()) {
+      activeCount++;
+      activeChars += b.getContentLength();
+    }
+  });
+  giAggregateCount.textContent = activeCount + ' active \u00b7 ' + activeChars.toLocaleString() + ' characters sent to every coaching session';
+}
+function addGlobalInstructionBlock(item, isNew) {
+  var block = document.createElement('div');
+  block.className = 'tst-block';
+  if (item.isActive === false) block.style.opacity = '0.65';
+  var head = document.createElement('div');
+  head.className = 'tst-block-head';
+  var titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.className = 'tst-name';
+  titleInput.placeholder = 'Title';
+  titleInput.value = item.title || '';
+  head.appendChild(titleInput);
+  var categorySelect = document.createElement('select');
+  categorySelect.style.cssText = 'padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#fff;min-width:190px;';
+  var blankOpt = document.createElement('option');
+  blankOpt.value = '';
+  blankOpt.textContent = 'Choose a category\u2026';
+  categorySelect.appendChild(blankOpt);
+  GI_CATEGORIES.forEach(function (cat) {
+    var o = document.createElement('option');
+    o.value = cat;
+    o.textContent = cat;
+    if (cat === item.category) o.selected = true;
+    categorySelect.appendChild(o);
+  });
+  head.appendChild(categorySelect);
+  if (item.isActive === false) {
+    var tag = document.createElement('span');
+    tag.className = 'tst-inactive-tag';
+    tag.textContent = 'Inactive';
+    head.appendChild(tag);
+  }
+  block.appendChild(head);
+  var descLabel = document.createElement('div');
+  descLabel.style.cssText = 'font-size:11px;font-weight:700;color:#3B2F24;margin-bottom:4px;';
+  descLabel.textContent = 'Short description (admin-facing, for browsing/filtering only)';
+  block.appendChild(descLabel);
+  var descInput = document.createElement('input');
+  descInput.type = 'text';
+  descInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;font-family:\'Inter\', Arial, sans-serif;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;margin-bottom:12px;';
+  descInput.placeholder = 'e.g. Keep responses under five sentences unless the student asks for more.';
+  descInput.value = item.shortDescription || '';
+  block.appendChild(descInput);
+  var contentLabelRow = document.createElement('div');
+  contentLabelRow.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;';
+  var contentLabel = document.createElement('span');
+  contentLabel.style.cssText = 'font-size:11px;font-weight:700;color:#3B2F24;';
+  contentLabel.textContent = 'Instruction text (sent to the coach on every message, every lesson)';
+  contentLabelRow.appendChild(contentLabel);
+  var contentCounter = document.createElement('span');
+  contentCounter.style.cssText = 'font-size:11px;font-weight:700;';
+  contentLabelRow.appendChild(contentCounter);
+  block.appendChild(contentLabelRow);
+  var contentArea = document.createElement('textarea');
+  contentArea.className = 'tst-quote';
+  contentArea.style.fontFamily = "'Inter', Arial, sans-serif";
+  contentArea.style.fontStyle = 'normal';
+  contentArea.placeholder = 'A single, specific, condensed instruction - one idea, not a full explanation.';
+  contentArea.value = item.content || '';
+  contentArea.maxLength = GI_CONTENT_CAP;
+  block.appendChild(contentArea);
+  function updateContentCounter() {
+    var len = contentArea.value.length;
+    contentCounter.textContent = len + ' / ' + GI_CONTENT_CAP;
+    contentCounter.style.color = len >= GI_CONTENT_CAP ? '#b3261e' : (len >= GI_CONTENT_CAP * 0.85 ? '#b98a2e' : '#9A927E');
+    recomputeGiAggregate();
+  }
+  contentArea.addEventListener('input', updateContentCounter);
+  updateContentCounter();
+  var activeRow = document.createElement('div');
+  activeRow.className = 'toggle-row';
+  activeRow.style.marginTop = '4px';
+  var activeCb = document.createElement('input');
+  activeCb.type = 'checkbox';
+  activeCb.checked = item.isActive !== false;
+  activeCb.id = 'giActive_' + (item.id || 'new_' + Math.random().toString(36).slice(2));
+  activeCb.addEventListener('change', function () {
+    block.style.opacity = activeCb.checked ? '1' : '0.65';
+    recomputeGiAggregate();
+  });
+  var activeCbLabel = document.createElement('label');
+  activeCbLabel.setAttribute('for', activeCb.id);
+  activeCbLabel.style.margin = '0';
+  activeCbLabel.textContent = 'Active (sent to the coach)';
+  activeRow.appendChild(activeCb);
+  activeRow.appendChild(activeCbLabel);
+  block.appendChild(activeRow);
+  var foot = document.createElement('div');
+  foot.className = 'tst-block-foot';
+  var saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = 'tst-save-btn';
+  saveBtn.textContent = isNew ? 'Add instruction' : 'Save';
+  foot.appendChild(saveBtn);
+  var deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'remove-btn';
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.style.display = isNew ? 'none' : '';
+  foot.appendChild(deleteBtn);
+  var saveStatus = document.createElement('span');
+  saveStatus.className = 'tst-save-status';
+  foot.appendChild(saveStatus);
+  block.appendChild(foot);
+  giList.appendChild(block);
+  var currentId = item.id || null;
+  function payload() {
+    return {
+      id: currentId,
+      title: titleInput.value.trim(),
+      category: categorySelect.value,
+      shortDescription: descInput.value.trim(),
+      content: contentArea.value.trim(),
+      isActive: activeCb.checked
+    };
+  }
+  saveBtn.addEventListener('click', function () {
+    var p = payload();
+    if (!p.title) { saveStatus.textContent = 'Title is required.'; return; }
+    if (!p.category) { saveStatus.textContent = 'Choose a category.'; return; }
+    if (!p.content) { saveStatus.textContent = 'Instruction text is required.'; return; }
+    saveStatus.textContent = 'Saving...';
+    fetch(PROXY_URL + '/admin/global-instructions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+      body: JSON.stringify(p)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) { saveStatus.textContent = 'Save failed.'; return; }
+        currentId = d.id;
+        isNew = false;
+        saveBtn.textContent = 'Save';
+        deleteBtn.style.display = '';
+        saveStatus.textContent = 'Saved.';
+        setTimeout(function () { saveStatus.textContent = ''; }, 2000);
+      })
+      .catch(function () { saveStatus.textContent = 'Save failed.'; });
+  });
+  deleteBtn.addEventListener('click', function () {
+    if (!currentId) {
+      block.remove();
+      giBlocks = giBlocks.filter(function (b) { return b.block !== block; });
+      recomputeGiAggregate();
+      return;
+    }
+    if (!confirm('Delete "' + (payload().title || 'this instruction') + '"? This cannot be undone.')) return;
+    fetch(PROXY_URL + '/admin/global-instructions?id=' + encodeURIComponent(currentId), {
+      method: 'DELETE',
+      headers: { 'X-Stratum-Admin-Key': adminKey }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok) {
+          block.remove();
+          giBlocks = giBlocks.filter(function (b) { return b.block !== block; });
+          recomputeGiAggregate();
+        } else {
+          saveStatus.textContent = 'Delete failed.';
+        }
+      })
+      .catch(function () { saveStatus.textContent = 'Delete failed.'; });
+  });
+  giBlocks.push({
+    block: block,
+    getContentLength: function () { return contentArea.value.length; },
+    isActive: function () { return activeCb.checked; }
   });
 }
 // ===== Excavation dashboard =====
