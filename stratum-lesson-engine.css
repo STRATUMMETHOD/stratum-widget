@@ -1089,27 +1089,53 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 
 /* ============================================================
-   FLAT NAV — Video | Lesson Handouts | Stratum Coaching |
-   Work In Progress | Idea Log | Action Items | Writer's Vocabulary |
-   Writer Support (Sept 2026)
+   NAV CLUSTERS (Sept 2026)
    ------------------------------------------------------------
-   Replaces the old two-tier nav (This Lesson > sub-tabs, Dashboard >
-   sub-tabs, plus a separate Contact destination) with one flat row of
-   8 tabs, all siblings, built by the same generic buildTabGroup() as
-   before. (Guided / Mastery only — Essentials still uses .tab/.tablinks
-   above.)
+   Replaces the previous flat single-row nav (Video/Handouts/Coaching/
+   Work In Progress/Idea Log/Action Items/Glossary/Help all as siblings
+   in one row) with two visually distinct rows, each under a small kicker
+   label, built by buildNavClusters() in the engine JS:
+     - "This Lesson": a true ordered sequence (watch, read, talk it
+       through) — numbered 1/2/3 via .nav-step-badge.
+     - "Your Creative Desktop": tools reached for in any order — no
+       numbers.
+   Both rows still use the same .navlink/.stratum-panel classes for the
+   underlying show/hide logic (see openTabPanel in engine JS) — the split
+   is presentational only. The two clusters are separated by spacing
+   (.nav-cluster margin), not a divider line, per standard nav-grouping
+   guidance against extra dividers when whitespace alone reads cleanly.
+   Each tab also carries a small branded hover/focus tooltip (data-tip +
+   ::after below) instead of the old per-GROUP tooltip the previous
+   two-tier nav used to show.
    ============================================================ */
+
+.nav-cluster { margin: 0 0 26px; }
+.nav-cluster:last-of-type { margin-bottom: 34px; }
+
+.nav-cluster-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #b3a68c;
+  margin: 0 0 8px;
+}
 
 .stratum-nav{
   display:flex;
   align-items:center;
   flex-wrap:wrap;
   gap:0;
-  margin:0 0 20px;
+  margin:0;
   border-bottom:1px solid #e2d9c4;
   text-align:left;
 }
 .navlink{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:8px;
   background:none;
   border:none;
   padding:10px 4px;
@@ -1128,6 +1154,61 @@ button.download-btn:hover { background-color: #5a4535; }
 .navlink:hover{ color:#281e16; }
 .navlink.active{ color:#281e16; border-bottom-color:#C9A46C; }
 
+/* Step badge — only rendered on the numbered "This Lesson" cluster. */
+.nav-step-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  border:1.5px solid #C9A46C;
+  color:#8a6630;
+  font-family:'Inter',sans-serif;
+  font-size:9.5px;
+  font-weight:700;
+  flex-shrink:0;
+}
+.navlink.active .nav-step-badge{
+  background:#C9A46C;
+  color:#F5EFE0;
+  border-color:#C9A46C;
+}
+
+/* Branded hover/focus tooltip — a small popover, not the native browser
+   title tooltip. Content comes from the tab's data-tip attribute, set in
+   buildNavClusters() from the per-tab tabTip* STRINGS key. */
+.navlink[data-tip]::after{
+  content:attr(data-tip);
+  position:absolute;
+  top:100%;
+  left:0;
+  margin-top:10px;
+  background:#3B2F24;
+  color:#F5EFE0;
+  font-family:'Inter',sans-serif;
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:0;
+  text-transform:none;
+  line-height:1.4;
+  white-space:normal;
+  width:190px;
+  padding:8px 10px;
+  border-radius:6px;
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(-4px);
+  transition:opacity .15s ease,transform .15s ease;
+  z-index:20;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+}
+.navlink[data-tip]:hover::after,
+.navlink[data-tip]:focus-visible::after{
+  opacity:1;
+  transform:translateY(0);
+}
+
 .stratum-section,.stratum-panel{ text-align:left; }
 
 .lec-resource-empty{
@@ -1139,7 +1220,7 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 
 /* Shared intro/reminder paragraph style, used across several panels
-   (WIP reminder, Idea Log intro, Action Items intro, Vocabulary intro).
+   (WIP reminder, Idea Log intro, Action Items intro, Glossary intro).
    Grey, non-italic. */
 .panel-intro{
   font-family:'Inter',sans-serif;
@@ -1153,14 +1234,17 @@ button.download-btn:hover { background-color: #5a4535; }
 
 @media (max-width:640px){
   .navlink{ margin-right:14px; font-size:11.5px; }
+  .navlink[data-tip]::after{ width:160px; }
 }
 
 /* ============================================================
-   WRITER'S VOCABULARY (Sept 2026)
+   GLOSSARY (formerly "Writer's Vocabulary") (Sept 2026)
    ------------------------------------------------------------
-   Read-only glossary: a row of 4 filter dropdowns (Craft Category,
-   Narrative Stage, Function, Complexity Level) above a flat list of
-   entries. No add/edit here — content is admin-managed.
+   Read-only glossary: a free-text search box (Enter/button-triggered,
+   searches both word and definition) alongside a row of 4 filter
+   dropdowns (Craft Category, Narrative Stage, Function, Complexity
+   Level), above a flat list of entries. No add/edit here - content is
+   admin-managed.
    ============================================================ */
 
 .vocab-toolbar{
@@ -1169,6 +1253,35 @@ button.download-btn:hover { background-color: #5a4535; }
   gap:14px;
   margin-bottom:18px;
 }
+.vocab-search-wrap{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex:1 1 220px;
+}
+.vocab-search-input{
+  flex:1;
+  padding:6px 10px;
+  font-size:12px;
+  font-family:Arial,sans-serif;
+  border:1px solid #ccc;
+  background:#fff;
+  color:#281e16;
+}
+.vocab-search-input:focus{ outline:none; border-color:#C9A46C; }
+.vocab-search-btn{
+  padding:6px 12px;
+  font-size:12px;
+  font-weight:600;
+  font-family:'Inter',sans-serif;
+  background:#3B2F24;
+  color:#F5EFE0;
+  border:none;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background-color .2s ease;
+}
+.vocab-search-btn:hover{ background:#5a4535; }
 .vocab-filter-wrap{ display:flex; align-items:center; gap:6px; }
 .vocab-filter-label{
   font-family:'Inter',sans-serif;
@@ -1398,12 +1511,14 @@ button.download-btn:hover { background-color: #5a4535; }
 /* ============================================================
    15. NAV LANGUAGE CONTROL
    ------------------------------------------------------------
-   Relocated Sept 2026 from a form field at the bottom of the WIP tab to
-   a compact control in the top nav, so it's visible regardless of which
-   tab a student is on. Hidden entirely below 2 active languages (see
+   Relocated Sept 2026 from a form field at the bottom of the WIP tab, to
+   a top nav row, to (now) the last nav cluster's bar ("Your Creative
+   Desktop") - a language switch reads as a tool/setting rather than a
+   lesson step, so it sits with the other tools rather than cramped into
+   the 3-tab numbered row. Still pushed right via margin-left:auto on
+   .nav-lang-control. Hidden entirely below 2 active languages (see
    buildNavLanguageControl() in the engine JS), so it stays invisible
-   today and appears automatically once 'es' goes live. Pushed to the
-   far right of .stratum-nav via margin-left:auto.
+   today and appears automatically once 'es' goes live.
    ============================================================ */
 
 .nav-lang-control {
