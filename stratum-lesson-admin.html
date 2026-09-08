@@ -542,6 +542,7 @@
         <div class="toolbar">
           <select id="gLessonSelect"></select>
           <button class="btn secondary" id="gLoadBtn" type="button">Load</button>
+          <button class="btn secondary" id="gDownloadContentBtn" type="button">Download Coaching Content</button>
           <button class="btn secondary" id="gNewLessonBtn" type="button">+ New Lesson</button>
           <button class="btn danger" id="gDeleteBtn" type="button">Delete Lesson</button>
           <div class="spacer"></div>
@@ -820,6 +821,7 @@
         <div class="toolbar">
           <select id="mLessonSelect"></select>
           <button class="btn secondary" id="mLoadBtn" type="button">Load</button>
+          <button class="btn secondary" id="mDownloadContentBtn" type="button">Download Coaching Content</button>
           <button class="btn secondary" id="mNewLessonBtn" type="button">+ New Lesson</button>
           <button class="btn danger" id="mDeleteBtn" type="button">Delete Lesson</button>
           <div class="spacer"></div>
@@ -2754,6 +2756,32 @@ function backupExistingConfig(lessonId, tier, onDone) {
     .catch(function () { /* best-effort - proceed to save regardless */ })
     .then(onDone);
 }
+// Standalone "Download Coaching Content" report (Sept 2026) - a
+// per-lesson, no-save-required export of everything the coach reads for
+// a given lesson, using the exact same readable-text renderer that
+// already runs automatically after every Save (configToReadableText).
+// Fetches fresh from the server rather than reading unsaved form edits,
+// so the report always reflects what the LIVE coach is actually working
+// from, not whatever's sitting half-edited in the form.
+function downloadCoachingContentReport(lessonId, tier) {
+  if (!lessonId) { alert('Select or load a lesson first.'); return; }
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=' + encodeURIComponent(tier) + '&lang=' + encodeURIComponent(ADMIN_LANG))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.known || !d.config) {
+        alert('No saved config found for ' + lessonId + ' (' + tier + ', ' + ADMIN_LANG + ') yet.');
+        return;
+      }
+      var now = new Date();
+      var stamp = now.toISOString().replace(/[:.]/g, '-');
+      var safeId = String(lessonId).replace(/\./g, '-');
+      downloadText('stratum-coaching-content_' + safeId + '_' + tier + '_' + ADMIN_LANG + '_' + stamp + '.txt', configToReadableText(d.config, now));
+    })
+    .catch(function () { alert('Could not load that lesson to generate the report.'); });
+}
+document.getElementById('gDownloadContentBtn').addEventListener('click', function () {
+  downloadCoachingContentReport(gLessonSelect.value, 'guided');
+});
 document.getElementById('gSaveBtn').addEventListener('click', function () {
   var config = collectGuidedConfig();
   var gStillHasDeliverable = !!(config.reflectionFramework.deliverable && config.reflectionFramework.deliverable.required);
@@ -2878,6 +2906,9 @@ document.getElementById('mLoadBtn').addEventListener('click', function () {
   var id = mLessonSelect.value;
   if (!id) return;
   loadMasteryLesson(id);
+});
+document.getElementById('mDownloadContentBtn').addEventListener('click', function () {
+  downloadCoachingContentReport(mLessonSelect.value, 'guided');
 });
 document.getElementById('mNewLessonBtn').addEventListener('click', function () {
   var id = prompt('New Master Coach lesson ID (e.g. 5.2):');
