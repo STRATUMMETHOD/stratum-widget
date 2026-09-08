@@ -1935,6 +1935,47 @@
   var poolExhausted = false;
   var busy = false;
   var chatEl, formEl, inputEl, sendBtn;
+  /* ==========================================================
+     GLOBAL COACHING INSTRUCTIONS (Sept 2026)
+     ------------------------------------------------------------
+     Admin-authored, applies to every lesson's coach - fetched once per
+     page load (see fetchGlobalInstructions() call in init()) and cached
+     here, since buildSystemPrompt() runs synchronously on every message
+     send and can't itself await a network call. If the fetch hasn't
+     resolved yet or fails, GLOBAL_INSTRUCTIONS stays [] and the block is
+     silently omitted - same graceful-degradation rule as everything else
+     fetched at startup (languages, lesson config, etc.). This is what
+     lets Story Style / POV / Antagonist Type / Vocabulary coaching cues
+     actually influence the coach without further code changes: those
+     fields already reach the coach via buildProjectContextBlock() on
+     every message - Global Instructions is just where the admin tells
+     the coach to care about them.
+     ========================================================== */
+  var GLOBAL_INSTRUCTIONS = [];
+  function fetchGlobalInstructions() {
+    return fetch(PROXY_URL + '/global-instructions')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        GLOBAL_INSTRUCTIONS = (d && Array.isArray(d.instructions)) ? d.instructions : [];
+      })
+      .catch(function () { GLOBAL_INSTRUCTIONS = []; });
+  }
+  function buildGlobalInstructionsBlock() {
+    if (!GLOBAL_INSTRUCTIONS.length) return '';
+    var byCategory = {};
+    var order = [];
+    GLOBAL_INSTRUCTIONS.forEach(function (item) {
+      var cat = item.category || 'General';
+      if (!byCategory[cat]) { byCategory[cat] = []; order.push(cat); }
+      byCategory[cat].push(item.content);
+    });
+    var lines = [];
+    order.forEach(function (cat) {
+      lines.push(cat.toUpperCase() + ':');
+      byCategory[cat].forEach(function (c) { lines.push('- ' + c); });
+    });
+    return 'GLOBAL COACHING INSTRUCTIONS - PRIVATE, NEVER SHOWN OR REFERENCED TO THE STUDENT, APPLY ACROSS EVERY LESSON (lesson-specific Coaching Approach below, if any, refines or takes precedence over these where they conflict):\n' + lines.join('\n');
+  }
   function buildSystemPrompt() {
     var areas = (LESSON.reflectionFramework.areas || []).map(function (area, i) {
       return 'AREA ' + (i + 1) + ' - ' + area.title + '\n' + area.instructions;
@@ -1958,6 +1999,10 @@
     parts.push(
       'WHAT THIS CONVERSATION IS FOR:\nThis single, continuous, natural conversation IS the ' + LESSON.scopeNote + ' reflection. It replaces a written reflection form. Your job is to walk this student through the areas below - in whatever order the conversation naturally takes, based on what they say and ask. Do not treat these as a rigid checklist to march through in order. Follow threads. Let one answer lead somewhere before pivoting. But you are responsible for making sure, by the end, all of them have been genuinely explored:\n\n' + areas
     );
+    var globalInstructionsBlock = buildGlobalInstructionsBlock();
+    if (globalInstructionsBlock) {
+      parts.push(globalInstructionsBlock);
+    }
     if (LESSON.reflectionFramework.coachingApproach) {
       parts.push(
         'COACHING APPROACH FOR THIS LESSON - PRIVATE, NEVER SHOWN OR REFERENCED TO THE STUDENT:\n' +
@@ -2775,6 +2820,12 @@
       return;
     }
     STORE_KEY = 'wlfc_coach_' + LESSON_ID.replace(/\./g, '_');
+    // Non-blocking - buildSystemPrompt() only reads GLOBAL_INSTRUCTIONS
+    // once a student actually sends a message, well after page load, so
+    // this doesn't need to be awaited before the rest of init() proceeds.
+    // Skipped entirely for Essentials, which has no AI coach and never
+    // calls buildSystemPrompt().
+    if (TIER !== 'essentials') fetchGlobalInstructions();
     resolvePreferredLang().then(function () {
       loadLessonConfig(container);
     });
