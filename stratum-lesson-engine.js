@@ -132,12 +132,12 @@
      WRITER'S VOCABULARY - FILTER TAXONOMY (Sept 2026)
      ------------------------------------------------------------
      Fixed option lists for the four filter dropdowns on the student-
-     facing Vocabulary tab. English-only for now, regardless of LANG -
-     the admin panel that authors these terms has no language switching
-     yet (unlike lesson_configs), so every stored term's category values
-     are English strings; translating just the filter labels while the
-     underlying data stays English would silently break filtering. Revisit
-     if/when vocabulary authoring itself goes bilingual.
+     facing Vocabulary/Glossary tab. English-only for now, regardless of
+     LANG - the admin panel that authors these terms has no language
+     switching yet (unlike lesson_configs), so every stored term's
+     category values are English strings; translating just the filter
+     labels while the underlying data stays English would silently break
+     filtering. Revisit if/when vocabulary authoring itself goes bilingual.
      ========================================================== */
   var VOCAB_CRAFT_CATEGORIES = ['Character', 'Plot', 'Dialogue', 'Setting', 'Theme', 'Structure', 'Pacing', 'Point of View'];
   var VOCAB_NARRATIVE_STAGES = ['Setup', 'Rising Action', 'Climax', 'Falling Action', 'Resolution'];
@@ -164,14 +164,37 @@
       navDashboardTooltip: 'Your WIP, Idea Log, and Action Items',
       navLesson: 'This Lesson',
       navLessonTooltip: 'Video, resources, and coaching for this lesson',
-      navContact: 'Writer Support',
+      navContact: 'Help',
       navContactTooltip: 'Get in touch with Ted',
       subVideo: 'Video',
-      subResources: 'Lesson Handouts',
-      subCoaching: 'Stratum Coaching',
+      subResources: 'Handouts',
+      subCoaching: 'Coaching',
       dashTabWip: 'Work In Progress',
-      vocabTitle: "Writer's Vocabulary",
-      vocabIntro: 'A working glossary of craft terms. Filter by category, narrative stage, function, or complexity level to find what you need.',
+      // Two nav-cluster kicker labels (Sept 2026) - sit above each row of
+      // tabs, replacing the single flat 8-tab row. The first cluster is a
+      // true ordered sequence (numbered); the second is a set of tools a
+      // student reaches for in any order (unnumbered). See
+      // buildNavClusters() / NAV_CLUSTERS below.
+      navClusterLessonLabel: 'This Lesson',
+      navClusterDeskLabel: 'Your Creative Desktop',
+      // Per-tab hover tooltips (Sept 2026) - branded popovers rendered via
+      // the data-tip attribute + CSS, not the native browser title
+      // tooltip. Replaces the old per-GROUP tooltips
+      // (navDashboardTooltip/navLessonTooltip/navContactTooltip above,
+      // now unused but left in place harmlessly) from the two-tier nav
+      // that predated the flat nav.
+      tabTipVideo: "Watch this lesson's lecture.",
+      tabTipHandouts: 'Reference documents and resources for this lesson.',
+      tabTipCoaching: 'Talk through this lesson with your Excavation Coach.',
+      tabTipWip: 'Your WIP details \u2014 this unlocks everything else here.',
+      tabTipIdeaLog: 'Capture ideas and notes as they come to you.',
+      tabTipActionItems: "Track what's next for your WIP.",
+      tabTipGlossary: 'Look up any craft term used in the course.',
+      tabTipHelp: 'Get in touch with Ted.',
+      vocabTitle: 'Glossary',
+      vocabIntro: 'A working glossary of craft terms. Search by keyword, or filter by category, narrative stage, function, or complexity level to find what you need.',
+      vocabSearchPlaceholder: 'Search terms and definitions\u2026',
+      vocabSearchBtn: 'Search',
       vocabFilterCraft: 'Craft Category',
       vocabFilterStage: 'Narrative Stage',
       vocabFilterFunction: 'Function',
@@ -282,20 +305,35 @@
     // existed; worth a second look. Sept 2026: "Notas" -> "Registro de
     // Ideas", "Tareas" -> "Elementos de Acci\u00f3n", "Proyecto" -> "WIP"
     // (left untranslated, same treatment as "Coaching") throughout -
-    // also draft, needs the same native-speaker pass.
+    // also draft, needs the same native-speaker pass. Also draft: the new
+    // navClusterLessonLabel/navClusterDeskLabel kickers and the eight
+    // tabTip* tooltip strings added alongside the "Handouts"/"Coaching"/
+    // "Glossary"/"Help" relabel.
     es: {
       navDashboard: 'Mesa Creativa',
       navDashboardTooltip: 'Tu WIP, tu Registro de Ideas y tus Elementos de Acci\u00f3n',
       navLesson: 'Esta Lecci\u00f3n',
       navLessonTooltip: 'Video, recursos y coaching para esta lecci\u00f3n',
-      navContact: 'Soporte para Escritores',
+      navContact: 'Ayuda',
       navContactTooltip: 'Ponte en contacto con Ted',
       subVideo: 'Video',
-      subResources: 'Materiales de la Lecci\u00f3n',
-      subCoaching: 'Coaching Stratum',
+      subResources: 'Materiales',
+      subCoaching: 'Coaching',
       dashTabWip: 'Trabajo en Progreso',
-      vocabTitle: 'Vocabulario del Escritor',
-      vocabIntro: 'Un glosario de trabajo con t\u00e9rminos de oficio. Filtra por categor\u00eda, etapa narrativa, funci\u00f3n o nivel de complejidad para encontrar lo que necesitas.',
+      navClusterLessonLabel: 'Esta Lecci\u00f3n',
+      navClusterDeskLabel: 'Tu Mesa Creativa',
+      tabTipVideo: 'Mira la lecci\u00f3n de este tema.',
+      tabTipHandouts: 'Documentos y recursos de referencia para esta lecci\u00f3n.',
+      tabTipCoaching: 'Conversa sobre esta lecci\u00f3n con tu Excavation Coach.',
+      tabTipWip: 'Los datos de tu WIP \u2014 esto desbloquea todo lo dem\u00e1s aqu\u00ed.',
+      tabTipIdeaLog: 'Guarda ideas y notas a medida que se te ocurren.',
+      tabTipActionItems: 'Lleva el control de lo que sigue para tu WIP.',
+      tabTipGlossary: 'Busca cualquier t\u00e9rmino de oficio usado en el curso.',
+      tabTipHelp: 'Ponte en contacto con Ted.',
+      vocabTitle: 'Glosario',
+      vocabIntro: 'Un glosario de trabajo con t\u00e9rminos de oficio. Busca por palabra clave, o filtra por categor\u00eda, etapa narrativa, funci\u00f3n o nivel de complejidad para encontrar lo que necesitas.',
+      vocabSearchPlaceholder: 'Buscar t\u00e9rminos y definiciones\u2026',
+      vocabSearchBtn: 'Buscar',
       vocabFilterCraft: 'Categor\u00eda de Oficio',
       vocabFilterStage: 'Etapa Narrativa',
       vocabFilterFunction: 'Funci\u00f3n',
@@ -661,61 +699,6 @@
     }
     return out;
   }
-  /* ==========================================================
-     GENERIC SUB-TAB GROUP BUILDER
-     ------------------------------------------------------------
-     Shared by "This Lesson" (Video/Resources/Coaching) and "Dashboard"
-     (WIP/Idea Log/Action Items) - same row-of-buttons-plus-panels
-     pattern, parameterized by class names so each group's show/hide
-     logic only touches its own panels. Sharing one class between the two
-     groups would break things: clicking a Dashboard tab would hide every
-     element with that shared class document-wide, including whichever
-     Lesson subtab happened to be open, leaving it blank until the
-     student manually re-clicked it.
-     ========================================================== */
-  function buildTabGroup(container, tabs, navClass, linkClass, panelClass) {
-    var bar = el('div', navClass);
-    tabs.forEach(function (tab, index) {
-      var btn = el('button', linkClass, t(tab.labelKey));
-      btn.type = 'button';
-      btn.setAttribute('data-tab-target', tab.id);
-      if (index === 0) btn.setAttribute('data-tab-default', '1');
-      btn.addEventListener('click', function (evt) { openTabPanel(evt, tab.id, linkClass, panelClass); });
-      mount(bar, btn);
-    });
-    mount(container, bar);
-    tabs.forEach(function (tab) {
-      var panel = el('div', panelClass);
-      panel.id = tab.id;
-      tab.build(panel);
-      mount(container, panel);
-    });
-    var defaultBtn = bar.querySelector('[data-tab-default]');
-    if (defaultBtn) defaultBtn.click();
-  }
-  function openTabPanel(evt, tabId, linkClass, panelClass) {
-    var panels = document.getElementsByClassName(panelClass);
-    for (var i = 0; i < panels.length; i++) panels[i].style.display = 'none';
-    var links = document.getElementsByClassName(linkClass);
-    for (var j = 0; j < links.length; j++) {
-      links[j].className = links[j].className.replace(' active', '');
-    }
-    document.getElementById(tabId).style.display = 'block';
-    evt.currentTarget.className += ' active';
-  }
-  /* ==========================================================
-     FLAT NAV (Sept 2026)
-     ------------------------------------------------------------
-     Replaced the old two-tier nav (This Lesson > Video/Resources/
-     Coaching, Dashboard > WIP/Idea Log/Action Items, plus a separate
-     Contact destination) with one flat row of 8 tabs, all siblings, per
-     Ted's request. Guided/Mastery only - Essentials still uses its own
-     single continuous page (buildEssentialsPage) and never reaches this.
-     Video opens by default (first in the array). The hover tooltips that
-     used to explain what was grouped under "This Lesson"/"Dashboard" are
-     dropped here - there's no grouping left to explain, each tab already
-     names itself directly.
-     ========================================================== */
   function buildVideoTranscriptPanel(panel) {
     buildVideo(panel, LESSON.video.mediaId);
     buildTranscript(panel, LESSON.video.mediaId);
@@ -730,23 +713,103 @@
     }
     buildResource(panel, LESSON.resource);
   }
-  var FLAT_TABS = [
-    { id: 'Video',      labelKey: 'subVideo',     build: buildVideoTranscriptPanel },
-    { id: 'Resources',  labelKey: 'subResources', build: buildResourcesPanel },
-    { id: 'Coaching',   labelKey: 'subCoaching',  build: buildCoachTab },
-    { id: 'Project',    labelKey: 'dashTabWip',   build: buildProjectTab },
-    { id: 'Notes',      labelKey: 'notesTitle',   build: buildNotesTab },
-    { id: 'Tasks',      labelKey: 'tasksTitle',   build: buildTasksTab },
-    { id: 'Vocabulary', labelKey: 'vocabTitle',   build: buildVocabularyTab },
-    { id: 'Contact',    labelKey: 'navContact',   build: buildContactView }
+  /* ==========================================================
+     NAV CLUSTERS (Sept 2026)
+     ------------------------------------------------------------
+     Replaces the old flat single-row nav (Video/Handouts/Coaching/WIP/
+     Idea Log/Action Items/Glossary/Help all as siblings) with two visually
+     distinct rows under kicker labels:
+       - "This Lesson": a genuine ordered sequence (watch, then read, then
+         talk it through), numbered 1/2/3.
+       - "Your Creative Desktop": tools reached for in any order, not
+         numbered.
+     Both rows still share one linkClass/panelClass pair
+     (navlink/stratum-panel) so a single click-to-open/hide-the-rest
+     system (openTabPanel) works across the whole page exactly as before -
+     the split is presentational only, built by buildNavClusters() below,
+     not a second independent tab system. Video still opens by default
+     (first tab in the first cluster). Each tab now also carries a
+     data-tip attribute (branded hover popover, see engine CSS) instead of
+     the old per-GROUP tooltip the two-tier nav used to show.
+     ========================================================== */
+  var NAV_CLUSTERS = [
+    {
+      kickerKey: 'navClusterLessonLabel',
+      numbered: true,
+      tabs: [
+        { id: 'Video',     labelKey: 'subVideo',     tipKey: 'tabTipVideo',     build: buildVideoTranscriptPanel },
+        { id: 'Resources', labelKey: 'subResources', tipKey: 'tabTipHandouts',  build: buildResourcesPanel },
+        { id: 'Coaching',  labelKey: 'subCoaching',  tipKey: 'tabTipCoaching',  build: buildCoachTab }
+      ]
+    },
+    {
+      kickerKey: 'navClusterDeskLabel',
+      numbered: false,
+      tabs: [
+        { id: 'Project',    labelKey: 'dashTabWip', tipKey: 'tabTipWip',         build: buildProjectTab },
+        { id: 'Notes',      labelKey: 'notesTitle', tipKey: 'tabTipIdeaLog',     build: buildNotesTab },
+        { id: 'Tasks',      labelKey: 'tasksTitle', tipKey: 'tabTipActionItems', build: buildTasksTab },
+        { id: 'Vocabulary', labelKey: 'vocabTitle', tipKey: 'tabTipGlossary',    build: buildVocabularyTab },
+        { id: 'Contact',    labelKey: 'navContact', tipKey: 'tabTipHelp',        build: buildContactView }
+      ]
+    }
   ];
+  function openTabPanel(evt, tabId, linkClass, panelClass) {
+    var panels = document.getElementsByClassName(panelClass);
+    for (var i = 0; i < panels.length; i++) panels[i].style.display = 'none';
+    var links = document.getElementsByClassName(linkClass);
+    for (var j = 0; j < links.length; j++) {
+      links[j].className = links[j].className.replace(' active', '');
+    }
+    document.getElementById(tabId).style.display = 'block';
+    evt.currentTarget.className += ' active';
+  }
+  function buildNavClusters(container, clusters, linkClass, panelClass) {
+    var defaultAssigned = false;
+    clusters.forEach(function (cluster) {
+      var clusterWrap = el('div', 'nav-cluster');
+      mount(clusterWrap, el('div', 'nav-cluster-label', t(cluster.kickerKey)));
+      var bar = el('div', 'stratum-nav');
+      cluster.tabs.forEach(function (tab, index) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = linkClass;
+        btn.setAttribute('data-tab-target', tab.id);
+        if (cluster.numbered) {
+          mount(btn, el('span', 'nav-step-badge', String(index + 1)));
+        }
+        btn.appendChild(document.createTextNode(t(tab.labelKey)));
+        if (tab.tipKey) btn.setAttribute('data-tip', t(tab.tipKey));
+        if (!defaultAssigned) {
+          btn.setAttribute('data-tab-default', '1');
+          defaultAssigned = true;
+        }
+        btn.addEventListener('click', function (evt) { openTabPanel(evt, tab.id, linkClass, panelClass); });
+        mount(bar, btn);
+      });
+      mount(clusterWrap, bar);
+      mount(container, clusterWrap);
+    });
+    clusters.forEach(function (cluster) {
+      cluster.tabs.forEach(function (tab) {
+        var panel = el('div', panelClass);
+        panel.id = tab.id;
+        tab.build(panel);
+        mount(container, panel);
+      });
+    });
+    var defaultBtn = container.querySelector('[data-tab-default]');
+    if (defaultBtn) defaultBtn.click();
+  }
   // Compact language control for the nav (relocated Sept 2026, first from
-  // the bottom of the WIP form, then from a separate top nav row - now
-  // appended to the single flat nav bar, still pushed right via
-  // margin-left:auto on .nav-lang-control). Same underlying logic as
-  // before (fetchLanguages / confirm-before-reload / setPreferredLang).
-  // Hidden entirely below 2 active languages, so it stays invisible today
-  // and will simply appear once 'es' goes live.
+  // the bottom of the WIP form, then from a separate top nav row, then
+  // from the single flat 8-tab row - now appended to the LAST cluster's
+  // bar, i.e. "Your Creative Desktop", since a language switch reads as a
+  // tool/setting rather than a lesson step; see buildLessonPage()). Still
+  // pushed right via margin-left:auto on .nav-lang-control. Same
+  // underlying logic as before (fetchLanguages / confirm-before-reload /
+  // setPreferredLang). Hidden entirely below 2 active languages, so it
+  // stays invisible today and will simply appear once 'es' goes live.
   function buildNavLanguageControl(nav) {
     var wrap = el('div', 'nav-lang-control');
     wrap.style.display = 'none';
@@ -838,21 +901,48 @@
     buildJotformEmbed(container, '261614223369860', 'Contact Form');
   }
   /* ==========================================================
-     WRITER'S VOCABULARY (Sept 2026)
+     GLOSSARY (formerly "Writer's Vocabulary") (Sept 2026)
      ------------------------------------------------------------
      Read-only, student-facing glossary - no identity gate, since it's
      reference material, not personal data. Fetches the public /vocabulary
      endpoint once per page load and filters client-side across the four
-     taxonomy dimensions. coachingCue is deliberately never requested here
-     (the public endpoint doesn't return it) - it's private direction for
-     a future coach integration, same treatment as coachingApproach on
-     lesson_configs.
+     taxonomy dimensions PLUS a free-text search box (Sept 2026 addition)
+     matching against both word and definition. Search is Enter/button-
+     triggered, not live-filter, and sits alongside the four existing
+     dropdowns rather than replacing them. coachingCue is deliberately
+     never requested here (the public endpoint doesn't return it) - it's
+     private direction for a future coach integration, same treatment as
+     coachingApproach on lesson_configs.
      ========================================================== */
   var vocabTermsCache = null;
+  var vocabSearchQuery = '';
+  function performVocabSearch() {
+    var input = document.getElementById('vocabSearchInput');
+    vocabSearchQuery = input ? input.value.trim().toLowerCase() : '';
+    renderVocabList();
+  }
   function buildVocabularyTab(panel) {
     panel.setAttribute('aria-label', t('vocabTitle'));
+    vocabSearchQuery = '';
     mount(panel, el('p', 'panel-intro', t('vocabIntro')));
     var toolbar = el('div', 'vocab-toolbar');
+
+    var searchWrap = el('div', 'vocab-search-wrap');
+    var searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.id = 'vocabSearchInput';
+    searchInput.className = 'vocab-search-input';
+    searchInput.placeholder = t('vocabSearchPlaceholder');
+    searchInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); performVocabSearch(); }
+    });
+    mount(searchWrap, searchInput);
+    var searchBtn = el('button', 'vocab-search-btn', t('vocabSearchBtn'));
+    searchBtn.type = 'button';
+    searchBtn.addEventListener('click', performVocabSearch);
+    mount(searchWrap, searchBtn);
+    mount(toolbar, searchWrap);
+
     var filterDefs = [
       { id: 'vocabFilterCraft', label: t('vocabFilterCraft'), options: VOCAB_CRAFT_CATEGORIES },
       { id: 'vocabFilterStage', label: t('vocabFilterStage'), options: VOCAB_NARRATIVE_STAGES },
@@ -917,6 +1007,10 @@
       if (stage && term.narrativeStage !== stage) return false;
       if (func && term.function !== func) return false;
       if (level && term.complexityLevel !== level) return false;
+      if (vocabSearchQuery) {
+        var haystack = ((term.word || '') + ' ' + (term.definition || '')).toLowerCase();
+        if (haystack.indexOf(vocabSearchQuery) === -1) return false;
+      }
       return true;
     });
     list.innerHTML = '';
@@ -2799,9 +2893,13 @@
       buildEssentialsPage(container);
       return;
     }
-    buildTabGroup(container, FLAT_TABS, 'stratum-nav', 'navlink', 'stratum-panel');
-    var navBar = container.querySelector('.stratum-nav');
-    if (navBar) buildNavLanguageControl(navBar);
+    buildNavClusters(container, NAV_CLUSTERS, 'navlink', 'stratum-panel');
+    // Attach the language control to the LAST nav row ("Your Creative
+    // Desktop") rather than the first - see buildNavLanguageControl()
+    // comment above for why.
+    var navBars = container.querySelectorAll('.stratum-nav');
+    var lastBar = navBars[navBars.length - 1];
+    if (lastBar) buildNavLanguageControl(lastBar);
     if (!isEmailConfirmed()) {
       showIdentityModal();
     }
