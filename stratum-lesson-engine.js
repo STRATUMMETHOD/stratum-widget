@@ -142,7 +142,7 @@
      ========================================================== */
   var STRINGS = {
     en: {
-      navDashboard: 'Dashboard',
+      navDashboard: 'Tools',
       navDashboardTooltip: 'Your WIP, Idea Log, and Action Items',
       navLesson: 'This Lesson',
       navLessonTooltip: 'Video, resources, and coaching for this lesson',
@@ -154,6 +154,7 @@
       dashTabWip: 'WIP',
       notesTitle: 'Idea Log',
       notesDownloadBtn: 'Download Idea Log',
+      ideaLogIntro: 'Idea Log is where you capture anything that comes to you between lessons — a character insight, a plot thread, a research note, a deadline, a spark of inspiration. Tag each entry as Character, Plot, Theme, Revision, Research, Deadlines, or Inspiration, then filter by category any time you want to find it again. Your coach reads this before each session, so it becomes part of the conversation without you having to repeat yourself.',
       ideaLogFilterLabel: 'Filter',
       ideaLogFilterAll: 'All',
       ideaLogGeneralCategory: 'General',
@@ -166,6 +167,7 @@
       ideaLogDeleteTitle: 'Delete entry',
       ideaLogNoneToDownload: 'No entries to download.',
       tasksTitle: 'Action Items',
+      tasksIntro: "Action Items is where you track what's next for your WIP — finishing a chapter draft, revising a scene, prepping a query letter. Pick a type from the dropdown to start with a common one, or write your own. Add an optional date, then check items off as you finish them. Your coach can see this list too, so it knows what you're working toward between sessions.",
       tasksCategoryPlaceholder: 'Choose a type\u2026',
       tasksCategoryCustom: 'Write your own\u2026',
       tasksPlaceholder: "Add an action item — e.g. Rewrite Eleanor's kitchen scene",
@@ -182,7 +184,7 @@
       tasksDue: 'Due {date}',
       tasksOverdue: 'Overdue — was due {date}',
       projectTitle: 'My WIP',
-      projectReminder: 'Complete and save this before using Idea Log, Action Items, or starting your first coaching session — that\u2019s what ties everything to you.',
+      projectReminder: 'Your coach reads this before every session, so the questions are about your story, not a generic one. Complete it before your first session so the coaching starts working with your WIP right away.',
       projectSaveBtn: 'Save WIP Details',
       projectSaving: 'Saving…',
       projectSavedOk: "Saved. Every lesson's coach will know your project.",
@@ -198,7 +200,7 @@
       projectLanguageBtn: 'Change Language',
       projectLanguageConfirm: 'Switch to {label}? The page will reload - your idea log, action items, and coaching history all stay exactly as they are.',
       gateTitle: 'Keep your {item}',
-      gateText: 'This makes sure your {item} actually stays with you. Add your email in My WIP on the Dashboard, then come straight back.',
+      gateText: 'This makes sure your {item} actually stays with you. Add your email in My WIP under Tools, then come straight back.',
       gateBtn: 'Go to My WIP',
       gateItemNotes: 'idea log',
       gateItemTasks: 'action items',
@@ -253,7 +255,7 @@
     // (left untranslated, same treatment as "Coaching") throughout -
     // also draft, needs the same native-speaker pass.
     es: {
-      navDashboard: 'Panel',
+      navDashboard: 'Herramientas',
       navDashboardTooltip: 'Tu WIP, tu Registro de Ideas y tus Elementos de Acci\u00f3n',
       navLesson: 'Esta Lecci\u00f3n',
       navLessonTooltip: 'Video, recursos y coaching para esta lecci\u00f3n',
@@ -265,6 +267,7 @@
       dashTabWip: 'WIP',
       notesTitle: 'Registro de Ideas',
       notesDownloadBtn: 'Descargar Registro de Ideas',
+      ideaLogIntro: 'El Registro de Ideas es donde guardas lo que se te ocurra entre lecciones: una idea sobre un personaje, un hilo de la trama, una nota de investigaci\u00f3n, una fecha l\u00edmite, un destello de inspiraci\u00f3n. Etiqueta cada entrada como Personaje, Trama, Tema, Revisi\u00f3n, Investigaci\u00f3n, Fechas L\u00edmite o Inspiraci\u00f3n, y filtra por categor\u00eda cuando quieras encontrarla de nuevo. Tu coach lee esto antes de cada sesi\u00f3n, as\u00ed que forma parte de la conversaci\u00f3n sin que tengas que repetirlo.',
       ideaLogFilterLabel: 'Filtro',
       ideaLogFilterAll: 'Todo',
       ideaLogGeneralCategory: 'General',
@@ -277,6 +280,7 @@
       ideaLogDeleteTitle: 'Eliminar entrada',
       ideaLogNoneToDownload: 'No hay entradas para descargar.',
       tasksTitle: 'Elementos de Acci\u00f3n',
+      tasksIntro: 'Elementos de Acci\u00f3n es donde llevas el control de lo que sigue para tu WIP: terminar el borrador de un cap\u00edtulo, revisar una escena, preparar una carta de presentaci\u00f3n. Elige un tipo del men\u00fa para empezar con uno com\u00fan, o escribe el tuyo. Agrega una fecha opcional y marca cada elemento conforme lo completes. Tu coach tambi\u00e9n ve esta lista, as\u00ed que sabe hacia d\u00f3nde est\u00e1s trabajando entre sesiones.',
       tasksCategoryPlaceholder: 'Elige un tipo\u2026',
       tasksCategoryCustom: 'Escribe el tuyo\u2026',
       tasksPlaceholder: 'Agrega un elemento de acci\u00f3n \u2014 p. ej. Reescribir la escena de la cocina de Eleanor',
@@ -293,7 +297,7 @@
       tasksDue: 'Vence el {date}',
       tasksOverdue: 'Vencido \u2014 deb\u00eda completarse el {date}',
       projectTitle: 'Mi WIP',
-      projectReminder: 'Completa y guarda esto antes de usar el Registro de Ideas, los Elementos de Acci\u00f3n, o comenzar tu primera sesi\u00f3n de coaching \u2014 esto es lo que conecta todo contigo.',
+      projectReminder: 'Tu coach lee esto antes de cada sesi\u00f3n, as\u00ed las preguntas son sobre tu historia y no sobre una gen\u00e9rica. Compl\u00e9talo antes de tu primera sesi\u00f3n para que el coaching empiece a trabajar con tu WIP de inmediato.',
       projectSaveBtn: 'Guardar Detalles del WIP',
       projectSaving: 'Guardando\u2026',
       projectSavedOk: 'Guardado. El coach de cada lecci\u00f3n conocer\u00e1 tu proyecto.',
@@ -309,7 +313,7 @@
       projectLanguageBtn: 'Cambiar Idioma',
       projectLanguageConfirm: '\u00bfCambiar a {label}? La p\u00e1gina se recargar\u00e1 \u2014 tu registro de ideas, tus elementos de acci\u00f3n y tu historial de coaching permanecer\u00e1n exactamente igual.',
       gateTitle: 'Conserva tu {item}',
-      gateText: 'Esto asegura que tu {item} realmente permanezca contigo. Agrega tu correo electr\u00f3nico en Mi WIP, en el Panel, y regresa enseguida.',
+      gateText: 'Esto asegura que tu {item} realmente permanezca contigo. Agrega tu correo electr\u00f3nico en Mi WIP, en Herramientas, y regresa enseguida.',
       gateBtn: 'Ir a Mi WIP',
       gateItemNotes: 'registro de ideas',
       gateItemTasks: 'elementos de acci\u00f3n',
@@ -685,9 +689,13 @@
     { id: 'Notes',    labelKey: 'notesTitle', build: buildNotesTab },
     { id: 'Tasks',    labelKey: 'tasksTitle', build: buildTasksTab }
   ];
+  // Order reordered Sept 2026 so This Lesson opens by default (was
+  // Dashboard). goToProjectTab() below looks up its nav link by
+  // data-view-id rather than assuming index 0 is Dashboard, so it stays
+  // correct regardless of this array's order.
   var TOP_DESTINATIONS = [
-    { id: 'view-dashboard', labelKey: 'navDashboard', tooltipKey: 'navDashboardTooltip', build: buildDashboardView },
     { id: 'view-lesson',    labelKey: 'navLesson',    tooltipKey: 'navLessonTooltip',    build: buildLessonView },
+    { id: 'view-dashboard', labelKey: 'navDashboard', tooltipKey: 'navDashboardTooltip', build: buildDashboardView },
     { id: 'view-contact',   labelKey: 'navContact',   tooltipKey: 'navContactTooltip',   build: buildContactView }
   ];
   function buildTopNav(container) {
@@ -696,6 +704,7 @@
       var btn = el('button', 'toplink' + (index === 0 ? ' active' : ''), t(dest.labelKey));
       btn.type = 'button';
       btn.setAttribute('data-tooltip', t(dest.tooltipKey));
+      btn.setAttribute('data-view-id', dest.id);
       btn.addEventListener('click', function (evt) { showTopView(evt, dest.id); });
       mount(nav, btn);
     });
@@ -864,7 +873,8 @@
     for (var j = 0; j < links.length; j++) links[j].className = links[j].className.replace(' active', '');
     var dashView = document.getElementById('view-dashboard');
     if (dashView) dashView.style.display = 'block';
-    if (links[0]) links[0].className += ' active';
+    var dashLink = document.querySelector('.toplink[data-view-id="view-dashboard"]');
+    if (dashLink) dashLink.className += ' active';
     var projectPanel = document.getElementById('Project');
     if (projectPanel && projectPanel.scrollIntoView) {
       projectPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -965,6 +975,8 @@
   function buildNotesTab(panel) {
     panel.setAttribute('aria-label', t('notesTitle'));
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemNotes'); return; }
+
+    mount(panel, el('p', 'panel-intro', t('ideaLogIntro')));
 
     var toolbar = el('div', 'idealog-toolbar');
     var filterWrap = el('div', 'idealog-filter-wrap');
@@ -1112,6 +1124,7 @@
   function buildTasksTab(panel) {
     panel.setAttribute('aria-label', t('tasksTitle'));
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemTasks'); return; }
+    mount(panel, el('p', 'panel-intro', t('tasksIntro')));
     var count = el('div', 'tracker-count');
     count.id = 'trackerCount';
     mount(panel, count);
@@ -1507,8 +1520,7 @@
   }
   function buildProjectTab(panel) {
     panel.setAttribute('aria-label', t('projectTitle'));
-    var reminder = el('p', null, t('projectReminder'));
-    reminder.style.cssText = 'font-size:13px;font-style:italic;color:#8a7a5e;line-height:1.5;margin:4px 0 18px;';
+    var reminder = el('p', 'panel-intro', t('projectReminder'));
     mount(panel, reminder);
     var topActions = el('div', 'proj-actions proj-actions-top');
     topActions.style.marginBottom = '28px';
@@ -1881,6 +1893,62 @@
     consistency: "They specifically want to know whether their character's choices feel consistent, or interestingly inconsistent. That means paying attention to contradiction as potential depth rather than automatically treating it as an error to fix.",
     not_sure: 'They are not yet sure what they most need help seeing. Do not push them to decide right now - let it surface naturally as the conversation goes.'
   };
+  /* ==========================================================
+     COACH CONTEXT FROM IDEA LOG / ACTION ITEMS (Sept 2026)
+     ------------------------------------------------------------
+     Formats a capped, plain-text summary of each for inclusion in
+     buildProjectContextBlock() below. Capped both by entry count and by
+     a rough character budget so a student who has accumulated dozens of
+     entries over the course doesn't silently balloon every single
+     message's prompt size - if either cap is hit, the block says so
+     rather than just quietly truncating. Reuses loadIdeaLogEntries()/
+     loadTasks() and formatIdeaLogDate()/formatDueDate() - the exact same
+     data and formatting the student sees in their own Dashboard, so the
+     coach is never working from a different picture than the student is.
+     ========================================================== */
+  var IDEA_LOG_CONTEXT_LIMIT = 20;
+  var IDEA_LOG_CONTEXT_CHAR_CAP = 4000;
+  var ACTION_ITEMS_CONTEXT_LIMIT = 20;
+  function buildIdeaLogContextText() {
+    var entries = loadIdeaLogEntries().slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    if (!entries.length) return '';
+    var lines = [];
+    var used = 0;
+    for (var i = 0; i < entries.length && lines.length < IDEA_LOG_CONTEXT_LIMIT; i++) {
+      var e = entries[i];
+      var line = '[' + e.category + '] ' + formatIdeaLogDate(e.date) + ': ' + e.text;
+      // Always include at least one entry even if it alone exceeds the
+      // char cap - only stop early on the char cap once something is
+      // already included, so a single long entry can't zero out the
+      // whole block.
+      if (used + line.length > IDEA_LOG_CONTEXT_CHAR_CAP && lines.length > 0) break;
+      lines.push(line);
+      used += line.length;
+    }
+    var text = lines.join('\n');
+    if (lines.length < entries.length) {
+      text += '\n(' + (entries.length - lines.length) + ' older entries not shown here.)';
+    }
+    return text;
+  }
+  function buildActionItemsContextText() {
+    var tasks = loadTasks();
+    if (!tasks.length) return '';
+    // Tasks are stored oldest-to-newest (new ones pushed to the end) -
+    // same order the student sees in their own list, so take the most
+    // recent slice from the end rather than the front.
+    var capped = tasks.slice(-ACTION_ITEMS_CONTEXT_LIMIT);
+    var lines = capped.map(function (tk) {
+      var line = (tk.done ? '[done] ' : '[open] ') + tk.text;
+      if (tk.dueDate) line += ' (due ' + formatDueDate(tk.dueDate) + ')';
+      return line;
+    });
+    var text = lines.join('\n');
+    if (capped.length < tasks.length) {
+      text += '\n(' + (tasks.length - capped.length) + ' older items not shown here.)';
+    }
+    return text;
+  }
   function buildProjectContextBlock() {
     var v = {};
     Object.keys(PROJ_KEYS).forEach(function (k) { v[k] = lsGet(PROJ_KEYS[k]) || ''; });
@@ -1902,6 +1970,14 @@
       if (v.focus && FOCUS_GUIDANCE[v.focus]) {
         block += '\n\nWhat they most want to understand right now: ' + FOCUS_GUIDANCE[v.focus];
       }
+    }
+    var ideaLogText = buildIdeaLogContextText();
+    if (ideaLogText) {
+      block += '\n\nSTUDENT\'S IDEA LOG (things they have privately noted between sessions, newest first, each tagged with a category - this is reference material, not a script or a checklist. Draw on it naturally where it genuinely helps the conversation, especially entries tagged Character, Plot, or Theme when discussing their story. Never recite this list back to them, quote an entry verbatim unprompted, or treat it as something to walk through item by item):\n' + ideaLogText;
+    }
+    var actionItemsText = buildActionItemsContextText();
+    if (actionItemsText) {
+      block += '\n\nSTUDENT\'S ACTION ITEMS (their own self-set to-do list for this WIP, [open] or [done] - only bring one up if it is directly relevant to what they are already talking about, e.g. asking how a specific in-progress item is going. Never quiz them on their whole list or treat unfinished items as something to hold them accountable for):\n' + actionItemsText;
     }
     if (v.language) {
       block += '\n\nLANGUAGE: This student has selected ' + v.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + v.language + ' - every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically in ' + v.language + ', not as a literal word-for-word translation. Exception: keep every hidden bracket tag - [NAME: ...], [SUMMARY: ...], every deliverable field tag such as [FIELDKEY: ...] or [FIELDKEY_n: ...], and [REFLECTION_COMPLETE] - exactly in their English bracket format as instructed elsewhere in this prompt - only the name inside the NAME tag should reflect what the student actually typed, and the sentence inside the SUMMARY tag must always be written in English regardless of ' + v.language + ', because it is read by the instructor, not the student. The content inside deliverable field tags should be written in ' + v.language + ' since it belongs to the student, matching whatever language they did the session in.';
