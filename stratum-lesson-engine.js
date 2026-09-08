@@ -142,15 +142,15 @@
      ========================================================== */
   var STRINGS = {
     en: {
-      navDashboard: 'Tools',
+      navDashboard: 'Creative Desk',
       navDashboardTooltip: 'Your WIP, Idea Log, and Action Items',
       navLesson: 'This Lesson',
       navLessonTooltip: 'Video, resources, and coaching for this lesson',
-      navContact: 'Contact',
+      navContact: 'Writer Support',
       navContactTooltip: 'Get in touch with Ted',
       subVideo: 'Video & Transcript',
-      subResources: 'Lesson Resources',
-      subCoaching: 'Coaching',
+      subResources: 'Lesson Handouts',
+      subCoaching: 'Stratum Coaching',
       dashTabWip: 'WIP',
       notesTitle: 'Idea Log',
       notesDownloadBtn: 'Download Idea Log',
@@ -255,15 +255,15 @@
     // (left untranslated, same treatment as "Coaching") throughout -
     // also draft, needs the same native-speaker pass.
     es: {
-      navDashboard: 'Herramientas',
+      navDashboard: 'Mesa Creativa',
       navDashboardTooltip: 'Tu WIP, tu Registro de Ideas y tus Elementos de Acci\u00f3n',
       navLesson: 'Esta Lecci\u00f3n',
       navLessonTooltip: 'Video, recursos y coaching para esta lecci\u00f3n',
-      navContact: 'Contacto',
+      navContact: 'Soporte para Escritores',
       navContactTooltip: 'Ponte en contacto con Ted',
       subVideo: 'Video y Transcripci\u00f3n',
-      subResources: 'Recursos de la Lecci\u00f3n',
-      subCoaching: 'Coaching',
+      subResources: 'Materiales de la Lecci\u00f3n',
+      subCoaching: 'Coaching Stratum',
       dashTabWip: 'WIP',
       notesTitle: 'Registro de Ideas',
       notesDownloadBtn: 'Descargar Registro de Ideas',
