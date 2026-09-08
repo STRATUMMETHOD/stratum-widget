@@ -1089,89 +1089,46 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 
 /* ============================================================
-   PERSISTENT SHELL — This Lesson / Dashboard / Contact
-   (Guided / Mastery only — Essentials still uses .tab/.tablinks above)
+   FLAT NAV — Video | Lesson Handouts | Stratum Coaching |
+   Work In Progress | Idea Log | Action Items | Writer's Vocabulary |
+   Writer Support (Sept 2026)
+   ------------------------------------------------------------
+   Replaces the old two-tier nav (This Lesson > sub-tabs, Dashboard >
+   sub-tabs, plus a separate Contact destination) with one flat row of
+   8 tabs, all siblings, built by the same generic buildTabGroup() as
+   before. (Guided / Mastery only — Essentials still uses .tab/.tablinks
+   above.)
    ============================================================ */
 
-.stratum-topnav{
+.stratum-nav{
   display:flex;
   align-items:center;
+  flex-wrap:wrap;
   gap:0;
   margin:0 0 20px;
   border-bottom:1px solid #e2d9c4;
   text-align:left;
 }
-.toplink{
-  position:relative;
+.navlink{
   background:none;
   border:none;
   padding:10px 4px;
-  margin-right:24px;
+  margin:0 20px 6px 0;
   font-family:'Inter',sans-serif;
-  font-size:13px;
+  font-size:12.5px;
   font-weight:700;
-  letter-spacing:.04em;
+  letter-spacing:.03em;
   text-transform:uppercase;
   color:#8a7a5e;
   cursor:pointer;
   border-bottom:3px solid transparent;
-  margin-bottom:-1px;
   transition:color .2s ease,border-color .2s ease;
+  white-space:nowrap;
 }
-.toplink:hover{ color:#281e16; }
-.toplink.active{ color:#281e16; border-bottom-color:#C9A46C; }
+.navlink:hover{ color:#281e16; }
+.navlink.active{ color:#281e16; border-bottom-color:#C9A46C; }
 
-/* Hover tooltip explaining what's under each top-level destination.
-   Custom rather than the native title attribute so it's styled to match
-   the brand and appears quickly - the trade-off is it's hover-only and
-   won't show on touch devices, same as any hover affordance. */
-.toplink[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 6px;
-  background: #3B2F24;
-  color: #F5EFE0;
-  font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: normal;
-  text-transform: none;
-  white-space: nowrap;
-  padding: 6px 10px;
-  border-radius: 4px;
-  z-index: 20;
-  pointer-events: none;
-  box-shadow: 0 4px 10px rgba(0,0,0,.18);
-}
-
-.stratum-subnav{
-  display:flex;
-  gap:18px;
-  margin:0 0 18px;
-  border-bottom:1px solid #ece2cc;
-  text-align:left;
-}
-.sublink{
-  background:none;
-  border:none;
-  padding:8px 2px;
-  font-family:'Inter',sans-serif;
-  font-size:11.5px;
-  font-weight:600;
-  letter-spacing:.05em;
-  text-transform:uppercase;
-  color:#a99878;
-  cursor:pointer;
-  border-bottom:2px solid transparent;
-  margin-bottom:-1px;
-  transition:color .2s ease,border-color .2s ease;
-}
-.sublink:hover{ color:#281e16; }
-.sublink.active{ color:#281e16; border-bottom-color:#C9A46C; }
-
-.stratum-section,.stratum-subsection{ text-align:left; }
+.stratum-section,.stratum-panel{ text-align:left; }
 
 .lec-resource-empty{
   font-family:'Inter',sans-serif;
@@ -1181,46 +1138,9 @@ button.download-btn:hover { background-color: #5a4535; }
   padding:10px 0;
 }
 
-/* ============================================================
-   13. DASHBOARD TABS (WIP / Idea Log / Action Items)
-   ------------------------------------------------------------
-   Same row-of-buttons-plus-panels pattern as .stratum-subnav/.sublink
-   above (shared JS via buildTabGroup), given its own class names so the
-   two tab groups' show/hide logic never touches each other's panels -
-   see the comment in the engine JS above buildTabGroup(). Replaces the
-   old .dash-grid/.dash-card simultaneous-cards layout.
-   ============================================================ */
-
-.dash-subnav{
-  display:flex;
-  gap:18px;
-  margin:0 0 20px;
-  border-bottom:1px solid #ece2cc;
-  text-align:left;
-}
-.dash-sublink{
-  background:none;
-  border:none;
-  padding:8px 2px 10px;
-  font-family:'Inter',sans-serif;
-  font-size:13px;
-  font-weight:700;
-  letter-spacing:.05em;
-  text-transform:uppercase;
-  color:#a99878;
-  cursor:pointer;
-  border-bottom:2px solid transparent;
-  margin-bottom:-1px;
-  transition:color .2s ease,border-color .2s ease;
-}
-.dash-sublink:hover{ color:#281e16; }
-.dash-sublink.active{ color:#281e16; border-bottom-color:#C9A46C; }
-
-.dash-panel{ text-align:left; }
-
-/* Shared intro/reminder paragraph style for the three Dashboard panels
-   (WIP reminder, Idea Log intro, Action Items intro). Grey, non-italic -
-   replaces the earlier gold-italic treatment on the WIP reminder. */
+/* Shared intro/reminder paragraph style, used across several panels
+   (WIP reminder, Idea Log intro, Action Items intro, Vocabulary intro).
+   Grey, non-italic. */
 .panel-intro{
   font-family:'Inter',sans-serif;
   font-size:13px;
@@ -1232,10 +1152,119 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 
 @media (max-width:640px){
-  .stratum-topnav{ flex-wrap:wrap; }
-  .toplink{ margin-right:16px; font-size:12px; }
-  .dash-subnav{ flex-wrap:wrap; gap:14px; }
+  .navlink{ margin-right:14px; font-size:11.5px; }
 }
+
+/* ============================================================
+   WRITER'S VOCABULARY (Sept 2026)
+   ------------------------------------------------------------
+   Read-only glossary: a row of 4 filter dropdowns (Craft Category,
+   Narrative Stage, Function, Complexity Level) above a flat list of
+   entries. No add/edit here — content is admin-managed.
+   ============================================================ */
+
+.vocab-toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-bottom:18px;
+}
+.vocab-filter-wrap{ display:flex; align-items:center; gap:6px; }
+.vocab-filter-label{
+  font-family:'Inter',sans-serif;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:#8a7a5e;
+}
+.vocab-filter-select{
+  padding:6px 8px;
+  font-size:12px;
+  font-family:Arial,sans-serif;
+  border:1px solid #ccc;
+  background:#fff;
+  color:#444;
+}
+.vocab-filter-select:focus{ outline:none; border-color:#000; }
+
+.vocab-list{ list-style:none; margin:0; padding:0; }
+.vocab-empty{ color:#aaa; font-style:italic; font-size:12px; font-family:Arial,sans-serif; }
+.vocab-entry{
+  border:1px solid #e2d9c4;
+  padding:12px 14px;
+  margin-bottom:10px;
+  background:#ffffff;
+}
+.vocab-entry:last-child{ margin-bottom:0; }
+.vocab-entry-head{ margin-bottom:6px; }
+.vocab-word{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:19px;
+  letter-spacing:.02em;
+  color:#281e16;
+}
+.vocab-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+.vocab-tag{
+  display:inline-block;
+  font-family:'Inter',sans-serif;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#8a6630;
+  border:1px solid #C9A46C;
+  padding:2px 8px;
+}
+.vocab-definition{
+  font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:15px;
+  line-height:1.55;
+  color:#281e16;
+}
+
+/* ============================================================
+   MID-CONVERSATION DOWNLOAD (Sept 2026)
+   ------------------------------------------------------------
+   Two entry points to the same generateDoc() export the closing card
+   already used: a persistent link above the chat, and a small inline
+   icon button next to the send button.
+   ============================================================ */
+
+.srx-download-anytime-wrap{ margin:0 0 10px; text-align:right; }
+.srx-download-anytime-btn{
+  background:none;
+  border:none;
+  font-family:'Inter',sans-serif;
+  font-size:11.5px;
+  font-weight:600;
+  letter-spacing:.03em;
+  color:#8a6630;
+  cursor:pointer;
+  padding:4px 2px;
+  text-decoration:underline;
+  text-decoration-color:rgba(138,102,48,.35);
+  transition:color .2s ease;
+}
+.srx-download-anytime-btn:hover{ color:#281e16; }
+
+.srx-inline-download-btn{
+  flex-shrink:0;
+  width:46px;
+  height:46px;
+  border-radius:12px;
+  border:1.5px solid #d8cba8;
+  background:var(--srx-offwhite);
+  color:#8a7a5e;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  line-height:1;
+  transition:background .15s ease,color .15s ease;
+}
+.srx-inline-download-btn:hover{ background:#F0E9D8; color:#281e16; }
 
 .proj-gate{
   padding:36px 20px;
@@ -1374,7 +1403,7 @@ button.download-btn:hover { background-color: #5a4535; }
    tab a student is on. Hidden entirely below 2 active languages (see
    buildNavLanguageControl() in the engine JS), so it stays invisible
    today and appears automatically once 'es' goes live. Pushed to the
-   far right of .stratum-topnav via margin-left:auto.
+   far right of .stratum-nav via margin-left:auto.
    ============================================================ */
 
 .nav-lang-control {
