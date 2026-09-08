@@ -1218,6 +1218,19 @@ button.download-btn:hover { background-color: #5a4535; }
 
 .dash-panel{ text-align:left; }
 
+/* Shared intro/reminder paragraph style for the three Dashboard panels
+   (WIP reminder, Idea Log intro, Action Items intro). Grey, non-italic -
+   replaces the earlier gold-italic treatment on the WIP reminder. */
+.panel-intro{
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  font-style:normal;
+  color:#666;
+  line-height:1.55;
+  margin:4px 0 18px;
+  max-width:62ch;
+}
+
 @media (max-width:640px){
   .stratum-topnav{ flex-wrap:wrap; }
   .toplink{ margin-right:16px; font-size:12px; }
