@@ -524,6 +524,7 @@
         <button class="btn secondary" id="dlvLoadBtn" type="button">Load</button>
         <div class="spacer"></div>
       </div>
+      <div id="dlvLayerInfo" style="display:none;font-size:12.5px;color:#8a6630;font-weight:600;margin:0 2px 12px;"></div>
       <table class="dlv-table">
         <thead>
           <tr><th>Student</th><th>Preview</th><th>Fields</th><th>Completed</th><th></th></tr>
@@ -711,6 +712,34 @@
             <div id="gDeliverableFieldsList"></div>
             <button class="add-btn" id="gAddDeliverableFieldBtn" type="button">+ Add deliverable field</button>
             <span class="hint" style="display:block;margin-top:8px;">Field key: a short camelCase identifier the coach's hidden tags will use (e.g. <code>hiddenTruth</code>). Single value: one field, one answer (e.g. a causal lock sentence). Repeatable list: N required items (e.g. 3 instances) &mdash; optionally split each item into comma-separated sub-parts (e.g. <code>context, people, action</code>) the way Lesson 1's instances work; leave sub-parts blank for a plain list of single strings.</span>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Deliverable card &mdash; layer &amp; next steps</summary>
+          <div class="card-body">
+          <span class="hint" style="display:block;margin-bottom:12px;">Feeds the closing card the student sees after this lesson's deliverable is captured. All four are optional &mdash; leave any of them blank and the card simply skips that section.</span>
+          <div class="row2">
+            <div class="field">
+              <label for="gLayerPosition">Layer position</label>
+              <span class="hint">This lesson's number in the 7-layer course, e.g. 1</span>
+              <input type="text" id="gLayerPosition" placeholder="1" style="max-width:100px;" />
+            </div>
+            <div class="field">
+              <label for="gLayerLabel">Layer label</label>
+              <span class="hint">e.g. The Anchor Behavior, The Hidden Truth, The Formative Wound, The Lie They Believe, The Want vs. The Need, The Fears &amp; Desires, Psychological Integration</span>
+              <input type="text" id="gLayerLabel" placeholder="The Anchor Behavior" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="gTryThisNow">Try this now</label>
+            <span class="hint">A same-session micro-challenge shown right after the captured deliverable &mdash; generic enough to apply to any student's WIP, not this transcript's specifics.</span>
+            <textarea id="gTryThisNow" rows="3" placeholder="Before you close this tab &mdash; find one more place in your draft where this behavior shows up. Does the same thing happen?"></textarea>
+          </div>
+          <div class="field">
+            <label for="gNextStepTeaser">Next step teaser</label>
+            <span class="hint">Shown in the &quot;Up next&quot; block alongside the Next lesson label above &mdash; avoid repeating the lesson name here since the label already shows it; &quot;the next strata&quot; or &quot;the layer underneath this one&quot; reads better than naming it twice.</span>
+            <textarea id="gNextStepTeaser" rows="3" placeholder="You've named what Jennifer does. The next strata takes that same behavior and asks what it's protecting &mdash; not a new discovery, the layer underneath this one."></textarea>
           </div>
         </div>
         </details>
@@ -990,6 +1019,34 @@
             <div id="mDeliverableFieldsList"></div>
             <button class="add-btn" id="mAddDeliverableFieldBtn" type="button">+ Add deliverable field</button>
             <span class="hint" style="display:block;margin-top:8px;">Field key: a short camelCase identifier the coach's hidden tags will use (e.g. <code>hiddenTruth</code>). Single value: one field, one answer. Repeatable list: N required items &mdash; optionally split each item into comma-separated sub-parts (e.g. <code>context, people, action</code>); leave sub-parts blank for a plain list of single strings.</span>
+          </div>
+        </div>
+        </details>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Deliverable card &mdash; layer &amp; next steps</summary>
+          <div class="card-body">
+          <span class="hint" style="display:block;margin-bottom:12px;">Feeds the closing card the student sees after this lesson's deliverable is captured. All four are optional &mdash; leave any of them blank and the card simply skips that section.</span>
+          <div class="row2">
+            <div class="field">
+              <label for="mLayerPosition">Layer position</label>
+              <span class="hint">This lesson's number in the 7-layer course, e.g. 1</span>
+              <input type="text" id="mLayerPosition" placeholder="1" style="max-width:100px;" />
+            </div>
+            <div class="field">
+              <label for="mLayerLabel">Layer label</label>
+              <span class="hint">e.g. The Anchor Behavior, The Hidden Truth, The Formative Wound, The Lie They Believe, The Want vs. The Need, The Fears &amp; Desires, Psychological Integration</span>
+              <input type="text" id="mLayerLabel" placeholder="The Anchor Behavior" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="mTryThisNow">Try this now</label>
+            <span class="hint">A same-session micro-challenge shown right after the captured deliverable &mdash; generic enough to apply to any student's WIP, not this transcript's specifics.</span>
+            <textarea id="mTryThisNow" rows="3" placeholder="Before you close this tab &mdash; find one more place in your draft where this behavior shows up. Does the same thing happen?"></textarea>
+          </div>
+          <div class="field">
+            <label for="mNextStepTeaser">Next step teaser</label>
+            <span class="hint">Shown in the &quot;Up next&quot; block alongside the Next lesson label above &mdash; avoid repeating the lesson name here since the label already shows it; &quot;the next strata&quot; or &quot;the layer underneath this one&quot; reads better than naming it twice.</span>
+            <textarea id="mNextStepTeaser" rows="3" placeholder="You've named what Jennifer does. The next strata takes that same behavior and asks what it's protecting &mdash; not a new discovery, the layer underneath this one."></textarea>
           </div>
         </div>
         </details>
@@ -1607,6 +1664,7 @@ function loadStudents() {
 var dlvLessonSelect = document.getElementById('dlvLessonSelect');
 var dlvTableBody = document.getElementById('dlvTableBody');
 var dlvStatus = document.getElementById('dlvStatus');
+var dlvLayerInfo = document.getElementById('dlvLayerInfo');
 var dlvOpenDetailRow = null;
 document.getElementById('dlvLoadBtn').addEventListener('click', function () {
   var id = dlvLessonSelect.value;
@@ -1619,11 +1677,32 @@ function formatDlvDate(iso) {
   if (isNaN(d.getTime())) return iso;
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
+// Layer position/label live on the lesson's config, not on each captured
+// deliverable row, so they're fetched once per lesson selection (not
+// per row) and shown as a single line above the table - see Instruction
+// 12: surface the closing card's layer context in this view too.
+function loadDlvLayerInfo(lessonId) {
+  dlvLayerInfo.style.display = 'none';
+  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided&lang=' + encodeURIComponent(ADMIN_LANG))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.known || !d.config) return;
+      var cfg = d.config;
+      if (!cfg.layerPosition && !cfg.layerLabel) return;
+      var parts = [];
+      if (cfg.layerPosition) parts.push('Layer ' + cfg.layerPosition + ' of 7');
+      if (cfg.layerLabel) parts.push(cfg.layerLabel);
+      dlvLayerInfo.textContent = parts.join(' \u2014 ');
+      dlvLayerInfo.style.display = '';
+    })
+    .catch(function () {});
+}
 function loadDeliverables(lessonId) {
   if (!adminKey) { dlvStatus.textContent = 'Unlock the panel first.'; return; }
   dlvStatus.textContent = 'Loading...';
   dlvTableBody.innerHTML = '';
   dlvOpenDetailRow = null;
+  loadDlvLayerInfo(lessonId);
   fetch(PROXY_URL + '/admin/deliverables?lessonId=' + encodeURIComponent(lessonId), {
     headers: { 'X-Stratum-Admin-Key': adminKey }
   })
@@ -3170,6 +3249,10 @@ function clearGuidedForm() {
   gDeliverableFields.className = 'resource-fields disabled';
   gDeliverableEditor.clear();
   gLoadedHadDeliverable = false;
+  document.getElementById('gLayerPosition').value = '';
+  document.getElementById('gLayerLabel').value = '';
+  document.getElementById('gTryThisNow').value = '';
+  document.getElementById('gNextStepTeaser').value = '';
   document.getElementById('gCoachingApproach').value = '';
   document.getElementById('gCalibration').value = '';
   document.getElementById('gGreetingFresh').value = '';
@@ -3184,6 +3267,10 @@ function fillGuidedForm(config) {
   document.getElementById('gScopeNote').value = config.scopeNote || '';
   document.getElementById('gMediaId').value = (config.video && config.video.mediaId) || '';
   document.getElementById('gTranscript').value = config.transcript || '';
+  document.getElementById('gLayerPosition').value = config.layerPosition != null ? String(config.layerPosition) : '';
+  document.getElementById('gLayerLabel').value = config.layerLabel || '';
+  document.getElementById('gTryThisNow').value = config.tryThisNow || '';
+  document.getElementById('gNextStepTeaser').value = config.nextStepTeaser || '';
   var pdfs = getConfigPdfs(config.resource);
   gHasResourceCb.checked = pdfs.length > 0;
   gResourceFields.className = 'resource-fields' + (pdfs.length > 0 ? '' : ' disabled');
@@ -3257,12 +3344,18 @@ function collectGuidedConfig() {
     var gFields = gDeliverableEditor.collectFields();
     if (gFields.length) deliverableObj = { required: true, fields: gFields };
   }
+  var gLayerPositionRaw = document.getElementById('gLayerPosition').value.trim();
+  var gLayerPositionNum = gLayerPositionRaw ? parseInt(gLayerPositionRaw, 10) : null;
   return {
     lessonId: document.getElementById('gLessonId').value.trim(),
     tier: 'guided',
     lang: ADMIN_LANG,
     scopeNote: document.getElementById('gScopeNote').value.trim(),
     nextLessonLabel: document.getElementById('gNextLessonLabel').value.trim(),
+    layerPosition: (gLayerPositionNum && gLayerPositionNum > 0) ? gLayerPositionNum : null,
+    layerLabel: document.getElementById('gLayerLabel').value.trim(),
+    tryThisNow: document.getElementById('gTryThisNow').value.trim(),
+    nextStepTeaser: document.getElementById('gNextStepTeaser').value.trim(),
     video: { mediaId: document.getElementById('gMediaId').value.trim() },
     transcript: document.getElementById('gTranscript').value.trim(),
     resource: resourceObj,
@@ -3326,6 +3419,17 @@ function configToReadableText(config, savedAt) {
   section('LESSON IDENTITY');
   lines.push('Scope note: ' + (config.scopeNote || '(none)'));
   lines.push('Next lesson label: ' + (config.nextLessonLabel || '(none)'));
+  if (config.layerPosition || config.layerLabel || config.tryThisNow || config.nextStepTeaser) {
+    section('DELIVERABLE CARD - LAYER & NEXT STEPS');
+    lines.push('Layer position: ' + (config.layerPosition || '(none)'));
+    lines.push('Layer label: ' + (config.layerLabel || '(none)'));
+    lines.push('');
+    lines.push('Try this now:');
+    lines.push(config.tryThisNow || '(none)');
+    lines.push('');
+    lines.push('Next step teaser:');
+    lines.push(config.nextStepTeaser || '(none)');
+  }
   section('VIDEO');
   lines.push('Wistia media ID: ' + ((config.video && config.video.mediaId) || '(none)'));
   section('TRANSCRIPT');
@@ -3752,6 +3856,10 @@ function clearMasteryForm() {
   mDeliverableFields.className = 'resource-fields disabled';
   mDeliverableEditor.clear();
   mLoadedHadDeliverable = false;
+  document.getElementById('mLayerPosition').value = '';
+  document.getElementById('mLayerLabel').value = '';
+  document.getElementById('mTryThisNow').value = '';
+  document.getElementById('mNextStepTeaser').value = '';
   document.getElementById('mCoachingApproach').value = '';
   document.getElementById('mCalibration').value = '';
   document.getElementById('mGreetingFresh').value = '';
@@ -3766,6 +3874,10 @@ function fillMasteryForm(config) {
   document.getElementById('mScopeNote').value = config.scopeNote || '';
   document.getElementById('mMediaId').value = (config.video && config.video.mediaId) || '';
   document.getElementById('mTranscript').value = config.transcript || '';
+  document.getElementById('mLayerPosition').value = config.layerPosition != null ? String(config.layerPosition) : '';
+  document.getElementById('mLayerLabel').value = config.layerLabel || '';
+  document.getElementById('mTryThisNow').value = config.tryThisNow || '';
+  document.getElementById('mNextStepTeaser').value = config.nextStepTeaser || '';
   var pdfs = getConfigPdfs(config.resource);
   mHasResourceCb.checked = pdfs.length > 0;
   mResourceFields.className = 'resource-fields' + (pdfs.length > 0 ? '' : ' disabled');
@@ -3839,12 +3951,18 @@ function collectMasteryConfig() {
     var mFields = mDeliverableEditor.collectFields();
     if (mFields.length) deliverableObj = { required: true, fields: mFields };
   }
+  var mLayerPositionRaw = document.getElementById('mLayerPosition').value.trim();
+  var mLayerPositionNum = mLayerPositionRaw ? parseInt(mLayerPositionRaw, 10) : null;
   return {
     lessonId: document.getElementById('mLessonId').value.trim(),
     tier: 'guided',
     lang: ADMIN_LANG,
     scopeNote: document.getElementById('mScopeNote').value.trim(),
     nextLessonLabel: document.getElementById('mNextLessonLabel').value.trim(),
+    layerPosition: (mLayerPositionNum && mLayerPositionNum > 0) ? mLayerPositionNum : null,
+    layerLabel: document.getElementById('mLayerLabel').value.trim(),
+    tryThisNow: document.getElementById('mTryThisNow').value.trim(),
+    nextStepTeaser: document.getElementById('mNextStepTeaser').value.trim(),
     video: { mediaId: document.getElementById('mMediaId').value.trim() },
     transcript: document.getElementById('mTranscript').value.trim(),
     resource: resourceObj,
