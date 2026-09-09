@@ -189,6 +189,11 @@
       // how to actually advance (systeme.io's own Mark As Complete / Next
       // controls live at the bottom of the page, outside this engine's
       // control - this line just points at them). See buildNavClusters().
+      // Sept 2026 (later): no longer rendered anywhere - NAV_CLUSTERS[0]
+      // no longer sets instructionsKey, so buildNavClusters() never mounts
+      // this string. Left defined here harmlessly in case it's ever
+      // reinstated, same treatment as the other retired *Tooltip keys
+      // above.
       navLessonInstructions: 'Click the MARK AS COMPLETE or NEXT at the bottom of any page when this lesson is complete to move to the next lesson.',
       // Per-tab hover tooltips (Sept 2026) - branded popovers rendered via
       // the data-tip attribute + CSS, not the native browser title
@@ -798,12 +803,18 @@
      to actually advance past this lesson (the Mark As Complete / Next
      controls live outside this engine's markup, at the bottom of the
      systeme.io page).
+
+     Sept 2026 update 2: instructionsKey removed from the first cluster
+     below per request - the "Click the MARK AS COMPLETE or NEXT..." line
+     no longer renders under the This Lesson tab row. buildNavClusters()
+     still supports instructionsKey (see the `if (cluster.instructionsKey)`
+     check further down) in case a line like this is wanted again later;
+     it's simply not set on either cluster right now.
      ========================================================== */
   var NAV_CLUSTERS = [
     {
       kickerKey: 'navClusterLessonLabel',
       bandClass: 'nav-cluster--lesson',
-      instructionsKey: 'navLessonInstructions',
       numbered: true,
       tabs: [
         { id: 'Video',     labelKey: 'subVideo',     tipKey: 'tabTipVideo',     build: buildVideoTranscriptPanel },
@@ -2448,7 +2459,7 @@
       block += '\n\nSTUDENT\'S ACTION ITEMS (their own self-set to-do list for this WIP, [open] or [done] - only bring one up if it is directly relevant to what they are already talking about, e.g. asking how a specific in-progress item is going. Never quiz them on their whole list or treat unfinished items as something to hold them accountable for):\n' + actionItemsText;
     }
     if (v.language) {
-      block += '\n\nLANGUAGE: This student has selected ' + v.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + v.language + ' - every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically in ' + v.language + ', not as a literal word-for-word translation. Exception: keep every hidden bracket tag - [NAME: ...], [SUMMARY: ...], every deliverable field tag such as [FIELDKEY: ...] or [FIELDKEY_n: ...], and [REFLECTION_COMPLETE] - exactly in their English bracket format as instructed elsewhere in this prompt - only the name inside the NAME tag should reflect what the student actually typed, and the sentence inside the SUMMARY tag must always be written in English regardless of ' + v.language + ', because it is read by the instructor, not the student. The content inside deliverable field tags should be written in ' + v.language + ' since it belongs to the student, matching whatever language they did the session in.';
+      block += '\n\nLANGUAGE: This student has selected ' + v.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + v.language + ', every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically in ' + v.language + ', not as a literal word-for-word translation. Exception: keep every hidden bracket tag - [NAME: ...], [SUMMARY: ...], every deliverable field tag such as [FIELDKEY: ...] or [FIELDKEY_n: ...], and [REFLECTION_COMPLETE] - exactly in their English bracket format as instructed elsewhere in this prompt - only the name inside the NAME tag should reflect what the student actually typed, and the sentence inside the SUMMARY tag must always be written in English regardless of ' + v.language + ', because it is read by the instructor, not the student. The content inside deliverable field tags should be written in ' + v.language + ' since it belongs to the student, matching whatever language they did the session in.';
     }
     return block;
   }
