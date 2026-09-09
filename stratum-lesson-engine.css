@@ -318,12 +318,16 @@ wistia-transcript { display: block; }
 
 /* PDF dropdown body. The embedded document supplies its own scrollbar, so
    this variant drops the 420px cap and the overflow the text body uses —
-   otherwise the page renders a scrollbar inside a scrollbar. Padding is
-   trimmed so the document sits close to the frame edge. */
+   otherwise the page renders a scrollbar inside a scrollbar.
+   Sept 2026: padding dropped to 0 (was 10px) and the browser's built-in
+   PDF toolbar/page-navigation chrome is suppressed at the iframe src
+   level (see engine JS) so the document renders truly edge-to-edge and
+   full width inside the panel, with no page-number/zoom controls
+   competing with the page's own chrome. */
 .lec-resource-body--pdf {
   max-height: none;
   overflow: visible;
-  padding: 10px;
+  padding: 0;
 }
 
 /* The embedded PDF itself. NOTE: this class was assigned in the engine JS
@@ -1107,6 +1111,10 @@ button.download-btn:hover { background-color: #5a4535; }
    Each tab also carries a small branded hover/focus tooltip (data-tip +
    ::after below) instead of the old per-GROUP tooltip the previous
    two-tier nav used to show.
+
+   Sept 2026 update: both rows (and their kicker labels) are centered
+   rather than left-aligned, per request — the tab links now read as a
+   centered pair of clusters rather than a left-hugging list.
    ============================================================ */
 
 .nav-cluster { margin: 0 0 26px; }
@@ -1120,16 +1128,18 @@ button.download-btn:hover { background-color: #5a4535; }
   text-transform: uppercase;
   color: #b3a68c;
   margin: 0 0 8px;
+  text-align: center;
 }
 
 .stratum-nav{
   display:flex;
   align-items:center;
+  justify-content:center;
   flex-wrap:wrap;
   gap:0;
   margin:0;
   border-bottom:1px solid #e2d9c4;
-  text-align:left;
+  text-align:center;
 }
 .navlink{
   position:relative;
@@ -1139,7 +1149,7 @@ button.download-btn:hover { background-color: #5a4535; }
   background:none;
   border:none;
   padding:10px 4px;
-  margin:0 20px 6px 0;
+  margin:0 10px 6px;
   font-family:'Inter',sans-serif;
   font-size:12.5px;
   font-weight:700;
@@ -1241,15 +1251,19 @@ button.download-btn:hover { background-color: #5a4535; }
    GLOSSARY (formerly "Writer's Vocabulary") (Sept 2026)
    ------------------------------------------------------------
    Read-only glossary: a free-text search box (Enter/button-triggered,
-   searches both word and definition) alongside a row of 4 filter
-   dropdowns (Craft Category, Narrative Stage, Function, Complexity
-   Level), above a flat list of entries. No add/edit here - content is
-   admin-managed.
+   searches both word and definition) alongside filter dropdowns, above
+   a flat list of entries. No add/edit here - content is admin-managed.
+
+   Sept 2026 update: the Narrative Stage and Function filter dropdowns
+   were removed from the student-facing toolbar (Craft Category and
+   Complexity Level remain), and a Clear control was added to reset both
+   the search box and the remaining filters in one action.
    ============================================================ */
 
 .vocab-toolbar{
   display:flex;
   flex-wrap:wrap;
+  align-items:center;
   gap:14px;
   margin-bottom:18px;
 }
@@ -1300,6 +1314,23 @@ button.download-btn:hover { background-color: #5a4535; }
   color:#444;
 }
 .vocab-filter-select:focus{ outline:none; border-color:#000; }
+
+/* Reset control for the search box + remaining filter dropdowns. Plain,
+   secondary styling - it should read as a quiet utility, not a primary
+   action like Search itself. */
+.vocab-clear-btn{
+  padding:6px 12px;
+  font-size:12px;
+  font-weight:600;
+  font-family:'Inter',sans-serif;
+  background:none;
+  color:#8a7a5e;
+  border:1px solid #ccc;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background-color .2s ease,color .2s ease,border-color .2s ease;
+}
+.vocab-clear-btn:hover{ background:#F0E9D8; color:#281e16; border-color:#C9A46C; }
 
 .vocab-list{ list-style:none; margin:0; padding:0; }
 .vocab-empty{ color:#aaa; font-style:italic; font-size:12px; font-family:Arial,sans-serif; }
