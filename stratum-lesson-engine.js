@@ -131,13 +131,20 @@
   /* ==========================================================
      WRITER'S VOCABULARY - FILTER TAXONOMY (Sept 2026)
      ------------------------------------------------------------
-     Fixed option lists for the four filter dropdowns on the student-
-     facing Vocabulary/Glossary tab. English-only for now, regardless of
-     LANG - the admin panel that authors these terms has no language
-     switching yet (unlike lesson_configs), so every stored term's
-     category values are English strings; translating just the filter
-     labels while the underlying data stays English would silently break
-     filtering. Revisit if/when vocabulary authoring itself goes bilingual.
+     Fixed option lists for the filter dropdowns on the student-facing
+     Vocabulary/Glossary tab. English-only for now, regardless of LANG -
+     the admin panel that authors these terms has no language switching
+     yet (unlike lesson_configs), so every stored term's category values
+     are English strings; translating just the filter labels while the
+     underlying data stays English would silently break filtering.
+     Revisit if/when vocabulary authoring itself goes bilingual.
+
+     Sept 2026 update: the student-facing filter toolbar now only exposes
+     Craft Category and Complexity Level (see buildVocabularyTab()) - the
+     Narrative Stage and Function dropdowns were removed at the student's
+     request. VOCAB_NARRATIVE_STAGES/VOCAB_FUNCTIONS are left defined here
+     (entries can still carry these values, and individual entry tags
+     still display them) but are no longer wired to a filter control.
      ========================================================== */
   var VOCAB_CRAFT_CATEGORIES = ['Character', 'Plot', 'Dialogue', 'Setting', 'Theme', 'Structure', 'Pacing', 'Point of View'];
   var VOCAB_NARRATIVE_STAGES = ['Setup', 'Rising Action', 'Climax', 'Falling Action', 'Resolution'];
@@ -192,9 +199,10 @@
       tabTipGlossary: 'Look up any craft term used in the course.',
       tabTipHelp: 'Get in touch with Ted.',
       vocabTitle: 'Glossary',
-      vocabIntro: 'A working glossary of craft terms. Search by keyword, or filter by category, narrative stage, function, or complexity level to find what you need.',
+      vocabIntro: 'A working glossary of craft terms. Search by keyword, or filter by category or complexity level to find what you need.',
       vocabSearchPlaceholder: 'Search terms and definitions\u2026',
       vocabSearchBtn: 'Search',
+      vocabClearBtn: 'Clear',
       vocabFilterCraft: 'Craft Category',
       vocabFilterStage: 'Narrative Stage',
       vocabFilterFunction: 'Function',
@@ -331,9 +339,10 @@
       tabTipGlossary: 'Busca cualquier t\u00e9rmino de oficio usado en el curso.',
       tabTipHelp: 'Ponte en contacto con Ted.',
       vocabTitle: 'Glosario',
-      vocabIntro: 'Un glosario de trabajo con t\u00e9rminos de oficio. Busca por palabra clave, o filtra por categor\u00eda, etapa narrativa, funci\u00f3n o nivel de complejidad para encontrar lo que necesitas.',
+      vocabIntro: 'Un glosario de trabajo con t\u00e9rminos de oficio. Busca por palabra clave, o filtra por categor\u00eda o nivel de complejidad para encontrar lo que necesitas.',
       vocabSearchPlaceholder: 'Buscar t\u00e9rminos y definiciones\u2026',
       vocabSearchBtn: 'Buscar',
+      vocabClearBtn: 'Limpiar',
       vocabFilterCraft: 'Categor\u00eda de Oficio',
       vocabFilterStage: 'Etapa Narrativa',
       vocabFilterFunction: 'Funci\u00f3n',
@@ -662,7 +671,14 @@
         var body = el('div', 'lec-resource-body lec-resource-body--pdf');
         var iframe = document.createElement('iframe');
         iframe.className = 'lec-resource-pdf-frame';
-        iframe.src = pdf.url;
+        // Sept 2026: append PDF-viewer URL params to suppress the
+        // browser's built-in toolbar (page-number stepper, zoom, print,
+        // download button) so the document renders as a clean, full-width
+        // embed with no competing page-navigation chrome. Chrome/Edge's
+        // native PDF viewer honors these hash params; browsers that don't
+        // recognize them simply ignore the fragment and load the PDF
+        // normally, so this degrades safely everywhere.
+        iframe.src = pdf.url + '#toolbar=0&navpanes=0&scrollbar=0';
         iframe.title = pdf.title;
         mount(body, iframe);
         var fallback = el('p', 'lec-resource-pdf-fallback');
@@ -730,7 +746,10 @@
      not a second independent tab system. Video still opens by default
      (first tab in the first cluster). Each tab now also carries a
      data-tip attribute (branded hover popover, see engine CSS) instead of
-     the old per-GROUP tooltip the two-tier nav used to show.
+     the old per-GROUP tooltip the two-tier nav used to show. Both rows
+     (and their kicker labels) are centered rather than left-aligned as
+     of Sept 2026 - see .stratum-nav / .nav-cluster-label / .navlink in
+     the engine CSS.
      ========================================================== */
   var NAV_CLUSTERS = [
     {
@@ -905,14 +924,20 @@
      ------------------------------------------------------------
      Read-only, student-facing glossary - no identity gate, since it's
      reference material, not personal data. Fetches the public /vocabulary
-     endpoint once per page load and filters client-side across the four
-     taxonomy dimensions PLUS a free-text search box (Sept 2026 addition)
-     matching against both word and definition. Search is Enter/button-
-     triggered, not live-filter, and sits alongside the four existing
-     dropdowns rather than replacing them. coachingCue is deliberately
-     never requested here (the public endpoint doesn't return it) - it's
-     private direction for a future coach integration, same treatment as
-     coachingApproach on lesson_configs.
+     endpoint once per page load and filters client-side, plus a free-text
+     search box matching against both word and definition. Search is
+     Enter/button-triggered, not live-filter.
+
+     Sept 2026 update: the filter toolbar now exposes Craft Category and
+     Complexity Level only - the Narrative Stage and Function dropdowns
+     were removed at the student's request (VOCAB_NARRATIVE_STAGES /
+     VOCAB_FUNCTIONS remain defined above for the underlying term data and
+     the per-entry tag display in renderVocabList(), just no longer
+     wired to a filter control here). A Clear control was added alongside
+     Search to reset the search box and the remaining filters together.
+     coachingCue is deliberately never requested here (the public endpoint
+     doesn't return it) - it's private direction for a future coach
+     integration, same treatment as coachingApproach on lesson_configs.
      ========================================================== */
   var vocabTermsCache = null;
   var vocabSearchQuery = '';
@@ -943,10 +968,11 @@
     mount(searchWrap, searchBtn);
     mount(toolbar, searchWrap);
 
+    // Sept 2026: Narrative Stage and Function filters removed from this
+    // list at the student's request - only Craft Category and Complexity
+    // Level remain as filter dropdowns.
     var filterDefs = [
       { id: 'vocabFilterCraft', label: t('vocabFilterCraft'), options: VOCAB_CRAFT_CATEGORIES },
-      { id: 'vocabFilterStage', label: t('vocabFilterStage'), options: VOCAB_NARRATIVE_STAGES },
-      { id: 'vocabFilterFunction', label: t('vocabFilterFunction'), options: VOCAB_FUNCTIONS },
       { id: 'vocabFilterComplexity', label: t('vocabFilterComplexity'), options: VOCAB_COMPLEXITY_LEVELS }
     ];
     filterDefs.forEach(function (f) {
@@ -969,6 +995,25 @@
       mount(wrap, select);
       mount(toolbar, wrap);
     });
+
+    // Clear control (Sept 2026) - resets the search box plus whichever
+    // filter dropdowns are currently rendered (reads filterDefs above via
+    // closure, so it automatically stays correct if the filter set ever
+    // changes again).
+    var clearBtn = el('button', 'vocab-clear-btn', t('vocabClearBtn'));
+    clearBtn.type = 'button';
+    clearBtn.addEventListener('click', function () {
+      var si = document.getElementById('vocabSearchInput');
+      if (si) si.value = '';
+      vocabSearchQuery = '';
+      filterDefs.forEach(function (f) {
+        var sel = document.getElementById(f.id);
+        if (sel) sel.value = '';
+      });
+      renderVocabList();
+    });
+    mount(toolbar, clearBtn);
+
     mount(panel, toolbar);
     var list = el('ul', 'vocab-list');
     list.id = 'vocabList';
@@ -999,6 +1044,10 @@
     var funcEl = document.getElementById('vocabFilterFunction');
     var levelEl = document.getElementById('vocabFilterComplexity');
     var craft = craftEl ? craftEl.value : '';
+    // stageEl/funcEl no longer render on the student-facing toolbar (Sept
+    // 2026), so these will always resolve to '' via the null-safe reads
+    // below - harmless, and keeps this function forward-compatible if
+    // either filter control is ever reinstated.
     var stage = stageEl ? stageEl.value : '';
     var func = funcEl ? funcEl.value : '';
     var level = levelEl ? levelEl.value : '';
