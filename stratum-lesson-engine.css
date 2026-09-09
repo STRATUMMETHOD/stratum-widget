@@ -1301,18 +1301,27 @@ button.download-btn:hover { background-color: #5a4535; }
    centered pair of clusters rather than a left-hugging list.
 
    Sept 2026 update 2: each cluster now sits on its own soft background
-   band (rounded, faintly bordered) instead of a bare bottom rule. The
-   two bands use two subtly different warm-neutral tints — "This Lesson"
-   a touch lighter/warmer, "Your Creative Desktop" a touch deeper — so
-   the two groupings read as distinct layers at a glance without either
-   one competing with the nav links for attention. Class assigned per
-   cluster in buildNavClusters() via cluster.bandClass (nav-cluster--
-   lesson / nav-cluster--desk), not by position, so the mapping stays
-   correct even if a cluster's order in NAV_CLUSTERS ever changes. Both
-   bands stay light enough that the existing text colors (#8a7a5e
-   inactive, #281e16 active, #C9A46C accent) keep clear, unchanged
-   contrast against them — the grounding effect comes from the band vs.
-   band difference, not from darkening either one.
+   band (rounded, faintly bordered) instead of a bare bottom rule. Class
+   assigned per cluster in buildNavClusters() via cluster.bandClass
+   (nav-cluster--lesson / nav-cluster--desk), not by position, so the
+   mapping stays correct even if a cluster's order in NAV_CLUSTERS ever
+   changes.
+
+   Sept 2026 update 3 (Option 3 - "patina accent"): "This Lesson" now
+   uses a muted verdigris/patina tint rather than a warm-neutral one -
+   the one deliberate departure from the umber/clay/gold/sand/offwhite
+   palette, chosen because aged bronze/copper patina is thematically
+   part of the same excavation metaphor the rest of the brand already
+   leans on, not an arbitrary new color. Because that tint sits closer
+   to green than the rest of the site, its nav link text needs its own
+   muted sage colors (inactive/active) to stay legible and tonally
+   consistent - scoped under .nav-cluster--lesson below - rather than
+   reusing the standard #8a7a5e/#281e16 text colors used everywhere
+   else. "Your Creative Desktop" keeps the standard warm-neutral tint
+   and standard text colors, unchanged. The clay active-tab underline
+   (#C9A46C) stays the single accent color on both bands, so there's
+   still only one "this is active/current" signal across the whole nav,
+   not two competing ones.
    ============================================================ */
 
 .nav-cluster {
@@ -1323,11 +1332,8 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 .nav-cluster:last-of-type { margin-bottom: 18px; }
 
-/* Sept 2026: swapped per request - "This Lesson" now reads as the
-   darker/deeper band, "Your Creative Desktop" the lighter one (was the
-   reverse). Same two tints, just re-assigned. */
-.nav-cluster--lesson { background: #F3EEE0; }
-.nav-cluster--desk   { background: #FBF8F0; }
+.nav-cluster--lesson { background: #DCE3D9; }
+.nav-cluster--desk   { background: #FBF3E3; }
 
 /* Sept 2026: the visible kicker label (nav-cluster-label) was removed -
    the wording now only reaches the page as an aria-label on .stratum-nav
@@ -1347,7 +1353,8 @@ button.download-btn:hover { background-color: #5a4535; }
 /* Instructional line (Sept 2026) shown below the "This Lesson" tab row -
    see NAV_CLUSTERS[0].instructionsKey / navLessonInstructions in the
    engine JS. Quiet, centered, sits inside the same band as the tabs
-   above it rather than the page background. */
+   above it rather than the page background. Color overridden below for
+   the patina band specifically. */
 .nav-cluster-instructions {
   font-family: 'Inter', sans-serif;
   font-size: 11.5px;
@@ -1356,6 +1363,7 @@ button.download-btn:hover { background-color: #5a4535; }
   text-align: center;
   margin: 8px 0 2px;
 }
+.nav-cluster--lesson .nav-cluster-instructions { color: #5f6f5c; }
 
 .stratum-nav{
   position:relative;
@@ -1389,6 +1397,13 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 .navlink:hover{ color:#281e16; }
 .navlink.active{ color:#281e16; border-bottom-color:#C9A46C; }
+
+/* Patina-band text colors (Option 3) - same active accent (clay
+   underline), different resting/hover text so it reads clearly against
+   the verdigris background instead of the standard warm-neutral text. */
+.nav-cluster--lesson .navlink { color: #6b7a68; }
+.nav-cluster--lesson .navlink:hover { color: #2c3a2a; }
+.nav-cluster--lesson .navlink.active { color: #2c3a2a; border-bottom-color: #C9A46C; }
 
 /* Step badge — only rendered on the numbered "This Lesson" cluster. */
 .nav-step-badge{
@@ -1560,6 +1575,35 @@ button.download-btn:hover { background-color: #5a4535; }
 .vocab-clear-btn:hover{ background:#F0E9D8; color:#281e16; border-color:#C9A46C; }
 
 .vocab-list{ list-style:none; margin:0; padding:0; }
+
+/* Pagination controls (Sept 2026) - client-side, sits below the list;
+   hidden entirely when everything fits on one page (see renderVocabList
+   in the engine JS, which only mounts these when totalPages > 1). */
+.vocab-pager{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  margin-top:16px;
+}
+.vocab-pager-btn{
+  padding:6px 14px;
+  font-size:12px;
+  font-weight:600;
+  font-family:'Inter',sans-serif;
+  background:none;
+  color:#8a6630;
+  border:1px solid #C9A46C;
+  cursor:pointer;
+  transition:background-color .2s ease,color .2s ease;
+}
+.vocab-pager-btn:hover:not(:disabled){ background:#FBF3E3; color:#281e16; }
+.vocab-pager-btn:disabled{ opacity:.4; cursor:default; }
+.vocab-pager-status{
+  font-family:'Inter',sans-serif;
+  font-size:12px;
+  color:#8a7a5e;
+}
 .vocab-empty{ color:#aaa; font-style:italic; font-size:12px; font-family:Arial,sans-serif; }
 .vocab-entry{
   border:1px solid #e2d9c4;
