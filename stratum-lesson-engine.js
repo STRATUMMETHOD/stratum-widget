@@ -216,6 +216,10 @@
       vocabLoading: 'Loading\u2026',
       vocabEmpty: 'No terms yet.',
       vocabEmptyFiltered: 'No terms match these filters.',
+      vocabPageSizeLabel: 'Show',
+      vocabPrevBtn: 'Previous',
+      vocabNextBtn: 'Next',
+      vocabPageStatus: 'Page {page} of {total}',
       coachDownloadBtn: 'Download conversation',
       coachDownloadNothingYet: 'Nothing to download yet \u2014 send a message first.',
       notesTitle: 'Idea Log',
@@ -303,7 +307,7 @@
       // buildDeliverableCard() / showDownloadCard(). downloadCardTitle
       // and downloadCardSub (the old "YOUR REFLECTION IS READY" heading)
       // are retired along with the card they described.
-      deliverableLayerComplete: 'Layer {position} complete',
+      deliverableLayerComplete: 'Strata {position} complete',
       deliverableNiceWorkNamed: 'Nice work, {name}',
       deliverableNiceWork: 'Nice work',
       deliverableNiceWorkSub: "You didn't stop at the first answer \u2014 that's the harder part.",
@@ -368,6 +372,10 @@
       vocabLoading: 'Cargando\u2026',
       vocabEmpty: 'A\u00fan no hay t\u00e9rminos.',
       vocabEmptyFiltered: 'Ning\u00fan t\u00e9rmino coincide con estos filtros.',
+      vocabPageSizeLabel: 'Mostrar',
+      vocabPrevBtn: 'Anterior',
+      vocabNextBtn: 'Siguiente',
+      vocabPageStatus: 'P\u00e1gina {page} de {total}',
       coachDownloadBtn: 'Descargar conversaci\u00f3n',
       coachDownloadNothingYet: 'A\u00fan no hay nada para descargar \u2014 env\u00eda un mensaje primero.',
       notesTitle: 'Registro de Ideas',
@@ -449,7 +457,7 @@
       identityCouldNotConfirm: 'No pudimos confirmar ese correo. Verif\u00edcalo e intenta de nuevo.',
       coachInputPlaceholder: 'Escribe tu respuesta...',
       coachSendAriaLabel: 'Enviar',
-      deliverableLayerComplete: 'Capa {position} completa',
+      deliverableLayerComplete: 'Estrato {position} completo',
       deliverableNiceWorkNamed: 'Buen trabajo, {name}',
       deliverableNiceWork: 'Buen trabajo',
       deliverableNiceWorkSub: 'No te quedaste con la primera respuesta \u2014 esa es la parte m\u00e1s dif\u00edcil.',
@@ -987,14 +995,25 @@
      ========================================================== */
   var vocabTermsCache = null;
   var vocabSearchQuery = '';
+  // Pagination (Sept 2026) - purely client-side, since the entire term
+  // list is already fetched in one request and filtered in memory (see
+  // loadVocabTerms/renderVocabList). vocabPageSize defaults to the
+  // smallest option; vocabCurrentPage resets to 1 whenever the filtered
+  // set changes (new search, new filter, page-size change) so the
+  // student never lands on a now-empty trailing page.
+  var VOCAB_PAGE_SIZES = [25, 50, 100];
+  var vocabPageSize = VOCAB_PAGE_SIZES[0];
+  var vocabCurrentPage = 1;
   function performVocabSearch() {
     var input = document.getElementById('vocabSearchInput');
     vocabSearchQuery = input ? input.value.trim().toLowerCase() : '';
+    vocabCurrentPage = 1;
     renderVocabList();
   }
   function buildVocabularyTab(panel) {
     panel.setAttribute('aria-label', t('vocabTitle'));
     vocabSearchQuery = '';
+    vocabCurrentPage = 1;
     mount(panel, el('p', 'panel-intro', t('vocabIntro')));
     var toolbar = el('div', 'vocab-toolbar');
 
@@ -1037,10 +1056,36 @@
         opt.textContent = optVal;
         select.appendChild(opt);
       });
-      select.addEventListener('change', renderVocabList);
+      select.addEventListener('change', function () {
+        vocabCurrentPage = 1;
+        renderVocabList();
+      });
       mount(wrap, select);
       mount(toolbar, wrap);
     });
+
+    // Page-size selector (Sept 2026) - 25/50/100, sits with the other
+    // toolbar controls. Changing it resets to page 1 so the student
+    // doesn't land on an out-of-range page for the new size.
+    var pageSizeWrap = el('div', 'vocab-filter-wrap');
+    mount(pageSizeWrap, el('span', 'vocab-filter-label', t('vocabPageSizeLabel')));
+    var pageSizeSelect = document.createElement('select');
+    pageSizeSelect.id = 'vocabPageSizeSelect';
+    pageSizeSelect.className = 'vocab-filter-select';
+    VOCAB_PAGE_SIZES.forEach(function (size) {
+      var opt = document.createElement('option');
+      opt.value = String(size);
+      opt.textContent = String(size);
+      if (size === vocabPageSize) opt.selected = true;
+      pageSizeSelect.appendChild(opt);
+    });
+    pageSizeSelect.addEventListener('change', function () {
+      vocabPageSize = Number(pageSizeSelect.value) || VOCAB_PAGE_SIZES[0];
+      vocabCurrentPage = 1;
+      renderVocabList();
+    });
+    mount(pageSizeWrap, pageSizeSelect);
+    mount(toolbar, pageSizeWrap);
 
     // Clear control (Sept 2026) - resets the search box plus whichever
     // filter dropdowns are currently rendered (reads filterDefs above via
@@ -1052,6 +1097,7 @@
       var si = document.getElementById('vocabSearchInput');
       if (si) si.value = '';
       vocabSearchQuery = '';
+      vocabCurrentPage = 1;
       filterDefs.forEach(function (f) {
         var sel = document.getElementById(f.id);
         if (sel) sel.value = '';
@@ -1064,6 +1110,9 @@
     var list = el('ul', 'vocab-list');
     list.id = 'vocabList';
     mount(panel, list);
+    var pager = el('div', 'vocab-pager');
+    pager.id = 'vocabPager';
+    mount(panel, pager);
     loadVocabTerms();
   }
   function loadVocabTerms() {
@@ -1109,12 +1158,19 @@
       return true;
     });
     list.innerHTML = '';
+    var pager = document.getElementById('vocabPager');
+    if (pager) pager.innerHTML = '';
     if (!filtered.length) {
       var emptyMsg = terms.length ? t('vocabEmptyFiltered') : t('vocabEmpty');
       mount(list, el('li', 'vocab-empty', emptyMsg));
       return;
     }
-    filtered.forEach(function (term) {
+    var totalPages = Math.max(1, Math.ceil(filtered.length / vocabPageSize));
+    if (vocabCurrentPage > totalPages) vocabCurrentPage = totalPages;
+    if (vocabCurrentPage < 1) vocabCurrentPage = 1;
+    var startIdx = (vocabCurrentPage - 1) * vocabPageSize;
+    var pageItems = filtered.slice(startIdx, startIdx + vocabPageSize);
+    pageItems.forEach(function (term) {
       var li = el('li', 'vocab-entry');
       var head = el('div', 'vocab-entry-head');
       mount(head, el('span', 'vocab-word', term.word));
@@ -1127,6 +1183,27 @@
       mount(li, el('div', 'vocab-definition', term.definition));
       mount(list, li);
     });
+    if (pager && totalPages > 1) {
+      var prevBtn = el('button', 'vocab-pager-btn', t('vocabPrevBtn'));
+      prevBtn.type = 'button';
+      prevBtn.disabled = vocabCurrentPage <= 1;
+      prevBtn.addEventListener('click', function () {
+        vocabCurrentPage -= 1;
+        renderVocabList();
+        list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      mount(pager, prevBtn);
+      mount(pager, el('span', 'vocab-pager-status', t('vocabPageStatus', { page: vocabCurrentPage, total: totalPages })));
+      var nextBtn = el('button', 'vocab-pager-btn', t('vocabNextBtn'));
+      nextBtn.type = 'button';
+      nextBtn.disabled = vocabCurrentPage >= totalPages;
+      nextBtn.addEventListener('click', function () {
+        vocabCurrentPage += 1;
+        renderVocabList();
+        list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      mount(pager, nextBtn);
+    }
   }
   function buildEssentialsDropdowns(container) {
     var items = [
@@ -2811,17 +2888,19 @@
     mount(congratsText, el('div', 'srx-dc-congrats-sub', t('deliverableNiceWorkSub')));
     mount(congrats, congratsText);
     mount(card, congrats);
-    // Course-shape reminder - fixed copy, same on every lesson's card.
-    // This is what tells the student the incomplete-feeling ending is
-    // the course's design, not a shortfall - placed prominently near
-    // the top rather than as a quiet aside at the bottom.
+    // Course-shape reminder - admin-authored per lesson
+    // (LESSON.courseShapeReminder), falling back to the fixed STRINGS
+    // default when a lesson hasn't had a custom one written yet. This is
+    // what tells the student the incomplete-feeling ending is the
+    // course's design, not a shortfall - placed prominently near the
+    // top rather than as a quiet aside at the bottom.
     var courseBox = el('div', 'srx-dc-course-box');
     var strataIcon = el('div', 'srx-dc-strata-icon');
     mount(strataIcon, document.createElement('span'));
     mount(strataIcon, document.createElement('span'));
     mount(strataIcon, document.createElement('span'));
     mount(courseBox, strataIcon);
-    mount(courseBox, el('p', 'srx-dc-course-text', t('deliverableCourseShape')));
+    mount(courseBox, el('p', 'srx-dc-course-text', LESSON.courseShapeReminder || t('deliverableCourseShape')));
     mount(card, courseBox);
     // The captured deliverable itself - now positioned as supporting
     // evidence beneath the congratulatory framing, not the headline.
@@ -2876,33 +2955,97 @@
   var GT = String.fromCharCode(62);
   function otag(name, attrs) { return LT + name + (attrs ? ' ' + attrs : '') + GT; }
   function ctag(name) { return LT + '/' + name + GT; }
-  function generateDoc() {
-    var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    var name = studentName || 'Student';
-    var body = '';
+  // ----------------------------------------------------------
+  // DOWNLOADABLE .doc EXPORT (Sept 2026 restructure)
+  // ----------------------------------------------------------
+  // Previously a single flowing document: a small deliverable-fields box
+  // followed immediately by the full transcript. Beta feedback was that
+  // the download and the on-screen closing card told two different
+  // stories - the card carried the actual "peak" moment (congrats,
+  // course-shape framing, try-this-now, up-next teaser) and the download
+  // was just the raw fields plus a multi-page conversation log.
+  //
+  // Restructured into two parts, separated by a literal Word page break
+  // (the `page-break-before:always` <br> below - a long-standing, still-
+  // reliable technique for the application/msword HTML-export format
+  // this function already produces):
+  //   PAGE ONE   - a compact, single-page milestone summary mirroring
+  //                buildDeliverableCard() on screen: strata tag, layer
+  //                title, congrats line, course-shape reminder, the
+  //                captured deliverable, try-this-now, and the up-next
+  //                teaser. This is the keepsake page.
+  //   PAGE TWO+  - the full coaching transcript, unchanged in content,
+  //                now positioned as supporting material rather than
+  //                the document's lead content.
+  // Still exported as .doc, not PDF - no new dependency, same mechanism
+  // as before.
+  function buildSummaryPageHtml(dateStr, name, cfg) {
+    var html = '';
+    if (LESSON.layerPosition) {
+      html += otag('p', 'style="margin:0 0 4px;font-family:Calibri,Arial,sans-serif;font-size:9pt;letter-spacing:1px;text-transform:uppercase;color:#8a6630;font-weight:bold;"') +
+              escapeHtml('Strata ' + LESSON.layerPosition + ' complete') + ctag('p');
+    }
+    html += otag('h1', 'style="font-family:Georgia,serif;font-size:19pt;margin:0 0 4px;color:#2e1f0e;"') +
+            escapeHtml(LESSON.layerLabel || LESSON.scopeNote || 'Write Living Characters') + ctag('h1');
+    html += otag('p', 'style="margin:0 0 16px;font-family:Calibri,Arial,sans-serif;font-size:10pt;color:#6f6353;"') +
+            otag('em') + 'Prepared for ' + escapeHtml(name) + ' \u00b7 ' + dateStr + ctag('em') + ctag('p');
+    var niceWorkText = name ? ('Nice work, ' + name) : 'Nice work';
+    html += otag('h2', 'style="font-family:Georgia,serif;font-size:15pt;margin:0 0 2px;color:#2e1f0e;"') +
+            escapeHtml(niceWorkText) + ctag('h2');
+    html += otag('p', 'style="margin:0 0 16px;font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#6f6353;"') +
+            "You didn&#39;t stop at the first answer \u2014 that&#39;s the harder part." + ctag('p');
+    var courseShapeText = LESSON.courseShapeReminder ||
+      "This course builds in layers, not conclusions. What you find today becomes the material the next lesson digs into. The payoff isn't in any one lesson \u2014 it's in what they add up to.";
+    html += otag('div', 'style="background:#FBF8F0;border:1px solid #E6DCC4;padding:12px 16px;margin:0 0 16px;"') +
+            otag('p', 'style="margin:0;font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#4a3a1f;"') +
+            escapeHtml(courseShapeText) + ctag('p') + ctag('div');
     if (lastDeliverable) {
-      var cfg = getDeliverableConfig();
       var data = lastDeliverable.fields || {};
-      body += otag('div', 'style="background:#F5EFE0;border:1px solid #DDD0B8;border-left:4px solid #C9A46C;padding:16px 20px;margin:0 0 22px;"');
+      html += otag('div', 'style="background:#F5EFE0;border:1px solid #DDD0B8;border-left:4px solid #C9A46C;padding:16px 20px;margin:0 0 16px;"');
       (cfg && cfg.fields ? cfg.fields : []).forEach(function (f) {
         var label = f.label || f.key;
         var val = data[f.key];
         if (f.type === 'list') {
           (val || []).forEach(function (item, i) {
-            body += otag('p', 'style="margin:0 0 8px;"') +
+            html += otag('p', 'style="margin:0 0 8px;font-family:Calibri,Arial,sans-serif;font-size:10.5pt;"') +
                     otag('strong') + escapeHtml(label) + ' ' + (i + 1) + ':' + ctag('strong') + ' ' +
                     escapeHtml(formatListItemText(item, f)) +
                     ctag('p');
           });
         } else {
-          body += otag('p', 'style="margin:0 0 4px;font-family:Calibri,Arial,sans-serif;font-size:10pt;letter-spacing:1px;text-transform:uppercase;color:#8b6340;font-weight:bold;"') +
+          html += otag('p', 'style="margin:0 0 4px;font-family:Calibri,Arial,sans-serif;font-size:9pt;letter-spacing:1px;text-transform:uppercase;color:#8b6340;font-weight:bold;"') +
                   escapeHtml(label.toUpperCase()) + ctag('p');
-          body += otag('p', 'style="margin:0 0 14px;font-family:Georgia,serif;font-size:14pt;color:#2e1f0e;"') +
+          html += otag('p', 'style="margin:0 0 12px;font-family:Georgia,serif;font-size:13pt;color:#2e1f0e;"') +
                   escapeHtml(val || '') + ctag('p');
         }
       });
-      body += ctag('div');
+      html += ctag('div');
     }
+    if (LESSON.tryThisNow) {
+      html += otag('div', 'style="background:#FBF3E3;border:1px solid #EAD9AE;padding:12px 16px;margin:0 0 16px;"') +
+              otag('p', 'style="margin:0 0 4px;font-family:Calibri,Arial,sans-serif;font-size:9pt;letter-spacing:1px;text-transform:uppercase;color:#8a6630;font-weight:bold;"') +
+              'Try this now' + ctag('p') +
+              otag('p', 'style="margin:0;font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#4a3a1f;"') +
+              escapeHtml(LESSON.tryThisNow) + ctag('p') + ctag('div');
+    }
+    if (LESSON.nextStepTeaser) {
+      html += otag('div', 'style="background:#3B2F24;padding:12px 16px;margin:0 0 4px;"') +
+              otag('p', 'style="margin:0 0 4px;font-family:Calibri,Arial,sans-serif;font-size:9pt;letter-spacing:1px;text-transform:uppercase;color:#C9A46C;font-weight:bold;"') +
+              escapeHtml('Up next \u00b7 ' + (LESSON.nextLessonLabel || '')) + ctag('p') +
+              otag('p', 'style="margin:0;font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#F5EFE0;"') +
+              escapeHtml(LESSON.nextStepTeaser) + ctag('p') + ctag('div');
+    }
+    return html;
+  }
+  function generateDoc() {
+    var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    var name = studentName || 'Student';
+    var cfg = getDeliverableConfig();
+    var summaryPage = buildSummaryPageHtml(dateStr, name, cfg);
+    summaryPage += otag('br', 'style="page-break-before:always;mso-special-character:line-break"');
+    var transcriptPage = otag('h2', 'style="font-family:Georgia,serif;font-size:14pt;color:#3B2F24;margin-top:0;"') +
+      'Full Conversation' + ctag('h2') +
+      otag('hr', 'style="border:none;border-top:1px solid #C9A46C;margin:8px 0 16px;"');
     conversationHistory.slice(2).forEach(function (msg) {
       if (isHiddenSystemMessage(msg)) return;
       var content = msg.content;
@@ -2917,7 +3060,7 @@
       }
       if (!content) return;
       var speaker = msg.role === 'assistant' ? 'Ted Baker' : name;
-      body += otag('p', 'style="margin:0 0 14px;"') +
+      transcriptPage += otag('p', 'style="margin:0 0 14px;"') +
               otag('strong') + escapeHtml(speaker) + ':' + ctag('strong') + ' ' +
               escapeHtml(content).split(String.fromCharCode(10)).join(otag('br')) +
               ctag('p');
@@ -2929,11 +3072,8 @@
     parts.push(otag('title') + LESSON.scopeNote + ' Reflection' + ctag('title'));
     parts.push(ctag('head'));
     parts.push(otag('body', 'style="font-family:Calibri,Arial,sans-serif;font-size:12pt;color:#111;"'));
-    parts.push(otag('h1', 'style="font-family:Georgia,serif;font-size:20pt;margin-bottom:2px;"') + 'Write Living Characters' + ctag('h1'));
-    parts.push(otag('h2', 'style="font-family:Georgia,serif;font-size:14pt;color:#3B2F24;margin-top:0;"') + LESSON.scopeNote + ' Reflection - A Conversation with Ted Baker' + ctag('h2'));
-    parts.push(otag('p') + otag('em') + 'Prepared for: ' + escapeHtml(name) + ctag('em') + otag('br') + otag('em') + 'Date: ' + dateStr + ctag('em') + ctag('p'));
-    parts.push(otag('hr', 'style="border:none;border-top:1px solid #C9A46C;margin:16px 0;"'));
-    parts.push(body);
+    parts.push(summaryPage);
+    parts.push(transcriptPage);
     parts.push(ctag('body'));
     parts.push(ctag('html'));
     var blob = new Blob(['\ufeff', parts.join('')], { type: 'application/msword' });
@@ -3169,17 +3309,23 @@
         LESSON.transcript = LESSON.transcript || '';
         LESSON.reflectionFramework = LESSON.reflectionFramework || { areas: [], calibrationExamples: [] };
         LESSON.greeting = LESSON.greeting || {};
-        // Sept 2026: layerPosition/layerLabel/nextStepTeaser/tryThisNow
-        // are all optional, admin-authored per lesson (see the
-        // deliverable card build above) - normalized here the same way
-        // as the older fields above so buildDeliverableCard() can read
-        // them directly off LESSON without a chain of null checks.
-        // Lessons saved before these fields existed simply render the
+        // Sept 2026: layerPosition/layerLabel/nextStepTeaser/tryThisNow/
+        // courseShapeReminder are all optional, admin-authored per lesson
+        // (see the deliverable card build above) - normalized here the
+        // same way as the older fields above so buildDeliverableCard()
+        // can read them directly off LESSON without a chain of null
+        // checks. courseShapeReminder specifically falls back to the
+        // fixed STRINGS default (deliverableCourseShape) when blank,
+        // rather than to '', since every lesson should show SOME course-
+        // shape line even before Ted has written a custom one for it -
+        // see buildDeliverableCard(). The other four fields have no such
+        // fallback: lessons saved before they existed simply render the
         // card without the sections that depend on them.
         LESSON.layerPosition = LESSON.layerPosition || null;
         LESSON.layerLabel = LESSON.layerLabel || '';
         LESSON.nextStepTeaser = LESSON.nextStepTeaser || '';
         LESSON.tryThisNow = LESSON.tryThisNow || '';
+        LESSON.courseShapeReminder = LESSON.courseShapeReminder || '';
         if (!LESSON.video || !LESSON.video.mediaId) {
           showFatalError(container, t('lessonMissingVideoError'));
           return;
