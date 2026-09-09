@@ -1115,10 +1115,32 @@ button.download-btn:hover { background-color: #5a4535; }
    Sept 2026 update: both rows (and their kicker labels) are centered
    rather than left-aligned, per request — the tab links now read as a
    centered pair of clusters rather than a left-hugging list.
+
+   Sept 2026 update 2: each cluster now sits on its own soft background
+   band (rounded, faintly bordered) instead of a bare bottom rule. The
+   two bands use two subtly different warm-neutral tints — "This Lesson"
+   a touch lighter/warmer, "Your Creative Desktop" a touch deeper — so
+   the two groupings read as distinct layers at a glance without either
+   one competing with the nav links for attention. Class assigned per
+   cluster in buildNavClusters() via cluster.bandClass (nav-cluster--
+   lesson / nav-cluster--desk), not by position, so the mapping stays
+   correct even if a cluster's order in NAV_CLUSTERS ever changes. Both
+   bands stay light enough that the existing text colors (#8a7a5e
+   inactive, #281e16 active, #C9A46C accent) keep clear, unchanged
+   contrast against them — the grounding effect comes from the band vs.
+   band difference, not from darkening either one.
    ============================================================ */
 
-.nav-cluster { margin: 0 0 26px; }
-.nav-cluster:last-of-type { margin-bottom: 34px; }
+.nav-cluster {
+  margin: 0 0 22px;
+  padding: 14px 18px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(58,47,36,.07);
+}
+.nav-cluster:last-of-type { margin-bottom: 30px; }
+
+.nav-cluster--lesson { background: #FBF8F0; }
+.nav-cluster--desk   { background: #F3EEE0; }
 
 .nav-cluster-label {
   font-family: 'Inter', sans-serif;
@@ -1138,7 +1160,6 @@ button.download-btn:hover { background-color: #5a4535; }
   flex-wrap:wrap;
   gap:0;
   margin:0;
-  border-bottom:1px solid #e2d9c4;
   text-align:center;
 }
 .navlink{
@@ -1243,6 +1264,7 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 
 @media (max-width:640px){
+  .nav-cluster{ padding:12px 12px 8px; }
   .navlink{ margin-right:14px; font-size:11.5px; }
   .navlink[data-tip]::after{ width:160px; }
 }
