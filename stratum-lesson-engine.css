@@ -1350,10 +1350,30 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 
 .nav-cluster--lesson {
+  /* Sept 2026 update 6: +10px top margin per request - space between
+     whatever precedes this band (e.g. the systeme.io lecture title) and
+     the grey band itself. */
+  margin-top: 10px;
   padding: 2px 16px 2px;
   border-radius: 12px;
   border: 1px solid rgba(58,47,36,.07);
   background: #f0f0ef;
+}
+
+/* Sept 2026: Scope Note (admin panel "Lesson Identity" field, e.g.
+   "Strata 1: Anchor Behavior") rendered just above the Video/Handouts/
+   Coaching tab row - see the showScopeNote check in buildNavClusters()
+   in the engine JS. Serif per the brand type system (Cormorant
+   Garamond), sized as a real title, tight top/bottom margin to match
+   the grey band's own near-zero padding. */
+.nav-scope-note {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #281e16;
+  text-align: center;
+  margin: 4px 0 2px;
 }
 
 .nav-cluster--desk {
