@@ -810,11 +810,18 @@
      still supports instructionsKey (see the `if (cluster.instructionsKey)`
      check further down) in case a line like this is wanted again later;
      it's simply not set on either cluster right now.
+
+     Sept 2026 update 3: showScopeNote added to the first cluster - when
+     true, LESSON.scopeNote (the "Scope Note" field on the admin panel's
+     Lesson Identity section) renders as a heading just above that
+     cluster's tab row. See the `if (cluster.showScopeNote...)` check
+     further down.
      ========================================================== */
   var NAV_CLUSTERS = [
     {
       kickerKey: 'navClusterLessonLabel',
       bandClass: 'nav-cluster--lesson',
+      showScopeNote: true,
       numbered: true,
       tabs: [
         { id: 'Video',     labelKey: 'subVideo',     tipKey: 'tabTipVideo',     build: buildVideoTranscriptPanel },
@@ -849,6 +856,16 @@
     var defaultAssigned = false;
     clusters.forEach(function (cluster) {
       var clusterWrap = el('div', 'nav-cluster' + (cluster.bandClass ? ' ' + cluster.bandClass : ''));
+      // Sept 2026: Scope Note (the admin-panel "Lesson Identity" field,
+      // e.g. "Strata 1: Anchor Behavior" - same LESSON.scopeNote already
+      // used in buildSystemPrompt()) rendered here, just above the tab
+      // row, on the cluster that opts in via showScopeNote. Falls back to
+      // the same 'Lecture <id>' default buildSystemPrompt() would use if
+      // the admin field is blank, via the normalization in
+      // loadLessonConfig(), so this never renders empty.
+      if (cluster.showScopeNote && LESSON && LESSON.scopeNote) {
+        mount(clusterWrap, el('div', 'nav-scope-note', LESSON.scopeNote));
+      }
       var bar = el('div', 'stratum-nav');
       bar.setAttribute('aria-label', t(cluster.kickerKey));
       cluster.tabs.forEach(function (tab, index) {
