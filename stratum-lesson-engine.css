@@ -956,43 +956,227 @@ button.download-btn:hover { background-color: #5a4535; }
   min-height: 15px;
 }
 
-.srx-download-card {
-  background: var(--srx-offwhite);
-  border: 1.5px solid var(--srx-clay);
+/* ============================================================
+   10b. LESSON-COMPLETION DELIVERABLE CARD (Sept 2026)
+   ------------------------------------------------------------
+   Replaces the old .srx-download-card (a bordered box holding just the
+   raw captured fields + a generic "YOUR REFLECTION IS READY" heading +
+   download button) with a fuller closing card - see
+   buildDeliverableCard() / showDownloadCard() in the engine JS for the
+   section order: header/stepper, congrats, course-shape reminder,
+   captured deliverable, try-this-now, up-next, download.
+
+   Renders inside #srx-chat, itself inside .srx-wrap, so the --srx-*
+   custom properties defined on .srx-wrap (umber/clay/gold/offwhite)
+   are available here without redeclaring them.
+
+   .srx-deliverable / .srx-deliverable-label / .srx-deliverable-behavior /
+   .srx-deliverable-instances / .srx-deliverable-instance /
+   .srx-deliverable-instance-text were referenced by the engine JS
+   (buildDeliverableSnapshotEl) but had no rules here at all - they
+   rendered as unstyled black-on-white text. Styled properly for the
+   first time below, as the "evidence" box inside the new card.
+   ============================================================ */
+
+.srx-deliverable-card {
+  background: #ffffff;
+  border: 1px solid #DDD0B8;
   border-radius: 14px;
-  padding: 18px 20px;
+  overflow: hidden;
   margin-top: 4px;
-  text-align: center;
 }
-.srx-download-card .srx-dc-title {
+
+.srx-dc-header {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid #EEE6D3;
+}
+.srx-dc-head-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 10px;
+}
+.srx-dc-layer-title {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px;
-  letter-spacing: .02em;
-  color: var(--srx-black);
-  margin-bottom: 6px;
-}
-.srx-download-card .srx-dc-sub {
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-size: 16px;
+  font-size: 15px;
+  letter-spacing: .03em;
+  text-transform: uppercase;
   color: var(--srx-umber);
-  margin-bottom: 14px;
 }
-.srx-dc-btn {
-  display: inline-block;
-  background: var(--srx-umber);
-  color: var(--srx-gold);
+.srx-dc-layer-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-family: 'Inter', sans-serif;
-  font-weight: 600;
-  font-size: 14px;
+  font-size: 11px;
+  font-weight: 700;
   letter-spacing: .04em;
   text-transform: uppercase;
-  padding: 12px 26px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
+  color: #8a6630;
+  white-space: nowrap;
 }
-.srx-dc-btn:hover { background: var(--srx-umber); }
+.srx-dc-layer-check { color: var(--srx-clay); font-size: 12px; }
+.srx-dc-stepper { display: flex; gap: 4px; }
+.srx-dc-stepper-seg {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: #E6DCC4;
+}
+.srx-dc-stepper-seg.filled { background: var(--srx-clay); }
+
+.srx-dc-congrats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px 0;
+}
+.srx-dc-badge {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--srx-clay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #8a6630;
+}
+.srx-dc-congrats-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 17px;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--srx-umber);
+  margin: 0 0 2px;
+}
+.srx-dc-congrats-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  color: #6f6353;
+}
+
+.srx-dc-course-box {
+  margin: 16px 22px 0;
+  background: #FBF8F0;
+  border: 1px solid #E6DCC4;
+  border-radius: 10px;
+  padding: 15px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.srx-dc-strata-icon {
+  flex-shrink: 0;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.srx-dc-strata-icon span { display: block; height: 3px; border-radius: 2px; }
+.srx-dc-strata-icon span:nth-child(1) { width: 20px; background: var(--srx-clay); }
+.srx-dc-strata-icon span:nth-child(2) { width: 15px; background: #8a6630; }
+.srx-dc-strata-icon span:nth-child(3) { width: 10px; background: var(--srx-umber); }
+.srx-dc-course-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #4a3a1f;
+  margin: 0;
+}
+
+.srx-deliverable {
+  margin: 14px 22px 0;
+  background: #ffffff;
+  border: 1px solid #E6DCC4;
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.srx-deliverable-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: #8a6630;
+  margin: 0 0 4px;
+}
+.srx-deliverable-label:not(:first-child) { margin-top: 14px; }
+.srx-deliverable-behavior {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 16px;
+  color: #281e16;
+  margin: 0;
+}
+.srx-deliverable-instances { margin-top: 2px; }
+.srx-deliverable-instance {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #5a4535;
+  padding: 6px 0 6px 12px;
+  border-left: 2px solid var(--srx-clay);
+  margin-bottom: 8px;
+}
+.srx-deliverable-instance:last-child { margin-bottom: 0; }
+
+.srx-dc-ttn-box {
+  margin: 14px 22px 0;
+  background: #FBF3E3;
+  border: 1px solid #EAD9AE;
+  border-radius: 10px;
+  padding: 15px 16px;
+}
+.srx-dc-upnext-box {
+  margin: 14px 22px 0;
+  background: var(--srx-umber);
+  border-radius: 10px;
+  padding: 15px 16px;
+}
+.srx-dc-box-label,
+.srx-dc-upnext-kicker {
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+.srx-dc-box-label { color: #8a6630; }
+.srx-dc-upnext-kicker { color: var(--srx-clay); }
+.srx-dc-box-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #4a3a1f;
+  margin: 0;
+}
+.srx-dc-upnext-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--srx-offwhite);
+  margin: 0;
+}
+
+.srx-dc-btn-wrap { padding: 20px 22px 22px; text-align: center; }
+.srx-dc-btn {
+  display: inline-block;
+  background: none;
+  color: #8a6630;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: .03em;
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: 1px solid var(--srx-clay);
+  cursor: pointer;
+  transition: background-color .2s ease, color .2s ease;
+}
+.srx-dc-btn:hover { background: #FBF3E3; color: var(--srx-umber); }
 
 .srx-exhausted-card {
   background: var(--srx-umber);
@@ -1132,16 +1316,23 @@ button.download-btn:hover { background-color: #5a4535; }
    ============================================================ */
 
 .nav-cluster {
-  margin: 0 0 22px;
-  padding: 14px 18px 10px;
+  margin: 0 0 14px;
+  padding: 10px 16px 8px;
   border-radius: 12px;
   border: 1px solid rgba(58,47,36,.07);
 }
-.nav-cluster:last-of-type { margin-bottom: 30px; }
+.nav-cluster:last-of-type { margin-bottom: 18px; }
 
-.nav-cluster--lesson { background: #FBF8F0; }
-.nav-cluster--desk   { background: #F3EEE0; }
+/* Sept 2026: swapped per request - "This Lesson" now reads as the
+   darker/deeper band, "Your Creative Desktop" the lighter one (was the
+   reverse). Same two tints, just re-assigned. */
+.nav-cluster--lesson { background: #F3EEE0; }
+.nav-cluster--desk   { background: #FBF8F0; }
 
+/* Sept 2026: the visible kicker label (nav-cluster-label) was removed -
+   the wording now only reaches the page as an aria-label on .stratum-nav
+   (see buildNavClusters() in the engine JS). This rule is kept in case a
+   future page still renders the div, but nothing currently mounts it. */
 .nav-cluster-label {
   font-family: 'Inter', sans-serif;
   font-size: 10.5px;
@@ -1153,7 +1344,21 @@ button.download-btn:hover { background-color: #5a4535; }
   text-align: center;
 }
 
+/* Instructional line (Sept 2026) shown below the "This Lesson" tab row -
+   see NAV_CLUSTERS[0].instructionsKey / navLessonInstructions in the
+   engine JS. Quiet, centered, sits inside the same band as the tabs
+   above it rather than the page background. */
+.nav-cluster-instructions {
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px;
+  font-style: italic;
+  color: #8a7a5e;
+  text-align: center;
+  margin: 8px 0 2px;
+}
+
 .stratum-nav{
+  position:relative;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -1568,15 +1773,27 @@ button.download-btn:hover { background-color: #5a4535; }
    a top nav row, to (now) the last nav cluster's bar ("Your Creative
    Desktop") - a language switch reads as a tool/setting rather than a
    lesson step, so it sits with the other tools rather than cramped into
-   the 3-tab numbered row. Still pushed right via margin-left:auto on
-   .nav-lang-control. Hidden entirely below 2 active languages (see
+   the 3-tab numbered row. Hidden entirely below 2 active languages (see
    buildNavLanguageControl() in the engine JS), so it stays invisible
    today and appears automatically once 'es' goes live.
+
+   Sept 2026 fix: previously positioned with margin-left:auto inside the
+   now-centered .stratum-nav flex row. An auto-margin child in a
+   justify-content:center row consumes all the row's leftover space for
+   itself, which pinned the whole row back against the left edge the
+   moment a second language went active and this control became visible
+   - the nav links only looked centered because the control was hidden.
+   Switched to position:absolute, anchored to the right edge of
+   .stratum-nav (now position:relative - see NAV CLUSTERS above) and
+   vertically centered, so the language control's presence or visibility
+   never affects how the nav links themselves are centered.
    ============================================================ */
 
 .nav-lang-control {
-  position: relative;
-  margin-left: auto;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 .nav-lang-btn {
   display: flex;
@@ -1642,6 +1859,9 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 
 @media (max-width: 640px) {
-  .nav-lang-control { margin-left: 0; margin-top: 10px; width: 100%; }
+  /* Drop out of the absolutely-positioned corner and back into normal
+     flow, full width, below the tab row - unchanged behavior from
+     before the fix above. */
+  .nav-lang-control { position: static; transform: none; margin-top: 10px; width: 100%; }
   .nav-lang-panel { left: 0; right: auto; }
 }
