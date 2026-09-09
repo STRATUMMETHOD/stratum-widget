@@ -1330,18 +1330,41 @@ button.download-btn:hover { background-color: #5a4535; }
    .nav-cluster--lesson .navlink overrides and the standard warm-neutral
    .navlink colors) are intentionally left untouched - only the two
    band backgrounds changed.
+
+   Sept 2026 update 5: per request, the grey "This Lesson" band's own
+   top/bottom padding is now as close to 0 as layout allows, and the
+   "Your Creative Desktop" band (Work In Progress/Idea Log/Action Items/
+   Glossary/Help) is no longer a container at all - no padding, no
+   border, no border-radius, no background. It sits directly beneath the
+   grey band (margin-top:0) with only a small bottom margin to separate
+   it from the tab panels that render below both clusters. Because the
+   two bands now look and behave differently (one is still a rounded
+   card, the other is bare), their padding/border/radius/background all
+   moved off the shared .nav-cluster class and onto .nav-cluster--lesson
+   and .nav-cluster--desk individually instead of being shared then
+   overridden.
    ============================================================ */
 
 .nav-cluster {
-  margin: 0 0 14px;
-  padding: 10px 16px 8px;
+  margin: 0;
+}
+
+.nav-cluster--lesson {
+  padding: 2px 16px 2px;
   border-radius: 12px;
   border: 1px solid rgba(58,47,36,.07);
+  background: #f0f0ef;
 }
-.nav-cluster:last-of-type { margin-bottom: 18px; }
 
-.nav-cluster--lesson { background: #f0f0ef; }
-.nav-cluster--desk   { background: transparent; }
+.nav-cluster--desk {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  margin: 0;
+}
+
+.nav-cluster:last-of-type { margin-bottom: 18px; }
 
 /* Sept 2026: the visible kicker label (nav-cluster-label) was removed -
    the wording now only reaches the page as an aria-label on .stratum-nav
@@ -1392,8 +1415,8 @@ button.download-btn:hover { background-color: #5a4535; }
   gap:8px;
   background:none;
   border:none;
-  padding:10px 4px;
-  margin:0 10px 6px;
+  padding:6px 4px;
+  margin:0 10px 4px;
   font-family:'Inter',sans-serif;
   font-size:12.5px;
   font-weight:700;
@@ -1414,6 +1437,14 @@ button.download-btn:hover { background-color: #5a4535; }
 .nav-cluster--lesson .navlink { color: #6b7a68; }
 .nav-cluster--lesson .navlink:hover { color: #2c3a2a; }
 .nav-cluster--lesson .navlink.active { color: #2c3a2a; border-bottom-color: #C9A46C; }
+
+/* Sept 2026 update 6: Video/Handouts/Coaching label size increased 20%
+   per request - base .navlink font-size (12.5px) -> 15px. Scoped to
+   .nav-cluster--lesson only; the desk cluster's tab labels (Work In
+   Progress/Idea Log/Action Items/Glossary/Help) keep the standard
+   12.5px, unchanged. See the matching mobile override in the
+   max-width:640px media query below. */
+.nav-cluster--lesson .navlink { font-size: 15px; }
 
 /* Step badge — only rendered on the numbered "This Lesson" cluster. */
 .nav-step-badge{
@@ -1494,8 +1525,9 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 
 @media (max-width:640px){
-  .nav-cluster{ padding:12px 12px 8px; }
+  .nav-cluster--lesson{ padding:2px 12px 2px; }
   .navlink{ margin-right:14px; font-size:11.5px; }
+  .nav-cluster--lesson .navlink{ font-size:13.8px; }
   .navlink[data-tip]::after{ width:160px; }
 }
 
