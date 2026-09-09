@@ -214,7 +214,7 @@
       coachDownloadNothingYet: 'Nothing to download yet \u2014 send a message first.',
       notesTitle: 'Idea Log',
       notesDownloadBtn: 'Download Idea Log',
-      ideaLogIntro: 'Idea Log is where you capture anything that comes to you between lessons — a character insight, a plot thread, a research note, a deadline, a spark of inspiration. Tag each entry as Character, Plot, Theme, Revision, Research, Deadlines, or Inspiration, then filter by category any time you want to find it again. Your coach reads this before each session, so it becomes part of the conversation without you having to repeat yourself.',
+      ideaLogIntro: 'Jot down sparks — a character insight, a plot twist, a research note, even a deadline. Tag each entry so you can filter later. Your coach reviews these before every session, turning your notes into part of the conversation.',
       ideaLogFilterLabel: 'Filter',
       ideaLogFilterAll: 'All',
       ideaLogGeneralCategory: 'General',
@@ -227,7 +227,7 @@
       ideaLogDeleteTitle: 'Delete entry',
       ideaLogNoneToDownload: 'No entries to download.',
       tasksTitle: 'Action Items',
-      tasksIntro: "Action Items is where you track what's next for your WIP — finishing a chapter draft, revising a scene, prepping a query letter. Pick a type from the dropdown to start with a common one, or write your own. Add an optional date, then check items off as you finish them. Your coach can see this list too, so it knows what you're working toward between sessions.",
+      tasksIntro: "Note what's next — finish a draft, revise a scene, prep a query. Tag it, and your coach will see your list so it knows what you're working toward between sessions.",
       tasksCategoryPlaceholder: 'Choose a type\u2026',
       tasksCategoryCustom: 'Write your own\u2026',
       tasksPlaceholder: "Add an action item — e.g. Rewrite Eleanor's kitchen scene",
@@ -749,11 +749,16 @@
      the old per-GROUP tooltip the two-tier nav used to show. Both rows
      (and their kicker labels) are centered rather than left-aligned as
      of Sept 2026 - see .stratum-nav / .nav-cluster-label / .navlink in
-     the engine CSS.
+     the engine CSS. Each cluster also carries a bandClass (nav-cluster--
+     lesson / nav-cluster--desk) so its wrapping <div> picks up the
+     matching soft background band defined in the engine CSS - mapped by
+     role via this field, not by array position, so the visual pairing
+     stays correct even if the clusters are ever reordered.
      ========================================================== */
   var NAV_CLUSTERS = [
     {
       kickerKey: 'navClusterLessonLabel',
+      bandClass: 'nav-cluster--lesson',
       numbered: true,
       tabs: [
         { id: 'Video',     labelKey: 'subVideo',     tipKey: 'tabTipVideo',     build: buildVideoTranscriptPanel },
@@ -763,6 +768,7 @@
     },
     {
       kickerKey: 'navClusterDeskLabel',
+      bandClass: 'nav-cluster--desk',
       numbered: false,
       tabs: [
         { id: 'Project',    labelKey: 'dashTabWip', tipKey: 'tabTipWip',         build: buildProjectTab },
@@ -786,7 +792,7 @@
   function buildNavClusters(container, clusters, linkClass, panelClass) {
     var defaultAssigned = false;
     clusters.forEach(function (cluster) {
-      var clusterWrap = el('div', 'nav-cluster');
+      var clusterWrap = el('div', 'nav-cluster' + (cluster.bandClass ? ' ' + cluster.bandClass : ''));
       mount(clusterWrap, el('div', 'nav-cluster-label', t(cluster.kickerKey)));
       var bar = el('div', 'stratum-nav');
       cluster.tabs.forEach(function (tab, index) {
@@ -2283,17 +2289,32 @@
     var v = {};
     Object.keys(PROJ_KEYS).forEach(function (k) { v[k] = lsGet(PROJ_KEYS[k]) || ''; });
     var block = '';
+    // Sept 2026: storyStyle, pov, and antagonistType were already captured
+    // on the WIP intake form (see PROJECT_FIELDS) and stored under their
+    // own PROJ_KEYS, but were never actually included in what gets sent
+    // to the coach below - the fields existed, the coach just never saw
+    // them. Added to both the hasProject check and the lines list so a
+    // student who filled in only these (unlikely, but possible) still
+    // triggers the context block, and so the values reach the coach at
+    // all. What the coach should DO with storyStyle/antagonistType is
+    // governed by the "Read Story Style and Antagonist Type" Global
+    // Instruction, not by this function - this just makes sure the raw
+    // values are on the table.
     var hasProject = v.type || v.genre || v.stage || v.wipTitle || v.mcName ||
-                     v.antagonistName || v.mcGoal || v.theme || v.challenges || v.focus;
+                     v.antagonistName || v.mcGoal || v.theme || v.challenges || v.focus ||
+                     v.storyStyle || v.pov || v.antagonistType;
     if (hasProject) {
       var lines = [];
       if (v.wipTitle)       lines.push('Working title: ' + v.wipTitle);
       if (v.type)           lines.push('Project type: ' + v.type);
       if (v.genre)          lines.push('Genre: ' + v.genre);
+      if (v.storyStyle)     lines.push('Story style: ' + v.storyStyle);
+      if (v.pov)            lines.push('Point of view: ' + v.pov);
       if (v.stage)          lines.push('Stage of progress: ' + v.stage);
       if (v.mcName)         lines.push('Main character: ' + v.mcName);
       if (v.mcGoal)         lines.push('Their core conflict or goal: ' + v.mcGoal);
       if (v.antagonistName) lines.push('Antagonist: ' + v.antagonistName);
+      if (v.antagonistType) lines.push('Type of antagonist: ' + v.antagonistType);
       if (v.theme)          lines.push('Theme or focus: ' + v.theme);
       if (v.challenges)     lines.push('Where they are currently stuck: ' + v.challenges);
       block += '\n\nSTUDENT PROJECT CONTEXT (from their intake form - use naturally where relevant, do not interrogate them about these facts, they already told you once):\n' + lines.join('\n');
