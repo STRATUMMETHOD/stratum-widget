@@ -737,6 +737,11 @@
             <textarea id="gTryThisNow" rows="3" placeholder="Before you close this tab &mdash; find one more place in your draft where this behavior shows up. Does the same thing happen?"></textarea>
           </div>
           <div class="field">
+            <label for="gCourseShapeReminder">Course shape reminder</label>
+            <span class="hint">The &quot;this course builds in layers, not conclusions&quot; block on the closing card. Optional &mdash; leave blank to use the standard default line for this lesson.</span>
+            <textarea id="gCourseShapeReminder" rows="3" placeholder="This course builds in layers, not conclusions. What you find today becomes the material the next lesson digs into. The payoff isn't in any one lesson &mdash; it's in what they add up to."></textarea>
+          </div>
+          <div class="field">
             <label for="gNextStepTeaser">Next step teaser</label>
             <span class="hint">Shown in the &quot;Up next&quot; block alongside the Next lesson label above &mdash; avoid repeating the lesson name here since the label already shows it; &quot;the next strata&quot; or &quot;the layer underneath this one&quot; reads better than naming it twice.</span>
             <textarea id="gNextStepTeaser" rows="3" placeholder="You've named what Jennifer does. The next strata takes that same behavior and asks what it's protecting &mdash; not a new discovery, the layer underneath this one."></textarea>
@@ -1044,6 +1049,11 @@
             <textarea id="mTryThisNow" rows="3" placeholder="Before you close this tab &mdash; find one more place in your draft where this behavior shows up. Does the same thing happen?"></textarea>
           </div>
           <div class="field">
+            <label for="mCourseShapeReminder">Course shape reminder</label>
+            <span class="hint">The &quot;this course builds in layers, not conclusions&quot; block on the closing card. Optional &mdash; leave blank to use the standard default line for this lesson.</span>
+            <textarea id="mCourseShapeReminder" rows="3" placeholder="This course builds in layers, not conclusions. What you find today becomes the material the next lesson digs into. The payoff isn't in any one lesson &mdash; it's in what they add up to."></textarea>
+          </div>
+          <div class="field">
             <label for="mNextStepTeaser">Next step teaser</label>
             <span class="hint">Shown in the &quot;Up next&quot; block alongside the Next lesson label above &mdash; avoid repeating the lesson name here since the label already shows it; &quot;the next strata&quot; or &quot;the layer underneath this one&quot; reads better than naming it twice.</span>
             <textarea id="mNextStepTeaser" rows="3" placeholder="You've named what Jennifer does. The next strata takes that same behavior and asks what it's protecting &mdash; not a new discovery, the layer underneath this one."></textarea>
@@ -1148,7 +1158,11 @@ function unlock() {
         mainNavGroup.style.display = '';
         refreshLessonListsForLang(result.data.lessons || []);
         loadAdminLanguages();
-        showTopTab('dashboard');
+        // Sept 2026: lands on Course (the lesson editor) instead of
+        // Students on unlock - Course is where most sessions actually
+        // start. loadStudents() still runs here so the Students table is
+        // already populated in the background by the time it's clicked.
+        showTopTab('guided');
         loadStudents();
       } else {
         authStatus.textContent = 'Key rejected. Check it matches STRATUM_ADMIN_KEY on the Worker.';
@@ -3252,6 +3266,7 @@ function clearGuidedForm() {
   document.getElementById('gLayerPosition').value = '';
   document.getElementById('gLayerLabel').value = '';
   document.getElementById('gTryThisNow').value = '';
+  document.getElementById('gCourseShapeReminder').value = '';
   document.getElementById('gNextStepTeaser').value = '';
   document.getElementById('gCoachingApproach').value = '';
   document.getElementById('gCalibration').value = '';
@@ -3270,6 +3285,7 @@ function fillGuidedForm(config) {
   document.getElementById('gLayerPosition').value = config.layerPosition != null ? String(config.layerPosition) : '';
   document.getElementById('gLayerLabel').value = config.layerLabel || '';
   document.getElementById('gTryThisNow').value = config.tryThisNow || '';
+  document.getElementById('gCourseShapeReminder').value = config.courseShapeReminder || '';
   document.getElementById('gNextStepTeaser').value = config.nextStepTeaser || '';
   var pdfs = getConfigPdfs(config.resource);
   gHasResourceCb.checked = pdfs.length > 0;
@@ -3355,6 +3371,7 @@ function collectGuidedConfig() {
     layerPosition: (gLayerPositionNum && gLayerPositionNum > 0) ? gLayerPositionNum : null,
     layerLabel: document.getElementById('gLayerLabel').value.trim(),
     tryThisNow: document.getElementById('gTryThisNow').value.trim(),
+    courseShapeReminder: document.getElementById('gCourseShapeReminder').value.trim(),
     nextStepTeaser: document.getElementById('gNextStepTeaser').value.trim(),
     video: { mediaId: document.getElementById('gMediaId').value.trim() },
     transcript: document.getElementById('gTranscript').value.trim(),
@@ -3419,13 +3436,16 @@ function configToReadableText(config, savedAt) {
   section('LESSON IDENTITY');
   lines.push('Scope note: ' + (config.scopeNote || '(none)'));
   lines.push('Next lesson label: ' + (config.nextLessonLabel || '(none)'));
-  if (config.layerPosition || config.layerLabel || config.tryThisNow || config.nextStepTeaser) {
+  if (config.layerPosition || config.layerLabel || config.tryThisNow || config.courseShapeReminder || config.nextStepTeaser) {
     section('DELIVERABLE CARD - LAYER & NEXT STEPS');
     lines.push('Layer position: ' + (config.layerPosition || '(none)'));
     lines.push('Layer label: ' + (config.layerLabel || '(none)'));
     lines.push('');
     lines.push('Try this now:');
     lines.push(config.tryThisNow || '(none)');
+    lines.push('');
+    lines.push('Course shape reminder:');
+    lines.push(config.courseShapeReminder || '(none - uses standard default)');
     lines.push('');
     lines.push('Next step teaser:');
     lines.push(config.nextStepTeaser || '(none)');
@@ -3859,6 +3879,7 @@ function clearMasteryForm() {
   document.getElementById('mLayerPosition').value = '';
   document.getElementById('mLayerLabel').value = '';
   document.getElementById('mTryThisNow').value = '';
+  document.getElementById('mCourseShapeReminder').value = '';
   document.getElementById('mNextStepTeaser').value = '';
   document.getElementById('mCoachingApproach').value = '';
   document.getElementById('mCalibration').value = '';
@@ -3877,6 +3898,7 @@ function fillMasteryForm(config) {
   document.getElementById('mLayerPosition').value = config.layerPosition != null ? String(config.layerPosition) : '';
   document.getElementById('mLayerLabel').value = config.layerLabel || '';
   document.getElementById('mTryThisNow').value = config.tryThisNow || '';
+  document.getElementById('mCourseShapeReminder').value = config.courseShapeReminder || '';
   document.getElementById('mNextStepTeaser').value = config.nextStepTeaser || '';
   var pdfs = getConfigPdfs(config.resource);
   mHasResourceCb.checked = pdfs.length > 0;
@@ -3962,6 +3984,7 @@ function collectMasteryConfig() {
     layerPosition: (mLayerPositionNum && mLayerPositionNum > 0) ? mLayerPositionNum : null,
     layerLabel: document.getElementById('mLayerLabel').value.trim(),
     tryThisNow: document.getElementById('mTryThisNow').value.trim(),
+    courseShapeReminder: document.getElementById('mCourseShapeReminder').value.trim(),
     nextStepTeaser: document.getElementById('mNextStepTeaser').value.trim(),
     video: { mediaId: document.getElementById('mMediaId').value.trim() },
     transcript: document.getElementById('mTranscript').value.trim(),
