@@ -1363,11 +1363,14 @@ button.download-btn:hover { background-color: #5a4535; }
 /* Sept 2026: Scope Note (admin panel "Lesson Identity" field, e.g.
    "Strata 1: Anchor Behavior") rendered just above the Video/Handouts/
    Coaching tab row - see the showScopeNote check in buildNavClusters()
-   in the engine JS. Serif per the brand type system (Cormorant
-   Garamond), sized as a real title, tight top/bottom margin to match
-   the grey band's own near-zero padding. */
+   in the engine JS. Font-family matches the nav links (Inter) per
+   request - was Cormorant Garamond serif originally, changed to keep
+   the title and the tab labels in the same typeface. Sized larger and
+   at a lighter weight than the tabs below it so it still reads as a
+   title, not a bigger tab. Tight top/bottom margin to match the grey
+   band's own near-zero padding. */
 .nav-scope-note {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Inter', sans-serif;
   font-size: 26px;
   font-weight: 500;
   line-height: 1.2;
