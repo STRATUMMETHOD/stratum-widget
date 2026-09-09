@@ -184,6 +184,12 @@
       // buildNavClusters() / NAV_CLUSTERS below.
       navClusterLessonLabel: 'This Lesson',
       navClusterDeskLabel: 'Your Creative Desktop',
+      // Sept 2026: instructional line shown below the Video/Handouts/
+      // Coaching row inside the "This Lesson" band, telling the student
+      // how to actually advance (systeme.io's own Mark As Complete / Next
+      // controls live at the bottom of the page, outside this engine's
+      // control - this line just points at them). See buildNavClusters().
+      navLessonInstructions: 'Click the MARK AS COMPLETE or NEXT at the bottom of any page when this lesson is complete to move to the next lesson.',
       // Per-tab hover tooltips (Sept 2026) - branded popovers rendered via
       // the data-tip attribute + CSS, not the native browser title
       // tooltip. Replaces the old per-GROUP tooltips
@@ -291,9 +297,20 @@
       identityCouldNotConfirm: "Couldn't confirm that email. Double-check it and try again.",
       coachInputPlaceholder: 'Type your reply...',
       coachSendAriaLabel: 'Send',
-      downloadCardTitle: 'YOUR REFLECTION IS READY',
-      downloadCardSub: 'Keep a copy of this conversation for yourself.',
-      downloadCardBtn: 'Download as Word Document',
+      // Sept 2026: the closing card was rebuilt around a specific
+      // congratulatory beat, a prominent explanation of the course's
+      // layered structure, and a same-session "try this now" nudge - see
+      // buildDeliverableCard() / showDownloadCard(). downloadCardTitle
+      // and downloadCardSub (the old "YOUR REFLECTION IS READY" heading)
+      // are retired along with the card they described.
+      deliverableLayerComplete: 'Layer {position} complete',
+      deliverableNiceWorkNamed: 'Nice work, {name}',
+      deliverableNiceWork: 'Nice work',
+      deliverableNiceWorkSub: "You didn't stop at the first answer \u2014 that's the harder part.",
+      deliverableCourseShape: "This course builds in layers, not conclusions. What you find today becomes the material the next lesson digs into. The payoff isn't in any one lesson \u2014 it's in what they add up to.",
+      deliverableTryThisNowLabel: 'Try this now',
+      deliverableUpNextKicker: 'Up next \u00b7 {label}',
+      downloadCardBtn: 'Download',
       exhaustedTitle: 'YOU HAVE USED ALL YOUR COACHING SESSIONS',
       exhaustedP1: 'Your included sessions with the built-in Excavation Coach are finished — but the method is not tied to this tool.',
       exhaustedP2: 'The Training Your AI to Coach guide in your resources gives you the exact setup language to paste into Claude, ChatGPT or Gemini. It works on the free tier of all three, and it is the same coach — you are simply running it yourself.',
@@ -330,6 +347,7 @@
       dashTabWip: 'Trabajo en Progreso',
       navClusterLessonLabel: 'Esta Lecci\u00f3n',
       navClusterDeskLabel: 'Tu Mesa Creativa',
+      navLessonInstructions: 'Haz clic en MARK AS COMPLETE o NEXT en la parte inferior de cualquier p\u00e1gina cuando termines esta lecci\u00f3n para pasar a la siguiente.',
       tabTipVideo: 'Mira la lecci\u00f3n de este tema.',
       tabTipHandouts: 'Documentos y recursos de referencia para esta lecci\u00f3n.',
       tabTipCoaching: 'Conversa sobre esta lecci\u00f3n con tu Excavation Coach.',
@@ -431,9 +449,14 @@
       identityCouldNotConfirm: 'No pudimos confirmar ese correo. Verif\u00edcalo e intenta de nuevo.',
       coachInputPlaceholder: 'Escribe tu respuesta...',
       coachSendAriaLabel: 'Enviar',
-      downloadCardTitle: 'TU REFLEXI\u00d3N EST\u00c1 LISTA',
-      downloadCardSub: 'Guarda una copia de esta conversaci\u00f3n para ti.',
-      downloadCardBtn: 'Descargar como Documento de Word',
+      deliverableLayerComplete: 'Capa {position} completa',
+      deliverableNiceWorkNamed: 'Buen trabajo, {name}',
+      deliverableNiceWork: 'Buen trabajo',
+      deliverableNiceWorkSub: 'No te quedaste con la primera respuesta \u2014 esa es la parte m\u00e1s dif\u00edcil.',
+      deliverableCourseShape: 'Este curso se construye en capas, no en conclusiones. Lo que encuentres hoy se convierte en el material que la siguiente lecci\u00f3n excava. El resultado no est\u00e1 en una sola lecci\u00f3n \u2014 est\u00e1 en lo que suman entre s\u00ed.',
+      deliverableTryThisNowLabel: 'Intenta esto ahora',
+      deliverableUpNextKicker: 'Sigue \u00b7 {label}',
+      downloadCardBtn: 'Descargar',
       exhaustedTitle: 'HAS USADO TODAS TUS SESIONES DE COACHING',
       exhaustedP1: 'Tus sesiones incluidas con el Excavation Coach integrado han terminado \u2014 pero el m\u00e9todo no depende de esta herramienta.',
       exhaustedP2: 'La gu\u00eda Entrena a tu IA para Hacer Coaching, en tus recursos, te da el texto exacto para configurar Claude, ChatGPT o Gemini. Funciona en la versi\u00f3n gratuita de los tres, y es el mismo coach \u2014 simplemente lo ejecutas t\u00fa mismo/a.',
@@ -747,18 +770,32 @@
      (first tab in the first cluster). Each tab now also carries a
      data-tip attribute (branded hover popover, see engine CSS) instead of
      the old per-GROUP tooltip the two-tier nav used to show. Both rows
-     (and their kicker labels) are centered rather than left-aligned as
-     of Sept 2026 - see .stratum-nav / .nav-cluster-label / .navlink in
-     the engine CSS. Each cluster also carries a bandClass (nav-cluster--
-     lesson / nav-cluster--desk) so its wrapping <div> picks up the
-     matching soft background band defined in the engine CSS - mapped by
-     role via this field, not by array position, so the visual pairing
-     stays correct even if the clusters are ever reordered.
+     are centered rather than left-aligned as of Sept 2026 - see
+     .stratum-nav / .navlink in the engine CSS. Each cluster also carries
+     a bandClass (nav-cluster--lesson / nav-cluster--desk) so its wrapping
+     <div> picks up the matching soft background band defined in the
+     engine CSS - mapped by role via this field, not by array position, so
+     the visual pairing stays correct even if the clusters are ever
+     reordered.
+
+     Sept 2026 update: the visible "THIS LESSON" / "YOUR CREATIVE DESKTOP"
+     kicker labels were removed per request - the .nav-cluster-label div
+     is no longer mounted. The wording still exists (STRINGS
+     navClusterLessonLabel/navClusterDeskLabel) and is applied as an
+     aria-label on each .stratum-nav bar instead, so the grouping is still
+     announced to screen readers even though it's no longer printed on
+     screen. The first cluster also gained an optional instructionsKey -
+     when present, a short instructional line (navLessonInstructions)
+     renders inside the band below the tab row, telling the student how
+     to actually advance past this lesson (the Mark As Complete / Next
+     controls live outside this engine's markup, at the bottom of the
+     systeme.io page).
      ========================================================== */
   var NAV_CLUSTERS = [
     {
       kickerKey: 'navClusterLessonLabel',
       bandClass: 'nav-cluster--lesson',
+      instructionsKey: 'navLessonInstructions',
       numbered: true,
       tabs: [
         { id: 'Video',     labelKey: 'subVideo',     tipKey: 'tabTipVideo',     build: buildVideoTranscriptPanel },
@@ -793,8 +830,8 @@
     var defaultAssigned = false;
     clusters.forEach(function (cluster) {
       var clusterWrap = el('div', 'nav-cluster' + (cluster.bandClass ? ' ' + cluster.bandClass : ''));
-      mount(clusterWrap, el('div', 'nav-cluster-label', t(cluster.kickerKey)));
       var bar = el('div', 'stratum-nav');
+      bar.setAttribute('aria-label', t(cluster.kickerKey));
       cluster.tabs.forEach(function (tab, index) {
         var btn = document.createElement('button');
         btn.type = 'button';
@@ -813,6 +850,9 @@
         mount(bar, btn);
       });
       mount(clusterWrap, bar);
+      if (cluster.instructionsKey) {
+        mount(clusterWrap, el('p', 'nav-cluster-instructions', t(cluster.instructionsKey)));
+      }
       mount(container, clusterWrap);
     });
     clusters.forEach(function (cluster) {
@@ -2699,9 +2739,8 @@
       if (f.type === 'list') {
         mount(box, el('div', 'srx-deliverable-label', label));
         var list = el('div', 'srx-deliverable-instances');
-        (val || []).forEach(function (item, i) {
+        (val || []).forEach(function (item) {
           var row = el('div', 'srx-deliverable-instance');
-          mount(row, el('div', 'srx-deliverable-instance-num', String(i + 1)));
           var text = el('div', 'srx-deliverable-instance-text');
           text.textContent = formatListItemText(item, f);
           mount(row, text);
@@ -2715,18 +2754,110 @@
     });
     return box;
   }
-  function showDownloadCard() {
-    var card = el('div', 'srx-download-card');
+  // ----------------------------------------------------------
+  // LESSON-COMPLETION DELIVERABLE CARD (Sept 2026)
+  // ----------------------------------------------------------
+  // Replaces the old generic "YOUR REFLECTION IS READY" card, which
+  // showed the raw captured fields and nothing else. Beta feedback was
+  // that the card gave no sense of accomplishment and no reason to
+  // continue to the next lesson - see the STRATA_TOTAL/layer fields
+  // below and the admin-authored per-lesson fields they depend on
+  // (layerPosition, layerLabel, nextStepTeaser, tryThisNow - all
+  // optional, each section of the card is skipped cleanly if the
+  // lesson config doesn't have the field it needs, so older/unconfigured
+  // lessons still render a sensible, if plainer, card).
+  //
+  // Total number of layers in the course - the seven lesson names
+  // themselves (The Anchor Behavior, The Hidden Truth, The Formative
+  // Wound, The Lie They Believe, The Want vs. The Need, The Fears &
+  // Desires, Psychological Integration) live in the admin as each
+  // lesson's own Layer Label, not here - this constant only sizes the
+  // progress stepper.
+  var STRATA_TOTAL = 7;
+  function buildStrataStepper(position) {
+    var stepper = el('div', 'srx-dc-stepper');
+    for (var i = 1; i <= STRATA_TOTAL; i++) {
+      mount(stepper, el('div', 'srx-dc-stepper-seg' + (i <= position ? ' filled' : '')));
+    }
+    return stepper;
+  }
+  function buildDeliverableCard() {
+    var card = el('div', 'srx-deliverable-card');
+    // Header: layer title, "layer N complete" tag, and the 7-segment
+    // stepper filled cumulatively through the current layer - all
+    // skipped if this lesson has no layerPosition configured yet.
+    var header = el('div', 'srx-dc-header');
+    var headTop = el('div', 'srx-dc-head-top');
+    var layerTitle = LESSON.layerLabel || LESSON.scopeNote || '';
+    mount(headTop, el('span', 'srx-dc-layer-title', layerTitle));
+    var pos = Number(LESSON.layerPosition) || 0;
+    if (pos > 0) {
+      var tag = el('span', 'srx-dc-layer-tag');
+      mount(tag, el('span', 'srx-dc-layer-check', '\u2713'));
+      tag.appendChild(document.createTextNode(t('deliverableLayerComplete', { position: pos })));
+      mount(headTop, tag);
+    }
+    mount(header, headTop);
+    if (pos > 0) mount(header, buildStrataStepper(pos));
+    mount(card, header);
+    // Congrats block - the actual "pat on the back" moment. Fixed
+    // copy (not per-lesson) so every closing card lands the same beat;
+    // only the name varies.
+    var congrats = el('div', 'srx-dc-congrats');
+    mount(congrats, el('div', 'srx-dc-badge', '\u2713'));
+    var congratsText = el('div');
+    var niceWork = studentName ? t('deliverableNiceWorkNamed', { name: studentName }) : t('deliverableNiceWork');
+    mount(congratsText, el('div', 'srx-dc-congrats-title', niceWork));
+    mount(congratsText, el('div', 'srx-dc-congrats-sub', t('deliverableNiceWorkSub')));
+    mount(congrats, congratsText);
+    mount(card, congrats);
+    // Course-shape reminder - fixed copy, same on every lesson's card.
+    // This is what tells the student the incomplete-feeling ending is
+    // the course's design, not a shortfall - placed prominently near
+    // the top rather than as a quiet aside at the bottom.
+    var courseBox = el('div', 'srx-dc-course-box');
+    var strataIcon = el('div', 'srx-dc-strata-icon');
+    mount(strataIcon, document.createElement('span'));
+    mount(strataIcon, document.createElement('span'));
+    mount(strataIcon, document.createElement('span'));
+    mount(courseBox, strataIcon);
+    mount(courseBox, el('p', 'srx-dc-course-text', t('deliverableCourseShape')));
+    mount(card, courseBox);
+    // The captured deliverable itself - now positioned as supporting
+    // evidence beneath the congratulatory framing, not the headline.
     if (lastDeliverable) {
       mount(card, buildDeliverableSnapshotEl(lastDeliverable, getDeliverableConfig()));
     }
-    mount(card, el('div', 'srx-dc-title', t('downloadCardTitle')));
-    mount(card, el('div', 'srx-dc-sub', t('downloadCardSub')));
+    // Try This Now - admin-authored per lesson (LESSON.tryThisNow),
+    // generic enough to apply to any student's WIP. Gives the student
+    // something to do with the win immediately, while it's still fresh,
+    // rather than only pointing them toward next session.
+    if (LESSON.tryThisNow) {
+      var ttn = el('div', 'srx-dc-ttn-box');
+      mount(ttn, el('div', 'srx-dc-box-label', t('deliverableTryThisNowLabel')));
+      mount(ttn, el('p', 'srx-dc-box-text', LESSON.tryThisNow));
+      mount(card, ttn);
+    }
+    // Up next - admin-authored per lesson (LESSON.nextStepTeaser),
+    // paired with the existing free-text LESSON.nextLessonLabel for the
+    // kicker (Ted's choice what to put there - a lecture number or a
+    // layer name). Skipped if no teaser has been written yet.
+    if (LESSON.nextStepTeaser) {
+      var upNext = el('div', 'srx-dc-upnext-box');
+      mount(upNext, el('div', 'srx-dc-upnext-kicker', t('deliverableUpNextKicker', { label: LESSON.nextLessonLabel })));
+      mount(upNext, el('p', 'srx-dc-upnext-text', LESSON.nextStepTeaser));
+      mount(card, upNext);
+    }
+    var btnWrap = el('div', 'srx-dc-btn-wrap');
     var btn = el('button', 'srx-dc-btn', t('downloadCardBtn'));
     btn.type = 'button';
     btn.addEventListener('click', generateDoc);
-    mount(card, btn);
-    mount(chatEl, card);
+    mount(btnWrap, btn);
+    mount(card, btnWrap);
+    return card;
+  }
+  function showDownloadCard() {
+    mount(chatEl, buildDeliverableCard());
     scrollToBottom();
   }
   function showExhaustedCard() {
@@ -3038,6 +3169,17 @@
         LESSON.transcript = LESSON.transcript || '';
         LESSON.reflectionFramework = LESSON.reflectionFramework || { areas: [], calibrationExamples: [] };
         LESSON.greeting = LESSON.greeting || {};
+        // Sept 2026: layerPosition/layerLabel/nextStepTeaser/tryThisNow
+        // are all optional, admin-authored per lesson (see the
+        // deliverable card build above) - normalized here the same way
+        // as the older fields above so buildDeliverableCard() can read
+        // them directly off LESSON without a chain of null checks.
+        // Lessons saved before these fields existed simply render the
+        // card without the sections that depend on them.
+        LESSON.layerPosition = LESSON.layerPosition || null;
+        LESSON.layerLabel = LESSON.layerLabel || '';
+        LESSON.nextStepTeaser = LESSON.nextStepTeaser || '';
+        LESSON.tryThisNow = LESSON.tryThisNow || '';
         if (!LESSON.video || !LESSON.video.mediaId) {
           showFatalError(container, t('lessonMissingVideoError'));
           return;
