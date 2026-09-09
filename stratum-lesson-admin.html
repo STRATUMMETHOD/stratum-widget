@@ -332,6 +332,43 @@
   .tst-save-btn { background: #3B2F24; color: #F5EFE0; border: none; padding: 9px 16px; font-size: 12.5px; font-weight: 700; cursor: pointer; border-radius: 8px; }
   .tst-save-btn:hover { background: #2a2118; }
   .tst-save-status { font-size: 11.5px; color: #9A927E; font-style: italic; }
+
+  /* ============================================================
+     COLLAPSIBLE ENTRY BLOCKS (Sept 2026)
+     ------------------------------------------------------------
+     Vocabulary terms and Global Instructions are now rendered as
+     <details class="tst-block"> elements instead of plain <div>s, so each
+     entry can be collapsed/expanded independently. Loaded entries default
+     to collapsed (see addVocabularyBlock()/addGlobalInstructionBlock() -
+     block.open is only set true for a brand-new, still-unsaved entry, so
+     the admin can see what they're typing right away). All the existing
+     .tst-block styling (border/background/border-radius/margin-bottom)
+     still applies to the <details> element itself; only the padding moves
+     down onto a wrapping .tst-block-body div so the summary bar can span
+     edge-to-edge above the collapsible content.
+     ============================================================ */
+  details.tst-block { padding: 0; }
+  details.tst-block > summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 14px 16px;
+    font-weight: 700;
+    font-size: 13px;
+    color: #3B2F24;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  details.tst-block[open] > summary { border-bottom: 1px solid #ECE7DC; }
+  details.tst-block > summary::-webkit-details-marker { display: none; }
+  details.tst-block > summary::before {
+    content: '\25B8';
+    font-size: 11px;
+    flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  details.tst-block[open] > summary::before { transform: rotate(90deg); }
+  details.tst-block .tst-block-body { padding: 14px 16px 16px; }
 </style>
 </head>
 <body>
@@ -430,6 +467,7 @@
       </div>
       <div class="tst-toolbar">
         <button class="btn secondary" id="giReloadBtn" type="button">Reload</button>
+        <button class="btn secondary" id="giPrintAllBtn" type="button">Print All</button>
         <div class="spacer"></div>
         <span id="giAggregateCount" style="font-size:12px;color:#9A927E;font-weight:600;margin-right:14px;"></span>
         <span id="giStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
@@ -512,6 +550,7 @@
       </div>
       <div class="tst-toolbar">
         <button class="btn secondary" id="vcbReloadBtn" type="button">Reload</button>
+        <button class="btn secondary" id="vcbPrintAllBtn" type="button">Print All</button>
         <div class="spacer"></div>
         <span id="vcbStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
       </div>
@@ -1696,6 +1735,53 @@ function escapeDlvHtml(s) {
   d.innerText = s;
   return d.innerHTML;
 }
+// ===== Print helpers (Sept 2026) =====
+// Shared by "Print All" on Global Instructions and Vocabulary: opens a
+// new window, writes a clean printable HTML document built from `entries`
+// (each { heading, meta, sub, body }), then triggers the browser's print
+// dialog. Kept generic and free of any Stratum-specific field names so
+// either caller can shape its own entries before passing them in.
+function escapePrintHtml(s) {
+  var d = document.createElement('div');
+  d.innerText = (s == null ? '' : String(s));
+  return d.innerHTML;
+}
+function openPrintWindow(title, entries) {
+  var w = window.open('', '_blank');
+  if (!w) { alert('Please allow pop-ups for this site to print.'); return; }
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + escapePrintHtml(title) + '</title>' +
+    '<style>' +
+    'body{font-family:Arial,Helvetica,sans-serif;color:#1E1810;padding:32px;max-width:820px;margin:0 auto;}' +
+    'h1{font-size:22px;border-bottom:2px solid #C9A46C;padding-bottom:10px;margin-bottom:6px;}' +
+    '.print-meta-line{font-size:12px;color:#9A927E;margin-bottom:24px;}' +
+    '.entry{margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid #ddd;page-break-inside:avoid;}' +
+    '.entry h2{font-size:15px;margin:0 0 4px;}' +
+    '.entry .meta{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#8a6630;margin-bottom:6px;}' +
+    '.entry .sub{font-size:12px;font-style:italic;color:#666;margin-bottom:6px;}' +
+    '.entry .body{font-size:13px;white-space:pre-wrap;line-height:1.5;}' +
+    '@media print{ a{ color:inherit; text-decoration:none; } }' +
+    '</style></head><body>';
+  html += '<h1>' + escapePrintHtml(title) + '</h1>';
+  html += '<div class="print-meta-line">Printed ' + escapePrintHtml(new Date().toLocaleString()) + ' \u00b7 ' + entries.length + ' entr' + (entries.length === 1 ? 'y' : 'ies') + '</div>';
+  if (!entries.length) {
+    html += '<p>No entries.</p>';
+  } else {
+    entries.forEach(function (e) {
+      html += '<div class="entry">';
+      html += '<h2>' + escapePrintHtml(e.heading || '(untitled)') + '</h2>';
+      if (e.meta) html += '<div class="meta">' + escapePrintHtml(e.meta) + '</div>';
+      if (e.sub) html += '<div class="sub">' + escapePrintHtml(e.sub) + '</div>';
+      if (e.body) html += '<div class="body">' + escapePrintHtml(e.body) + '</div>';
+      html += '</div>';
+    });
+  }
+  html += '</body></html>';
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(function () { w.print(); }, 300);
+}
 // ===== Testimonials =====
 var tstList = document.getElementById('tstList');
 var tstStatus = document.getElementById('tstStatus');
@@ -1940,6 +2026,7 @@ var VCB_NARRATIVE_STAGES = ['Setup', 'Rising Action', 'Climax', 'Falling Action'
 var VCB_FUNCTIONS = ['Diagnostic', 'Generative', 'Revision', 'Analytical'];
 var VCB_COMPLEXITY_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
 document.getElementById('vcbReloadBtn').addEventListener('click', loadVocabulary);
+document.getElementById('vcbPrintAllBtn').addEventListener('click', printVocabulary);
 document.getElementById('vcbAddBtn').addEventListener('click', function () {
   addVocabularyBlock({
     id: null,
@@ -1972,6 +2059,28 @@ function loadVocabulary() {
       vcbStatus.textContent = 'Could not load vocabulary.';
     });
 }
+// Fetches the full saved vocabulary fresh from the server (not whatever's
+// sitting expanded/collapsed in the form) and opens a print-friendly
+// window listing every term - word, tags, definition, and (since this is
+// an admin-only view) the private coaching cue too.
+function printVocabulary() {
+  if (!adminKey) { alert('Unlock the panel first.'); return; }
+  fetch(PROXY_URL + '/admin/vocabulary', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var terms = (d && d.terms) || [];
+      var entries = terms.map(function (term) {
+        var tags = [term.craftCategory, term.narrativeStage, term.function, term.complexityLevel]
+          .filter(Boolean).join(' \u00b7 ');
+        if (term.isActive === false) tags = (tags ? tags + ' \u00b7 ' : '') + 'INACTIVE';
+        var body = term.definition || '';
+        if (term.coachingCue) body += (body ? '\n\n' : '') + 'Coaching cue: ' + term.coachingCue;
+        return { heading: term.word || '(untitled)', meta: tags, body: body };
+      });
+      openPrintWindow('Vocabulary', entries);
+    })
+    .catch(function () { alert('Could not load vocabulary to print.'); });
+}
 function vcbBuildSelect(className, options, currentValue) {
   var select = document.createElement('select');
   select.className = className;
@@ -1989,9 +2098,19 @@ function vcbBuildSelect(className, options, currentValue) {
   return select;
 }
 function addVocabularyBlock(term, isNew) {
-  var block = document.createElement('div');
+  // Sept 2026: rendered as a <details> element (was a plain <div>) so each
+  // term can be collapsed/expanded independently. Existing terms load
+  // collapsed by default; a brand-new, unsaved term opens immediately so
+  // there's something to type into. The summary shows the word and
+  // updates live as the word field is edited.
+  var block = document.createElement('details');
   block.className = 'tst-block';
   if (term.isActive === false) block.style.opacity = '0.65';
+  var summary = document.createElement('summary');
+  summary.textContent = term.word || (isNew ? 'New term' : '(untitled)');
+  block.appendChild(summary);
+  var bodyWrap = document.createElement('div');
+  bodyWrap.className = 'tst-block-body';
   var head = document.createElement('div');
   head.className = 'tst-block-head';
   var wordInput = document.createElement('input');
@@ -1999,6 +2118,9 @@ function addVocabularyBlock(term, isNew) {
   wordInput.className = 'tst-name';
   wordInput.placeholder = 'Vocabulary word';
   wordInput.value = term.word || '';
+  wordInput.addEventListener('input', function () {
+    summary.textContent = wordInput.value.trim() || (isNew ? 'New term' : '(untitled)');
+  });
   head.appendChild(wordInput);
   if (term.isActive === false) {
     var tag = document.createElement('span');
@@ -2006,29 +2128,29 @@ function addVocabularyBlock(term, isNew) {
     tag.textContent = 'Inactive';
     head.appendChild(tag);
   }
-  block.appendChild(head);
+  bodyWrap.appendChild(head);
   var defLabel = document.createElement('div');
   defLabel.style.cssText = 'font-size:11px;font-weight:700;color:#3B2F24;margin-bottom:4px;';
   defLabel.textContent = 'Definition (shown to students)';
-  block.appendChild(defLabel);
+  bodyWrap.appendChild(defLabel);
   var defArea = document.createElement('textarea');
   defArea.className = 'tst-quote';
   defArea.style.fontFamily = "'Inter', Arial, sans-serif";
   defArea.style.fontStyle = 'normal';
   defArea.placeholder = 'Plain-language definition a student would see on the Vocabulary tab.';
   defArea.value = term.definition || '';
-  block.appendChild(defArea);
+  bodyWrap.appendChild(defArea);
   var cueLabel = document.createElement('div');
   cueLabel.style.cssText = 'font-size:11px;font-weight:700;color:#3B2F24;margin-bottom:4px;';
   cueLabel.textContent = 'Coaching cue (private - never shown to students, reserved for a future coach integration)';
-  block.appendChild(cueLabel);
+  bodyWrap.appendChild(cueLabel);
   var cueArea = document.createElement('textarea');
   cueArea.className = 'tst-quote';
   cueArea.style.fontFamily = "'Inter', Arial, sans-serif";
   cueArea.style.fontStyle = 'normal';
   cueArea.placeholder = 'How the coach should use this term once vocabulary is wired into coaching.';
   cueArea.value = term.coachingCue || '';
-  block.appendChild(cueArea);
+  bodyWrap.appendChild(cueArea);
   var metaRow = document.createElement('div');
   metaRow.className = 'tst-meta-row';
   var craftField = document.createElement('div');
@@ -2067,7 +2189,7 @@ function addVocabularyBlock(term, isNew) {
   levelField.appendChild(levelLabel);
   levelField.appendChild(levelSelect);
   metaRow.appendChild(levelField);
-  block.appendChild(metaRow);
+  bodyWrap.appendChild(metaRow);
   var activeRow = document.createElement('div');
   activeRow.className = 'toggle-row';
   activeRow.style.marginTop = '4px';
@@ -2081,7 +2203,7 @@ function addVocabularyBlock(term, isNew) {
   activeCbLabel.textContent = 'Visible to students';
   activeRow.appendChild(activeCb);
   activeRow.appendChild(activeCbLabel);
-  block.appendChild(activeRow);
+  bodyWrap.appendChild(activeRow);
   var foot = document.createElement('div');
   foot.className = 'tst-block-foot';
   var saveBtn = document.createElement('button');
@@ -2098,7 +2220,9 @@ function addVocabularyBlock(term, isNew) {
   var saveStatus = document.createElement('span');
   saveStatus.className = 'tst-save-status';
   foot.appendChild(saveStatus);
-  block.appendChild(foot);
+  bodyWrap.appendChild(foot);
+  block.appendChild(bodyWrap);
+  block.open = !!isNew;
   vcbList.appendChild(block);
   var currentId = term.id || null;
   function payload() {
@@ -2159,6 +2283,7 @@ var GI_CATEGORIES = ['Tone & Voice', 'Technique & Method', 'Student Data Usage',
 var GI_CONTENT_CAP = 1200;
 var giBlocks = []; // { getContentLength: fn, isActive: fn } for every rendered block, used to recompute the aggregate counter
 document.getElementById('giReloadBtn').addEventListener('click', loadGlobalInstructions);
+document.getElementById('giPrintAllBtn').addEventListener('click', printGlobalInstructions);
 document.getElementById('giAddBtn').addEventListener('click', function () {
   addGlobalInstructionBlock({
     id: null,
@@ -2191,6 +2316,29 @@ function loadGlobalInstructions() {
       giStatus.textContent = 'Could not load global instructions.';
     });
 }
+// Fetches the full saved list fresh from the server and opens a
+// print-friendly window - title, category, short description, and the
+// full instruction text (inactive entries are flagged as such).
+function printGlobalInstructions() {
+  if (!adminKey) { alert('Unlock the panel first.'); return; }
+  fetch(PROXY_URL + '/admin/global-instructions', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var items = (d && d.instructions) || [];
+      var entries = items.map(function (item) {
+        var meta = item.category || '';
+        if (item.isActive === false) meta = (meta ? meta + ' \u00b7 ' : '') + 'INACTIVE';
+        return {
+          heading: item.title || '(untitled)',
+          meta: meta,
+          sub: item.shortDescription || '',
+          body: item.content || ''
+        };
+      });
+      openPrintWindow('Global Instructions', entries);
+    })
+    .catch(function () { alert('Could not load global instructions to print.'); });
+}
 function recomputeGiAggregate() {
   var activeCount = 0;
   var activeChars = 0;
@@ -2203,9 +2351,19 @@ function recomputeGiAggregate() {
   giAggregateCount.textContent = activeCount + ' active \u00b7 ' + activeChars.toLocaleString() + ' characters sent to every coaching session';
 }
 function addGlobalInstructionBlock(item, isNew) {
-  var block = document.createElement('div');
+  // Sept 2026: rendered as a <details> element (was a plain <div>) so each
+  // instruction can be collapsed/expanded independently. Existing
+  // instructions load collapsed by default; a brand-new, unsaved
+  // instruction opens immediately. The summary shows the title and
+  // updates live as the title field is edited.
+  var block = document.createElement('details');
   block.className = 'tst-block';
   if (item.isActive === false) block.style.opacity = '0.65';
+  var summary = document.createElement('summary');
+  summary.textContent = item.title || (isNew ? 'New instruction' : '(untitled)');
+  block.appendChild(summary);
+  var bodyWrap = document.createElement('div');
+  bodyWrap.className = 'tst-block-body';
   var head = document.createElement('div');
   head.className = 'tst-block-head';
   var titleInput = document.createElement('input');
@@ -2213,6 +2371,9 @@ function addGlobalInstructionBlock(item, isNew) {
   titleInput.className = 'tst-name';
   titleInput.placeholder = 'Title';
   titleInput.value = item.title || '';
+  titleInput.addEventListener('input', function () {
+    summary.textContent = titleInput.value.trim() || (isNew ? 'New instruction' : '(untitled)');
+  });
   head.appendChild(titleInput);
   var categorySelect = document.createElement('select');
   categorySelect.style.cssText = 'padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#fff;min-width:190px;';
@@ -2234,17 +2395,17 @@ function addGlobalInstructionBlock(item, isNew) {
     tag.textContent = 'Inactive';
     head.appendChild(tag);
   }
-  block.appendChild(head);
+  bodyWrap.appendChild(head);
   var descLabel = document.createElement('div');
   descLabel.style.cssText = 'font-size:11px;font-weight:700;color:#3B2F24;margin-bottom:4px;';
   descLabel.textContent = 'Short description (admin-facing, for browsing/filtering only)';
-  block.appendChild(descLabel);
+  bodyWrap.appendChild(descLabel);
   var descInput = document.createElement('input');
   descInput.type = 'text';
   descInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;font-family:\'Inter\', Arial, sans-serif;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;margin-bottom:12px;';
   descInput.placeholder = 'e.g. Keep responses under five sentences unless the student asks for more.';
   descInput.value = item.shortDescription || '';
-  block.appendChild(descInput);
+  bodyWrap.appendChild(descInput);
   var contentLabelRow = document.createElement('div');
   contentLabelRow.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;';
   var contentLabel = document.createElement('span');
@@ -2254,7 +2415,7 @@ function addGlobalInstructionBlock(item, isNew) {
   var contentCounter = document.createElement('span');
   contentCounter.style.cssText = 'font-size:11px;font-weight:700;';
   contentLabelRow.appendChild(contentCounter);
-  block.appendChild(contentLabelRow);
+  bodyWrap.appendChild(contentLabelRow);
   var contentArea = document.createElement('textarea');
   contentArea.className = 'tst-quote';
   contentArea.style.fontFamily = "'Inter', Arial, sans-serif";
@@ -2262,7 +2423,7 @@ function addGlobalInstructionBlock(item, isNew) {
   contentArea.placeholder = 'A single, specific, condensed instruction - one idea, not a full explanation.';
   contentArea.value = item.content || '';
   contentArea.maxLength = GI_CONTENT_CAP;
-  block.appendChild(contentArea);
+  bodyWrap.appendChild(contentArea);
   function updateContentCounter() {
     var len = contentArea.value.length;
     contentCounter.textContent = len + ' / ' + GI_CONTENT_CAP;
@@ -2288,7 +2449,7 @@ function addGlobalInstructionBlock(item, isNew) {
   activeCbLabel.textContent = 'Active (sent to the coach)';
   activeRow.appendChild(activeCb);
   activeRow.appendChild(activeCbLabel);
-  block.appendChild(activeRow);
+  bodyWrap.appendChild(activeRow);
   var foot = document.createElement('div');
   foot.className = 'tst-block-foot';
   var saveBtn = document.createElement('button');
@@ -2305,7 +2466,9 @@ function addGlobalInstructionBlock(item, isNew) {
   var saveStatus = document.createElement('span');
   saveStatus.className = 'tst-save-status';
   foot.appendChild(saveStatus);
-  block.appendChild(foot);
+  bodyWrap.appendChild(foot);
+  block.appendChild(bodyWrap);
+  block.open = !!isNew;
   giList.appendChild(block);
   var currentId = item.id || null;
   function payload() {
