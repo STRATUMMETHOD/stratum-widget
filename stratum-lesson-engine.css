@@ -1322,6 +1322,14 @@ button.download-btn:hover { background-color: #5a4535; }
    (#C9A46C) stays the single accent color on both bands, so there's
    still only one "this is active/current" signal across the whole nav,
    not two competing ones.
+
+   Sept 2026 update 4: per request, .nav-cluster--lesson's background
+   is now a plain neutral #f0f0ef (was the sage/patina tint #DCE3D9
+   from update 3) and .nav-cluster--desk's tan fill (#FBF3E3, update 2)
+   was dropped to transparent. Text colors below (both the sage-tinted
+   .nav-cluster--lesson .navlink overrides and the standard warm-neutral
+   .navlink colors) are intentionally left untouched - only the two
+   band backgrounds changed.
    ============================================================ */
 
 .nav-cluster {
@@ -1332,8 +1340,8 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 .nav-cluster:last-of-type { margin-bottom: 18px; }
 
-.nav-cluster--lesson { background: #DCE3D9; }
-.nav-cluster--desk   { background: #FBF3E3; }
+.nav-cluster--lesson { background: #f0f0ef; }
+.nav-cluster--desk   { background: transparent; }
 
 /* Sept 2026: the visible kicker label (nav-cluster-label) was removed -
    the wording now only reaches the page as an aria-label on .stratum-nav
@@ -1350,11 +1358,13 @@ button.download-btn:hover { background-color: #5a4535; }
   text-align: center;
 }
 
-/* Instructional line (Sept 2026) shown below the "This Lesson" tab row -
-   see NAV_CLUSTERS[0].instructionsKey / navLessonInstructions in the
-   engine JS. Quiet, centered, sits inside the same band as the tabs
-   above it rather than the page background. Color overridden below for
-   the patina band specifically. */
+/* Instructional line (formerly shown below the "This Lesson" tab row -
+   see NAV_CLUSTERS[0]/navLessonInstructions in the engine JS). No cluster
+   currently sets instructionsKey, so buildNavClusters() never mounts a
+   .nav-cluster-instructions paragraph - this rule is kept only in case
+   that line is reinstated later. Quiet, centered, sits inside the same
+   band as the tabs above it rather than the page background. Color
+   overridden below for the patina band specifically. */
 .nav-cluster-instructions {
   font-family: 'Inter', sans-serif;
   font-size: 11.5px;
