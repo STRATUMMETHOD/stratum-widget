@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<!--
+  STRATUM PDF VIEWER
+  ------------------------------------------------------------
+  Hosted on GitHub Pages alongside stratum-lesson-engine.js/css. Loaded
+  inside an iframe from buildResource() in the engine JS, as:
+    pdf-viewer.html?file=<url-encoded PDF url>
+
+  Why this exists (Sept 2026): the engine used to point the resource
+  iframe straight at the PDF file, using #toolbar=0&navpanes=0&view=FitH
+  hash params to hide the browser's own PDF-viewer chrome and stretch the
+  page to fill the iframe's width. That worked on desktop Chrome/Edge, but
+  iOS Safari's built-in PDF renderer ignores the width-fit param, so on
+  phones the page rendered at native width and overflowed sideways inside
+  the (already full-width) iframe.
+
+  This page sidesteps browser-specific PDF-viewer behavior entirely: it
+  loads the PDF with PDF.js and renders every page onto a plain <canvas>
+  sized to this page's own width, which we calculate and control
+  ourselves. That makes width-fit behave identically on desktop and
+  mobile, since neither platform's native PDF viewer is involved at all.
+  Cache-bust the pdf.js/pdf.worker.js CDN version pin below only if a
+  reason to (e.g. a security fix); no need to bump it just because the
+  engine files changed.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resource</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #pdf-pages {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0 24px;
+    box-sizing: border-box;
+  }
+  #pdf-pages canvas {
+    display: block;
+    max-width: 100%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .14);
+  }
+  #pdf-status {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #6f6353;
+    text-align: center;
+    padding: 48px 20px;
+  }
+  #pdf-status a {
+    color: #8a6630;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div id="pdf-status">Loading document&hellip;</div>
+<div id="pdf-pages"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var statusEl = document.getElementById('pdf-status');
+  var pagesEl = document.getElementById('pdf-pages');
+
+  var params = new URLSearchParams(window.location.search);
+  var fileUrl = params.get('file');
+
+  if (!fileUrl) {
+    statusEl.textContent = 'No document specified.';
+    return;
+  }
+  if (!window.pdfjsLib) {
+    showFallback('Could not load the document viewer.');
+    return;
+  }
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  function showFallback(message) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = message +
+      ' <a href="' + fileUrl + '" target="_blank" rel="noopener">Open the PDF directly</a>.';
+  }
+
+  function debounce(fn, delay) {
+    var timer = null;
+    return function () {
+      clearTimeout(timer);
+      timer = setTimeout(fn, delay);
+    };
+  }
+
+  var pdfDoc = null;
+  var pageEntries = []; // { canvas, pageNum }
+  var renderTokens = {}; // pageNum -> token, so a stale in-flight render from
+                          // before a resize can't overwrite a newer one
+
+  // A little breathing room either side so the page doesn't touch the
+  // iframe's own edge; 280 is a sane floor for very narrow phone widths.
+  function targetWidth() {
+    return Math.max(280, pagesEl.clientWidth - 16);
+  }
+
+  function renderPage(pageNum, canvas) {
+    var token = (renderTokens[pageNum] || 0) + 1;
+    renderTokens[pageNum] = token;
+    pdfDoc.getPage(pageNum).then(function (page) {
+      if (renderTokens[pageNum] !== token) return; // superseded by a newer resize
+      var unscaled = page.getViewport({ scale: 1 });
+      var width = targetWidth();
+      var cssScale = width / unscaled.width;
+      var dpr = window.devicePixelRatio || 1;
+      var viewport = page.getViewport({ scale: cssScale * dpr });
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      canvas.style.width = width + 'px';
+      canvas.style.height = (viewport.height / dpr) + 'px';
+      var ctx = canvas.getContext('2d');
+      page.render({ canvasContext: ctx, viewport: viewport });
+    }).catch(function () {
+      // One bad page shouldn't take down the whole document view.
+    });
+  }
+
+  function renderAllPages() {
+    pageEntries.forEach(function (entry) {
+      renderPage(entry.pageNum, entry.canvas);
+    });
+  }
+
+  window.addEventListener('resize', debounce(renderAllPages, 200));
+
+  pdfjsLib.getDocument(fileUrl).promise.then(function (doc) {
+    pdfDoc = doc;
+    statusEl.style.display = 'none';
+    for (var i = 1; i <= doc.numPages; i++) {
+      var canvas = document.createElement('canvas');
+      pagesEl.appendChild(canvas);
+      pageEntries.push({ canvas: canvas, pageNum: i });
+      renderPage(i, canvas);
+    }
+  }).catch(function () {
+    showFallback('This document could not be displayed here.');
+  });
+})();
+</script>
+</body>
+</html>
