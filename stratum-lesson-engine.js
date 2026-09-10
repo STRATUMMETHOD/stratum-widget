@@ -215,7 +215,7 @@
       tabTipGlossary: 'Look up any craft term used in the course.',
       tabTipHelp: 'Get in touch with Ted.',
       vocabTitle: 'Glossary',
-      vocabIntro: 'A working glossary of craft terms. Search by keyword, or filter by category or complexity level to find what you need.',
+      vocabIntro: 'A working glossary of craft terms. Search by keyword, or filter by category or complexity level to find what you need. Tap any term to open it.',
       vocabSearchPlaceholder: 'Search terms and definitions\u2026',
       vocabSearchBtn: 'Search',
       vocabClearBtn: 'Clear',
@@ -374,7 +374,7 @@
       tabTipGlossary: 'Busca cualquier t\u00e9rmino de oficio usado en el curso.',
       tabTipHelp: 'Ponte en contacto con Ted.',
       vocabTitle: 'Glosario',
-      vocabIntro: 'Un glosario de trabajo con t\u00e9rminos de oficio. Busca por palabra clave, o filtra por categor\u00eda o nivel de complejidad para encontrar lo que necesitas.',
+      vocabIntro: 'Un glosario de trabajo con t\u00e9rminos de oficio. Busca por palabra clave, o filtra por categor\u00eda o nivel de complejidad para encontrar lo que necesitas. Toca cualquier t\u00e9rmino para abrirlo.',
       vocabSearchPlaceholder: 'Buscar t\u00e9rminos y definiciones\u2026',
       vocabSearchBtn: 'Buscar',
       vocabClearBtn: 'Limpiar',
@@ -1038,6 +1038,13 @@
      coachingCue is deliberately never requested here (the public endpoint
      doesn't return it) - it's private direction for a future coach
      integration, same treatment as coachingApproach on lesson_configs.
+
+     Sept 2026 update 2: entries render as collapsible <details>, closed
+     by default (see renderVocabList() below) - .vocab-list is now a
+     plain <div> rather than a <ul>, since a <ul> only validly holds <li>
+     children and each entry is now a <details> element. Word plus a
+     compact category/complexity readout sit in the always-visible
+     <summary>; the full tag row and definition only mount once opened.
      ========================================================== */
   var vocabTermsCache = null;
   var vocabSearchQuery = '';
@@ -1153,7 +1160,9 @@
     mount(toolbar, clearBtn);
 
     mount(panel, toolbar);
-    var list = el('ul', 'vocab-list');
+    // Sept 2026 update 2: plain <div>, not <ul> - entries are now
+    // <details> elements, which a <ul> cannot validly contain.
+    var list = el('div', 'vocab-list');
     list.id = 'vocabList';
     mount(panel, list);
     var pager = el('div', 'vocab-pager');
@@ -1164,7 +1173,7 @@
   function loadVocabTerms() {
     var list = document.getElementById('vocabList');
     if (list) list.innerHTML = '';
-    if (list) mount(list, el('li', 'vocab-empty', t('vocabLoading')));
+    if (list) mount(list, el('div', 'vocab-empty', t('vocabLoading')));
     fetch(PROXY_URL + '/vocabulary')
       .then(function (r) { return r.json(); })
       .then(function (d) {
@@ -1208,7 +1217,7 @@
     if (pager) pager.innerHTML = '';
     if (!filtered.length) {
       var emptyMsg = terms.length ? t('vocabEmptyFiltered') : t('vocabEmpty');
-      mount(list, el('li', 'vocab-empty', emptyMsg));
+      mount(list, el('div', 'vocab-empty', emptyMsg));
       return;
     }
     var totalPages = Math.max(1, Math.ceil(filtered.length / vocabPageSize));
@@ -1217,17 +1226,31 @@
     var startIdx = (vocabCurrentPage - 1) * vocabPageSize;
     var pageItems = filtered.slice(startIdx, startIdx + vocabPageSize);
     pageItems.forEach(function (term) {
-      var li = el('li', 'vocab-entry');
+      // Sept 2026 update 2: each entry is a collapsible <details>, closed
+      // by default - the word (plus a compact category/complexity
+      // readout, so a student can tell terms apart without opening every
+      // one) lives in the always-visible <summary>; the full tag row and
+      // definition only mount inside the body, which only exists in the
+      // DOM once - opening/closing just toggles the native <details>
+      // state, same pattern as Handouts/Transcript elsewhere on the page.
+      var entry = document.createElement('details');
+      entry.className = 'vocab-entry';
+      var summary = document.createElement('summary');
+      mount(summary, el('span', 'vocab-word', term.word));
+      var metaBits = [term.craftCategory, term.complexityLevel].filter(Boolean).join(' \u00b7 ');
+      if (metaBits) mount(summary, el('span', 'vocab-entry-summary-meta', metaBits));
+      mount(entry, summary);
+      var body = el('div', 'vocab-entry-body');
       var head = el('div', 'vocab-entry-head');
-      mount(head, el('span', 'vocab-word', term.word));
-      mount(li, head);
+      mount(body, head);
       var tags = el('div', 'vocab-tags');
       [term.craftCategory, term.narrativeStage, term.function, term.complexityLevel].forEach(function (v) {
         if (v) mount(tags, el('span', 'vocab-tag', v));
       });
-      mount(li, tags);
-      mount(li, el('div', 'vocab-definition', term.definition));
-      mount(list, li);
+      mount(body, tags);
+      mount(body, el('div', 'vocab-definition', term.definition));
+      mount(entry, body);
+      mount(list, entry);
     });
     if (pager && totalPages > 1) {
       var prevBtn = el('button', 'vocab-pager-btn', t('vocabPrevBtn'));
