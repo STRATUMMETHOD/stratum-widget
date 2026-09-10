@@ -1584,6 +1584,16 @@ button.download-btn:hover { background-color: #5a4535; }
    were removed from the student-facing toolbar (Craft Category and
    Complexity Level remain), and a Clear control was added to reset both
    the search box and the remaining filters in one action.
+
+   Sept 2026 update 2: each entry is now a collapsible <details> element,
+   closed by default, instead of a plain always-open block - see
+   renderVocabList() in the engine JS. .vocab-list changed from a <ul> to
+   a plain <div> to hold <details> children validly (a <ul> only permits
+   <li> children). The word (plus a compact category/complexity readout)
+   sits in the always-visible <summary>; the full tag row and definition
+   only render once opened, matching the same collapsed-by-default pattern
+   already used for Handouts/Transcript (.lec-resource/.lec-transcript)
+   elsewhere in this file.
    ============================================================ */
 
 .vocab-toolbar{
@@ -1658,7 +1668,71 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 .vocab-clear-btn:hover{ background:#F0E9D8; color:#281e16; border-color:#C9A46C; }
 
-.vocab-list{ list-style:none; margin:0; padding:0; }
+.vocab-list{ margin:0; padding:0; }
+
+/* Each entry is a <details> element (see file header note above) —
+   closed by default. Same bordered-card look as before, but padding now
+   lives on the summary/body split below rather than on the entry itself,
+   matching the .lec-resource pattern already used for Handouts. */
+.vocab-entry{
+  border:1px solid #e2d9c4;
+  margin-bottom:10px;
+  background:#ffffff;
+  padding:0;
+}
+.vocab-entry:last-child{ margin-bottom:0; }
+.vocab-entry > summary{
+  cursor:pointer;
+  list-style:none;
+  padding:12px 14px;
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.vocab-entry > summary::-webkit-details-marker{ display:none; }
+.vocab-entry > summary::before{
+  content:'\25B8';
+  font-size:11px;
+  color:#8a6630;
+  flex-shrink:0;
+  align-self:center;
+  display:inline-block;
+  transition:transform .18s ease;
+}
+.vocab-entry[open] > summary::before{ transform:rotate(90deg); }
+.vocab-entry[open] > summary{ border-bottom:1px solid #e2d9c4; }
+.vocab-entry-summary-meta{
+  font-family:'Inter',sans-serif;
+  font-size:11px;
+  color:#8a7a5e;
+}
+.vocab-entry-body{ padding:12px 14px 14px; }
+.vocab-entry-head{ margin-bottom:6px; }
+.vocab-word{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:19px;
+  letter-spacing:.02em;
+  color:#281e16;
+}
+.vocab-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+.vocab-tag{
+  display:inline-block;
+  font-family:'Inter',sans-serif;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#8a6630;
+  border:1px solid #C9A46C;
+  padding:2px 8px;
+}
+.vocab-definition{
+  font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:15px;
+  line-height:1.55;
+  color:#281e16;
+}
 
 /* Pagination controls (Sept 2026) - client-side, sits below the list;
    hidden entirely when everything fits on one page (see renderVocabList
@@ -1689,38 +1763,6 @@ button.download-btn:hover { background-color: #5a4535; }
   color:#8a7a5e;
 }
 .vocab-empty{ color:#aaa; font-style:italic; font-size:12px; font-family:Arial,sans-serif; }
-.vocab-entry{
-  border:1px solid #e2d9c4;
-  padding:12px 14px;
-  margin-bottom:10px;
-  background:#ffffff;
-}
-.vocab-entry:last-child{ margin-bottom:0; }
-.vocab-entry-head{ margin-bottom:6px; }
-.vocab-word{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:19px;
-  letter-spacing:.02em;
-  color:#281e16;
-}
-.vocab-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
-.vocab-tag{
-  display:inline-block;
-  font-family:'Inter',sans-serif;
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:.06em;
-  text-transform:uppercase;
-  color:#8a6630;
-  border:1px solid #C9A46C;
-  padding:2px 8px;
-}
-.vocab-definition{
-  font-family:'Cormorant Garamond',Georgia,serif;
-  font-size:15px;
-  line-height:1.55;
-  color:#281e16;
-}
 
 /* ============================================================
    MID-CONVERSATION DOWNLOAD (Sept 2026)
