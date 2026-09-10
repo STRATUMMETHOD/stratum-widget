@@ -229,7 +229,7 @@
       coachDownloadNothingYet: 'Nothing to download yet \u2014 send a message first.',
       notesTitle: 'Idea Log',
       notesDownloadBtn: 'Download Idea Log',
-      ideaLogIntro: 'Jot down sparks — a character insight, a plot twist, a research note, even a deadline. Tag each entry so you can filter later. Your coach reviews these before every session, turning your notes into part of the conversation.',
+      ideaLogIntro: 'Jot down character insights, a plot twist, a research note, or general thoughts. Your coach reviews these and incorporates them in their coaching.',
       ideaLogFilterLabel: 'Filter',
       ideaLogFilterAll: 'All',
       ideaLogGeneralCategory: 'General',
@@ -242,7 +242,7 @@
       ideaLogDeleteTitle: 'Delete entry',
       ideaLogNoneToDownload: 'No entries to download.',
       tasksTitle: 'Action Items',
-      tasksIntro: "Note what's next — finish a draft, revise a scene, prep a query. Tag it, and your coach will see your list so it knows what you're working toward between sessions.",
+      tasksIntro: 'Schedule reminders to finish a draft, revise a scene, prep a query. Again, your coach will refer to it during your coaching session.',
       tasksCategoryPlaceholder: 'Choose a type\u2026',
       tasksCategoryCustom: 'Write your own\u2026',
       tasksPlaceholder: "Add an action item — e.g. Rewrite Eleanor's kitchen scene",
@@ -259,7 +259,7 @@
       tasksDue: 'Due {date}',
       tasksOverdue: 'Overdue — was due {date}',
       projectTitle: 'My WIP',
-      projectReminder: 'Your coach reads this before every session, so the questions are about your story, not a generic one. Complete it before your first session so the coaching starts working with your WIP right away.',
+      projectReminder: 'Complete this profile before your first coaching session. Your coach will use it to personalize the experience, tailoring the session directly to your work.',
       projectSaveBtn: 'Save WIP Details',
       projectSaving: 'Saving…',
       projectSavedOk: "Saved. Every lesson's coach will know your project.",
@@ -342,7 +342,10 @@
     // also draft, needs the same native-speaker pass. Also draft: the new
     // navClusterLessonLabel/navClusterDeskLabel kickers and the eight
     // tabTip* tooltip strings added alongside the "Handouts"/"Coaching"/
-    // "Glossary"/"Help" relabel.
+    // "Glossary"/"Help" relabel. NOTE: the 'es' copy for projectReminder/
+    // ideaLogIntro/tasksIntro below still reflects the pre-Sept-2026
+    // English wording (not yet updated to match the 'en' rewrite above) -
+    // needs the same native-speaker pass whenever 'es' work resumes.
     es: {
       navDashboard: 'Mesa Creativa',
       navDashboardTooltip: 'Tu WIP, tu Registro de Ideas y tus Elementos de Acci\u00f3n',
@@ -714,7 +717,11 @@
         // native PDF viewer honors these hash params; browsers that don't
         // recognize them simply ignore the fragment and load the PDF
         // normally, so this degrades safely everywhere.
-        iframe.src = pdf.url + '#toolbar=0&navpanes=0&scrollbar=0';
+        // Sept 2026 fix: added &view=FitH - without it, the viewer's
+        // default zoom left blank space to the right of the page inside
+        // the (already full-width) iframe instead of stretching the page
+        // to fill the available width.
+        iframe.src = pdf.url + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH';
         iframe.title = pdf.title;
         mount(body, iframe);
         var fallback = el('p', 'lec-resource-pdf-fallback');
@@ -1372,7 +1379,7 @@
     panel.setAttribute('aria-label', t('notesTitle'));
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemNotes'); return; }
 
-    mount(panel, el('p', 'panel-intro', t('ideaLogIntro')));
+    mount(panel, el('p', 'panel-intro panel-intro--wide', t('ideaLogIntro')));
 
     var toolbar = el('div', 'idealog-toolbar');
     var filterWrap = el('div', 'idealog-filter-wrap');
@@ -1520,7 +1527,7 @@
   function buildTasksTab(panel) {
     panel.setAttribute('aria-label', t('tasksTitle'));
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemTasks'); return; }
-    mount(panel, el('p', 'panel-intro', t('tasksIntro')));
+    mount(panel, el('p', 'panel-intro panel-intro--wide', t('tasksIntro')));
     var count = el('div', 'tracker-count');
     count.id = 'trackerCount';
     mount(panel, count);
@@ -1956,7 +1963,7 @@
   }
   function buildProjectTab(panel) {
     panel.setAttribute('aria-label', t('projectTitle'));
-    var reminder = el('p', 'panel-intro', t('projectReminder'));
+    var reminder = el('p', 'panel-intro panel-intro--wide', t('projectReminder'));
     mount(panel, reminder);
     var topActions = el('div', 'proj-actions proj-actions-top');
     topActions.style.marginBottom = '28px';
@@ -3007,25 +3014,32 @@
   //                the document's lead content.
   // Still exported as .doc, not PDF - no new dependency, same mechanism
   // as before.
+  //
+  // Sept 2026 fix: whole-document font switched to Arial (was
+  // Calibri/Arial for body copy and Georgia/serif for the headings and
+  // the deliverable's captured value) - every font-family declaration in
+  // buildSummaryPageHtml() and generateDoc() below now reads
+  // 'Arial,sans-serif', so headings and body text match the rest of the
+  // dashboard's exported material rather than mixing two families.
   function buildSummaryPageHtml(dateStr, name, cfg) {
     var html = '';
     if (LESSON.layerPosition) {
-      html += otag('p', 'style="margin:0 0 4px;font-family:Calibri,Arial,sans-serif;font-size:9pt;letter-spacing:1px;text-transform:uppercase;color:#8a6630;font-weight:bold;"') +
+      html += otag('p', 'style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:9pt;letter-spacing:1px;text-transform:uppercase;color:#8a6630;font-weight:bold;"') +
               escapeHtml('Strata ' + LESSON.layerPosition + ' complete') + ctag('p');
     }
-    html += otag('h1', 'style="font-family:Georgia,serif;font-size:19pt;margin:0 0 4px;color:#2e1f0e;"') +
+    html += otag('h1', 'style="font-family:Arial,sans-serif;font-size:19pt;margin:0 0 4px;color:#2e1f0e;"') +
             escapeHtml(LESSON.layerLabel || LESSON.scopeNote || 'Write Living Characters') + ctag('h1');
-    html += otag('p', 'style="margin:0 0 16px;font-family:Calibri,Arial,sans-serif;font-size:10pt;color:#6f6353;"') +
+    html += otag('p', 'style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:10pt;color:#6f6353;"') +
             otag('em') + 'Prepared for ' + escapeHtml(name) + ' \u00b7 ' + dateStr + ctag('em') + ctag('p');
     var niceWorkText = name ? ('Nice work, ' + name) : 'Nice work';
-    html += otag('h2', 'style="font-family:Georgia,serif;font-size:15pt;margin:0 0 2px;color:#2e1f0e;"') +
+    html += otag('h2', 'style="font-family:Arial,sans-serif;font-size:15pt;margin:0 0 2px;color:#2e1f0e;"') +
             escapeHtml(niceWorkText) + ctag('h2');
-    html += otag('p', 'style="margin:0 0 16px;font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#6f6353;"') +
+    html += otag('p', 'style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:10.5pt;color:#6f6353;"') +
             "You didn&#39;t stop at the first answer \u2014 that&#39;s the harder part." + ctag('p');
     var courseShapeText = LESSON.courseShapeReminder ||
       "This course builds in layers, not conclusions. What you find today becomes the material the next lesson digs into. The payoff isn't in any one lesson \u2014 it's in what they add up to.";
     html += otag('div', 'style="background:#FBF8F0;border:1px solid #E6DCC4;padding:12px 16px;margin:0 0 16px;"') +
-            otag('p', 'style="margin:0;font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#4a3a1f;"') +
+            otag('p', 'style="margin:0;font-family:Arial,sans-serif;font-size:10.5pt;color:#4a3a1f;"') +
             escapeHtml(courseShapeText) + ctag('p') + ctag('div');
     if (lastDeliverable) {
       var data = lastDeliverable.fields || {};
@@ -3035,15 +3049,15 @@
         var val = data[f.key];
         if (f.type === 'list') {
           (val || []).forEach(function (item, i) {
-            html += otag('p', 'style="margin:0 0 8px;font-family:Calibri,Arial,sans-serif;font-size:10.5pt;"') +
+            html += otag('p', 'style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:10.5pt;"') +
                     otag('strong') + escapeHtml(label) + ' ' + (i + 1) + ':' + ctag('strong') + ' ' +
                     escapeHtml(formatListItemText(item, f)) +
                     ctag('p');
           });
         } else {
-          html += otag('p', 'style="margin:0 0 4px;font-family:Calibri,Arial,sans-serif;font-size:9pt;letter-spacing:1px;text-transform:uppercase;color:#8b6340;font-weight:bold;"') +
+          html += otag('p', 'style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:9pt;letter-spacing:1px;text-transform:uppercase;color:#8b6340;font-weight:bold;"') +
                   escapeHtml(label.toUpperCase()) + ctag('p');
-          html += otag('p', 'style="margin:0 0 12px;font-family:Georgia,serif;font-size:13pt;color:#2e1f0e;"') +
+          html += otag('p', 'style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:13pt;color:#2e1f0e;"') +
                   escapeHtml(val || '') + ctag('p');
         }
       });
@@ -3051,16 +3065,16 @@
     }
     if (LESSON.tryThisNow) {
       html += otag('div', 'style="background:#FBF3E3;border:1px solid #EAD9AE;padding:12px 16px;margin:0 0 16px;"') +
-              otag('p', 'style="margin:0 0 4px;font-family:Calibri,Arial,sans-serif;font-size:9pt;letter-spacing:1px;text-transform:uppercase;color:#8a6630;font-weight:bold;"') +
+              otag('p', 'style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:9pt;letter-spacing:1px;text-transform:uppercase;color:#8a6630;font-weight:bold;"') +
               'Try this now' + ctag('p') +
-              otag('p', 'style="margin:0;font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#4a3a1f;"') +
+              otag('p', 'style="margin:0;font-family:Arial,sans-serif;font-size:10.5pt;color:#4a3a1f;"') +
               escapeHtml(LESSON.tryThisNow) + ctag('p') + ctag('div');
     }
     if (LESSON.nextStepTeaser) {
       html += otag('div', 'style="background:#3B2F24;padding:12px 16px;margin:0 0 4px;"') +
-              otag('p', 'style="margin:0 0 4px;font-family:Calibri,Arial,sans-serif;font-size:9pt;letter-spacing:1px;text-transform:uppercase;color:#C9A46C;font-weight:bold;"') +
+              otag('p', 'style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:9pt;letter-spacing:1px;text-transform:uppercase;color:#C9A46C;font-weight:bold;"') +
               escapeHtml('Up next \u00b7 ' + (LESSON.nextLessonLabel || '')) + ctag('p') +
-              otag('p', 'style="margin:0;font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#F5EFE0;"') +
+              otag('p', 'style="margin:0;font-family:Arial,sans-serif;font-size:10.5pt;color:#F5EFE0;"') +
               escapeHtml(LESSON.nextStepTeaser) + ctag('p') + ctag('div');
     }
     return html;
@@ -3071,7 +3085,7 @@
     var cfg = getDeliverableConfig();
     var summaryPage = buildSummaryPageHtml(dateStr, name, cfg);
     summaryPage += otag('br', 'style="page-break-before:always;mso-special-character:line-break"');
-    var transcriptPage = otag('h2', 'style="font-family:Georgia,serif;font-size:14pt;color:#3B2F24;margin-top:0;"') +
+    var transcriptPage = otag('h2', 'style="font-family:Arial,sans-serif;font-size:14pt;color:#3B2F24;margin-top:0;"') +
       'Full Conversation' + ctag('h2') +
       otag('hr', 'style="border:none;border-top:1px solid #C9A46C;margin:8px 0 16px;"');
     conversationHistory.slice(2).forEach(function (msg) {
@@ -3099,7 +3113,7 @@
     parts.push(otag('meta', 'charset="utf-8"'));
     parts.push(otag('title') + LESSON.scopeNote + ' Reflection' + ctag('title'));
     parts.push(ctag('head'));
-    parts.push(otag('body', 'style="font-family:Calibri,Arial,sans-serif;font-size:12pt;color:#111;"'));
+    parts.push(otag('body', 'style="font-family:Arial,sans-serif;font-size:12pt;color:#111;"'));
     parts.push(summaryPage);
     parts.push(transcriptPage);
     parts.push(ctag('body'));
@@ -3108,7 +3122,9 @@
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
-    a.download = LESSON_ID.replace('.', '-') + '-Reflection-' + name.replace(/\s+/g, '-') + '.doc';
+    // Sept 2026 fix: filename changed from "...-Reflection-..." to
+    // "...-Coaching-Conversation-...", matching what the file actually is.
+    a.download = LESSON_ID.replace('.', '-') + '-Coaching-Conversation-' + name.replace(/\s+/g, '-') + '.doc';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
