@@ -369,6 +369,31 @@
   }
   details.tst-block[open] > summary::before { transform: rotate(90deg); }
   details.tst-block .tst-block-body { padding: 14px 16px 16px; }
+
+  /* Vocabulary-tab-only additions (Sept 2026): Craft Category filter and
+     the "Import From File" row, both added to the existing .tst-toolbar
+     rows above #vcbList - see vocabularyView markup below. Kept minimal
+     and consistent with the existing toolbar/select/button styling
+     already defined above rather than introducing new visual language. */
+  .vcb-filter-label {
+    font-size: 12px;
+    color: #8a7a5e;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .vcb-filter-select {
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #E3DCC9;
+    border-radius: 8px;
+    background: #FCFAF5;
+    min-width: 180px;
+  }
+  .vcb-filter-select:focus { outline: none; border-color: #C9A46C; background: #fff; }
+  #vcbFilterStatus { font-size: 12px; color: #9A927E; white-space: nowrap; }
+  #vcbImportStatus.ok { color: #2e7d32; font-style: normal; }
+  #vcbImportStatus.err { color: #b3261e; font-style: normal; }
 </style>
 </head>
 <body>
@@ -552,8 +577,31 @@
       <div class="tst-toolbar">
         <button class="btn secondary" id="vcbReloadBtn" type="button">Reload</button>
         <button class="btn secondary" id="vcbPrintAllBtn" type="button">Print All</button>
+        <!-- Sept 2026: Craft Category filter, added alongside Reload/Print
+             All. Purely client-side - filters the already-rendered <details>
+             blocks in #vcbList by their own craft-category select value, so
+             it stays in sync even while a block is mid-edit and unsaved.
+             See applyVcbCraftFilter() in the script below. -->
+        <span class="vcb-filter-label">Filter by Craft Category:</span>
+        <select id="vcbCraftFilter" class="vcb-filter-select"></select>
+        <span id="vcbFilterStatus"></span>
         <div class="spacer"></div>
         <span id="vcbStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
+      </div>
+      <!-- Sept 2026: Import From File, a second toolbar row so it reads as
+           its own action rather than crowding the Reload/Print/Filter row
+           above. Accepts a JSON array of term objects (same shape the
+           existing "+ Add vocabulary term" Save button already posts to
+           /admin/vocabulary) or a CSV with a header row. Posts one row at a
+           time through that same existing endpoint - additive only, never
+           updates an existing term, since nothing in the file carries an
+           id. See vcbImportTerms()/vcbParseCsv() below. -->
+      <div class="tst-toolbar">
+        <button class="btn secondary" id="vcbImportBtn" type="button">Import From File&hellip;</button>
+        <input type="file" id="vcbImportFile" accept=".json,.csv,text/csv,application/json" style="display:none;" />
+        <span class="sub" style="margin:0;">JSON array of term objects, or CSV with header row: word, definition, coachingCue, craftCategory, narrativeStage, function, complexityLevel, isActive. Adds new entries only &mdash; does not update existing ones.</span>
+        <div class="spacer"></div>
+        <span id="vcbImportStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
       </div>
       <div id="vcbList"></div>
       <button class="add-btn" id="vcbAddBtn" type="button">+ Add vocabulary term</button>
@@ -2133,6 +2181,43 @@ document.getElementById('vcbAddBtn').addEventListener('click', function () {
     isActive: true
   }, true);
 });
+// ---- Craft Category filter (Sept 2026) ----
+// Purely client-side: filters the already-rendered <details class="tst-block">
+// entries in #vcbList by reading each block's own .vcb-craft-select value
+// (the same select the admin edits inline), so the filter always reflects
+// current on-screen state, including an unsaved edit. Populated once at
+// script load from VCB_CRAFT_CATEGORIES - no adminKey needed for this part.
+function populateVcbCraftFilter() {
+  var sel = document.getElementById('vcbCraftFilter');
+  if (!sel) return;
+  var allOpt = document.createElement('option');
+  allOpt.value = '';
+  allOpt.textContent = 'All categories';
+  sel.appendChild(allOpt);
+  VCB_CRAFT_CATEGORIES.forEach(function (cat) {
+    var opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    sel.appendChild(opt);
+  });
+}
+populateVcbCraftFilter();
+function applyVcbCraftFilter() {
+  var filterSel = document.getElementById('vcbCraftFilter');
+  var statusEl = document.getElementById('vcbFilterStatus');
+  if (!filterSel) return;
+  var val = filterSel.value;
+  var blocks = vcbList.querySelectorAll('details.tst-block');
+  var shown = 0;
+  blocks.forEach(function (b) {
+    var craftSel = b.querySelector('.vcb-craft-select');
+    var match = !val || (craftSel && craftSel.value === val);
+    b.style.display = match ? '' : 'none';
+    if (match) shown++;
+  });
+  if (statusEl) statusEl.textContent = val ? (shown + ' of ' + blocks.length + ' shown') : '';
+}
+document.getElementById('vcbCraftFilter').addEventListener('change', applyVcbCraftFilter);
 function loadVocabulary() {
   if (!adminKey) { vcbStatus.textContent = 'Unlock the panel first.'; return; }
   vcbStatus.textContent = 'Loading...';
@@ -2143,10 +2228,15 @@ function loadVocabulary() {
       var terms = (d && d.terms) || [];
       if (!terms.length) {
         vcbStatus.textContent = 'No vocabulary terms yet - add the first one below.';
+        applyVcbCraftFilter();
         return;
       }
       vcbStatus.textContent = terms.length + ' term' + (terms.length === 1 ? '' : 's') + '.';
       terms.forEach(function (term) { addVocabularyBlock(term, false); });
+      // Reapply whatever category is currently selected (survives Reload
+      // and lands automatically after a file import below), so the admin
+      // doesn't have to reselect the filter every time the list refreshes.
+      applyVcbCraftFilter();
     })
     .catch(function () {
       vcbStatus.textContent = 'Could not load vocabulary.';
@@ -2252,6 +2342,10 @@ function addVocabularyBlock(term, isNew) {
   craftLabel.textContent = 'Craft category';
   var craftSelect = vcbBuildSelect('vcb-craft-select', VCB_CRAFT_CATEGORIES, term.craftCategory);
   craftSelect.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  // Sept 2026: re-filter the list live whenever a category is changed
+  // inline on an already-rendered block, so the Craft Category filter
+  // toolbar stays accurate against on-screen edits, not just saved data.
+  craftSelect.addEventListener('change', applyVcbCraftFilter);
   craftField.appendChild(craftLabel);
   craftField.appendChild(craftSelect);
   metaRow.appendChild(craftField);
@@ -2367,6 +2461,147 @@ function addVocabularyBlock(term, isNew) {
       })
       .catch(function () { saveStatus.textContent = 'Delete failed.'; });
   });
+}
+// ---- Import vocabulary terms from a file (Sept 2026) ----
+// Accepts a JSON array of term objects (or {"terms": [...]}), or a CSV
+// with a header row matching the same field names. Adds new entries only
+// - nothing in an imported row carries an id, so every row becomes a
+// fresh POST to /admin/vocabulary (the same endpoint "+ Add vocabulary
+// term" already uses), one at a time, with a running progress count.
+document.getElementById('vcbImportBtn').addEventListener('click', function () {
+  document.getElementById('vcbImportFile').click();
+});
+document.getElementById('vcbImportFile').addEventListener('change', function (e) {
+  var file = e.target.files && e.target.files[0];
+  e.target.value = ''; // allow re-selecting the same file next time
+  if (!file) return;
+  if (!adminKey) { alert('Unlock the panel first.'); return; }
+  var reader = new FileReader();
+  reader.onload = function (evt) {
+    var text = String(evt.target.result || '');
+    var terms;
+    try {
+      if (/\.json$/i.test(file.name)) {
+        var parsed = JSON.parse(text);
+        terms = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.terms) ? parsed.terms : null);
+        if (!terms) throw new Error('Expected a JSON array of term objects (or {"terms": [...]}).');
+      } else {
+        terms = vcbParseCsv(text);
+      }
+    } catch (err) {
+      alert('Could not read that file: ' + err.message);
+      return;
+    }
+    if (!terms || !terms.length) { alert('No terms found in that file.'); return; }
+    if (!confirm('Import ' + terms.length + ' term(s) from "' + file.name + '"? This adds new entries - it does not update or replace existing ones.')) return;
+    vcbImportTerms(terms);
+  };
+  reader.onerror = function () { alert('Could not read that file.'); };
+  reader.readAsText(file);
+});
+// Minimal CSV parser - handles quoted fields, quoted commas, and quoted
+// newlines (e.g. a multi-line definition wrapped in quotes). First row is
+// the header; column names must match the field names above (word,
+// definition, coachingCue, craftCategory, narrativeStage, function,
+// complexityLevel, isActive).
+function vcbParseCsv(text) {
+  text = text.replace(/^\uFEFF/, ''); // strip BOM if present
+  var rows = [];
+  var row = [];
+  var field = '';
+  var inQuotes = false;
+  for (var i = 0; i < text.length; i++) {
+    var c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else { inQuotes = false; }
+      } else {
+        field += c;
+      }
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ',') {
+      row.push(field); field = '';
+    } else if (c === '\r') {
+      // skip - the \n that follows (or end of input) closes the row
+    } else if (c === '\n') {
+      row.push(field); rows.push(row); row = []; field = '';
+    } else {
+      field += c;
+    }
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  rows = rows.filter(function (r) { return r.some(function (c) { return String(c).trim() !== ''; }); });
+  if (!rows.length) return [];
+  var headers = rows[0].map(function (h) { return String(h).trim(); });
+  var out = [];
+  for (var r = 1; r < rows.length; r++) {
+    var obj = {};
+    headers.forEach(function (h, idx) { obj[h] = rows[r][idx] != null ? rows[r][idx] : ''; });
+    out.push(obj);
+  }
+  return out;
+}
+function vcbCoerceActive(v) {
+  if (v === false || v === 0) return false;
+  if (typeof v === 'string') {
+    var s = v.trim().toLowerCase();
+    if (s === 'false' || s === '0' || s === 'no' || s === 'inactive') return false;
+  }
+  return true;
+}
+function vcbImportTerms(rawTerms) {
+  var statusEl = document.getElementById('vcbImportStatus');
+  var total = rawTerms.length;
+  var i = 0, okCount = 0, failCount = 0, skipCount = 0;
+  function updateStatus(done) {
+    statusEl.textContent = done
+      ? ('Import finished: ' + okCount + ' added, ' + skipCount + ' skipped, ' + failCount + ' failed.')
+      : ('Importing ' + i + ' / ' + total + ' (' + okCount + ' added, ' + failCount + ' failed)\u2026');
+    statusEl.className = done ? ((failCount || skipCount) ? 'err' : 'ok') : '';
+  }
+  function next() {
+    if (i >= total) {
+      updateStatus(true);
+      loadVocabulary();
+      return;
+    }
+    var raw = rawTerms[i++];
+    var word = raw.word == null ? '' : String(raw.word).trim();
+    var definition = raw.definition == null ? '' : String(raw.definition).trim();
+    if (!word || !definition) {
+      skipCount++;
+      updateStatus(false);
+      next();
+      return;
+    }
+    var payload = {
+      id: null,
+      word: word,
+      definition: definition,
+      coachingCue: raw.coachingCue == null ? '' : String(raw.coachingCue).trim(),
+      craftCategory: raw.craftCategory == null ? '' : String(raw.craftCategory).trim(),
+      narrativeStage: raw.narrativeStage == null ? '' : String(raw.narrativeStage).trim(),
+      function: raw.function == null ? '' : String(raw.function).trim(),
+      complexityLevel: raw.complexityLevel == null ? '' : String(raw.complexityLevel).trim(),
+      isActive: vcbCoerceActive(raw.isActive)
+    };
+    fetch(PROXY_URL + '/admin/vocabulary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { if (d && d.ok) okCount++; else failCount++; })
+      .catch(function () { failCount++; })
+      .finally(function () {
+        updateStatus(false);
+        next();
+      });
+  }
+  updateStatus(false);
+  next();
 }
 // ===== Global Instructions =====
 var giList = document.getElementById('giList');
