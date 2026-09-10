@@ -19,6 +19,11 @@
   var MODEL = 'claude-sonnet-4-5';
   var CONTACT_EMAIL = 'ted@thestratummethod.com';
   var CONTACT_WHATSAPP = 'https://wa.me/50684192287';
+  // Sept 2026: our own PDF.js-based viewer page (pdf-viewer.html), hosted
+  // alongside this engine on GitHub Pages - see buildResource() below for
+  // why the PDF resource embed uses this instead of pointing the iframe
+  // straight at the PDF file.
+  var PDF_VIEWER_URL = 'https://stratummethod.github.io/stratum-widget/pdf-viewer.html';
   // localStorage keys. Shared with the coach so the WIP tab and the
   // coaching session stay in sync without any direct JS coupling.
   var PROJ_KEYS = {
@@ -710,18 +715,24 @@
         var body = el('div', 'lec-resource-body lec-resource-body--pdf');
         var iframe = document.createElement('iframe');
         iframe.className = 'lec-resource-pdf-frame';
-        // Sept 2026: append PDF-viewer URL params to suppress the
-        // browser's built-in toolbar (page-number stepper, zoom, print,
-        // download button) so the document renders as a clean, full-width
-        // embed with no competing page-navigation chrome. Chrome/Edge's
-        // native PDF viewer honors these hash params; browsers that don't
-        // recognize them simply ignore the fragment and load the PDF
-        // normally, so this degrades safely everywhere.
-        // Sept 2026 fix: added &view=FitH - without it, the viewer's
-        // default zoom left blank space to the right of the page inside
-        // the (already full-width) iframe instead of stretching the page
-        // to fill the available width.
-        iframe.src = pdf.url + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH';
+        // Sept 2026: originally pointed straight at the PDF with
+        // #toolbar=0&navpanes=0&scrollbar=0&view=FitH, relying on the
+        // browser's own built-in PDF viewer to hide its chrome and fit
+        // the page to the iframe's width. That works on Chrome/Edge
+        // desktop, but iOS Safari's built-in PDF renderer ignores the
+        // view=FitH hash param entirely, so on phones the page rendered
+        // at native width and just overflowed/scrolled sideways inside
+        // the (already full-width) iframe - the mobile version of the
+        // same "blank space" bug.
+        // Sept 2026 fix: switched to PDF_VIEWER_URL, our own PDF.js-based
+        // viewer page (see pdf-viewer.html), instead of the browser's
+        // native viewer. It renders every page onto a canvas sized to the
+        // container's own width - so width-fit is something WE control
+        // and calculate, not something we're hoping each browser's native
+        // viewer honors - which is what makes it behave identically on
+        // desktop and mobile. No hash params needed anymore; the file URL
+        // is passed as a query param instead.
+        iframe.src = PDF_VIEWER_URL + '?file=' + encodeURIComponent(pdf.url);
         iframe.title = pdf.title;
         mount(body, iframe);
         var fallback = el('p', 'lec-resource-pdf-fallback');
