@@ -1547,6 +1547,16 @@ button.download-btn:hover { background-color: #5a4535; }
   max-width:62ch;
 }
 
+/* Sept 2026: wider variant for the WIP / Idea Log / Action Items intros
+   specifically - the shared 62ch default (still used by Glossary's intro,
+   unchanged) read too narrow/cramped on these three. Applied as a second
+   class alongside .panel-intro (see buildProjectTab/buildNotesTab/
+   buildTasksTab in the engine JS), not a replacement, so both rules'
+   declarations apply and only max-width differs. */
+.panel-intro--wide{
+  max-width: 90ch;
+}
+
 @media (max-width:640px){
   .nav-cluster--lesson{ padding:2px 12px 2px; }
   .navlink{ margin-right:14px; font-size:11.5px; }
