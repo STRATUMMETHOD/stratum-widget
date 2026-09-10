@@ -319,22 +319,31 @@ wistia-transcript { display: block; }
 /* PDF dropdown body. The embedded document supplies its own scrollbar, so
    this variant drops the 420px cap and the overflow the text body uses —
    otherwise the page renders a scrollbar inside a scrollbar.
-   Sept 2026: padding dropped to 0 (was 10px) and the browser's built-in
-   PDF toolbar/page-navigation chrome is suppressed at the iframe src
-   level (see engine JS) so the document renders truly edge-to-edge and
-   full width inside the panel, with no page-number/zoom controls
-   competing with the page's own chrome. */
+   Sept 2026: padding dropped to 0 (was 10px). The iframe below now points
+   at our own PDF.js-based viewer page (pdf-viewer.html, hosted alongside
+   this engine on GitHub Pages) rather than the PDF file directly - it has
+   no native browser toolbar/page-navigation chrome to suppress in the
+   first place, since we render every page onto a canvas ourselves, sized
+   to the container's own width. This replaced an earlier approach that
+   suppressed the browser's built-in PDF viewer chrome via iframe src hash
+   params (#toolbar=0&view=FitH) - that worked on desktop Chrome/Edge but
+   iOS Safari's built-in viewer ignored the width-fit param, so the
+   document overflowed sideways on mobile. See buildResource() in the
+   engine JS. */
 .lec-resource-body--pdf {
   max-height: none;
   overflow: visible;
   padding: 0;
 }
 
-/* The embedded PDF itself. NOTE: this class was assigned in the engine JS
-   but had no rule here at all, so the iframe fell back to the HTML default
-   of 300x150 with a border — the cramped double-scrollbar box. Height is
-   viewport-relative so the document fills most of the screen on a laptop
-   without overflowing a short one; the floor keeps it readable regardless. */
+/* The embedded viewer itself (points at pdf-viewer.html, not the PDF file
+   directly - see above). NOTE: this class was originally assigned in the
+   engine JS with no rule here at all, so the iframe fell back to the HTML
+   default of 300x150 with a border - the cramped double-scrollbar box.
+   Height is viewport-relative so the document fills most of the screen on
+   a laptop without overflowing a short one; the floor keeps it readable
+   regardless. pdf-viewer.html handles its own internal vertical scrolling
+   for multi-page documents within this fixed-height frame. */
 .lec-resource-pdf-frame {
   display: block;
   width: 100%;
