@@ -1764,6 +1764,66 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 .vocab-empty{ color:#aaa; font-style:italic; font-size:12px; font-family:Arial,sans-serif; }
 
+/* Sept 2026: Exercise ("Try it") and Cross Links ("See also"), both
+   optional per term - only rendered when the admin has actually entered
+   them (see renderVocabList() in the engine JS). Sit inside the entry
+   body, after the definition. */
+.vocab-exercise{
+  margin-top:10px;
+  background:#FBF3E3;
+  border:1px solid #EAD9AE;
+  border-radius:8px;
+  padding:10px 14px;
+}
+.vocab-exercise-label{
+  display:block;
+  font-family:'Inter',sans-serif;
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#8a6630;
+  margin-bottom:6px;
+}
+.vocab-exercise-list{
+  margin:0;
+  padding-left:18px;
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  line-height:1.55;
+  color:#4a3a1f;
+}
+.vocab-exercise-list li{ margin-bottom:4px; }
+.vocab-exercise-list li:last-child{ margin-bottom:0; }
+
+.vocab-crosslinks{ margin-top:10px; }
+.vocab-crosslink-label{
+  display:block;
+  font-family:'Inter',sans-serif;
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#8a7a5e;
+  margin-bottom:6px;
+}
+.vocab-crosslink-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+/* Clickable - jumps the Glossary to that term (see jumpToVocabTerm() in
+   the engine JS), so this is a <button>, not a static pill. */
+.vocab-crosslink-chip{
+  font-family:'Inter',sans-serif;
+  font-size:12px;
+  font-weight:600;
+  color:#8a6630;
+  background:#fff;
+  border:1px solid #C9A46C;
+  border-radius:999px;
+  padding:4px 12px;
+  cursor:pointer;
+  transition:background-color .15s ease, color .15s ease;
+}
+.vocab-crosslink-chip:hover{ background:#FBF3E3; color:#281e16; }
+
 /* ============================================================
    MID-CONVERSATION DOWNLOAD (Sept 2026)
    ------------------------------------------------------------
