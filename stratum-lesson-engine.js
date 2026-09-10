@@ -1174,7 +1174,11 @@
     var list = document.getElementById('vocabList');
     if (list) list.innerHTML = '';
     if (list) mount(list, el('div', 'vocab-empty', t('vocabLoading')));
-    fetch(PROXY_URL + '/vocabulary')
+    // Sept 2026: vocabulary is now per-language, same as lesson content -
+    // pass the student's own dashboard language (LANG) so /vocabulary
+    // returns their language's set of terms (falling back to English
+    // server-side if that language has no terms authored yet at all).
+    fetch(PROXY_URL + '/vocabulary?lang=' + encodeURIComponent(LANG))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         vocabTermsCache = (d && Array.isArray(d.terms)) ? d.terms : [];
@@ -1235,6 +1239,10 @@
       // state, same pattern as Handouts/Transcript elsewhere on the page.
       var entry = document.createElement('details');
       entry.className = 'vocab-entry';
+      // Sept 2026: tagged with the term's own id so jumpToVocabTerm() can
+      // find and open this exact entry directly, rather than matching on
+      // word text (which could collide or drift out of sync).
+      if (term.id != null) entry.setAttribute('data-term-id', String(term.id));
       var summary = document.createElement('summary');
       mount(summary, el('span', 'vocab-word', term.word));
       var metaBits = [term.craftCategory, term.complexityLevel].filter(Boolean).join(' \u00b7 ');
@@ -1249,6 +1257,41 @@
       });
       mount(body, tags);
       mount(body, el('div', 'vocab-definition', term.definition));
+      // Sept 2026: Exercise ("Try it") - a short checklist, only rendered
+      // when the admin has actually entered steps for this term.
+      if (Array.isArray(term.exerciseSteps) && term.exerciseSteps.length) {
+        var exWrap = el('div', 'vocab-exercise');
+        mount(exWrap, el('div', 'vocab-exercise-label', 'Try it'));
+        var stepsList = document.createElement('ul');
+        stepsList.className = 'vocab-exercise-list';
+        term.exerciseSteps.forEach(function (step) {
+          var li = document.createElement('li');
+          li.textContent = step;
+          stepsList.appendChild(li);
+        });
+        mount(exWrap, stepsList);
+        mount(body, exWrap);
+      }
+      // Sept 2026: Cross Links ("See also") - clickable chips that jump
+      // the Glossary to another term. Only the terms this one is
+      // configured to link to are ever shown here, and only if that
+      // related term is still active (the Worker already filters out
+      // anything deleted/deactivated before this ever reaches the page).
+      if (Array.isArray(term.relatedTerms) && term.relatedTerms.length) {
+        var crossWrap = el('div', 'vocab-crosslinks');
+        mount(crossWrap, el('span', 'vocab-crosslink-label', 'See also'));
+        var chipsWrap = el('div', 'vocab-crosslink-chips');
+        term.relatedTerms.forEach(function (rt) {
+          var chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'vocab-crosslink-chip';
+          chip.textContent = rt.word;
+          chip.addEventListener('click', function () { jumpToVocabTerm(rt.id); });
+          mount(chipsWrap, chip);
+        });
+        mount(crossWrap, chipsWrap);
+        mount(body, crossWrap);
+      }
       mount(entry, body);
       mount(list, entry);
     });
@@ -1273,6 +1316,36 @@
       });
       mount(pager, nextBtn);
     }
+  }
+  // Sept 2026: jumps the Glossary to another term when a Cross Link chip
+  // is clicked. Clears the search box and both filter dropdowns first, so
+  // the target term is guaranteed to be visible regardless of whatever
+  // the student was searching/filtering by when they clicked the chip -
+  // then recomputes which page it falls on (using the same alphabetical
+  // order the server already returns, since vocabTermsCache is the
+  // server's own ordering) and opens that exact entry once rendered.
+  function jumpToVocabTerm(id) {
+    var target = (vocabTermsCache || []).find(function (t) { return String(t.id) === String(id); });
+    if (!target) return;
+    var craftEl = document.getElementById('vocabFilterCraft');
+    var levelEl = document.getElementById('vocabFilterComplexity');
+    var searchEl = document.getElementById('vocabSearchInput');
+    if (craftEl) craftEl.value = '';
+    if (levelEl) levelEl.value = '';
+    if (searchEl) searchEl.value = '';
+    vocabSearchQuery = '';
+    var idx = (vocabTermsCache || []).findIndex(function (t) { return String(t.id) === String(id); });
+    vocabCurrentPage = idx === -1 ? 1 : Math.floor(idx / vocabPageSize) + 1;
+    renderVocabList();
+    setTimeout(function () {
+      var list = document.getElementById('vocabList');
+      if (!list) return;
+      var match = list.querySelector('[data-term-id="' + String(id) + '"]');
+      if (match) {
+        match.open = true;
+        match.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 0);
   }
   function buildEssentialsDropdowns(container) {
     var items = [
