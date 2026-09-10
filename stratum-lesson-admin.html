@@ -394,6 +394,24 @@
   #vcbFilterStatus { font-size: 12px; color: #9A927E; white-space: nowrap; }
   #vcbImportStatus.ok { color: #2e7d32; font-style: normal; }
   #vcbImportStatus.err { color: #b3261e; font-style: normal; }
+
+  /* Sept 2026: Exercise and Cross Links editors inside each vocabulary
+     term block - see addVocabularyBlock() in the script below. */
+  .vcb-exercise-step-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start; }
+  .vcb-exercise-step-row textarea {
+    flex: 1; padding: 8px 10px; font-size: 13px; font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #E3DCC9; border-radius: 8px; background: #fff; resize: vertical;
+  }
+  .vcb-crosslink-search {
+    width: 100%; padding: 7px 9px; font-size: 12.5px; font-family: 'Inter', Arial, sans-serif;
+    border: 1px solid #E3DCC9; border-radius: 8px; margin-bottom: 6px; background: #fff;
+  }
+  .vcb-crosslink-search:focus { outline: none; border-color: #C9A46C; }
+  .vcb-crosslink-options {
+    max-height: 170px; overflow-y: auto; border: 1px solid #E3DCC9; border-radius: 8px;
+    padding: 8px 10px; background: #fff;
+  }
+  .vcb-crosslink-row { display: flex; align-items: center; gap: 7px; padding: 3px 0; font-size: 12.5px; font-weight: 400; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -572,7 +590,7 @@
     </div>
     <div id="vocabularyView" style="display:none;">
       <div class="tst-toolbar">
-        <span class="sub" style="margin:0;">Writer's Vocabulary glossary shown on the student Vocabulary tab. Coaching cue is private &mdash; never shown to students, reserved for a future coach integration. Ordered alphabetically by word; no manual reordering needed.</span>
+        <span class="sub" style="margin:0;">Writer's Vocabulary glossary shown on the student Vocabulary tab, scoped per language &mdash; use "Editing content in:" above to switch which language's terms you're viewing and editing; English and Spanish hold entirely separate sets of terms. Coaching cue is private &mdash; never shown to students, reserved for a future coach integration. Ordered alphabetically by word; no manual reordering needed.</span>
       </div>
       <div class="tst-toolbar">
         <button class="btn secondary" id="vcbReloadBtn" type="button">Reload</button>
@@ -599,7 +617,7 @@
       <div class="tst-toolbar">
         <button class="btn secondary" id="vcbImportBtn" type="button">Import From File&hellip;</button>
         <input type="file" id="vcbImportFile" accept=".json,.csv,text/csv,application/json" style="display:none;" />
-        <span class="sub" style="margin:0;">JSON array of term objects, or CSV with header row: word, definition, coachingCue, craftCategory, narrativeStage, function, complexityLevel, isActive. Adds new entries only &mdash; does not update existing ones.</span>
+        <span class="sub" style="margin:0;">JSON array of term objects, or CSV with header row: word, definition, coachingCue, craftCategory, narrativeStage, function, complexityLevel, isActive, exerciseSteps (pipe-separated, e.g. "step one|step two"), lang (optional - defaults to whichever language is selected above via "Editing content in:"). Adds new entries only &mdash; does not update existing ones. Cross Links aren't supported via import; add those afterward from this tab once every imported term has been saved.</span>
         <div class="spacer"></div>
         <span id="vcbImportStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
       </div>
@@ -1434,6 +1452,12 @@ document.getElementById('adminLangSelect').addEventListener('change', function (
     .then(function (r) { return r.json(); })
     .then(function (d) { refreshLessonListsForLang(d.lessons || []); })
     .catch(function () {});
+  // Sept 2026: Vocabulary is also per-language now - if that tab is the
+  // one currently open, reload it under the newly selected language too.
+  // (If it's not open, it'll simply fetch fresh under the new ADMIN_LANG
+  // the next time the admin clicks into it, via the tab's own click
+  // handler - no need to force it here.)
+  if (vocabularyView.style.display !== 'none') loadVocabulary();
 });
 var tabDashboardBtn = document.getElementById('tabDashboardBtn');
 var tabDeliverablesBtn = document.getElementById('tabDeliverablesBtn');
@@ -2166,6 +2190,58 @@ var VCB_CRAFT_CATEGORIES = ['Character', 'Plot', 'Dialogue', 'Setting', 'Theme',
 var VCB_NARRATIVE_STAGES = ['Setup', 'Rising Action', 'Climax', 'Falling Action', 'Resolution'];
 var VCB_FUNCTIONS = ['Diagnostic', 'Generative', 'Revision', 'Analytical'];
 var VCB_COMPLEXITY_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
+// Sept 2026: lightweight {id, word, isActive} cache of every currently
+// loaded term, used only to populate each block's Cross Links picker
+// (a term can link to any other term, so every open block needs to know
+// what else exists). Kept in sync in loadVocabulary() (full rebuild) and
+// after every successful individual save (incremental, via
+// vcbRefreshCrossLinkOptions()) so a term created moments ago is already
+// linkable without a full Reload.
+var vcbAllTermsCache = [];
+// Shared renderer for a single Cross Links checkbox list - used both to
+// seed a block's initial checked state from its saved relatedTermIds
+// (called once, right after the block mounts) and to rebuild every
+// open block's options after any term is saved elsewhere (called by
+// vcbRefreshCrossLinkOptions(), which reads each container's currently
+// checked boxes first so a save doesn't wipe out unsaved selections).
+function vcbRenderCrossLinkRows(container, checkedIds) {
+  var selfId = container.dataset.ownerId || '';
+  var filterVal = (container.__vcbFilterInput && container.__vcbFilterInput.value || '').trim().toLowerCase();
+  container.innerHTML = '';
+  var linkable = vcbAllTermsCache.filter(function (t) {
+    return t.id != null && String(t.id) !== String(selfId);
+  });
+  if (filterVal) {
+    linkable = linkable.filter(function (t) { return t.word.toLowerCase().indexOf(filterVal) !== -1; });
+  }
+  if (!linkable.length) {
+    container.innerHTML = '<div style="font-size:12px;color:#9A927E;font-style:italic;">' +
+      (vcbAllTermsCache.length ? 'No terms match that search.' : 'No other terms yet - save a few, then come back to link them.') +
+      '</div>';
+    return;
+  }
+  linkable.forEach(function (t) {
+    var row = document.createElement('label');
+    row.className = 'vcb-crosslink-row';
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = String(t.id);
+    cb.checked = checkedIds.indexOf(String(t.id)) !== -1;
+    row.appendChild(cb);
+    row.appendChild(document.createTextNode(t.word + (t.isActive === false ? ' (inactive)' : '')));
+    container.appendChild(row);
+  });
+}
+function vcbRefreshCrossLinkOptions() {
+  var containers = vcbList.querySelectorAll('.vcb-crosslink-options');
+  containers.forEach(function (container) {
+    var checked = [];
+    container.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+      if (cb.checked) checked.push(cb.value);
+    });
+    vcbRenderCrossLinkRows(container, checked);
+  });
+}
 document.getElementById('vcbReloadBtn').addEventListener('click', loadVocabulary);
 document.getElementById('vcbPrintAllBtn').addEventListener('click', printVocabulary);
 document.getElementById('vcbAddBtn').addEventListener('click', function () {
@@ -2222,12 +2298,13 @@ function loadVocabulary() {
   if (!adminKey) { vcbStatus.textContent = 'Unlock the panel first.'; return; }
   vcbStatus.textContent = 'Loading...';
   vcbList.innerHTML = '';
-  fetch(PROXY_URL + '/admin/vocabulary', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+  fetch(PROXY_URL + '/admin/vocabulary?lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) {
       var terms = (d && d.terms) || [];
+      vcbAllTermsCache = terms.map(function (t) { return { id: t.id, word: t.word, isActive: t.isActive }; });
       if (!terms.length) {
-        vcbStatus.textContent = 'No vocabulary terms yet - add the first one below.';
+        vcbStatus.textContent = 'No vocabulary terms yet for this language - add the first one below.';
         applyVcbCraftFilter();
         return;
       }
@@ -2248,7 +2325,7 @@ function loadVocabulary() {
 // an admin-only view) the private coaching cue too.
 function printVocabulary() {
   if (!adminKey) { alert('Unlock the panel first.'); return; }
-  fetch(PROXY_URL + '/admin/vocabulary', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+  fetch(PROXY_URL + '/admin/vocabulary?lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) {
       var terms = (d && d.terms) || [];
@@ -2260,7 +2337,7 @@ function printVocabulary() {
         if (term.coachingCue) body += (body ? '\n\n' : '') + 'Coaching cue: ' + term.coachingCue;
         return { heading: term.word || '(untitled)', meta: tags, body: body };
       });
-      openPrintWindow('Vocabulary', entries);
+      openPrintWindow('Vocabulary (' + ADMIN_LANG + ')', entries);
     })
     .catch(function () { alert('Could not load vocabulary to print.'); });
 }
@@ -2334,6 +2411,41 @@ function addVocabularyBlock(term, isNew) {
   cueArea.placeholder = 'How the coach should use this term once vocabulary is wired into coaching.';
   cueArea.value = term.coachingCue || '';
   bodyWrap.appendChild(cueArea);
+  // Sept 2026: Exercise - a short "Try it" checklist shown to students
+  // right under the definition. Each step is its own text box so the
+  // admin can reorder by cutting/pasting text between them or just
+  // adding/removing steps; stored as a plain array of strings.
+  var exerciseLabel = document.createElement('div');
+  exerciseLabel.style.cssText = 'font-size:11px;font-weight:700;color:#3B2F24;margin-bottom:4px;';
+  exerciseLabel.textContent = 'Exercise (optional - a short "Try it" checklist shown to students)';
+  bodyWrap.appendChild(exerciseLabel);
+  var exerciseStepsList = document.createElement('div');
+  bodyWrap.appendChild(exerciseStepsList);
+  function vcbAddExerciseStepRow(text) {
+    var row = document.createElement('div');
+    row.className = 'vcb-exercise-step-row';
+    var stepInput = document.createElement('textarea');
+    stepInput.className = 'vcb-exercise-step';
+    stepInput.rows = 2;
+    stepInput.placeholder = 'e.g. Write one sentence naming what your character risks losing here.';
+    stepInput.value = text || '';
+    var removeStepBtn = document.createElement('button');
+    removeStepBtn.type = 'button';
+    removeStepBtn.className = 'remove-btn';
+    removeStepBtn.textContent = 'Remove';
+    removeStepBtn.addEventListener('click', function () { row.remove(); });
+    row.appendChild(stepInput);
+    row.appendChild(removeStepBtn);
+    exerciseStepsList.appendChild(row);
+  }
+  (Array.isArray(term.exerciseSteps) ? term.exerciseSteps : []).forEach(function (s) { vcbAddExerciseStepRow(s); });
+  var addExerciseStepBtn = document.createElement('button');
+  addExerciseStepBtn.type = 'button';
+  addExerciseStepBtn.className = 'add-btn';
+  addExerciseStepBtn.textContent = '+ Add step';
+  addExerciseStepBtn.style.marginBottom = '12px';
+  addExerciseStepBtn.addEventListener('click', function () { vcbAddExerciseStepRow(''); });
+  bodyWrap.appendChild(addExerciseStepBtn);
   var metaRow = document.createElement('div');
   metaRow.className = 'tst-meta-row';
   var craftField = document.createElement('div');
@@ -2377,6 +2489,32 @@ function addVocabularyBlock(term, isNew) {
   levelField.appendChild(levelSelect);
   metaRow.appendChild(levelField);
   bodyWrap.appendChild(metaRow);
+  // Sept 2026: Cross Links - which other terms this one links to,
+  // rendered on the student side as clickable "See also" chips that jump
+  // the Glossary to that term. Every other currently-loaded term is
+  // offered as a checkbox (search box filters the list at this size);
+  // vcbRefreshCrossLinkOptions() keeps this list current as new terms are
+  // saved elsewhere in the same session, without needing a full Reload.
+  var crosslinkLabel = document.createElement('div');
+  crosslinkLabel.style.cssText = 'font-size:11px;font-weight:700;color:#3B2F24;margin-bottom:4px;';
+  crosslinkLabel.textContent = 'Cross links (optional - shown to students as "See also" \u2014 click to jump)';
+  bodyWrap.appendChild(crosslinkLabel);
+  var crosslinkSearch = document.createElement('input');
+  crosslinkSearch.type = 'text';
+  crosslinkSearch.className = 'vcb-crosslink-search';
+  crosslinkSearch.placeholder = 'Search terms to link\u2026';
+  bodyWrap.appendChild(crosslinkSearch);
+  var crosslinkOptions = document.createElement('div');
+  crosslinkOptions.className = 'vcb-crosslink-options';
+  crosslinkOptions.dataset.ownerId = term.id != null ? String(term.id) : '';
+  crosslinkOptions.__vcbFilterInput = crosslinkSearch;
+  bodyWrap.appendChild(crosslinkOptions);
+  crosslinkSearch.addEventListener('input', vcbRefreshCrossLinkOptions);
+  // Pre-select whatever this term is already linked to, then let
+  // vcbRefreshCrossLinkOptions() build/rebuild the actual checkbox rows
+  // from the shared vcbAllTermsCache (population happens right after this
+  // block is appended below, once currentId/vcbAllTermsCache are ready).
+  var vcbInitialRelatedIds = Array.isArray(term.relatedTermIds) ? term.relatedTermIds.map(String) : [];
   var activeRow = document.createElement('div');
   activeRow.className = 'toggle-row';
   activeRow.style.marginTop = '4px';
@@ -2411,8 +2549,20 @@ function addVocabularyBlock(term, isNew) {
   block.appendChild(bodyWrap);
   block.open = !!isNew;
   vcbList.appendChild(block);
+  // Seed this block's Cross Links checkboxes now that it's actually in
+  // the DOM and vcbAllTermsCache/currentId are both settled.
+  vcbRenderCrossLinkRows(crosslinkOptions, vcbInitialRelatedIds);
   var currentId = term.id || null;
   function payload() {
+    var relatedTermIds = [];
+    crosslinkOptions.querySelectorAll('input[type="checkbox"]:checked').forEach(function (cb) {
+      relatedTermIds.push(Number(cb.value));
+    });
+    var exerciseSteps = [];
+    exerciseStepsList.querySelectorAll('.vcb-exercise-step').forEach(function (ta) {
+      var v = ta.value.trim();
+      if (v) exerciseSteps.push(v);
+    });
     return {
       id: currentId,
       word: wordInput.value.trim(),
@@ -2422,7 +2572,14 @@ function addVocabularyBlock(term, isNew) {
       narrativeStage: stageSelect.value,
       function: funcSelect.value,
       complexityLevel: levelSelect.value,
-      isActive: activeCb.checked
+      isActive: activeCb.checked,
+      // Sept 2026: vocabulary is per-language now - a block is always
+      // being viewed/edited under whichever language the admin's top
+      // "Editing content in:" switcher (ADMIN_LANG) is currently set to,
+      // same convention already used for lesson_configs saves.
+      lang: ADMIN_LANG,
+      exerciseSteps: exerciseSteps,
+      relatedTermIds: relatedTermIds
     };
   }
   saveBtn.addEventListener('click', function () {
@@ -2445,6 +2602,22 @@ function addVocabularyBlock(term, isNew) {
         deleteBtn.style.display = '';
         saveStatus.textContent = 'Saved.';
         setTimeout(function () { saveStatus.textContent = ''; }, 2000);
+        // Sept 2026: keep this block excluded from its own Cross Links
+        // list (it only gets a real id on first save) and let every
+        // other open block pick up this term as a linkable option -
+        // including a brand-new term nobody could have linked to a
+        // moment ago.
+        crosslinkOptions.dataset.ownerId = String(currentId);
+        var cacheEntry = vcbAllTermsCache.find(function (t) { return String(t.id) === String(currentId); });
+        var freshWord = wordInput.value.trim();
+        var freshActive = activeCb.checked;
+        if (cacheEntry) {
+          cacheEntry.word = freshWord;
+          cacheEntry.isActive = freshActive;
+        } else {
+          vcbAllTermsCache.push({ id: currentId, word: freshWord, isActive: freshActive });
+        }
+        vcbRefreshCrossLinkOptions();
       })
       .catch(function () { saveStatus.textContent = 'Save failed.'; });
   });
@@ -2457,7 +2630,15 @@ function addVocabularyBlock(term, isNew) {
     })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (d && d.ok) { block.remove(); } else { saveStatus.textContent = 'Delete failed.'; }
+        if (d && d.ok) {
+          block.remove();
+          // Sept 2026: drop this term from the shared cache too, so it
+          // stops being offered as a Cross Link option on other blocks.
+          vcbAllTermsCache = vcbAllTermsCache.filter(function (t) { return String(t.id) !== String(currentId); });
+          vcbRefreshCrossLinkOptions();
+        } else {
+          saveStatus.textContent = 'Delete failed.';
+        }
       })
       .catch(function () { saveStatus.textContent = 'Delete failed.'; });
   });
@@ -2576,6 +2757,19 @@ function vcbImportTerms(rawTerms) {
       next();
       return;
     }
+    // exerciseSteps: accepted either as a real array (JSON import) or as
+    // a single pipe-separated string (CSV column, e.g. "step one|step
+    // two|step three"), so the same file format works either way.
+    // relatedTermIds is deliberately NOT supported here - imported rows
+    // have no id yet, and the terms they'd want to link to may not exist
+    // yet either. Link terms afterward from the Vocabulary tab once
+    // everything in the file has been saved and has a real id.
+    var exerciseSteps = [];
+    if (Array.isArray(raw.exerciseSteps)) {
+      exerciseSteps = raw.exerciseSteps.map(function (s) { return String(s).trim(); }).filter(Boolean);
+    } else if (typeof raw.exerciseSteps === 'string' && raw.exerciseSteps.trim()) {
+      exerciseSteps = raw.exerciseSteps.split('|').map(function (s) { return s.trim(); }).filter(Boolean);
+    }
     var payload = {
       id: null,
       word: word,
@@ -2585,7 +2779,14 @@ function vcbImportTerms(rawTerms) {
       narrativeStage: raw.narrativeStage == null ? '' : String(raw.narrativeStage).trim(),
       function: raw.function == null ? '' : String(raw.function).trim(),
       complexityLevel: raw.complexityLevel == null ? '' : String(raw.complexityLevel).trim(),
-      isActive: vcbCoerceActive(raw.isActive)
+      isActive: vcbCoerceActive(raw.isActive),
+      // Sept 2026: defaults to whichever language the admin currently has
+      // selected at the top of the page - override per-row with a "lang"
+      // column/key in the file (e.g. "es") if importing a mixed-language
+      // file; otherwise every row lands under ADMIN_LANG.
+      lang: raw.lang ? String(raw.lang).trim().toLowerCase() : ADMIN_LANG,
+      exerciseSteps: exerciseSteps,
+      relatedTermIds: []
     };
     fetch(PROXY_URL + '/admin/vocabulary', {
       method: 'POST',
