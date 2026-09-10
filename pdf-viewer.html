@@ -139,17 +139,55 @@
     });
   }
 
+  var lastRenderedWidth = null;
+
   function renderAllPages() {
     pageEntries.forEach(function (entry) {
       renderPage(entry.pageNum, entry.canvas);
     });
   }
 
-  window.addEventListener('resize', debounce(renderAllPages, 200));
+  // Only re-render when the measured width has actually changed. Without
+  // this guard, a ResizeObserver watching a flex container whose HEIGHT
+  // also changes as each canvas finishes rendering would keep firing on
+  // its own re-renders - harmless since it converges immediately, but
+  // wasteful, and this makes that explicit instead of relying on it
+  // happening to settle.
+  function renderIfWidthChanged() {
+    var w = targetWidth();
+    if (w === lastRenderedWidth) return;
+    lastRenderedWidth = w;
+    renderAllPages();
+  }
+
+  // Sept 2026 fix: this page is loaded inside a resource embed that
+  // starts collapsed (a closed <details> accordion on the parent page).
+  // The very first render - triggered as soon as the PDF finishes
+  // loading - could happen while that accordion is still closed, at
+  // which point this (cross-origin) iframe has no real rendered box yet
+  // and browsers report a stale/default width (commonly ~300 CSS px)
+  // instead of the panel's actual width. A plain `window resize`
+  // listener doesn't reliably catch "the parent accordion just opened,
+  // and this iframe's effective size changed as a result" - that isn't
+  // the same kind of event as the browser window itself being resized.
+  // ResizeObserver does catch it: it fires whenever this element's own
+  // box size changes, for any reason, including going from a hidden/
+  // collapsed ancestor to a visible one - so the canvas gets re-measured
+  // and re-rendered at the correct width the moment the panel actually
+  // becomes visible, not just on manual window resizes. Falls back to
+  // the plain resize listener alone on the rare browser without
+  // ResizeObserver support.
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(debounce(renderIfWidthChanged, 150));
+    ro.observe(pagesEl);
+  } else {
+    window.addEventListener('resize', debounce(renderIfWidthChanged, 200));
+  }
 
   pdfjsLib.getDocument(fileUrl).promise.then(function (doc) {
     pdfDoc = doc;
     statusEl.style.display = 'none';
+    lastRenderedWidth = targetWidth();
     for (var i = 1; i <= doc.numPages; i++) {
       var canvas = document.createElement('canvas');
       pagesEl.appendChild(canvas);
