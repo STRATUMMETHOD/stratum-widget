@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Stratum Lesson Admin</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body {
@@ -412,6 +413,118 @@
     padding: 8px 10px; background: #fff;
   }
   .vcb-crosslink-row { display: flex; align-items: center; gap: 7px; padding: 3px 0; font-size: 12.5px; font-weight: 400; cursor: pointer; }
+
+  /* ============================================================
+     DELIVERABLE CARD PREVIEW (Sept 2026)
+     ------------------------------------------------------------
+     Lets Ted check that a lesson's closing deliverable card actually
+     fits the page correctly before any student ever sees it, filled
+     with realistic-looking (not generic) placeholder content since the
+     real fields are only ever populated by an actual coaching session.
+     Renders inside a full-screen overlay, sized to match the real
+     student-facing container (.srx-wrap/.srx-chat below), using the
+     exact same .srx-dc-* class names and CSS as the live coaching page
+     (stratum-lesson-engine.css section 10b) so the preview is a true
+     representation, not an approximation. See dcBuildFillerFields() /
+     buildDeliverableCardPreviewHtml() in the script below.
+     ============================================================ */
+  .dc-preview-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20,16,10,.55);
+    z-index: 999;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+  }
+  .dc-preview-panel {
+    background: #EDE7D8;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 820px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  }
+  .dc-preview-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: #3B2F24;
+    color: #F5EFE0;
+    border-radius: 16px 16px 0 0;
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .03em;
+  }
+  .dc-preview-topbar .btn.secondary { background: #F5EFE0; }
+  .dc-preview-frame { padding: 10px 0 30px; }
+
+  /* --srx-* variables + wrap/chat container sizing, copied from
+     stratum-lesson-engine.css so the preview matches the real
+     max-width/padding the card renders inside on the live page. */
+  .srx-wrap {
+    --srx-black: #080808;
+    --srx-clay: #C9A46C;
+    --srx-umber: #3B2F24;
+    --srx-sand: #E8DCC3;
+    --srx-offwhite: #F5EFE0;
+    --srx-gold: #F5D78E;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 20px;
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+  }
+  .srx-wrap * { box-sizing: border-box; }
+  .srx-chat-mock { padding-top: 4px; }
+
+  /* Deliverable card itself - verbatim from stratum-lesson-engine.css
+     section 10b (LESSON-COMPLETION DELIVERABLE CARD). */
+  .srx-deliverable-card {
+    background: #ffffff;
+    border: 1px solid #DDD0B8;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .srx-dc-header { padding: 18px 22px 14px; border-bottom: 1px solid #EEE6D3; }
+  .srx-dc-head-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 10px; }
+  .srx-dc-layer-title { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: .03em; text-transform: uppercase; color: var(--srx-umber); }
+  .srx-dc-layer-tag { display: inline-flex; align-items: center; gap: 5px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8a6630; white-space: nowrap; }
+  .srx-dc-layer-check { color: var(--srx-clay); font-size: 12px; }
+  .srx-dc-stepper { display: flex; gap: 4px; }
+  .srx-dc-stepper-seg { flex: 1; height: 5px; border-radius: 3px; background: #E6DCC4; }
+  .srx-dc-stepper-seg.filled { background: var(--srx-clay); }
+  .srx-dc-congrats { display: flex; align-items: center; gap: 14px; padding: 18px 22px 0; }
+  .srx-dc-badge { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--srx-clay); display: flex; align-items: center; justify-content: center; font-size: 16px; color: #8a6630; }
+  .srx-dc-congrats-title { font-family: 'Bebas Neue', sans-serif; font-size: 17px; letter-spacing: .02em; text-transform: uppercase; color: var(--srx-umber); margin: 0 0 2px; }
+  .srx-dc-congrats-sub { font-family: 'Inter', sans-serif; font-size: 12.5px; color: #6f6353; }
+  .srx-dc-course-box { margin: 16px 22px 0; background: #FBF8F0; border: 1px solid #E6DCC4; border-radius: 10px; padding: 15px 16px; display: flex; gap: 12px; align-items: flex-start; }
+  .srx-dc-strata-icon { flex-shrink: 0; margin-top: 4px; display: flex; flex-direction: column; gap: 2px; }
+  .srx-dc-strata-icon span { display: block; height: 3px; border-radius: 2px; }
+  .srx-dc-strata-icon span:nth-child(1) { width: 20px; background: var(--srx-clay); }
+  .srx-dc-strata-icon span:nth-child(2) { width: 15px; background: #8a6630; }
+  .srx-dc-strata-icon span:nth-child(3) { width: 10px; background: var(--srx-umber); }
+  .srx-dc-course-text { font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.6; color: #4a3a1f; margin: 0; }
+  .srx-deliverable { margin: 14px 22px 0; background: #ffffff; border: 1px solid #E6DCC4; border-radius: 10px; padding: 16px 18px; }
+  .srx-deliverable-label { font-family: 'Inter', sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; color: #8a6630; margin: 0 0 4px; }
+  .srx-deliverable-label:not(:first-child) { margin-top: 14px; }
+  .srx-deliverable-behavior { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 16px; color: #281e16; margin: 0; }
+  .srx-deliverable-instances { margin-top: 2px; }
+  .srx-deliverable-instance { font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.55; color: #5a4535; padding: 6px 0 6px 12px; border-left: 2px solid var(--srx-clay); margin-bottom: 8px; }
+  .srx-deliverable-instance:last-child { margin-bottom: 0; }
+  .srx-dc-ttn-box { margin: 14px 22px 0; background: #FBF3E3; border: 1px solid #EAD9AE; border-radius: 10px; padding: 15px 16px; }
+  .srx-dc-upnext-box { margin: 14px 22px 0; background: var(--srx-umber); border-radius: 10px; padding: 15px 16px; }
+  .srx-dc-box-label, .srx-dc-upnext-kicker { font-family: 'Inter', sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 6px; }
+  .srx-dc-box-label { color: #8a6630; }
+  .srx-dc-upnext-kicker { color: var(--srx-clay); }
+  .srx-dc-box-text { font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.55; color: #4a3a1f; margin: 0; }
+  .srx-dc-upnext-text { font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.55; color: var(--srx-offwhite); margin: 0; }
+  .srx-dc-btn-wrap { padding: 20px 22px 22px; text-align: center; }
+  .srx-dc-btn { display: inline-block; background: none; color: #8a6630; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12.5px; letter-spacing: .03em; padding: 10px 22px; border-radius: 8px; border: 1px solid var(--srx-clay); cursor: not-allowed; opacity: .7; }
 </style>
 </head>
 <body>
@@ -784,7 +897,9 @@
         <details class="card" data-group="plain">
           <summary class="card-title">Deliverable card &mdash; layer &amp; next steps</summary>
           <div class="card-body">
-          <span class="hint" style="display:block;margin-bottom:12px;">Feeds the closing card the student sees after this lesson's deliverable is captured. All four are optional &mdash; leave any of them blank and the card simply skips that section.</span>
+          <span class="hint" style="display:block;margin-bottom:12px;">Feeds the closing card the student sees after this lesson's deliverable is captured. All fields here are optional &mdash; leave any of them blank and the card simply skips that section or falls back to the standard default line.</span>
+          <button class="btn secondary" id="gPreviewDeliverableBtn" type="button" style="margin-bottom:16px;">Preview Deliverable Card</button>
+          <span class="hint" style="display:block;margin:-10px 0 16px;">Opens the closing card exactly as a student would see it, filled in with realistic sample content wherever this lesson has a structured deliverable field &mdash; use it to check that everything fits the page correctly. Reads whatever is currently in this form, including unsaved edits.</span>
           <div class="row2">
             <div class="field">
               <label for="gLayerPosition">Layer position</label>
@@ -796,6 +911,16 @@
               <span class="hint">e.g. The Anchor Behavior, The Hidden Truth, The Formative Wound, The Lie They Believe, The Want vs. The Need, The Fears &amp; Desires, Psychological Integration</span>
               <input type="text" id="gLayerLabel" placeholder="The Anchor Behavior" />
             </div>
+          </div>
+          <div class="field">
+            <label for="gNiceWorkTitle">Congrats title</label>
+            <span class="hint">The closing-card headline once the deliverable is captured. Use the literal token {name} anywhere you want the student's first name inserted &mdash; it's dropped cleanly (with any leading comma) if no name is known yet. Optional &mdash; leave blank to use the standard default ("Nice work, {name}" / "Nice work").</span>
+            <input type="text" id="gNiceWorkTitle" placeholder="Nice work, {name}" />
+          </div>
+          <div class="field">
+            <label for="gNiceWorkSub">Congrats subtitle</label>
+            <span class="hint">The line shown just below the congrats title. Optional &mdash; leave blank to use the standard default line for this lesson.</span>
+            <textarea id="gNiceWorkSub" rows="2" placeholder="You didn't stop at the first answer &mdash; that's the harder part."></textarea>
           </div>
           <div class="field">
             <label for="gTryThisNow">Try this now</label>
@@ -1096,7 +1221,9 @@
         <details class="card" data-group="plain">
           <summary class="card-title">Deliverable card &mdash; layer &amp; next steps</summary>
           <div class="card-body">
-          <span class="hint" style="display:block;margin-bottom:12px;">Feeds the closing card the student sees after this lesson's deliverable is captured. All four are optional &mdash; leave any of them blank and the card simply skips that section.</span>
+          <span class="hint" style="display:block;margin-bottom:12px;">Feeds the closing card the student sees after this lesson's deliverable is captured. All fields here are optional &mdash; leave any of them blank and the card simply skips that section or falls back to the standard default line.</span>
+          <button class="btn secondary" id="mPreviewDeliverableBtn" type="button" style="margin-bottom:16px;">Preview Deliverable Card</button>
+          <span class="hint" style="display:block;margin:-10px 0 16px;">Opens the closing card exactly as a student would see it, filled in with realistic sample content wherever this lesson has a structured deliverable field &mdash; use it to check that everything fits the page correctly. Reads whatever is currently in this form, including unsaved edits.</span>
           <div class="row2">
             <div class="field">
               <label for="mLayerPosition">Layer position</label>
@@ -1108,6 +1235,16 @@
               <span class="hint">e.g. The Anchor Behavior, The Hidden Truth, The Formative Wound, The Lie They Believe, The Want vs. The Need, The Fears &amp; Desires, Psychological Integration</span>
               <input type="text" id="mLayerLabel" placeholder="The Anchor Behavior" />
             </div>
+          </div>
+          <div class="field">
+            <label for="mNiceWorkTitle">Congrats title</label>
+            <span class="hint">The closing-card headline once the deliverable is captured. Use the literal token {name} anywhere you want the student's first name inserted &mdash; it's dropped cleanly (with any leading comma) if no name is known yet. Optional &mdash; leave blank to use the standard default ("Nice work, {name}" / "Nice work").</span>
+            <input type="text" id="mNiceWorkTitle" placeholder="Nice work, {name}" />
+          </div>
+          <div class="field">
+            <label for="mNiceWorkSub">Congrats subtitle</label>
+            <span class="hint">The line shown just below the congrats title. Optional &mdash; leave blank to use the standard default line for this lesson.</span>
+            <textarea id="mNiceWorkSub" rows="2" placeholder="You didn't stop at the first answer &mdash; that's the harder part."></textarea>
           </div>
           <div class="field">
             <label for="mTryThisNow">Try this now</label>
@@ -1175,6 +1312,19 @@
     </div>
   </div>
 </main>
+<div class="dc-preview-overlay" id="dcPreviewOverlay">
+  <div class="dc-preview-panel">
+    <div class="dc-preview-topbar">
+      <span>Deliverable Card Preview &mdash; sample content, not saved data</span>
+      <button class="btn secondary" id="dcPreviewCloseBtn" type="button">Close</button>
+    </div>
+    <div class="dc-preview-frame">
+      <div class="srx-wrap">
+        <div class="srx-chat-mock" id="dcPreviewCardMount"></div>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
 var PROXY_URL = 'https://stratum-proxy.tedbaker0207.workers.dev';
 var ADMIN_KEY_STORAGE = 'stratum_admin_key';
@@ -3807,6 +3957,8 @@ function clearGuidedForm() {
   gLoadedHadDeliverable = false;
   document.getElementById('gLayerPosition').value = '';
   document.getElementById('gLayerLabel').value = '';
+  document.getElementById('gNiceWorkTitle').value = '';
+  document.getElementById('gNiceWorkSub').value = '';
   document.getElementById('gTryThisNow').value = '';
   document.getElementById('gCourseShapeReminder').value = '';
   document.getElementById('gNextStepTeaser').value = '';
@@ -3826,6 +3978,8 @@ function fillGuidedForm(config) {
   document.getElementById('gTranscript').value = config.transcript || '';
   document.getElementById('gLayerPosition').value = config.layerPosition != null ? String(config.layerPosition) : '';
   document.getElementById('gLayerLabel').value = config.layerLabel || '';
+  document.getElementById('gNiceWorkTitle').value = config.niceWorkTitle || '';
+  document.getElementById('gNiceWorkSub').value = config.niceWorkSub || '';
   document.getElementById('gTryThisNow').value = config.tryThisNow || '';
   document.getElementById('gCourseShapeReminder').value = config.courseShapeReminder || '';
   document.getElementById('gNextStepTeaser').value = config.nextStepTeaser || '';
@@ -3912,6 +4066,8 @@ function collectGuidedConfig() {
     nextLessonLabel: document.getElementById('gNextLessonLabel').value.trim(),
     layerPosition: (gLayerPositionNum && gLayerPositionNum > 0) ? gLayerPositionNum : null,
     layerLabel: document.getElementById('gLayerLabel').value.trim(),
+    niceWorkTitle: document.getElementById('gNiceWorkTitle').value.trim(),
+    niceWorkSub: document.getElementById('gNiceWorkSub').value.trim(),
     tryThisNow: document.getElementById('gTryThisNow').value.trim(),
     courseShapeReminder: document.getElementById('gCourseShapeReminder').value.trim(),
     nextStepTeaser: document.getElementById('gNextStepTeaser').value.trim(),
@@ -3978,10 +4134,13 @@ function configToReadableText(config, savedAt) {
   section('LESSON IDENTITY');
   lines.push('Scope note: ' + (config.scopeNote || '(none)'));
   lines.push('Next lesson label: ' + (config.nextLessonLabel || '(none)'));
-  if (config.layerPosition || config.layerLabel || config.tryThisNow || config.courseShapeReminder || config.nextStepTeaser) {
+  if (config.layerPosition || config.layerLabel || config.niceWorkTitle || config.niceWorkSub || config.tryThisNow || config.courseShapeReminder || config.nextStepTeaser) {
     section('DELIVERABLE CARD - LAYER & NEXT STEPS');
     lines.push('Layer position: ' + (config.layerPosition || '(none)'));
     lines.push('Layer label: ' + (config.layerLabel || '(none)'));
+    lines.push('');
+    lines.push('Congrats title: ' + (config.niceWorkTitle || '(none - uses standard default)'));
+    lines.push('Congrats subtitle: ' + (config.niceWorkSub || '(none - uses standard default)'));
     lines.push('');
     lines.push('Try this now:');
     lines.push(config.tryThisNow || '(none)');
@@ -4420,6 +4579,8 @@ function clearMasteryForm() {
   mLoadedHadDeliverable = false;
   document.getElementById('mLayerPosition').value = '';
   document.getElementById('mLayerLabel').value = '';
+  document.getElementById('mNiceWorkTitle').value = '';
+  document.getElementById('mNiceWorkSub').value = '';
   document.getElementById('mTryThisNow').value = '';
   document.getElementById('mCourseShapeReminder').value = '';
   document.getElementById('mNextStepTeaser').value = '';
@@ -4439,6 +4600,8 @@ function fillMasteryForm(config) {
   document.getElementById('mTranscript').value = config.transcript || '';
   document.getElementById('mLayerPosition').value = config.layerPosition != null ? String(config.layerPosition) : '';
   document.getElementById('mLayerLabel').value = config.layerLabel || '';
+  document.getElementById('mNiceWorkTitle').value = config.niceWorkTitle || '';
+  document.getElementById('mNiceWorkSub').value = config.niceWorkSub || '';
   document.getElementById('mTryThisNow').value = config.tryThisNow || '';
   document.getElementById('mCourseShapeReminder').value = config.courseShapeReminder || '';
   document.getElementById('mNextStepTeaser').value = config.nextStepTeaser || '';
@@ -4525,6 +4688,8 @@ function collectMasteryConfig() {
     nextLessonLabel: document.getElementById('mNextLessonLabel').value.trim(),
     layerPosition: (mLayerPositionNum && mLayerPositionNum > 0) ? mLayerPositionNum : null,
     layerLabel: document.getElementById('mLayerLabel').value.trim(),
+    niceWorkTitle: document.getElementById('mNiceWorkTitle').value.trim(),
+    niceWorkSub: document.getElementById('mNiceWorkSub').value.trim(),
     tryThisNow: document.getElementById('mTryThisNow').value.trim(),
     courseShapeReminder: document.getElementById('mCourseShapeReminder').value.trim(),
     nextStepTeaser: document.getElementById('mNextStepTeaser').value.trim(),
@@ -4887,6 +5052,177 @@ document.getElementById('eDeleteBtn').addEventListener('click', function () {
       eSaveStatus.textContent = 'Network error: ' + e.message;
       eSaveStatus.className = 'save-status err';
     });
+});
+// ===== Deliverable Card Preview (Sept 2026) =====
+// Lets Ted open the exact closing card a student will see for the
+// lesson currently in the form - reading whatever is on-screen right
+// now (including unsaved edits), not a saved/fetched copy - filled with
+// realistic-looking sample content for any structured deliverable
+// fields, since real values only ever come from an actual completed
+// coaching session. Mirrors buildDeliverableCard()/
+// buildDeliverableSnapshotEl()/applyNameTemplate() in
+// stratum-lesson-engine.js closely enough that "does this fit the page"
+// here means the same thing it will on the live site - same .srx-dc-*
+// classes/CSS (see the DELIVERABLE CARD PREVIEW block in <style> above),
+// same --srx-* container width. Not a live/saved preview - purely a
+// layout-and-fit check, so the Download button here is disabled.
+var DC_FILLER_SENTENCES = [
+  "She rearranges the spice rack every time she's anxious - alphabetized, then by color, then back again.",
+  "He checks the locks twice, then a third time from the hallway, even when he's the last one home.",
+  "The mug goes back in the cabinet handle-first, always, or she has to get up and turn it around.",
+  "He answers every text within ninety seconds, day or night, and can't explain why it matters so much to him.",
+  "She refolds the towels the way her mother taught her, every single time she visits, without being asked.",
+  "He counts the exits in any room within the first ten seconds of walking in, out of habit now.",
+  "She leaves the porch light on until everyone she loves is confirmed home, no exceptions, ever.",
+  "He rereads the last line of every email three times before sending, then once more right after."
+];
+var DC_FILLER_CONTEXTS = [
+  "The night before the funeral, alone in the kitchen",
+  "Halfway through the second interview, when the questions turned personal",
+  "The morning after the fight, before anyone else was awake",
+  "At her father's retirement party, mid-toast"
+];
+var DC_FILLER_PEOPLE = [
+  "Her sister, watching from the doorway",
+  "His new business partner, who hadn't seen it happen before",
+  "Just her and the dog, who noticed anyway",
+  "The whole table, mid-conversation, gone quiet"
+];
+var DC_FILLER_ACTIONS = [
+  "straightened every picture frame in the hallway before saying a word",
+  "excused himself to check the locks, twice, before sitting back down",
+  "wiped down a counter that was already clean",
+  "recounted the exits out loud, this time"
+];
+function dcFillerPick(arr, i) { return arr[((i % arr.length) + arr.length) % arr.length]; }
+function dcBuildFillerFields(fieldDefs) {
+  var fields = {};
+  (fieldDefs || []).forEach(function (f) {
+    if (f.type === 'list') {
+      var count = f.count || 3;
+      var items = [];
+      for (var i = 0; i < count; i++) {
+        if (Array.isArray(f.parts) && f.parts.length) {
+          var item = {};
+          f.parts.forEach(function (partName, pi) {
+            var lower = String(partName).toLowerCase();
+            var pool = lower.indexOf('context') !== -1 ? DC_FILLER_CONTEXTS
+                     : lower.indexOf('people') !== -1 ? DC_FILLER_PEOPLE
+                     : lower.indexOf('action') !== -1 ? DC_FILLER_ACTIONS
+                     : DC_FILLER_SENTENCES;
+            item[partName] = dcFillerPick(pool, i + pi);
+          });
+          items.push(item);
+        } else {
+          items.push(dcFillerPick(DC_FILLER_SENTENCES, i));
+        }
+      }
+      fields[f.key] = items;
+    } else {
+      fields[f.key] = dcFillerPick(DC_FILLER_SENTENCES, 0);
+    }
+  });
+  return fields;
+}
+function dcFormatListItemText(item, field) {
+  if (item && typeof item === 'object' && Array.isArray(field.parts)) {
+    return field.parts.map(function (p) { return item[p] || ''; }).filter(Boolean).join(' \u2014 ');
+  }
+  return String(item || '');
+}
+// Same {name} substitution rule as applyNameTemplate() in the engine -
+// substitutes a literal {name} token when a name is given, or drops it
+// (plus any leading comma/space) cleanly when it isn't.
+function dcApplyNameTemplate(template, name) {
+  if (!template) return '';
+  if (name && template.indexOf('{name}') !== -1) return template.replace('{name}', name);
+  if (!name) return template.replace(/,?\s*\{name\}/g, '').replace(/\s{2,}/g, ' ').trim();
+  return template;
+}
+function dcEscape(s) {
+  var d = document.createElement('div');
+  d.textContent = (s == null ? '' : String(s));
+  return d.innerHTML;
+}
+var DC_STRATA_TOTAL = 7;
+function dcBuildStepperHtml(position) {
+  var segs = '';
+  for (var i = 1; i <= DC_STRATA_TOTAL; i++) {
+    segs += '<div class="srx-dc-stepper-seg' + (i <= position ? ' filled' : '') + '"></div>';
+  }
+  return '<div class="srx-dc-stepper">' + segs + '</div>';
+}
+function buildDeliverableCardPreviewHtml(cfg, deliverableFieldDefs) {
+  var sampleName = 'Jordan';
+  var pos = Number(cfg.layerPosition) || 0;
+  var layerTitle = cfg.layerLabel || cfg.scopeNote || '';
+  var html = '<div class="srx-deliverable-card">';
+  html += '<div class="srx-dc-header"><div class="srx-dc-head-top">';
+  html += '<span class="srx-dc-layer-title">' + dcEscape(layerTitle) + '</span>';
+  if (pos > 0) {
+    html += '<span class="srx-dc-layer-tag"><span class="srx-dc-layer-check">&#10003;</span>Strata ' + pos + ' complete</span>';
+  }
+  html += '</div>';
+  if (pos > 0) html += dcBuildStepperHtml(pos);
+  html += '</div>';
+  var niceWorkTitle = cfg.niceWorkTitle
+    ? dcApplyNameTemplate(cfg.niceWorkTitle, sampleName)
+    : ('Nice work, ' + sampleName);
+  var niceWorkSub = cfg.niceWorkSub || "You didn't stop at the first answer \u2014 that's the harder part.";
+  html += '<div class="srx-dc-congrats"><div class="srx-dc-badge">&#10003;</div><div>';
+  html += '<div class="srx-dc-congrats-title">' + dcEscape(niceWorkTitle) + '</div>';
+  html += '<div class="srx-dc-congrats-sub">' + dcEscape(niceWorkSub) + '</div>';
+  html += '</div></div>';
+  var courseShape = cfg.courseShapeReminder ||
+    "This course builds in layers, not conclusions. What you find today becomes the material the next lesson digs into. The payoff isn't in any one lesson \u2014 it's in what they add up to.";
+  html += '<div class="srx-dc-course-box"><div class="srx-dc-strata-icon"><span></span><span></span><span></span></div>';
+  html += '<p class="srx-dc-course-text">' + dcEscape(courseShape) + '</p></div>';
+  if (deliverableFieldDefs && deliverableFieldDefs.length) {
+    var fillerFields = dcBuildFillerFields(deliverableFieldDefs);
+    html += '<div class="srx-deliverable">';
+    deliverableFieldDefs.forEach(function (f) {
+      var label = (f.label || f.key).toUpperCase();
+      var val = fillerFields[f.key];
+      html += '<div class="srx-deliverable-label">' + dcEscape(label) + '</div>';
+      if (f.type === 'list') {
+        html += '<div class="srx-deliverable-instances">';
+        (val || []).forEach(function (item) {
+          html += '<div class="srx-deliverable-instance"><div class="srx-deliverable-instance-text">' + dcEscape(dcFormatListItemText(item, f)) + '</div></div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="srx-deliverable-behavior">' + dcEscape(val || '') + '</div>';
+      }
+    });
+    html += '</div>';
+  }
+  if (cfg.tryThisNow) {
+    html += '<div class="srx-dc-ttn-box"><div class="srx-dc-box-label">Try this now</div><p class="srx-dc-box-text">' + dcEscape(cfg.tryThisNow) + '</p></div>';
+  }
+  if (cfg.nextStepTeaser) {
+    html += '<div class="srx-dc-upnext-box"><div class="srx-dc-upnext-kicker">Up next &middot; ' + dcEscape(cfg.nextLessonLabel || '') + '</div><p class="srx-dc-upnext-text">' + dcEscape(cfg.nextStepTeaser) + '</p></div>';
+  }
+  html += '<div class="srx-dc-btn-wrap"><button type="button" class="srx-dc-btn" disabled title="Preview only - download is disabled here">Download</button></div>';
+  html += '</div>';
+  return html;
+}
+function openDeliverableCardPreview(cfg, deliverableFieldDefs) {
+  document.getElementById('dcPreviewCardMount').innerHTML = buildDeliverableCardPreviewHtml(cfg, deliverableFieldDefs);
+  document.getElementById('dcPreviewOverlay').style.display = 'flex';
+}
+document.getElementById('gPreviewDeliverableBtn').addEventListener('click', function () {
+  openDeliverableCardPreview(collectGuidedConfig(), gDeliverableEditor.collectFields());
+});
+document.getElementById('mPreviewDeliverableBtn').addEventListener('click', function () {
+  openDeliverableCardPreview(collectMasteryConfig(), mDeliverableEditor.collectFields());
+});
+document.getElementById('dcPreviewCloseBtn').addEventListener('click', function () {
+  document.getElementById('dcPreviewOverlay').style.display = 'none';
+});
+document.getElementById('dcPreviewOverlay').addEventListener('click', function (e) {
+  if (e.target === document.getElementById('dcPreviewOverlay')) {
+    document.getElementById('dcPreviewOverlay').style.display = 'none';
+  }
 });
 gRefreshAddLangOptions();
 mainNavGroup.style.display = 'none';
