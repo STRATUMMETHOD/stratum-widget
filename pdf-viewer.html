@@ -22,6 +22,40 @@
   Cache-bust the pdf.js/pdf.worker.js CDN version pin below only if a
   reason to (e.g. a security fix); no need to bump it just because the
   engine files changed.
+
+  Sept 2026 fix #1 (right-edge/margin cutoff): targetWidth() used to
+  measure #pdf-pages.clientWidth - a flex child inside a scrolling body.
+  Early in a load, before enough canvases exist to make the page taller
+  than the iframe, no vertical scrollbar is present and clientWidth reads
+  wide; once enough pages have rendered to trigger overflow-y's scrollbar,
+  the same element's clientWidth reads narrower. Pages rendered in that
+  narrow window could end up sized against a stale wide measurement long
+  enough to be visible before a resize observer caught up, and with
+  overflow-x:hidden on <body>, anything sized wider than the true visible
+  width was silently clipped on the right rather than wrapping or
+  scrolling - reading as a "right margin" problem. Switched the
+  measurement to document.documentElement.clientWidth, the standard,
+  scrollbar-aware way to read the true visible viewport width regardless
+  of the flex/overflow structure around it - it reflects the presence or
+  absence of the scrollbar directly, without depending on a specific
+  child element's own box having already settled.
+
+  Sept 2026 fix #2 (Spanish PDF fails to load here but opens fine via the
+  direct link): PDF.js defaults to probing the server with byte-range
+  requests so it can start rendering before the whole file has downloaded.
+  A plain browser navigation (the fallback link) never does this - it's
+  always one plain GET - so a document that loads fine as a direct link
+  but rejects here is consistent with the server responding inconsistently
+  to PDF.js's range probe for that particular file (stale/mismatched cache
+  headers on some CDN edges are a known cause). Passing disableRange and
+  disableStream makes PDF.js fetch the file the same simple way a direct
+  link does - one full GET, no range requests - trading a little
+  progressive-load speed on very large files for reliability on files the
+  CDN doesn't range-serve consistently; course handout PDFs are small
+  enough that this cost is negligible. The catch handler also now logs the
+  real rejection reason to the console instead of discarding it, so a
+  future failure like this is diagnosable from devtools rather than only
+  showing the generic fallback message.
 -->
 <html>
 <head>
@@ -114,8 +148,19 @@
 
   // A little breathing room either side so the page doesn't touch the
   // iframe's own edge; 280 is a sane floor for very narrow phone widths.
+  // Sept 2026 fix: measured off document.documentElement.clientWidth
+  // (the standard scrollbar-aware viewport width) rather than
+  // pagesEl.clientWidth - see the file-header note above for why reading
+  // a flex child's own clientWidth here could momentarily disagree with
+  // the true visible width while the page's vertical scrollbar was
+  // appearing/disappearing mid-load, and how that disagreement showed up
+  // as content clipped on the right (overflow-x is intentionally hidden
+  // on <body>, so anything sized wider than the true viewport is clipped
+  // rather than wrapped or horizontally scrollable).
   function targetWidth() {
-    return Math.max(280, pagesEl.clientWidth - 16);
+    var viewportWidth = document.documentElement.clientWidth ||
+      document.body.clientWidth || window.innerWidth || pagesEl.clientWidth;
+    return Math.max(280, viewportWidth - 16);
   }
 
   function renderPage(pageNum, canvas) {
@@ -184,7 +229,17 @@
     window.addEventListener('resize', debounce(renderIfWidthChanged, 200));
   }
 
-  pdfjsLib.getDocument(fileUrl).promise.then(function (doc) {
+  // Sept 2026 fix: disableRange/disableStream force PDF.js to fetch the
+  // whole file with one plain GET, the same way the "Open the PDF
+  // directly" fallback link (a normal browser navigation) already does -
+  // see the file-header note above for why a document that opens fine
+  // via that link but fails here is consistent with the server handling
+  // PDF.js's default byte-range probing inconsistently for that file.
+  pdfjsLib.getDocument({
+    url: fileUrl,
+    disableRange: true,
+    disableStream: true
+  }).promise.then(function (doc) {
     pdfDoc = doc;
     statusEl.style.display = 'none';
     lastRenderedWidth = targetWidth();
@@ -194,7 +249,11 @@
       pageEntries.push({ canvas: canvas, pageNum: i });
       renderPage(i, canvas);
     }
-  }).catch(function () {
+  }).catch(function (err) {
+    // Sept 2026 fix: log the real reason instead of discarding it, so a
+    // future load failure is debuggable from the browser console (the
+    // fallback message shown to the student stays generic on purpose).
+    try { console.error('[Stratum PDF Viewer] Failed to load PDF:', fileUrl, err); } catch (e) {}
     showFallback('This document could not be displayed here.');
   });
 })();
