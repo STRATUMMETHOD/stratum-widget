@@ -734,6 +734,33 @@
         <div class="spacer"></div>
         <span id="vcbImportStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
       </div>
+      <!-- Sept 2026: Import From Raw Text + auto-link (added per Ted's
+           request) - a full pipeline run entirely from this tab: paste
+           plain-text term entries (see "Download Template" for the exact
+           format), and this parses them, creates every term via the same
+           /admin/vocabulary endpoint the JSON/CSV importer above already
+           uses, then - unlike that importer - takes a second pass: fetches
+           the freshly-created terms back (now that they have real ids),
+           resolves each entry's "Links:" names to those ids by matching
+           word text case-insensitively, and POSTs an update to set
+           relatedTermIds on each one. This is the piece the plain
+           JSON/CSV importer above cannot do (a brand-new term has no id
+           yet at import time to link to), so Ted never has to come back
+           afterward and set Cross Links by hand. See
+           vcbParseRawText()/vcbRunRawImportPipeline() below. -->
+      <div class="tst-toolbar">
+        <span class="sub" style="margin:0;">Import &amp; Link From Raw Text &mdash; paste plain-text term entries below in the required format and this creates every term AND resolves any "Links:" names into real Cross Links in one pass, entirely from here. Use "Download Template" for the exact format to reuse every time.</span>
+      </div>
+      <div class="tst-toolbar" style="align-items:flex-start;">
+        <textarea id="vcbRawTextInput" rows="10" style="flex:1;padding:10px 12px;font-size:12.5px;font-family:'Courier New',monospace;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;" placeholder="Paste raw term entries here, one per block, separated by a line containing only ---"></textarea>
+      </div>
+      <div class="tst-toolbar">
+        <button class="btn" id="vcbRawImportBtn" type="button">Import &amp; Link From Raw Text</button>
+        <button class="btn secondary" id="vcbDownloadTemplateBtn" type="button">Download Template</button>
+        <div class="spacer"></div>
+        <span id="vcbRawImportStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
+      </div>
+      <div id="vcbRawImportLog" style="display:none;background:#FBF9F4;border:1px solid #ECE7DC;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;line-height:1.6;max-height:220px;overflow:auto;white-space:pre-wrap;font-family:'Courier New',monospace;"></div>
       <div id="vcbList"></div>
       <button class="add-btn" id="vcbAddBtn" type="button">+ Add vocabulary term</button>
     </div>
@@ -1995,8 +2022,52 @@ function renderDeliverableRow(dv) {
   viewBtn.textContent = 'View';
   viewBtn.addEventListener('click', function () { toggleDeliverableDetail(dv, tr, viewBtn); });
   actionTd.appendChild(viewBtn);
+  // Sept 2026: Print / Save as PDF - same browser print-to-PDF pattern
+  // already used by "Print All" on Global Instructions and Vocabulary
+  // (see openPrintWindow() below), just scoped to this one student's
+  // captured deliverable instead of every entry in a table. Doesn't
+  // require the row to be expanded first - dv is already in hand here.
+  var printBtn = document.createElement('button');
+  printBtn.type = 'button';
+  printBtn.className = 'dlv-view-link';
+  printBtn.textContent = 'Print';
+  printBtn.style.marginLeft = '12px';
+  printBtn.addEventListener('click', function () { printDeliverable(dv); });
+  actionTd.appendChild(printBtn);
   tr.appendChild(actionTd);
   dlvTableBody.appendChild(tr);
+}
+// Sept 2026: builds the same {heading, meta, sub, body} entry shape
+// openPrintWindow() already expects, one entry per captured deliverable
+// field (reusing dlvFieldCount's notion of "has a value" implicitly via
+// dlvFormatFieldValue's own empty-state text), then opens the browser's
+// print dialog the same way Print All does - "Save as PDF" from there
+// gives Ted an actual PDF without a second export mechanism to maintain.
+function dlvPlainTextFromFieldValue(val) {
+  if (Array.isArray(val)) {
+    if (!val.length) return '(nothing captured)';
+    return val.map(function (item, i) {
+      var text;
+      if (item && typeof item === 'object') {
+        text = Object.keys(item).map(function (k) { return item[k]; }).filter(Boolean).join(' \u2014 ');
+      } else {
+        text = String(item || '');
+      }
+      return (i + 1) + '. ' + text;
+    }).join('\n');
+  }
+  return val || '(none captured)';
+}
+function printDeliverable(dv) {
+  var fields = dv.fields || {};
+  var keys = Object.keys(fields);
+  var entries = keys.map(function (key) {
+    return { heading: key.toUpperCase(), body: dlvPlainTextFromFieldValue(fields[key]) };
+  });
+  if (dv.summary) entries.push({ heading: 'SUMMARY', body: dv.summary });
+  if (!entries.length) entries.push({ heading: '(no deliverable fields captured)', body: '' });
+  var title = 'Deliverable \u2014 ' + (dv.email || dv.studentId) + ' \u2014 ' + formatDlvDate(dv.completedAt);
+  openPrintWindow(title, entries);
 }
 function dlvFormatFieldValue(val) {
   if (Array.isArray(val)) {
@@ -2954,6 +3025,284 @@ function vcbImportTerms(rawTerms) {
   updateStatus(false);
   next();
 }
+// ===== Raw-text vocabulary import + auto-link pipeline (Sept 2026) =====
+// Everything Ted needs for a new batch of glossary terms in one paste,
+// run entirely from this tab: parse -> create each term via the same
+// /admin/vocabulary endpoint the JSON/CSV importer above already uses ->
+// re-fetch the now-saved terms (so the brand-new ones have real ids) ->
+// resolve every entry's "Links:" names against that list by matching
+// word text case-insensitively -> POST an update on each linked term to
+// set relatedTermIds. This second pass is exactly what the plain
+// JSON/CSV importer above cannot do (a term has no id to link to until
+// after it's been created) - see the "Cross Links aren't supported via
+// import" note on that importer's own toolbar row.
+var VCB_RAW_CRAFT_SET = {};
+VCB_CRAFT_CATEGORIES.forEach(function (c) { VCB_RAW_CRAFT_SET[c.toLowerCase()] = c; });
+var VCB_RAW_STAGE_SET = {};
+VCB_NARRATIVE_STAGES.forEach(function (c) { VCB_RAW_STAGE_SET[c.toLowerCase()] = c; });
+var VCB_RAW_FUNC_SET = {};
+VCB_FUNCTIONS.forEach(function (c) { VCB_RAW_FUNC_SET[c.toLowerCase()] = c; });
+var VCB_RAW_LEVEL_SET = {};
+VCB_COMPLEXITY_LEVELS.forEach(function (c) { VCB_RAW_LEVEL_SET[c.toLowerCase()] = c; });
+// Parses raw pasted text into { terms, warnings } - see the template
+// (vcbDownloadTemplateBtn below) for the exact format this expects.
+// Deliberately never guesses at an unrecognized picklist value or a
+// range like "Setup -> Resolution" - it leaves that field blank and
+// records a warning instead, so a formatting mistake is visible in the
+// import log rather than silently stored as something that doesn't
+// match the admin's own dropdown options.
+function vcbParseRawText(text) {
+  var blocks = text.replace(/\r\n/g, '\n').split(/\n[ \t]*---[ \t]*(?:\n|$)/).map(function (b) { return b.trim(); }).filter(Boolean);
+  var terms = [];
+  var warnings = [];
+  blocks.forEach(function (block, bi) {
+    var lines = block.split('\n').map(function (l) { return l.trim(); });
+    var word = '';
+    var definition = '', coachingCue = '', craftCategory = '', narrativeStage = '', func = '', complexityLevel = '';
+    var exerciseSteps = [];
+    var seeAlsoNames = [];
+    var isActive = true;
+    var i = 0;
+    while (i < lines.length && !lines[i]) i++;
+    if (i < lines.length) { word = lines[i]; i++; }
+    var mode = null; // 'exercise' while collecting numbered Mini Exercise steps
+    for (; i < lines.length; i++) {
+      var line = lines[i];
+      if (!line) { mode = null; continue; }
+      var m;
+      if ((m = line.match(/^definition\s*(?:\([^)]*\))?\s*:\s*(.*)$/i))) { definition = m[1].trim(); mode = null; continue; }
+      if ((m = line.match(/^coaching\s*cue\s*(?:\([^)]*\))?\s*:\s*(.*)$/i))) { coachingCue = m[1].trim(); mode = null; continue; }
+      if ((m = line.match(/^craft\s*category\s*:\s*(.*)$/i))) {
+        var rawCC = m[1].trim(); var normCC = VCB_RAW_CRAFT_SET[rawCC.toLowerCase()];
+        if (!normCC && rawCC) warnings.push('"' + word + '": Craft Category "' + rawCC + '" not recognized - left blank.');
+        craftCategory = normCC || ''; mode = null; continue;
+      }
+      if ((m = line.match(/^narrative\s*stage\s*:\s*(.*)$/i))) {
+        var rawNS = m[1].trim();
+        if (/[\u2192\u2013\u2014>]/.test(rawNS)) {
+          warnings.push('"' + word + '": Narrative Stage must be a single stage, not a range ("' + rawNS + '") - left blank.');
+        } else {
+          var normNS = VCB_RAW_STAGE_SET[rawNS.toLowerCase()];
+          if (!normNS && rawNS) warnings.push('"' + word + '": Narrative Stage "' + rawNS + '" not recognized - left blank.');
+          narrativeStage = normNS || '';
+        }
+        mode = null; continue;
+      }
+      if ((m = line.match(/^function\s*:\s*(.*)$/i))) {
+        var rawF = m[1].trim(); var normF = VCB_RAW_FUNC_SET[rawF.toLowerCase()];
+        if (!normF && rawF) warnings.push('"' + word + '": Function "' + rawF + '" not recognized - left blank.');
+        func = normF || ''; mode = null; continue;
+      }
+      if ((m = line.match(/^complexity\s*level\s*:\s*(.*)$/i))) {
+        var rawCL = m[1].trim(); var normCL = VCB_RAW_LEVEL_SET[rawCL.toLowerCase()];
+        if (!normCL && rawCL) warnings.push('"' + word + '": Complexity Level "' + rawCL + '" not recognized - left blank.');
+        complexityLevel = normCL || ''; mode = null; continue;
+      }
+      if (/^mini\s*exercise\s*:?\s*$/i.test(line)) { mode = 'exercise'; continue; }
+      if ((m = line.match(/^links?\s*:\s*(.*)$/i))) {
+        var rawL = m[1].replace(/^see\s*also\s*:?\s*/i, '').trim();
+        seeAlsoNames = rawL ? rawL.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
+        mode = null; continue;
+      }
+      if ((m = line.match(/^active\s*:\s*(.*)$/i))) {
+        isActive = !/^(no|false|inactive)$/i.test(m[1].trim());
+        mode = null; continue;
+      }
+      if (mode === 'exercise') {
+        var step = line.replace(/^\d+[.)]\s*/, '').trim();
+        if (step) exerciseSteps.push(step);
+        continue;
+      }
+      warnings.push('"' + (word || ('block ' + (bi + 1))) + '": unrecognized line ignored: "' + line + '"');
+    }
+    if (!word) { warnings.push('Block ' + (bi + 1) + ': no term name found on its first line - skipped.'); return; }
+    if (!definition) warnings.push('"' + word + '": no Definition found.');
+    terms.push({
+      word: word, definition: definition, coachingCue: coachingCue,
+      craftCategory: craftCategory, narrativeStage: narrativeStage,
+      function: func, complexityLevel: complexityLevel,
+      exerciseSteps: exerciseSteps, seeAlsoNames: seeAlsoNames, isActive: isActive
+    });
+  });
+  return { terms: terms, warnings: warnings };
+}
+function vcbRawLog(msg) {
+  var log = document.getElementById('vcbRawImportLog');
+  log.style.display = 'block';
+  log.textContent += (log.textContent ? '\n' : '') + msg;
+  log.scrollTop = log.scrollHeight;
+}
+function vcbRunRawImportPipeline() {
+  if (!adminKey) { alert('Unlock the panel first.'); return; }
+  var raw = document.getElementById('vcbRawTextInput').value;
+  if (!raw.trim()) { alert('Paste some raw term text first.'); return; }
+  var parsed = vcbParseRawText(raw);
+  var log = document.getElementById('vcbRawImportLog');
+  log.textContent = '';
+  log.style.display = 'block';
+  var statusEl = document.getElementById('vcbRawImportStatus');
+  if (!parsed.terms.length) {
+    vcbRawLog('No valid term blocks found - check the format against the template.');
+    return;
+  }
+  parsed.warnings.forEach(function (w) { vcbRawLog('\u26a0 ' + w); });
+  vcbRawLog('Parsed ' + parsed.terms.length + ' term(s). Creating\u2026');
+  statusEl.textContent = 'Importing\u2026';
+  var created = []; // { term, payload, id }
+  var i = 0;
+  function createNext() {
+    if (i >= parsed.terms.length) { afterCreate(); return; }
+    var t = parsed.terms[i++];
+    var payload = {
+      id: null, word: t.word, definition: t.definition, coachingCue: t.coachingCue,
+      craftCategory: t.craftCategory, narrativeStage: t.narrativeStage, function: t.function,
+      complexityLevel: t.complexityLevel, isActive: t.isActive, lang: ADMIN_LANG,
+      exerciseSteps: t.exerciseSteps, relatedTermIds: []
+    };
+    fetch(PROXY_URL + '/admin/vocabulary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok) {
+          vcbRawLog('  created: ' + t.word);
+          created.push({ term: t, payload: payload, id: d.id });
+        } else {
+          vcbRawLog('  FAILED to create: ' + t.word);
+        }
+      })
+      .catch(function () { vcbRawLog('  FAILED to create: ' + t.word); })
+      .finally(createNext);
+  }
+  function afterCreate() {
+    vcbRawLog('Created ' + created.length + ' of ' + parsed.terms.length + ' term(s). Resolving Cross Links\u2026');
+    fetch(PROXY_URL + '/admin/vocabulary?lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var allTerms = (d && d.terms) || [];
+        var nameToId = {};
+        allTerms.forEach(function (term) { nameToId[String(term.word || '').trim().toLowerCase()] = term.id; });
+        var toLink = created.filter(function (c) { return c.term.seeAlsoNames && c.term.seeAlsoNames.length; });
+        var j = 0;
+        function linkNext() {
+          if (j >= toLink.length) { finish(); return; }
+          var c = toLink[j++];
+          var ids = [];
+          c.term.seeAlsoNames.forEach(function (name) {
+            var foundId = nameToId[name.trim().toLowerCase()];
+            if (foundId != null && foundId !== c.id) { ids.push(foundId); }
+            else { vcbRawLog('  \u26a0 "' + c.term.word + '": linked term "' + name + '" not found - skipped (name must match an existing term exactly).'); }
+          });
+          if (!ids.length) { linkNext(); return; }
+          var updatePayload = Object.assign({}, c.payload, { id: c.id, relatedTermIds: ids });
+          fetch(PROXY_URL + '/admin/vocabulary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+            body: JSON.stringify(updatePayload)
+          })
+            .then(function (r) { return r.json(); })
+            .then(function (d2) {
+              if (d2 && d2.ok) vcbRawLog('  linked: ' + c.term.word + ' \u2192 ' + c.term.seeAlsoNames.join(', '));
+              else vcbRawLog('  FAILED to link: ' + c.term.word);
+            })
+            .catch(function () { vcbRawLog('  FAILED to link: ' + c.term.word); })
+            .finally(linkNext);
+        }
+        linkNext();
+      })
+      .catch(function () {
+        vcbRawLog('Could not fetch the term list back to resolve links - terms were created, but Cross Links were not set. Reload and set them by hand, or re-run the pipeline.');
+        finish();
+      });
+  }
+  function finish() {
+    vcbRawLog('Done.');
+    statusEl.textContent = 'Import finished.';
+    loadVocabulary();
+  }
+  createNext();
+}
+document.getElementById('vcbRawImportBtn').addEventListener('click', vcbRunRawImportPipeline);
+var VCB_RAW_TEMPLATE_TEXT = [
+  'STRATUM VOCABULARY \u2014 RAW TEXT IMPORT TEMPLATE',
+  '================================================',
+  'Paste text in this exact format into the "Import & Link From Raw Text"',
+  'box on the Vocabulary tab. It creates every term AND resolves "Links:"',
+  'into real Cross Links automatically \u2014 nothing else needs to happen',
+  'afterward.',
+  '',
+  'RULES',
+  '-----',
+  '- One term per block. Separate blocks with a line containing only: ---',
+  '- The first line of each block is the term itself (the word).',
+  '- Every other line starts with one of the exact labels below, followed',
+  '  by a colon. Order does not matter; each label should appear at most',
+  '  once per term.',
+  '- Craft Category, Narrative Stage, Function, and Complexity Level must',
+  '  be exactly one of the listed options below (case-insensitive) \u2014',
+  '  anything else is left blank and flagged as a warning after import,',
+  '  never guessed at.',
+  '- Narrative Stage is always ONE stage, never a range \u2014 use the single',
+  '  stage where the term is most useful, not "Setup -> Resolution".',
+  '- Mini Exercise steps are numbered (1. 2. 3. ...) \u2014 the numbers are',
+  '  stripped automatically, so 1. / 1) / etc. all work.',
+  '- Links is a comma-separated list of other term names \u2014 these can be',
+  '  terms already in the glossary OR other terms in this same paste; the',
+  '  import resolves them to real Cross Links by matching the word text',
+  '  (case-insensitive, but otherwise exact) after every term in the batch',
+  '  has been created. A name that doesn\u2019t match any existing term \u2014 a',
+  '  typo, or a shortened version like "Arc" instead of "Character Arc" \u2014',
+  '  is skipped and reported as a warning, never silently linked to the',
+  '  wrong term.',
+  '- Active is optional and defaults to Yes if omitted.',
+  '',
+  'VALID OPTIONS',
+  '-------------',
+  'Craft Category:     Character, Plot, Dialogue, Setting, Theme, Structure,',
+  '                    Pacing, Point of View',
+  'Narrative Stage:    Setup, Rising Action, Climax, Falling Action, Resolution',
+  'Function:           Diagnostic, Generative, Revision, Analytical',
+  'Complexity Level:   Beginner, Intermediate, Advanced',
+  '',
+  'WORKED EXAMPLE',
+  '--------------',
+  'Protagonist',
+  'Definition: The central character whose journey drives the story.',
+  'Coaching Cue: Guide the student to clarify the protagonist\u2019s goal and emotional stakes.',
+  'Craft Category: Character',
+  'Narrative Stage: Setup',
+  'Function: Generative',
+  'Complexity Level: Beginner',
+  'Mini Exercise:',
+  '1. Write one sentence describing your protagonist\u2019s core desire.',
+  '2. Identify one obstacle that blocks this desire.',
+  '3. Note how the protagonist changes between the first and last chapter.',
+  'Links: Antagonist, Conflict, Motivation, Character Arc, Point of View',
+  'Active: Yes',
+  '',
+  '---',
+  '',
+  'BLANK TEMPLATE \u2014 COPY THIS FOR EACH NEW TERM',
+  '---------------------------------------------',
+  '[Word]',
+  'Definition: ',
+  'Coaching Cue: ',
+  'Craft Category: ',
+  'Narrative Stage: ',
+  'Function: ',
+  'Complexity Level: ',
+  'Mini Exercise:',
+  '1. ',
+  '2. ',
+  '3. ',
+  'Links: ',
+  ''
+].join('\n');
+document.getElementById('vcbDownloadTemplateBtn').addEventListener('click', function () {
+  downloadText('stratum-vocabulary-raw-template.txt', VCB_RAW_TEMPLATE_TEXT);
+});
 // ===== Global Instructions =====
 var giList = document.getElementById('giList');
 var giStatus = document.getElementById('giStatus');
