@@ -2369,10 +2369,26 @@
       .catch(function () { GLOBAL_INSTRUCTIONS = []; });
   }
   function buildGlobalInstructionsBlock() {
-    if (!GLOBAL_INSTRUCTIONS.length) return '';
+    // Sept 2026: Global Instructions can now be scoped to a specific WIP
+    // field value (Point of View, Genre, Story Style, Antagonist Type) via
+    // matchField/matchValue, set in the admin panel. An instruction with no
+    // matchField applies to every student, unchanged from before. One with
+    // a matchField only applies when this specific student's own stored
+    // value for that field equals matchValue exactly - so, unlike a plain
+    // unconditional instruction, only the one relevant branch ever reaches
+    // this student's coach, not every possible Genre/POV/etc. written out
+    // for the coach to self-select from.
+    var applicable = GLOBAL_INSTRUCTIONS.filter(function (item) {
+      if (!item.matchField) return true;
+      var lsKey = PROJ_KEYS[item.matchField];
+      if (!lsKey) return false;
+      var studentValue = lsGet(lsKey) || '';
+      return !!studentValue && studentValue === item.matchValue;
+    });
+    if (!applicable.length) return '';
     var byCategory = {};
     var order = [];
-    GLOBAL_INSTRUCTIONS.forEach(function (item) {
+    applicable.forEach(function (item) {
       var cat = item.category || 'General';
       if (!byCategory[cat]) { byCategory[cat] = []; order.push(cat); }
       byCategory[cat].push(item.content);
