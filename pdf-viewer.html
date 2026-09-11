@@ -23,22 +23,27 @@
   reason to (e.g. a security fix); no need to bump it just because the
   engine files changed.
 
-  Sept 2026 fix #1 (right-edge/margin cutoff): targetWidth() used to
-  measure #pdf-pages.clientWidth - a flex child inside a scrolling body.
-  Early in a load, before enough canvases exist to make the page taller
-  than the iframe, no vertical scrollbar is present and clientWidth reads
-  wide; once enough pages have rendered to trigger overflow-y's scrollbar,
-  the same element's clientWidth reads narrower. Pages rendered in that
-  narrow window could end up sized against a stale wide measurement long
-  enough to be visible before a resize observer caught up, and with
-  overflow-x:hidden on <body>, anything sized wider than the true visible
-  width was silently clipped on the right rather than wrapping or
-  scrolling - reading as a "right margin" problem. Switched the
-  measurement to document.documentElement.clientWidth, the standard,
-  scrollbar-aware way to read the true visible viewport width regardless
-  of the flex/overflow structure around it - it reflects the presence or
-  absence of the scrollbar directly, without depending on a specific
-  child element's own box having already settled.
+  Sept 2026 fix #1 (right-edge/margin cutoff): the previous approach had
+  JavaScript measure the container's width in pixels (first via
+  #pdf-pages.clientWidth, then via document.documentElement.clientWidth)
+  and set that exact pixel value as the canvas's CSS width. Any mismatch
+  between that measurement and the container's true rendered width - from
+  scrollbar timing, flex/overflow interplay, or anything else - showed up
+  as a gap, and with overflow-x:hidden on <body> a too-wide measurement
+  was silently clipped rather than visibly wrapping, making the class of
+  bug hard to pin down from a screenshot alone. Replaced entirely: each
+  canvas is now rendered at a fixed, generous backing-store resolution
+  (RENDER_WIDTH_PX below) and displayed via plain CSS `width:100%;
+  height:auto` (see #pdf-pages canvas below), the same pattern a
+  responsive <img> already uses. The browser's own layout engine now
+  determines the exact final pixel width every time, synchronously, with
+  no JavaScript measurement or timing involved - so this specific bug
+  class (computed width narrower than the real container) is no longer
+  possible regardless of scrollbar state, flex quirks, or window size.
+  This also means the page no longer needs to re-measure or re-render on
+  resize at all: CSS handles that automatically, which is why the old
+  targetWidth()/ResizeObserver/resize-listener machinery below has been
+  removed rather than adjusted again.
 
   Sept 2026 fix #2 (Spanish PDF fails to load here but opens fine via the
   direct link): PDF.js defaults to probing the server with byte-range
@@ -77,13 +82,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
     gap: 10px;
     padding: 10px 0 24px;
     box-sizing: border-box;
   }
   #pdf-pages canvas {
     display: block;
-    max-width: 100%;
+    width: 100%;
+    height: auto;
+    max-width: 720px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, .14);
   }
   #pdf-status {
@@ -133,100 +141,30 @@
       ' <a href="' + fileUrl + '" target="_blank" rel="noopener">Open the PDF directly</a>.';
   }
 
-  function debounce(fn, delay) {
-    var timer = null;
-    return function () {
-      clearTimeout(timer);
-      timer = setTimeout(fn, delay);
-    };
-  }
-
   var pdfDoc = null;
-  var pageEntries = []; // { canvas, pageNum }
-  var renderTokens = {}; // pageNum -> token, so a stale in-flight render from
-                          // before a resize can't overwrite a newer one
 
-  // A little breathing room either side so the page doesn't touch the
-  // iframe's own edge; 280 is a sane floor for very narrow phone widths.
-  // Sept 2026 fix: measured off document.documentElement.clientWidth
-  // (the standard scrollbar-aware viewport width) rather than
-  // pagesEl.clientWidth - see the file-header note above for why reading
-  // a flex child's own clientWidth here could momentarily disagree with
-  // the true visible width while the page's vertical scrollbar was
-  // appearing/disappearing mid-load, and how that disagreement showed up
-  // as content clipped on the right (overflow-x is intentionally hidden
-  // on <body>, so anything sized wider than the true viewport is clipped
-  // rather than wrapped or horizontally scrollable).
-  function targetWidth() {
-    var viewportWidth = document.documentElement.clientWidth ||
-      document.body.clientWidth || window.innerWidth || pagesEl.clientWidth;
-    return Math.max(280, viewportWidth - 16);
-  }
+  // Fixed backing-store width in device pixels, independent of the
+  // container's actual rendered size - see the file-header note above.
+  // CSS (`width:100%; height:auto` on #pdf-pages canvas) does all the
+  // actual sizing; this only needs to be high enough that the canvas
+  // stays sharp at the largest width it will ever actually be displayed
+  // at (max-width:720px in CSS, so this comfortably covers a ~2x/retina
+  // display of that without wasting memory rendering far larger than
+  // anything will ever show it at).
+  var RENDER_WIDTH_PX = 1440;
 
   function renderPage(pageNum, canvas) {
-    var token = (renderTokens[pageNum] || 0) + 1;
-    renderTokens[pageNum] = token;
     pdfDoc.getPage(pageNum).then(function (page) {
-      if (renderTokens[pageNum] !== token) return; // superseded by a newer resize
       var unscaled = page.getViewport({ scale: 1 });
-      var width = targetWidth();
-      var cssScale = width / unscaled.width;
-      var dpr = window.devicePixelRatio || 1;
-      var viewport = page.getViewport({ scale: cssScale * dpr });
+      var scale = RENDER_WIDTH_PX / unscaled.width;
+      var viewport = page.getViewport({ scale: scale });
       canvas.width = viewport.width;
       canvas.height = viewport.height;
-      canvas.style.width = width + 'px';
-      canvas.style.height = (viewport.height / dpr) + 'px';
       var ctx = canvas.getContext('2d');
       page.render({ canvasContext: ctx, viewport: viewport });
     }).catch(function () {
       // One bad page shouldn't take down the whole document view.
     });
-  }
-
-  var lastRenderedWidth = null;
-
-  function renderAllPages() {
-    pageEntries.forEach(function (entry) {
-      renderPage(entry.pageNum, entry.canvas);
-    });
-  }
-
-  // Only re-render when the measured width has actually changed. Without
-  // this guard, a ResizeObserver watching a flex container whose HEIGHT
-  // also changes as each canvas finishes rendering would keep firing on
-  // its own re-renders - harmless since it converges immediately, but
-  // wasteful, and this makes that explicit instead of relying on it
-  // happening to settle.
-  function renderIfWidthChanged() {
-    var w = targetWidth();
-    if (w === lastRenderedWidth) return;
-    lastRenderedWidth = w;
-    renderAllPages();
-  }
-
-  // Sept 2026 fix: this page is loaded inside a resource embed that
-  // starts collapsed (a closed <details> accordion on the parent page).
-  // The very first render - triggered as soon as the PDF finishes
-  // loading - could happen while that accordion is still closed, at
-  // which point this (cross-origin) iframe has no real rendered box yet
-  // and browsers report a stale/default width (commonly ~300 CSS px)
-  // instead of the panel's actual width. A plain `window resize`
-  // listener doesn't reliably catch "the parent accordion just opened,
-  // and this iframe's effective size changed as a result" - that isn't
-  // the same kind of event as the browser window itself being resized.
-  // ResizeObserver does catch it: it fires whenever this element's own
-  // box size changes, for any reason, including going from a hidden/
-  // collapsed ancestor to a visible one - so the canvas gets re-measured
-  // and re-rendered at the correct width the moment the panel actually
-  // becomes visible, not just on manual window resizes. Falls back to
-  // the plain resize listener alone on the rare browser without
-  // ResizeObserver support.
-  if (window.ResizeObserver) {
-    var ro = new ResizeObserver(debounce(renderIfWidthChanged, 150));
-    ro.observe(pagesEl);
-  } else {
-    window.addEventListener('resize', debounce(renderIfWidthChanged, 200));
   }
 
   // Sept 2026 fix: disableRange/disableStream force PDF.js to fetch the
@@ -242,11 +180,9 @@
   }).promise.then(function (doc) {
     pdfDoc = doc;
     statusEl.style.display = 'none';
-    lastRenderedWidth = targetWidth();
     for (var i = 1; i <= doc.numPages; i++) {
       var canvas = document.createElement('canvas');
       pagesEl.appendChild(canvas);
-      pageEntries.push({ canvas: canvas, pageNum: i });
       renderPage(i, canvas);
     }
   }).catch(function (err) {
