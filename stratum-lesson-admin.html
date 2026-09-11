@@ -506,7 +506,7 @@
   <div id="panel">
     <div id="globalInstructionsView" style="display:none;">
       <div class="tst-toolbar">
-        <span class="sub" style="margin:0;">Standing coaching direction that applies to every lesson's coach, folded into the system prompt on every message alongside that lesson's own Coaching Approach. Private &mdash; never shown to students. Each entry is capped at 1200 characters; only active entries are sent.</span>
+        <span class="sub" style="margin:0;">Standing coaching direction that applies to every lesson's coach, folded into the system prompt on every message alongside that lesson's own Coaching Approach. Private &mdash; never shown to students. Each entry is capped at 1200 characters; only active entries are sent. Use "Applies when" to scope an instruction to students with a specific Point of View, Genre, Story Style, or Antagonist Type instead of sending it to everyone.</span>
       </div>
       <div class="tst-toolbar">
         <button class="btn secondary" id="giReloadBtn" type="button">Reload</button>
@@ -2810,6 +2810,32 @@ var giStatus = document.getElementById('giStatus');
 var giAggregateCount = document.getElementById('giAggregateCount');
 var GI_CATEGORIES = ['Tone & Voice', 'Technique & Method', 'Student Data Usage', 'Boundaries', 'Pacing & Session Flow'];
 var GI_CONTENT_CAP = 1200;
+// Sept 2026: lets an instruction target a specific WIP field value
+// (Point of View, Genre, Story Style, Antagonist Type) instead of
+// applying to every student - see buildGlobalInstructionsBlock() in the
+// engine JS, which only sends a matched instruction to a student whose
+// own stored value for that field equals the chosen one exactly.
+// These option lists mirror PROJECT_FIELDS in stratum-lesson-engine.js -
+// there is no shared config between the two files, so update both here
+// and there (and the ALLOWED_GI_MATCH_FIELDS allowlist in worker.js) if
+// a WIP form option is ever added, renamed, or removed.
+var GI_MATCH_FIELDS = [
+  { value: '', label: 'Every student' },
+  { value: 'pov', label: 'Point of View' },
+  { value: 'genre', label: 'Genre' },
+  { value: 'storyStyle', label: 'Story Style' },
+  { value: 'antagonistType', label: 'Antagonist Type' }
+];
+var GI_MATCH_VALUE_OPTIONS = {
+  pov: ['First Person', 'Second Person', 'Third Person Limited', 'Third Person Omniscient', 'Third Person Objective'],
+  genre: ['Thriller/Suspense', 'Literary Fiction', 'Historical Fiction', 'Romance/Domestic Fiction', 'Fantasy/Science Fiction', 'Other'],
+  storyStyle: ['Plot Driven', 'Character Driven'],
+  antagonistType: ['Villain', 'Ideological', 'Societal', 'Nature or Circumstance', 'Internal', 'Moral Foil', 'Ally', 'Inanimate']
+};
+function giMatchFieldLabel(value) {
+  var found = GI_MATCH_FIELDS.filter(function (f) { return f.value === value; })[0];
+  return found ? found.label : value;
+}
 var giBlocks = []; // { getContentLength: fn, isActive: fn } for every rendered block, used to recompute the aggregate counter
 document.getElementById('giReloadBtn').addEventListener('click', loadGlobalInstructions);
 document.getElementById('giPrintAllBtn').addEventListener('click', printGlobalInstructions);
@@ -2856,6 +2882,9 @@ function printGlobalInstructions() {
       var items = (d && d.instructions) || [];
       var entries = items.map(function (item) {
         var meta = item.category || '';
+        if (item.matchField && item.matchValue) {
+          meta = (meta ? meta + ' \u00b7 ' : '') + 'Applies when ' + giMatchFieldLabel(item.matchField) + ' = ' + item.matchValue;
+        }
         if (item.isActive === false) meta = (meta ? meta + ' \u00b7 ' : '') + 'INACTIVE';
         return {
           heading: item.title || '(untitled)',
@@ -2889,6 +2918,13 @@ function addGlobalInstructionBlock(item, isNew) {
   block.className = 'tst-block';
   if (item.isActive === false) block.style.opacity = '0.65';
   var summary = document.createElement('summary');
+  function giSummaryText() {
+    var base = titleInput.value.trim() || (isNew ? 'New instruction' : '(untitled)');
+    if (matchFieldSelect.value && matchValueSelect.value) {
+      base += '  \u2014  ' + giMatchFieldLabel(matchFieldSelect.value) + ': ' + matchValueSelect.value;
+    }
+    return base;
+  }
   summary.textContent = item.title || (isNew ? 'New instruction' : '(untitled)');
   block.appendChild(summary);
   var bodyWrap = document.createElement('div');
@@ -2901,7 +2937,7 @@ function addGlobalInstructionBlock(item, isNew) {
   titleInput.placeholder = 'Title';
   titleInput.value = item.title || '';
   titleInput.addEventListener('input', function () {
-    summary.textContent = titleInput.value.trim() || (isNew ? 'New instruction' : '(untitled)');
+    summary.textContent = giSummaryText();
   });
   head.appendChild(titleInput);
   var categorySelect = document.createElement('select');
@@ -2935,6 +2971,69 @@ function addGlobalInstructionBlock(item, isNew) {
   descInput.placeholder = 'e.g. Keep responses under five sentences unless the student asks for more.';
   descInput.value = item.shortDescription || '';
   bodyWrap.appendChild(descInput);
+  // Sept 2026: "Applies when" scoping - blank means every student (old
+  // behavior, unchanged); choosing a field narrows this instruction to
+  // only students whose own stored value for that field matches exactly.
+  var matchRow = document.createElement('div');
+  matchRow.className = 'tst-meta-row';
+  var matchFieldWrap = document.createElement('div');
+  matchFieldWrap.className = 'field';
+  var matchFieldLabelEl = document.createElement('label');
+  matchFieldLabelEl.textContent = 'Applies when';
+  var matchFieldSelect = document.createElement('select');
+  matchFieldSelect.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;font-family:\'Inter\', Arial, sans-serif;border:1px solid #E3DCC9;border-radius:8px;background:#fff;';
+  GI_MATCH_FIELDS.forEach(function (f) {
+    var o = document.createElement('option');
+    o.value = f.value;
+    o.textContent = f.label;
+    if (f.value === (item.matchField || '')) o.selected = true;
+    matchFieldSelect.appendChild(o);
+  });
+  matchFieldWrap.appendChild(matchFieldLabelEl);
+  matchFieldWrap.appendChild(matchFieldSelect);
+  matchRow.appendChild(matchFieldWrap);
+  var matchValueWrap = document.createElement('div');
+  matchValueWrap.className = 'field';
+  var matchValueLabelEl = document.createElement('label');
+  matchValueLabelEl.textContent = 'Value';
+  var matchValueSelect = document.createElement('select');
+  matchValueSelect.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;font-family:\'Inter\', Arial, sans-serif;border:1px solid #E3DCC9;border-radius:8px;background:#fff;';
+  matchValueWrap.appendChild(matchValueLabelEl);
+  matchValueWrap.appendChild(matchValueSelect);
+  matchRow.appendChild(matchValueWrap);
+  bodyWrap.appendChild(matchRow);
+  function populateMatchValueOptions(preselect) {
+    matchValueSelect.innerHTML = '';
+    var fieldKey = matchFieldSelect.value;
+    if (!fieldKey) {
+      var na = document.createElement('option');
+      na.value = '';
+      na.textContent = '(applies to everyone)';
+      matchValueSelect.appendChild(na);
+      matchValueSelect.disabled = true;
+      return;
+    }
+    matchValueSelect.disabled = false;
+    var placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Choose a value\u2026';
+    matchValueSelect.appendChild(placeholder);
+    (GI_MATCH_VALUE_OPTIONS[fieldKey] || []).forEach(function (v) {
+      var o = document.createElement('option');
+      o.value = v;
+      o.textContent = v;
+      if (v === preselect) o.selected = true;
+      matchValueSelect.appendChild(o);
+    });
+  }
+  populateMatchValueOptions(item.matchValue || '');
+  matchFieldSelect.addEventListener('change', function () {
+    populateMatchValueOptions('');
+    summary.textContent = giSummaryText();
+  });
+  matchValueSelect.addEventListener('change', function () {
+    summary.textContent = giSummaryText();
+  });
   var contentLabelRow = document.createElement('div');
   contentLabelRow.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;';
   var contentLabel = document.createElement('span');
@@ -2999,6 +3098,7 @@ function addGlobalInstructionBlock(item, isNew) {
   block.appendChild(bodyWrap);
   block.open = !!isNew;
   giList.appendChild(block);
+  summary.textContent = giSummaryText();
   var currentId = item.id || null;
   function payload() {
     return {
@@ -3007,7 +3107,9 @@ function addGlobalInstructionBlock(item, isNew) {
       category: categorySelect.value,
       shortDescription: descInput.value.trim(),
       content: contentArea.value.trim(),
-      isActive: activeCb.checked
+      isActive: activeCb.checked,
+      matchField: matchFieldSelect.value || null,
+      matchValue: matchFieldSelect.value ? (matchValueSelect.value || null) : null
     };
   }
   saveBtn.addEventListener('click', function () {
@@ -3015,6 +3117,10 @@ function addGlobalInstructionBlock(item, isNew) {
     if (!p.title) { saveStatus.textContent = 'Title is required.'; return; }
     if (!p.category) { saveStatus.textContent = 'Choose a category.'; return; }
     if (!p.content) { saveStatus.textContent = 'Instruction text is required.'; return; }
+    if (p.matchField && !p.matchValue) {
+      saveStatus.textContent = 'Choose a value for "Applies when", or set it back to "Every student".';
+      return;
+    }
     saveStatus.textContent = 'Saving...';
     fetch(PROXY_URL + '/admin/global-instructions', {
       method: 'POST',
