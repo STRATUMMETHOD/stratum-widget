@@ -594,6 +594,18 @@
   function stripAsteriskEmphasis(text) {
     return String(text).replace(/\*([^*\n]+)\*/g, '$1');
   }
+  // Sept 2026: shared {name} substitution for admin-authored templates
+  // (used by the Deliverable Card congrats title - see LESSON.niceWorkTitle
+  // below). Same idiom as getGreetingText()'s own {name} handling: if a
+  // name is known and the template contains the literal token, substitute
+  // it; if no name is known yet, drop the token (and any leading comma/
+  // space) cleanly rather than showing "{name}" literally on screen.
+  function applyNameTemplate(template, name) {
+    if (!template) return '';
+    if (name && template.indexOf('{name}') !== -1) return template.replace('{name}', name);
+    if (!name) return template.replace(/,?\s*\{name\}/g, '').replace(/\s{2,}/g, ' ').trim();
+    return template;
+  }
   var STUDENT_ID = readCookie(STRATUM_SID_COOKIE);
   var STUDENT_EMAIL = readSessionValue('email');
   clearStaleLocalCache(STUDENT_ID);
@@ -3035,15 +3047,27 @@
     mount(header, headTop);
     if (pos > 0) mount(header, buildStrataStepper(pos));
     mount(card, header);
-    // Congrats block - the actual "pat on the back" moment. Fixed
-    // copy (not per-lesson) so every closing card lands the same beat;
-    // only the name varies.
+    // Congrats block - the actual "pat on the back" moment. Sept 2026:
+    // both lines are now admin-authored per lesson (see
+    // LESSON.niceWorkTitle / LESSON.niceWorkSub in loadLessonConfig()
+    // normalization below, and the matching admin fields "Congrats
+    // title" / "Congrats subtitle" under Deliverable card - layer & next
+    // steps) - falling back to the previous fixed STRINGS copy when a
+    // lesson hasn't had custom text written for it yet, so older/
+    // unconfigured lessons keep rendering the same default beat as
+    // before. niceWorkTitle may contain a literal {name} token, handled
+    // the same way the greeting templates already do (applyNameTemplate()
+    // above) - substituted when the student's name is known, dropped
+    // cleanly (with any leading comma/space) when it isn't yet.
     var congrats = el('div', 'srx-dc-congrats');
     mount(congrats, el('div', 'srx-dc-badge', '\u2713'));
     var congratsText = el('div');
-    var niceWork = studentName ? t('deliverableNiceWorkNamed', { name: studentName }) : t('deliverableNiceWork');
+    var niceWork = LESSON.niceWorkTitle
+      ? applyNameTemplate(LESSON.niceWorkTitle, studentName)
+      : (studentName ? t('deliverableNiceWorkNamed', { name: studentName }) : t('deliverableNiceWork'));
     mount(congratsText, el('div', 'srx-dc-congrats-title', niceWork));
-    mount(congratsText, el('div', 'srx-dc-congrats-sub', t('deliverableNiceWorkSub')));
+    var niceWorkSubText = LESSON.niceWorkSub || t('deliverableNiceWorkSub');
+    mount(congratsText, el('div', 'srx-dc-congrats-sub', niceWorkSubText));
     mount(congrats, congratsText);
     mount(card, congrats);
     // Course-shape reminder - admin-authored per lesson
@@ -3154,11 +3178,19 @@
             escapeHtml(LESSON.layerLabel || LESSON.scopeNote || 'Write Living Characters') + ctag('h1');
     html += otag('p', 'style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:10pt;color:#6f6353;"') +
             otag('em') + 'Prepared for ' + escapeHtml(name) + ' \u00b7 ' + dateStr + ctag('em') + ctag('p');
-    var niceWorkText = name ? ('Nice work, ' + name) : 'Nice work';
+    // Sept 2026: mirrors the same admin-authored niceWorkTitle/niceWorkSub
+    // (with {name} substitution via applyNameTemplate()) the on-screen
+    // card now uses, falling back to the same plain-English defaults this
+    // export always used, since the .doc export is not localized to LANG
+    // regardless of the student's dashboard language.
+    var niceWorkTitleText = LESSON.niceWorkTitle
+      ? applyNameTemplate(LESSON.niceWorkTitle, name)
+      : (name ? ('Nice work, ' + name) : 'Nice work');
+    var niceWorkSubText = LESSON.niceWorkSub || "You didn't stop at the first answer \u2014 that's the harder part.";
     html += otag('h2', 'style="font-family:Arial,sans-serif;font-size:15pt;margin:0 0 2px;color:#2e1f0e;"') +
-            escapeHtml(niceWorkText) + ctag('h2');
+            escapeHtml(niceWorkTitleText) + ctag('h2');
     html += otag('p', 'style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:10.5pt;color:#6f6353;"') +
-            "You didn&#39;t stop at the first answer \u2014 that&#39;s the harder part." + ctag('p');
+            escapeHtml(niceWorkSubText) + ctag('p');
     var courseShapeText = LESSON.courseShapeReminder ||
       "This course builds in layers, not conclusions. What you find today becomes the material the next lesson digs into. The payoff isn't in any one lesson \u2014 it's in what they add up to.";
     html += otag('div', 'style="background:#FBF8F0;border:1px solid #E6DCC4;padding:12px 16px;margin:0 0 16px;"') +
@@ -3493,6 +3525,14 @@
         LESSON.nextStepTeaser = LESSON.nextStepTeaser || '';
         LESSON.tryThisNow = LESSON.tryThisNow || '';
         LESSON.courseShapeReminder = LESSON.courseShapeReminder || '';
+        // Sept 2026: admin-authored overrides for the closing card's
+        // congrats title ("Nice work, {name}") and subtitle ("You didn't
+        // stop at the first answer..."). Both optional - blank means the
+        // fixed STRINGS defaults keep being used (see buildDeliverableCard()
+        // and buildSummaryPageHtml()), same fallback pattern as
+        // courseShapeReminder above.
+        LESSON.niceWorkTitle = LESSON.niceWorkTitle || '';
+        LESSON.niceWorkSub = LESSON.niceWorkSub || '';
         if (!LESSON.video || !LESSON.video.mediaId) {
           showFatalError(container, t('lessonMissingVideoError'));
           return;
