@@ -91,7 +91,6 @@
     display: block;
     width: 100%;
     height: auto;
-    max-width: 720px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, .14);
   }
   #pdf-status {
@@ -148,10 +147,13 @@
   // CSS (`width:100%; height:auto` on #pdf-pages canvas) does all the
   // actual sizing; this only needs to be high enough that the canvas
   // stays sharp at the largest width it will ever actually be displayed
-  // at (max-width:720px in CSS, so this comfortably covers a ~2x/retina
-  // display of that without wasting memory rendering far larger than
-  // anything will ever show it at).
-  var RENDER_WIDTH_PX = 1440;
+  // at. Sept 2026: the canvas has no max-width cap anymore (removed at
+  // Ted's request so the page renders as large as the resource panel
+  // allows, matching how it looked before the max-width:720px cap was
+  // added), so this needs to comfortably cover a full-width, ~2x/retina
+  // display on a wide desktop resource panel rather than just a
+  // 720px-capped one.
+  var RENDER_WIDTH_PX = 2200;
 
   function renderPage(pageNum, canvas) {
     pdfDoc.getPage(pageNum).then(function (page) {
