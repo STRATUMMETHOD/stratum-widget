@@ -2693,7 +2693,12 @@
   // its own panel-level identity gate already ran before this is ever
   // called, so this never re-checks isEmailConfirmed() itself.
   function buildCoachUI(panel) {
-    buildCoachingIntro(panel);
+    // Sept 2026: the Character Excavation ladder drops the "Before You
+    // Begin" coaching-instructions accordion entirely - Ted's call, since
+    // the ladder's own coach now carries the teaching directly rather than
+    // via admin-authored per-lesson intro text. Any future standalone
+    // lesson page (LADDER_MODE false) still gets it, unchanged.
+    if (!LADDER_MODE) buildCoachingIntro(panel);
     var topDownloadWrap = el('div', 'srx-download-anytime-wrap');
     var topDownloadBtn = el('button', 'srx-download-anytime-btn', t('coachDownloadBtn'));
     topDownloadBtn.type = 'button';
@@ -3490,6 +3495,7 @@
      ========================================================== */
   var HOME_NAV_ITEMS = [
     { id: 'Home', label: 'Home', build: buildBlankHomePanel },
+    { id: 'Project', label: 'WIP', build: buildProjectTab },
     { id: 'Notes', labelKey: 'notesTitle', build: buildNotesTab },
     { id: 'Tasks', labelKey: 'tasksTitle', build: buildTasksTab },
     { id: 'Vocabulary', labelKey: 'vocabTitle', build: buildVocabularyTab },
