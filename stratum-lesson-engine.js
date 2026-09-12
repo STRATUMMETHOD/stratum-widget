@@ -3444,6 +3444,134 @@
       showIdentityModal();
     }
   }
+  /* ==========================================================
+     HOME PAGE SHELL (Sept 2026)
+     ------------------------------------------------------------
+     First step of the "system, not a course" restructure. Instead of
+     window.STRATUM_LESSON_ID, the systeme.io course now has a single
+     page ("Home Page") that sets window.STRATUM_HOME_PAGE = true - see
+     the branch in init() below. That page renders this shell instead of
+     the usual lesson page: a single dark top nav bar with Home, a
+     Writing Modules dropdown, Idea Log, Action Items, Glossary, and
+     Help.
+
+     Scope of this first build, per Ted:
+       - Only the nav bar is real. Home, each Writing Module, and Help
+         are blank placeholders for now (buildBlankHomePanel) - what
+         they actually show is a later build.
+       - Idea Log, Action Items, and Glossary reuse the EXACT SAME
+         buildNotesTab/buildTasksTab/buildVocabularyTab functions the
+         lesson pages already use, with the panel ids kept as the
+         existing internal ids ('Notes'/'Tasks'/'Vocabulary') rather
+         than new ones - this is what lets refreshGatedTabs() (fired
+         after the identity modal is submitted) find and rebuild these
+         panels with no changes of its own. Same D1 sync, same debounce
+         saves, same gating - nothing duplicated or reimplemented.
+       - The Writing Modules dropdown lists only Character Excavation
+         for now. Add a new module by adding one entry to HOME_MODULES
+         below - nowhere else needs to change for the nav/dropdown
+         itself to pick it up.
+     ========================================================== */
+  var HOME_NAV_ITEMS = [
+    { id: 'Home', label: 'Home', build: buildBlankHomePanel },
+    { id: 'Notes', labelKey: 'notesTitle', build: buildNotesTab },
+    { id: 'Tasks', labelKey: 'tasksTitle', build: buildTasksTab },
+    { id: 'Vocabulary', labelKey: 'vocabTitle', build: buildVocabularyTab },
+    { id: 'Help', label: 'Help', build: buildBlankHomePanel }
+  ];
+  var HOME_MODULES = [
+    { id: 'CharacterExcavation', label: 'Character Excavation', build: buildBlankHomePanel }
+    // World Building / Plot Development get added here once they're
+    // real - registering a module here is the only change the dropdown
+    // itself needs.
+  ];
+  function buildBlankHomePanel(panel) {
+    // Intentionally empty - a placeholder until the real view for this
+    // destination is designed in a later build. Not a loading or error
+    // state, just nothing here yet.
+  }
+  function openHomePanel(targetId) {
+    var panels = document.getElementsByClassName('home-panel');
+    for (var i = 0; i < panels.length; i++) panels[i].style.display = 'none';
+    var target = document.getElementById(targetId);
+    if (target) target.style.display = 'block';
+    var links = document.getElementsByClassName('home-navlink');
+    for (var j = 0; j < links.length; j++) links[j].classList.remove('active');
+    var isModule = HOME_MODULES.some(function (m) { return m.id === targetId; });
+    if (isModule) {
+      var modulesBtn = document.getElementById('homeModulesBtn');
+      if (modulesBtn) modulesBtn.classList.add('active');
+    } else {
+      var directLink = document.querySelector('.home-navlink[data-home-target="' + targetId + '"]');
+      if (directLink) directLink.classList.add('active');
+    }
+  }
+  function buildHomeModulesDropdown(nav) {
+    var wrap = el('div', 'home-modules-wrap');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'homeModulesBtn';
+    btn.className = 'home-navlink home-modules-btn';
+    btn.appendChild(document.createTextNode('Writing Modules'));
+    mount(btn, el('span', 'home-modules-caret', '\u25BE'));
+    mount(wrap, btn);
+    var menu = el('div', 'home-modules-menu');
+    menu.style.display = 'none';
+    HOME_MODULES.forEach(function (mod) {
+      var item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'home-modules-item';
+      item.textContent = mod.label;
+      item.addEventListener('click', function () {
+        openHomePanel(mod.id);
+        menu.style.display = 'none';
+        wrap.classList.remove('open');
+      });
+      mount(menu, item);
+    });
+    mount(wrap, menu);
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var isOpen = menu.style.display !== 'none';
+      menu.style.display = isOpen ? 'none' : 'block';
+      wrap.classList.toggle('open', !isOpen);
+    });
+    document.addEventListener('click', function (e) {
+      if (!wrap.contains(e.target)) {
+        menu.style.display = 'none';
+        wrap.classList.remove('open');
+      }
+    });
+    mount(nav, wrap);
+  }
+  function buildHomeShell(container) {
+    container.innerHTML = '';
+    var nav = el('div', 'home-nav');
+    HOME_NAV_ITEMS.forEach(function (item) {
+      // Writing Modules sits between Home and the tool tabs - Home,
+      // Writing Modules, Idea Log, Action Items, Glossary, Help - so it's
+      // inserted right before the Notes (Idea Log) button.
+      if (item.id === 'Notes') buildHomeModulesDropdown(nav);
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'home-navlink';
+      btn.setAttribute('data-home-target', item.id);
+      btn.textContent = item.labelKey ? t(item.labelKey) : item.label;
+      btn.addEventListener('click', function () { openHomePanel(item.id); });
+      mount(nav, btn);
+    });
+    mount(container, nav);
+    HOME_NAV_ITEMS.concat(HOME_MODULES).forEach(function (item) {
+      var panel = el('div', 'home-panel');
+      panel.id = item.id;
+      item.build(panel);
+      mount(container, panel);
+    });
+    openHomePanel('Home');
+    if (!isEmailConfirmed()) {
+      showIdentityModal();
+    }
+  }
   function init() {
     LESSON_ID = window.STRATUM_LESSON_ID;
     TIER = window.STRATUM_TIER === 'essentials' ? 'essentials' : 'guided';
@@ -3451,6 +3579,17 @@
     var container = document.getElementById('stratum-lesson');
     if (!container) {
       console.error('[Stratum] No #stratum-lesson container found on this page.');
+      return;
+    }
+    // Sept 2026: Home Page shell - a systeme.io page can set
+    // window.STRATUM_HOME_PAGE = true instead of STRATUM_LESSON_ID. This
+    // skips the lesson-config fetch entirely (there is no lesson here)
+    // and renders buildHomeShell() instead of buildLessonPage() - see
+    // above.
+    if (window.STRATUM_HOME_PAGE === true) {
+      resolvePreferredLang().then(function () {
+        buildHomeShell(container);
+      });
       return;
     }
     if (!LESSON_ID) {
