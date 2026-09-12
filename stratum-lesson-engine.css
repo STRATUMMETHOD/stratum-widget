@@ -2183,3 +2183,100 @@ button.download-btn:hover { background-color: #5a4535; }
   .home-navlink{ padding:13px 11px; font-size:11.5px; }
   .home-modules-menu{ left:12px; }
 }
+
+/* ============================================================
+   17. CHARACTER EXCAVATION LADDER (Sept 2026)
+   ------------------------------------------------------------
+   Styles for buildCharacterExcavationPanel() and its supporting
+   functions in the engine JS - the six-layer excavation ladder shown
+   inside Home > Writing Modules > Character Excavation. The rail
+   shows all six layers (current highlighted, completed checked); the
+   coaching window below it is the existing .srx-wrap chat UI, reused
+   unchanged via buildCoachUI(). The closing master-deliverable card
+   reuses .srx-dc-* (buildDeliverableCard's classes) for the header/
+   congrats treatment - only .ladder-master-* below is new.
+   ============================================================ */
+
+.ladder-wrap{ padding:0; }
+
+.ladder-rail{
+  display:flex;
+  flex-wrap:wrap;
+  gap:0;
+  border-bottom:1px solid #E8DCC3;
+  margin-bottom:8px;
+}
+.ladder-step{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:14px 16px;
+  opacity:.55;
+  flex:1 1 auto;
+  min-width:140px;
+  transition:opacity .15s ease;
+}
+.ladder-step.done{ opacity:.85; }
+.ladder-step.current{ opacity:1; }
+.ladder-step-marker{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  border:1.5px solid #C9A46C;
+  font-family:'Inter',sans-serif;
+  font-size:11px;
+  font-weight:700;
+  color:#3B2F24;
+  flex-shrink:0;
+}
+.ladder-step.done .ladder-step-marker{
+  background:#3B2F24;
+  border-color:#3B2F24;
+  color:#F5D78E;
+}
+.ladder-step.current .ladder-step-marker{ border-width:2px; }
+.ladder-step-label{
+  font-family:'Inter',sans-serif;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+  color:#3B2F24;
+}
+
+.ladder-coach-mount{ padding-top:8px; }
+
+.ladder-layer-divider{
+  text-align:center;
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:16px;
+  color:#7A6A52;
+  margin:28px 0 20px;
+}
+
+.ladder-master-loading{
+  text-align:center;
+  padding:60px 20px;
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  color:#7A6A52;
+}
+
+.ladder-master-card{ max-width:720px; margin:0 auto; }
+.ladder-master-text{
+  margin-top:20px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:17px;
+  line-height:1.7;
+  color:#222;
+}
+.ladder-master-text p{ margin:0 0 16px; }
+
+@media (max-width:640px){
+  .ladder-step{ min-width:100px; padding:12px 10px; }
+  .ladder-step-label{ font-size:10.5px; }
+}
