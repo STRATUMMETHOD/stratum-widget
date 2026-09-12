@@ -1422,6 +1422,11 @@
     if (tasksPanel) { tasksPanel.innerHTML = ''; buildTasksTab(tasksPanel); }
     var coachPanel = document.getElementById('Coaching');
     if (coachPanel) { coachPanel.innerHTML = ''; buildCoachTab(coachPanel); }
+    // Sept 2026: Home Page's Character Excavation module panel gates the
+    // same way Notes/Tasks/Coaching do - refresh it too once identity is
+    // confirmed, same pattern as the three lines above.
+    var excavationPanel = document.getElementById('CharacterExcavation');
+    if (excavationPanel) { excavationPanel.innerHTML = ''; buildCharacterExcavationPanel(excavationPanel); }
   }
   /* ==========================================================
      IDEA LOG
@@ -2681,6 +2686,13 @@
   }
   function buildCoachTab(panel) {
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemCoaching'); return; }
+    buildCoachUI(panel);
+  }
+  // Sept 2026: extracted from buildCoachTab() above so the Character
+  // Excavation ladder (Home Page) can build the same chat UI directly -
+  // its own panel-level identity gate already ran before this is ever
+  // called, so this never re-checks isEmailConfirmed() itself.
+  function buildCoachUI(panel) {
     buildCoachingIntro(panel);
     var topDownloadWrap = el('div', 'srx-download-anytime-wrap');
     var topDownloadBtn = el('button', 'srx-download-anytime-btn', t('coachDownloadBtn'));
@@ -3372,8 +3384,12 @@
         addMessage('assistant', parsed.text);
         if (parsed.complete && !reflectionComplete) {
           reflectionComplete = true;
-          showDownloadCard();
-          reportLessonComplete(parsed.summary);
+          if (LADDER_MODE) {
+            handleLadderLayerComplete(parsed.summary);
+          } else {
+            showDownloadCard();
+            reportLessonComplete(parsed.summary);
+          }
         }
         persist();
       })
@@ -3480,11 +3496,303 @@
     { id: 'Help', label: 'Help', build: buildBlankHomePanel }
   ];
   var HOME_MODULES = [
-    { id: 'CharacterExcavation', label: 'Character Excavation', build: buildBlankHomePanel }
+    { id: 'CharacterExcavation', label: 'Character Excavation', build: buildCharacterExcavationPanel }
     // World Building / Plot Development get added here once they're
     // real - registering a module here is the only change the dropdown
     // itself needs.
   ];
+  /* ==========================================================
+     CHARACTER EXCAVATION LADDER (Sept 2026)
+     ------------------------------------------------------------
+     Replaces the six standalone lessons (Anchor Behavior through
+     Fears & Desires, lesson_configs ids 1.1-1.6) with one continuous
+     coaching session inside the Character Excavation module panel.
+     Handouts and video are gone for this flow - the student sees a
+     six-step ladder rail for reference and one coaching window. The
+     EXACT SAME reflectionFramework/deliverable-tag machinery each
+     lesson already used (extractTags, validateDeliverable,
+     [REFLECTION_COMPLETE], /complete) still drives everything -
+     nothing new was built to detect "this layer is done." The only
+     new behavior is what happens WHEN it's done: instead of showing
+     that layer's own standalone deliverable card and stopping
+     (showDownloadCard/reportLessonComplete, unchanged for any future
+     standalone-lesson-page use), LADDER_MODE routes to
+     handleLadderLayerComplete() below, which quietly advances the rail
+     and loads the next layer's coaching session INTO THE SAME chat
+     window (a divider bubble announces the new layer; chatEl/formEl
+     are never rebuilt mid-ladder, only the underlying LESSON_ID/
+     conversation state). Resume-mid-layer needs no new code either -
+     bootConversation()'s existing fetchTranscriptFromD1/restoreLocal
+     path already resumes whatever LESSON_ID/STORE_KEY it's called
+     with, which is exactly how a returning student lands back inside
+     an in-progress layer.
+
+     At the sixth layer's completion there is no next layer to advance
+     to - instead the six deliverables are sent to the Worker's new
+     POST /excavation/synthesize (added alongside this), which reads
+     all six completions.deliverable_json rows server-side, has Claude
+     write one synthesized narrative profile, and stores it. That text
+     is what synthesizeMasterDeliverable() below renders, reusing the
+     existing deliverable-card visual language (buildStrataStepper,
+     .srx-dc-* classes) for consistency with every other completion
+     moment in the product.
+     ========================================================== */
+  var LADDER_LAYERS = [
+    { id: '1.1', label: 'Anchor Behavior' },
+    { id: '1.2', label: 'Hidden Truth' },
+    { id: '1.3', label: 'Formative Wound' },
+    { id: '1.4', label: 'The Lie They Believe' },
+    { id: '1.5', label: 'Want vs. Need' },
+    { id: '1.6', label: 'Fears & Desires' }
+  ];
+  var LADDER_MODE = false;
+  var ladderCompletedSet = {};
+  var ladderRailWrap = null;
+  var ladderCoachMount = null;
+  function buildCharacterExcavationPanel(panel) {
+    if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemCoaching'); return; }
+    LADDER_MODE = true;
+    panel.innerHTML = '';
+    var wrap = el('div', 'ladder-wrap');
+    ladderRailWrap = el('div', 'ladder-rail');
+    mount(wrap, ladderRailWrap);
+    ladderCoachMount = el('div', 'ladder-coach-mount');
+    mount(wrap, ladderCoachMount);
+    mount(panel, wrap);
+    loadLadderProgress();
+  }
+  // Reads the student's existing /completions (same public endpoint the
+  // rest of the engine already uses) to find which of the six layer ids
+  // are done, so the rail and the starting layer are both correct on
+  // every visit - first visit, mid-ladder return, or fully complete.
+  function loadLadderProgress() {
+    if (!STUDENT_ID) {
+      ladderCompletedSet = {};
+      renderLadderRail(0, ladderCompletedSet);
+      startLadderLayer(0);
+      return;
+    }
+    fetch(PROXY_URL + '/completions?studentId=' + encodeURIComponent(STUDENT_ID))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var completions = (d && d.completions) ? d.completions : [];
+        var completedSet = {};
+        completions.forEach(function (c) { completedSet[c.lesson] = true; });
+        ladderCompletedSet = completedSet;
+        var firstIncomplete = -1;
+        for (var i = 0; i < LADDER_LAYERS.length; i++) {
+          if (!completedSet[LADDER_LAYERS[i].id]) { firstIncomplete = i; break; }
+        }
+        if (firstIncomplete === -1) {
+          renderLadderRail(LADDER_LAYERS.length, completedSet);
+          synthesizeMasterDeliverable();
+        } else {
+          renderLadderRail(firstIncomplete, completedSet);
+          startLadderLayer(firstIncomplete);
+        }
+      })
+      .catch(function () {
+        ladderCompletedSet = {};
+        renderLadderRail(0, ladderCompletedSet);
+        startLadderLayer(0);
+      });
+  }
+  function renderLadderRail(currentIndex, completedSet) {
+    if (!ladderRailWrap) return;
+    ladderRailWrap.innerHTML = '';
+    LADDER_LAYERS.forEach(function (layer, i) {
+      var cls = 'ladder-step' +
+        (completedSet[layer.id] ? ' done' : '') +
+        (i === currentIndex ? ' current' : '');
+      var step = el('div', cls);
+      var marker = el('div', 'ladder-step-marker', completedSet[layer.id] ? '\u2713' : String(i + 1));
+      mount(step, marker);
+      mount(step, el('div', 'ladder-step-label', layer.label));
+      mount(ladderRailWrap, step);
+    });
+  }
+  function resetLadderSessionState() {
+    conversationHistory = [];
+    conversationId = null;
+    reflectionComplete = false;
+    lastDeliverable = null;
+    deliverableRetryCount = 0;
+  }
+  // First-time setup for the whole Character Excavation session - builds
+  // the chat UI (chatEl/formEl/sendBtn) exactly once. Later layer
+  // transitions use advanceToLadderLayer() below instead, which reuses
+  // this same DOM rather than rebuilding it, so the conversation stays
+  // visible in one continuous scrollback.
+  function startLadderLayer(index) {
+    resetLadderSessionState();
+    var layer = LADDER_LAYERS[index];
+    LESSON_ID = layer.id;
+    STORE_KEY = 'wlfc_coach_' + LESSON_ID.replace(/\./g, '_');
+    loadLadderLayerConfig(layer.id, function () {
+      buildCoachUI(ladderCoachMount);
+    });
+  }
+  // Mid-session transition to the next layer, fired from
+  // handleLadderLayerComplete() below. Deliberately does NOT touch
+  // ladderCoachMount's DOM - chatEl/formEl/sendBtn all stay exactly as
+  // they are, so bootConversation() (called at the end) simply appends
+  // the next layer's greeting into the same visible chat.
+  function advanceToLadderLayer(index) {
+    resetLadderSessionState();
+    var layer = LADDER_LAYERS[index];
+    LESSON_ID = layer.id;
+    STORE_KEY = 'wlfc_coach_' + LESSON_ID.replace(/\./g, '_');
+    loadLadderLayerConfig(layer.id, function () {
+      bootConversation();
+    });
+  }
+  // Same shape as loadLessonConfig() but deliberately skips its
+  // `if (!LESSON.video...) fatal error` check - the six ladder layers
+  // have no video, and requiring one would break every layer's config.
+  // Also never calls buildLessonPage() - the ladder only ever needs
+  // LESSON.reflectionFramework/coachingIntro/greeting, not a full lesson
+  // page with nav clusters, video, or resources.
+  function loadLadderLayerConfig(lessonId, callback) {
+    fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=' + TIER + '&lang=' + encodeURIComponent(LANG))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.known || !d.config) {
+          showFatalError(ladderCoachMount, t('lessonNotConfiguredError'));
+          return;
+        }
+        LESSON = d.config;
+        LESSON.scopeNote = LESSON.scopeNote || ('Lecture ' + lessonId);
+        LESSON.nextLessonLabel = LESSON.nextLessonLabel || 'the next lecture';
+        LESSON.transcript = LESSON.transcript || '';
+        LESSON.reflectionFramework = LESSON.reflectionFramework || { areas: [], calibrationExamples: [] };
+        LESSON.greeting = LESSON.greeting || {};
+        LESSON.layerPosition = LESSON.layerPosition || null;
+        LESSON.layerLabel = LESSON.layerLabel || '';
+        LESSON.nextStepTeaser = LESSON.nextStepTeaser || '';
+        LESSON.tryThisNow = LESSON.tryThisNow || '';
+        LESSON.courseShapeReminder = LESSON.courseShapeReminder || '';
+        LESSON.niceWorkTitle = LESSON.niceWorkTitle || '';
+        LESSON.niceWorkSub = LESSON.niceWorkSub || '';
+        callback();
+      })
+      .catch(function () {
+        showFatalError(ladderCoachMount, t('lessonLoadError'));
+      });
+  }
+  function buildLadderLayerDivider(label) {
+    return el('div', 'ladder-layer-divider', '\u2014 ' + label + ' \u2014');
+  }
+  // Fired from sendToClaude()'s existing [REFLECTION_COMPLETE] handling
+  // when LADDER_MODE is on - see the edit there. reportLessonComplete()
+  // is unchanged and still fires (same /complete call, same
+  // deliverable_json capture per layer) - the ladder only changes what
+  // happens in the UI afterward, never how a layer's own completion is
+  // stored.
+  function handleLadderLayerComplete(summaryText) {
+    reportLessonComplete(summaryText);
+    var currentIndex = -1;
+    for (var i = 0; i < LADDER_LAYERS.length; i++) {
+      if (LADDER_LAYERS[i].id === LESSON_ID) { currentIndex = i; break; }
+    }
+    if (currentIndex === -1) return;
+    ladderCompletedSet[LESSON_ID] = true;
+    var nextIndex = currentIndex + 1;
+    if (nextIndex < LADDER_LAYERS.length) {
+      renderLadderRail(nextIndex, ladderCompletedSet);
+      mount(chatEl, buildLadderLayerDivider(LADDER_LAYERS[nextIndex].label));
+      scrollToBottom();
+      advanceToLadderLayer(nextIndex);
+    } else {
+      renderLadderRail(LADDER_LAYERS.length, ladderCompletedSet);
+      synthesizeMasterDeliverable();
+    }
+  }
+  // ----------------------------------------------------------
+  // MASTER DELIVERABLE (all six layers complete)
+  // ----------------------------------------------------------
+  function synthesizeMasterDeliverable() {
+    ladderCoachMount.innerHTML = '';
+    mount(ladderCoachMount, el('div', 'ladder-master-loading', 'Bringing together everything you\u2019ve excavated\u2026'));
+    if (!STUDENT_ID) { showFatalError(ladderCoachMount, t('lessonLoadError')); return; }
+    // Check for an already-generated synthesis first (e.g. the student
+    // finished the ladder in an earlier visit and is just returning to
+    // see it again) before asking the Worker to generate a new one.
+    fetch(PROXY_URL + '/excavation/master-deliverable?studentId=' + encodeURIComponent(STUDENT_ID))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.known && d.text) {
+          renderMasterDeliverableCard(d.text);
+          return;
+        }
+        return fetch(PROXY_URL + '/excavation/synthesize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId: STUDENT_ID })
+        })
+          .then(function (r2) { return r2.json(); })
+          .then(function (d2) {
+            if (d2 && d2.ok && d2.text) {
+              renderMasterDeliverableCard(d2.text);
+            } else {
+              showFatalError(ladderCoachMount, t('lessonLoadError'));
+            }
+          });
+      })
+      .catch(function () {
+        showFatalError(ladderCoachMount, t('lessonLoadError'));
+      });
+  }
+  function renderMasterDeliverableCard(text) {
+    ladderCoachMount.innerHTML = '';
+    var card = el('div', 'srx-deliverable-card ladder-master-card');
+    var header = el('div', 'srx-dc-header');
+    var headTop = el('div', 'srx-dc-head-top');
+    mount(headTop, el('span', 'srx-dc-layer-title', 'Character Excavation \u2014 Complete'));
+    mount(header, headTop);
+    mount(header, buildStrataStepper(LADDER_LAYERS.length));
+    mount(card, header);
+    var congrats = el('div', 'srx-dc-congrats');
+    mount(congrats, el('div', 'srx-dc-badge', '\u2713'));
+    var congratsText = el('div');
+    mount(congratsText, el('div', 'srx-dc-congrats-title', studentName ? ('Nice work, ' + studentName + '.') : 'Nice work.'));
+    mount(congratsText, el('div', 'srx-dc-congrats-sub', 'All six layers are excavated. Here is the complete picture.'));
+    mount(congrats, congratsText);
+    mount(card, congrats);
+    var body = el('div', 'ladder-master-text');
+    body.innerHTML = textToParagraphs(text);
+    mount(card, body);
+    var dlBtn = el('button', 'srx-download-anytime-btn', t('coachDownloadBtn'));
+    dlBtn.type = 'button';
+    dlBtn.addEventListener('click', function () { downloadMasterDeliverable(text, studentName); });
+    mount(card, dlBtn);
+    mount(ladderCoachMount, card);
+  }
+  function downloadMasterDeliverable(text, name) {
+    var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    var who = name || 'Student';
+    var parts = [];
+    parts.push(otag('html', 'xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"'));
+    parts.push(otag('head'));
+    parts.push(otag('meta', 'charset="utf-8"'));
+    parts.push(otag('title') + 'Character Excavation - Complete Profile' + ctag('title'));
+    parts.push(ctag('head'));
+    parts.push(otag('body', 'style="font-family:Arial,sans-serif;font-size:12pt;color:#111;"'));
+    parts.push(otag('h1', 'style="font-family:Arial,sans-serif;font-size:20pt;color:#3B2F24;margin-bottom:4px;"') + 'Character Excavation \u2014 Complete Profile' + ctag('h1'));
+    parts.push(otag('p', 'style="color:#666;margin-top:0;"') + escapeHtml(who) + ' \u2014 ' + dateStr + ctag('p'));
+    parts.push(otag('hr', 'style="border:none;border-top:1px solid #C9A46C;margin:8px 0 16px;"'));
+    parts.push(textToParagraphs(text));
+    parts.push(ctag('body'));
+    parts.push(ctag('html'));
+    var blob = new Blob(['\ufeff', parts.join('')], { type: 'application/msword' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'Character-Excavation-Complete-' + who.replace(/\s+/g, '-') + '.doc';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
   function buildBlankHomePanel(panel) {
     // Intentionally empty - a placeholder until the real view for this
     // destination is designed in a later build. Not a loading or error
