@@ -752,7 +752,7 @@
         <span class="sub" style="margin:0;">Import &amp; Link From Raw Text &mdash; paste plain-text term entries below in the required format and this creates every term AND resolves any "Links:" names into real Cross Links in one pass, entirely from here. Use "Download Template" for the exact format to reuse every time.</span>
       </div>
       <div class="tst-toolbar" style="align-items:flex-start;">
-        <textarea id="vcbRawTextInput" rows="10" style="flex:1;padding:10px 12px;font-size:12.5px;font-family:'Courier New',monospace;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;" placeholder="Paste raw term entries here, one per block, separated by a line containing only ---"></textarea>
+        <textarea id="vcbRawTextInput" rows="10" style="flex:1;padding:10px 12px;font-size:12.5px;font-family:'Courier New',monospace;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;" placeholder="Paste raw term entries here - separate terms with a blank line or a line containing only ---"></textarea>
       </div>
       <div class="tst-toolbar">
         <button class="btn" id="vcbRawImportBtn" type="button">Import &amp; Link From Raw Text</button>
@@ -3051,79 +3051,119 @@ VCB_COMPLEXITY_LEVELS.forEach(function (c) { VCB_RAW_LEVEL_SET[c.toLowerCase()] 
 // records a warning instead, so a formatting mistake is visible in the
 // import log rather than silently stored as something that doesn't
 // match the admin's own dropdown options.
+//
+// Sept 2026: rewritten as a single continuous line-scan rather than
+// pre-splitting on "---" first. A block-based split couldn't tell a
+// blank line separating two terms from a blank line separating two
+// Mini Exercise steps - both are just "a blank line" - so pasting terms
+// separated only by blank lines (no --- between them), or Mini Exercise
+// steps that aren't numbered and have blank lines between them, silently
+// lost data instead of importing. Now: blank lines are simply never
+// meaningful on their own. A line containing only "---" still works as
+// an explicit separator (and is still what the template recommends,
+// since it's unambiguous), but isn't required - the parser instead
+// recognizes a new term the same way a person reading it would: any
+// line that isn't blank, isn't a "---" separator, and doesn't match one
+// of the known "Label:" field lines starts a new term (using that line
+// as the word), UNLESS it arrives while still inside a Mini Exercise
+// list, in which case it's one more step - exercise-collecting mode
+// persists across blank lines and un-numbered lines alike, and only
+// ends when the next recognized "Label:" line (Links:, Active:, or any
+// other field) actually arrives.
 function vcbParseRawText(text) {
-  var blocks = text.replace(/\r\n/g, '\n').split(/\n[ \t]*---[ \t]*(?:\n|$)/).map(function (b) { return b.trim(); }).filter(Boolean);
+  var lines = text.replace(/\r\n/g, '\n').split('\n').map(function (l) { return l.trim(); });
   var terms = [];
   var warnings = [];
-  blocks.forEach(function (block, bi) {
-    var lines = block.split('\n').map(function (l) { return l.trim(); });
-    var word = '';
-    var definition = '', coachingCue = '', craftCategory = '', narrativeStage = '', func = '', complexityLevel = '';
-    var exerciseSteps = [];
-    var seeAlsoNames = [];
-    var isActive = true;
-    var i = 0;
-    while (i < lines.length && !lines[i]) i++;
-    if (i < lines.length) { word = lines[i]; i++; }
-    var mode = null; // 'exercise' while collecting numbered Mini Exercise steps
-    for (; i < lines.length; i++) {
-      var line = lines[i];
-      if (!line) { mode = null; continue; }
-      var m;
-      if ((m = line.match(/^definition\s*(?:\([^)]*\))?\s*:\s*(.*)$/i))) { definition = m[1].trim(); mode = null; continue; }
-      if ((m = line.match(/^coaching\s*cue\s*(?:\([^)]*\))?\s*:\s*(.*)$/i))) { coachingCue = m[1].trim(); mode = null; continue; }
-      if ((m = line.match(/^craft\s*category\s*:\s*(.*)$/i))) {
-        var rawCC = m[1].trim(); var normCC = VCB_RAW_CRAFT_SET[rawCC.toLowerCase()];
-        if (!normCC && rawCC) warnings.push('"' + word + '": Craft Category "' + rawCC + '" not recognized - left blank.');
-        craftCategory = normCC || ''; mode = null; continue;
-      }
-      if ((m = line.match(/^narrative\s*stage\s*:\s*(.*)$/i))) {
-        var rawNS = m[1].trim();
-        if (/[\u2192\u2013\u2014>]/.test(rawNS)) {
-          warnings.push('"' + word + '": Narrative Stage must be a single stage, not a range ("' + rawNS + '") - left blank.');
-        } else {
-          var normNS = VCB_RAW_STAGE_SET[rawNS.toLowerCase()];
-          if (!normNS && rawNS) warnings.push('"' + word + '": Narrative Stage "' + rawNS + '" not recognized - left blank.');
-          narrativeStage = normNS || '';
-        }
-        mode = null; continue;
-      }
-      if ((m = line.match(/^function\s*:\s*(.*)$/i))) {
-        var rawF = m[1].trim(); var normF = VCB_RAW_FUNC_SET[rawF.toLowerCase()];
-        if (!normF && rawF) warnings.push('"' + word + '": Function "' + rawF + '" not recognized - left blank.');
-        func = normF || ''; mode = null; continue;
-      }
-      if ((m = line.match(/^complexity\s*level\s*:\s*(.*)$/i))) {
-        var rawCL = m[1].trim(); var normCL = VCB_RAW_LEVEL_SET[rawCL.toLowerCase()];
-        if (!normCL && rawCL) warnings.push('"' + word + '": Complexity Level "' + rawCL + '" not recognized - left blank.');
-        complexityLevel = normCL || ''; mode = null; continue;
-      }
-      if (/^mini\s*exercise\s*:?\s*$/i.test(line)) { mode = 'exercise'; continue; }
-      if ((m = line.match(/^links?\s*:\s*(.*)$/i))) {
-        var rawL = m[1].replace(/^see\s*also\s*:?\s*/i, '').trim();
-        seeAlsoNames = rawL ? rawL.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
-        mode = null; continue;
-      }
-      if ((m = line.match(/^active\s*:\s*(.*)$/i))) {
-        isActive = !/^(no|false|inactive)$/i.test(m[1].trim());
-        mode = null; continue;
-      }
-      if (mode === 'exercise') {
-        var step = line.replace(/^\d+[.)]\s*/, '').trim();
-        if (step) exerciseSteps.push(step);
-        continue;
-      }
-      warnings.push('"' + (word || ('block ' + (bi + 1))) + '": unrecognized line ignored: "' + line + '"');
+  var cur = null;
+  var mode = null; // 'exercise' while collecting Mini Exercise steps
+
+  function blankTerm(word) {
+    return {
+      word: word, definition: '', coachingCue: '', craftCategory: '', narrativeStage: '',
+      function: '', complexityLevel: '', exerciseSteps: [], seeAlsoNames: [], isActive: true
+    };
+  }
+  function finalizeCurrent() {
+    if (!cur) return;
+    if (!cur.definition) warnings.push('"' + cur.word + '": no Definition found.');
+    terms.push(cur);
+    cur = null;
+  }
+
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+
+    if (/^-{3,}$/.test(line)) { finalizeCurrent(); mode = null; continue; }
+    if (!line) continue; // blank lines are never meaningful on their own - see note above
+
+    var m;
+    if ((m = line.match(/^definition\s*(?:\([^)]*\))?\s*:\s*(.*)$/i))) {
+      if (!cur) { warnings.push('"Definition:" found with no term name above it - skipped.'); continue; }
+      cur.definition = m[1].trim(); mode = null; continue;
     }
-    if (!word) { warnings.push('Block ' + (bi + 1) + ': no term name found on its first line - skipped.'); return; }
-    if (!definition) warnings.push('"' + word + '": no Definition found.');
-    terms.push({
-      word: word, definition: definition, coachingCue: coachingCue,
-      craftCategory: craftCategory, narrativeStage: narrativeStage,
-      function: func, complexityLevel: complexityLevel,
-      exerciseSteps: exerciseSteps, seeAlsoNames: seeAlsoNames, isActive: isActive
-    });
-  });
+    if ((m = line.match(/^coaching\s*cue\s*(?:\([^)]*\))?\s*:\s*(.*)$/i))) {
+      if (!cur) { warnings.push('"Coaching Cue:" found with no term name above it - skipped.'); continue; }
+      cur.coachingCue = m[1].trim(); mode = null; continue;
+    }
+    if ((m = line.match(/^craft\s*category\s*:\s*(.*)$/i))) {
+      if (!cur) { warnings.push('"Craft Category:" found with no term name above it - skipped.'); continue; }
+      var rawCC = m[1].trim(); var normCC = VCB_RAW_CRAFT_SET[rawCC.toLowerCase()];
+      if (!normCC && rawCC) warnings.push('"' + cur.word + '": Craft Category "' + rawCC + '" not recognized - left blank.');
+      cur.craftCategory = normCC || ''; mode = null; continue;
+    }
+    if ((m = line.match(/^narrative\s*stage\s*:\s*(.*)$/i))) {
+      if (!cur) { warnings.push('"Narrative Stage:" found with no term name above it - skipped.'); continue; }
+      var rawNS = m[1].trim();
+      if (/[\u2192\u2013\u2014>]/.test(rawNS)) {
+        warnings.push('"' + cur.word + '": Narrative Stage must be a single stage, not a range ("' + rawNS + '") - left blank.');
+      } else {
+        var normNS = VCB_RAW_STAGE_SET[rawNS.toLowerCase()];
+        if (!normNS && rawNS) warnings.push('"' + cur.word + '": Narrative Stage "' + rawNS + '" not recognized - left blank.');
+        cur.narrativeStage = normNS || '';
+      }
+      mode = null; continue;
+    }
+    if ((m = line.match(/^function\s*:\s*(.*)$/i))) {
+      if (!cur) { warnings.push('"Function:" found with no term name above it - skipped.'); continue; }
+      var rawF = m[1].trim(); var normF = VCB_RAW_FUNC_SET[rawF.toLowerCase()];
+      if (!normF && rawF) warnings.push('"' + cur.word + '": Function "' + rawF + '" not recognized - left blank.');
+      cur.function = normF || ''; mode = null; continue;
+    }
+    if ((m = line.match(/^complexity\s*level\s*:\s*(.*)$/i))) {
+      if (!cur) { warnings.push('"Complexity Level:" found with no term name above it - skipped.'); continue; }
+      var rawCL = m[1].trim(); var normCL = VCB_RAW_LEVEL_SET[rawCL.toLowerCase()];
+      if (!normCL && rawCL) warnings.push('"' + cur.word + '": Complexity Level "' + rawCL + '" not recognized - left blank.');
+      cur.complexityLevel = normCL || ''; mode = null; continue;
+    }
+    if (/^mini\s*exercise\s*:?\s*$/i.test(line)) {
+      if (!cur) { warnings.push('"Mini Exercise:" found with no term name above it - skipped.'); continue; }
+      mode = 'exercise'; continue;
+    }
+    if ((m = line.match(/^links?\s*:\s*(.*)$/i))) {
+      if (!cur) { warnings.push('"Links:" found with no term name above it - skipped.'); continue; }
+      var rawL = m[1].replace(/^see\s*also\s*:?\s*/i, '').trim();
+      cur.seeAlsoNames = rawL ? rawL.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
+      mode = null; continue;
+    }
+    if ((m = line.match(/^active\s*:\s*(.*)$/i))) {
+      if (!cur) { warnings.push('"Active:" found with no term name above it - skipped.'); continue; }
+      cur.isActive = !/^(no|false|inactive)$/i.test(m[1].trim());
+      mode = null; continue;
+    }
+
+    if (mode === 'exercise') {
+      var step = line.replace(/^\d+[.)]\s*/, '').trim();
+      if (step) cur.exerciseSteps.push(step);
+      continue;
+    }
+
+    // Not blank, not a separator, not a recognized "Label:" line, and not
+    // inside a Mini Exercise list - this line is the start of the next
+    // term, whether or not a --- separator preceded it.
+    finalizeCurrent();
+    cur = blankTerm(line);
+  }
+  finalizeCurrent();
   return { terms: terms, warnings: warnings };
 }
 function vcbRawLog(msg) {
@@ -3235,8 +3275,9 @@ var VCB_RAW_TEMPLATE_TEXT = [
   '',
   'RULES',
   '-----',
-  '- One term per block. Separate blocks with a line containing only: ---',
-  '- The first line of each block is the term itself (the word).',
+  '- Separate terms with a blank line, OR a line containing only: ---',
+  '  Either works \u2014 you never have to add --- by hand if you don\u2019t want to.',
+  '- The first line of each new term is the term itself (the word).',
   '- Every other line starts with one of the exact labels below, followed',
   '  by a colon. Order does not matter; each label should appear at most',
   '  once per term.',
@@ -3246,8 +3287,10 @@ var VCB_RAW_TEMPLATE_TEXT = [
   '  never guessed at.',
   '- Narrative Stage is always ONE stage, never a range \u2014 use the single',
   '  stage where the term is most useful, not "Setup -> Resolution".',
-  '- Mini Exercise steps are numbered (1. 2. 3. ...) \u2014 the numbers are',
-  '  stripped automatically, so 1. / 1) / etc. all work.',
+  '- Mini Exercise steps can be numbered (1. 2. 3.) or not, and can have',
+  '  blank lines between them or not \u2014 either way works. The list just',
+  '  keeps collecting steps until it reaches the next label line (Links:,',
+  '  Active:, or the end of that term).',
   '- Links is a comma-separated list of other term names \u2014 these can be',
   '  terms already in the glossary OR other terms in this same paste; the',
   '  import resolves them to real Cross Links by matching the word text',
