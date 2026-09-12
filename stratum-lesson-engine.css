@@ -2189,31 +2189,48 @@ button.download-btn:hover { background-color: #5a4535; }
    ------------------------------------------------------------
    Styles for buildCharacterExcavationPanel() and its supporting
    functions in the engine JS - the six-layer excavation ladder shown
-   inside Home > Writing Modules > Character Excavation. The rail
-   shows all six layers (current highlighted, completed checked); the
-   coaching window below it is the existing .srx-wrap chat UI, reused
-   unchanged via buildCoachUI(). The closing master-deliverable card
-   reuses .srx-dc-* (buildDeliverableCard's classes) for the header/
-   congrats treatment - only .ladder-master-* below is new.
+   inside Home > Writing Modules > Character Excavation. A vertical rail
+   (all six layers, current highlighted, completed checked, connected by
+   a single running line - the "excavation ladder" made literal) sits to
+   the left of the coaching window. The coaching window itself is the
+   existing .srx-wrap chat UI, reused unchanged via buildCoachUI(). The
+   closing master-deliverable card reuses .srx-dc-* (buildDeliverableCard's
+   classes) for the header/congrats treatment - only .ladder-master-*
+   below is new.
    ============================================================ */
 
-.ladder-wrap{ padding:0; }
+.ladder-wrap{
+  display:flex;
+  align-items:flex-start;
+  gap:32px;
+  padding:28px 24px;
+}
 
 .ladder-rail{
+  flex:0 0 200px;
+  position:relative;
   display:flex;
-  flex-wrap:wrap;
-  gap:0;
-  border-bottom:1px solid #E8DCC3;
-  margin-bottom:8px;
+  flex-direction:column;
+  padding-left:2px;
+}
+.ladder-rail::before{
+  content:'';
+  position:absolute;
+  left:17px;
+  top:18px;
+  bottom:18px;
+  width:2px;
+  background:#E8DCC3;
+  z-index:0;
 }
 .ladder-step{
+  position:relative;
+  z-index:1;
   display:flex;
-  align-items:center;
-  gap:8px;
-  padding:14px 16px;
+  align-items:flex-start;
+  gap:12px;
+  padding:14px 0;
   opacity:.55;
-  flex:1 1 auto;
-  min-width:140px;
   transition:opacity .15s ease;
 }
 .ladder-step.done{ opacity:.85; }
@@ -2222,12 +2239,13 @@ button.download-btn:hover { background-color: #5a4535; }
   display:flex;
   align-items:center;
   justify-content:center;
-  width:24px;
-  height:24px;
+  width:34px;
+  height:34px;
   border-radius:50%;
   border:1.5px solid #C9A46C;
+  background:#fff;
   font-family:'Inter',sans-serif;
-  font-size:11px;
+  font-size:12px;
   font-weight:700;
   color:#3B2F24;
   flex-shrink:0;
@@ -2240,14 +2258,16 @@ button.download-btn:hover { background-color: #5a4535; }
 .ladder-step.current .ladder-step-marker{ border-width:2px; }
 .ladder-step-label{
   font-family:'Inter',sans-serif;
-  font-size:12px;
+  font-size:12.5px;
   font-weight:600;
   letter-spacing:.02em;
   text-transform:uppercase;
   color:#3B2F24;
+  padding-top:8px;
+  line-height:1.3;
 }
 
-.ladder-coach-mount{ padding-top:8px; }
+.ladder-coach-mount{ flex:1 1 auto; min-width:0; }
 
 .ladder-layer-divider{
   text-align:center;
@@ -2276,7 +2296,12 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 .ladder-master-text p{ margin:0 0 16px; }
 
-@media (max-width:640px){
-  .ladder-step{ min-width:100px; padding:12px 10px; }
-  .ladder-step-label{ font-size:10.5px; }
+@media (max-width:780px){
+  .ladder-wrap{ flex-direction:column; gap:8px; padding:20px 16px; }
+  .ladder-rail{ flex:none; width:100%; flex-direction:row; flex-wrap:wrap; }
+  .ladder-rail::before{
+    left:18px; right:18px; top:17px; bottom:auto; width:auto; height:2px;
+  }
+  .ladder-step{ flex-direction:column; align-items:center; flex:1 1 auto; min-width:80px; padding:10px 6px; gap:6px; }
+  .ladder-step-label{ font-size:9.5px; text-align:center; padding-top:0; }
 }
