@@ -3555,17 +3555,57 @@
   var ladderCompletedSet = {};
   var ladderRailWrap = null;
   var ladderCoachMount = null;
+  // Sept 2026: single overview video covering the entire six-layer
+  // excavation process, sitting full-width above the strata rail and
+  // coaching window. PLACEHOLDER media id below - reused from Lesson
+  // 1.1's existing Wistia video since no combined-process video has been
+  // recorded/uploaded yet. Swap LADDER_OVERVIEW_VIDEO_ID for the real id
+  // once that video exists; nothing else needs to change.
+  var LADDER_OVERVIEW_VIDEO_ID = '0owdas4mfp';
   function buildCharacterExcavationPanel(panel) {
     if (!isEmailConfirmed()) { buildIdentityGate(panel, 'gateItemCoaching'); return; }
     LADDER_MODE = true;
     panel.innerHTML = '';
+    var videoWrap = el('div', 'ladder-video-wrap');
+    buildVideo(videoWrap, LADDER_OVERVIEW_VIDEO_ID);
+    mount(panel, videoWrap);
     var wrap = el('div', 'ladder-wrap');
     ladderRailWrap = el('div', 'ladder-rail');
+    // The strata SVG is built once here and never rebuilt by
+    // renderLadderRail() below - only its six bands' state classes get
+    // toggled. The six label rows live in a separate .ladder-steps child
+    // that IS rebuilt each time, so the artwork itself is never re-parsed.
+    ladderRailWrap.innerHTML = buildLadderStrataSvg() + '<div class="ladder-steps"></div>';
     mount(wrap, ladderRailWrap);
     ladderCoachMount = el('div', 'ladder-coach-mount');
     mount(wrap, ladderCoachMount);
     mount(panel, wrap);
     loadLadderProgress();
+  }
+  // Six hand-authored jagged-boundary bands forming a geological
+  // cross-section, one per layer, light at the surface (Anchor Behavior)
+  // running down to black at the deepest layer (Fears & Desires) - using
+  // the six brand colors in that exact light-to-dark order, so the
+  // "digging deeper" metaphor is literal rather than just six flat swatches.
+  // viewBox is a fixed 200x600 (0/100/200/300/400/500/600 boundary
+  // baselines, +/-6-12px jagged variance) and stretches to fill
+  // .ladder-rail's actual size via preserveAspectRatio="none" - the exact
+  // pixel size never matters, only the proportions.
+  function buildLadderStrataSvg() {
+    var bands = [
+      { d: 'M0,0 L50,0 L100,0 L150,0 L200,0 L200,102 L150,98 L100,108 L50,96 L0,104 Z', fill: '#F5EFE0' },
+      { d: 'M0,104 L50,96 L100,108 L150,98 L200,102 L200,198 L150,206 L100,193 L50,207 L0,197 Z', fill: '#E8DCC3' },
+      { d: 'M0,197 L50,207 L100,193 L150,206 L200,198 L200,303 L150,297 L100,308 L50,295 L0,304 Z', fill: '#F5D78E' },
+      { d: 'M0,304 L50,295 L100,308 L150,297 L200,303 L200,398 L150,405 L100,393 L50,407 L0,396 Z', fill: '#C9A46C' },
+      { d: 'M0,396 L50,407 L100,393 L150,405 L200,398 L200,502 L150,495 L100,507 L50,494 L0,503 Z', fill: '#3B2F24' },
+      { d: 'M0,503 L50,494 L100,507 L150,495 L200,502 L200,600 L150,600 L100,600 L50,600 L0,600 Z', fill: '#080808' }
+    ];
+    var parts = ['<svg class="ladder-strata-svg" viewBox="0 0 200 600" preserveAspectRatio="none" aria-hidden="true">'];
+    bands.forEach(function (b) {
+      parts.push('<path class="ladder-band pending" d="' + b.d + '" fill="' + b.fill + '"></path>');
+    });
+    parts.push('</svg>');
+    return parts.join('');
   }
   // Reads the student's existing /completions (same public endpoint the
   // rest of the engine already uses) to find which of the six layer ids
@@ -3603,18 +3643,25 @@
         startLadderLayer(0);
       });
   }
+  // Toggles state on the persistent SVG bands (built once, see
+  // buildLadderStrataSvg above) and rebuilds only the six label rows -
+  // the artwork itself is never touched by this function.
   function renderLadderRail(currentIndex, completedSet) {
     if (!ladderRailWrap) return;
-    ladderRailWrap.innerHTML = '';
+    var stepsWrap = ladderRailWrap.querySelector('.ladder-steps');
+    if (stepsWrap) stepsWrap.innerHTML = '';
+    var bands = ladderRailWrap.querySelectorAll('.ladder-band');
     LADDER_LAYERS.forEach(function (layer, i) {
-      var cls = 'ladder-step' +
-        (completedSet[layer.id] ? ' done' : '') +
-        (i === currentIndex ? ' current' : '');
-      var step = el('div', cls);
-      var marker = el('div', 'ladder-step-marker', completedSet[layer.id] ? '\u2713' : String(i + 1));
-      mount(step, marker);
-      mount(step, el('div', 'ladder-step-label', layer.label));
-      mount(ladderRailWrap, step);
+      var state = completedSet[layer.id] ? 'done' : (i === currentIndex ? 'current' : 'pending');
+      if (bands[i]) bands[i].setAttribute('class', 'ladder-band ' + state);
+      if (!stepsWrap) return;
+      var step = el('div', 'ladder-step ' + state);
+      step.setAttribute('data-band', String(i));
+      step.setAttribute('aria-label', layer.label + (state === 'done' ? ' - complete' : state === 'current' ? ' - current' : ''));
+      var check = el('span', 'ladder-step-check', state === 'done' ? '\u2713' : '');
+      mount(step, check);
+      mount(step, el('span', 'ladder-step-label', layer.label));
+      mount(stepsWrap, step);
     });
   }
   function resetLadderSessionState() {
