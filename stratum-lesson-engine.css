@@ -2097,22 +2097,23 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 
 /* ============================================================
-   16. HOME PAGE SHELL (Sept 2026, redesigned for the collapsed/
-       expandable icon rail)
+   16. HOME PAGE SHELL (Sept 2026, collapsed/expandable icon rail —
+       white/light color scheme)
    ------------------------------------------------------------
-   Styles for buildHomeShell() in the engine JS. Was a fixed-width,
-   always-fully-labeled dark sidebar (Home / WIP / Writing Modules /
-   Idea Log / Action Items / Glossary / Help); is now a slim, always-
-   visible icon rail that expands into a wider labeled panel as an
-   overlay on top of .home-content, toggled by .home-sidebar-toggle at
-   the top of the rail — the HeyGen-style "collapsed and simple, but you
-   can see it both open and closed" pattern, rebuilt in Stratum's own
-   Umber/Clay/Gold/Sand/Off-white palette rather than copying HeyGen's
-   color scheme.
+   Styles for buildHomeShell() in the engine JS. A slim, always-visible
+   icon rail that expands into a wider labeled panel as an overlay on
+   top of .home-content, toggled by .home-sidebar-toggle at the top of
+   the rail — the HeyGen-style "collapsed and simple, but you can see it
+   both open and closed" pattern. Sept 2026 update: recolored from a
+   dark umber sidebar to a white/off-white scheme matching HeyGen's own
+   light panel (white background, muted-grey resting icons/text, a soft
+   rounded highlight behind the active item instead of a dark fill) —
+   built from Stratum's own palette (Clay/Gold for the active highlight
+   and accents, Umber for text) rather than HeyGen's blue.
 
    Structure (unchanged panel ids/data-home-target values — only the
    markup inside each .home-navlink button and the sidebar's own
-   width/position behavior changed):
+   width/position/color behavior changed):
      .home-shell
        .home-sidebar                (the rail itself; gets .expanded)
          .home-sidebar-toggle       (hamburger button, always visible)
@@ -2126,12 +2127,10 @@ button.download-btn:hover { background-color: #5a4535; }
    width transition animates smoothly rather than snapping labels in/out).
    Expanded (.home-sidebar.expanded): widens to 248px, position:absolute
    so it overlays .home-content instead of reflowing it (.home-shell
-   stays position:relative to anchor this), with a soft box-shadow and
-   the scrim visible behind it. Both states keep the same dark umber
-   background and gold/clay active-state accent already used elsewhere
-   in this file (--srx-umber/--srx-clay equivalents, spelled out here
-   since this file's :root custom properties are scoped to .srx-wrap and
-   don't reach outside it).
+   stays position:relative to anchor this), with a soft box-shadow (needs
+   to read clearly now that the panel is white against white/light
+   content, unlike the old dark-on-white contrast) and the scrim visible
+   behind it.
    ============================================================ */
 
 .home-shell{
@@ -2140,6 +2139,7 @@ button.download-btn:hover { background-color: #5a4535; }
   align-items:stretch;
   min-height:520px;
   overflow:hidden;
+  background:#ffffff;
 }
 
 .home-sidebar{
@@ -2149,7 +2149,8 @@ button.download-btn:hover { background-color: #5a4535; }
   width:60px;
   display:flex;
   flex-direction:column;
-  background:#3B2F24;
+  background:#ffffff;
+  border-right:1px solid #EAE2CE;
   padding:10px 0;
   overflow:hidden;
   transition:width .22s ease, box-shadow .22s ease;
@@ -2158,7 +2159,7 @@ button.download-btn:hover { background-color: #5a4535; }
   position:absolute;
   inset:0 auto 0 0;
   width:248px;
-  box-shadow:6px 0 24px rgba(0,0,0,.28);
+  box-shadow:8px 0 28px rgba(40,30,22,.14);
   overflow:visible;
 }
 
@@ -2173,11 +2174,10 @@ button.download-btn:hover { background-color: #5a4535; }
   padding:10px 19px;
   margin-bottom:6px;
   cursor:pointer;
-  color:#E8DCC3;
-  opacity:.85;
-  transition:opacity .15s ease,background-color .15s ease;
+  color:#8a7a5e;
+  transition:color .15s ease,background-color .15s ease;
 }
-.home-sidebar-toggle:hover{ opacity:1; background:rgba(255,255,255,.05); }
+.home-sidebar-toggle:hover{ color:#281e16; background:#F7F2E6; }
 .home-sidebar-toggle svg{ width:20px; height:20px; flex-shrink:0; }
 
 .home-navlink{
@@ -2194,20 +2194,19 @@ button.download-btn:hover { background-color: #5a4535; }
   font-size:12.5px;
   letter-spacing:.04em;
   text-transform:uppercase;
-  color:#E8DCC3;
-  padding:12px 19px;
+  color:#7d715c;
+  padding:11px 14px;
+  margin:2px 8px;
+  width:calc(100% - 16px);
+  border-radius:10px;
   cursor:pointer;
-  border-left:3px solid transparent;
-  opacity:.78;
-  transition:opacity .15s ease,border-color .15s ease,color .15s ease,background-color .15s ease;
+  transition:color .15s ease,background-color .15s ease;
   white-space:nowrap;
 }
-.home-navlink:hover{ opacity:1; background:rgba(255,255,255,.04); }
+.home-navlink:hover{ color:#281e16; background:#F7F2E6; }
 .home-navlink.active{
-  color:#F5D78E;
-  border-left-color:#C9A46C;
-  opacity:1;
-  background:rgba(255,255,255,.06);
+  color:#8a6630;
+  background:#FBF3E3;
 }
 .home-navlink-icon{
   flex-shrink:0;
@@ -2237,10 +2236,11 @@ button.download-btn:hover { background-color: #5a4535; }
 .home-modules-btn{ position:relative; }
 .home-modules-caret{
   position:absolute;
-  right:16px;
+  right:14px;
   top:50%;
   transform:translateY(-50%) rotate(0deg);
   font-size:9px;
+  color:#8a7a5e;
   opacity:0;
   transition:transform .15s ease, opacity .15s ease;
 }
@@ -2249,7 +2249,10 @@ button.download-btn:hover { background-color: #5a4535; }
 .home-modules-menu{
   display:none;
   flex-direction:column;
-  background:rgba(0,0,0,.18);
+  background:#FBF8F0;
+  margin:0 8px;
+  border-radius:8px;
+  overflow:hidden;
 }
 .home-modules-item{
   display:flex;
@@ -2259,20 +2262,18 @@ button.download-btn:hover { background-color: #5a4535; }
   text-align:left;
   background:none;
   border:none;
-  border-left:3px solid transparent;
-  padding:10px 19px 10px 38px;
+  padding:10px 14px 10px 30px;
   font-family:'Inter',sans-serif;
   font-size:12px;
   font-weight:600;
   letter-spacing:.02em;
   text-transform:uppercase;
-  color:#E8DCC3;
-  opacity:.78;
+  color:#7d715c;
   cursor:pointer;
-  transition:opacity .15s ease,background-color .15s ease;
+  transition:color .15s ease,background-color .15s ease;
   white-space:nowrap;
 }
-.home-modules-item:hover{ opacity:1; background:rgba(255,255,255,.05); }
+.home-modules-item:hover{ color:#281e16; background:#F0E9D8; }
 .home-modules-item-icon{ flex-shrink:0; width:16px; height:16px; display:flex; align-items:center; justify-content:center; }
 .home-modules-item-icon svg{ width:100%; height:100%; }
 /* Only meaningful while expanded (see buildHomeModulesDropdown() in the
@@ -2284,6 +2285,7 @@ button.download-btn:hover { background-color: #5a4535; }
 .home-content{
   flex:1 1 auto;
   min-width:0;
+  background:#ffffff;
 }
 .home-panel{
   display:none;
@@ -2294,11 +2296,13 @@ button.download-btn:hover { background-color: #5a4535; }
 
 /* Scrim behind the expanded rail — click target to collapse it again,
    same overlay idiom as .srx-identity-overlay elsewhere in this file.
-   Sits between the rail (z-index:20) and the content. */
+   Sits between the rail (z-index:20) and the content. Kept as a dark,
+   low-opacity wash even though the rail itself is now light, since its
+   job is to dim the CONTENT behind the flyout, not match the rail. */
 .home-sidebar-scrim{
   position:absolute;
   inset:0;
-  background:rgba(8,8,8,.28);
+  background:rgba(40,30,22,.18);
   opacity:0;
   pointer-events:none;
   transition:opacity .18s ease;
@@ -2312,8 +2316,8 @@ button.download-btn:hover { background-color: #5a4535; }
 @media (max-width:640px){
   .home-sidebar{ flex-basis:52px; width:52px; padding:8px 0; }
   .home-sidebar.expanded{ width:224px; }
-  .home-navlink,.home-sidebar-toggle{ padding:11px 15px; }
-  .home-modules-item{ padding:9px 15px 9px 34px; }
+  .home-navlink,.home-sidebar-toggle{ padding:11px 12px; }
+  .home-modules-item{ padding:9px 12px 9px 28px; }
 }
 
 /* ============================================================
