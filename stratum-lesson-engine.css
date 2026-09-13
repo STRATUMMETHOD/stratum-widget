@@ -2101,7 +2101,7 @@ button.download-btn:hover { background-color: #5a4535; }
    ------------------------------------------------------------
    Styles for buildHomeShell() in the engine JS. Same two-state element
    (.home-sidebar), same panel ids/data-home-target values, same
-   home-navlink/home-modules-*/home-sidebar-scrim class names as before —
+   home-navlink, home-modules- and home-sidebar-scrim class names as before —
    only the shape and elevation changed this round, plus the toggle's own
    isolation. stratum-lesson-engine.js does not need to be redelivered
    for this round (all changes are CSS-only, icons already use
