@@ -2097,40 +2097,42 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 
 /* ============================================================
-   16. HOME PAGE SHELL (Sept 2026, collapsed/expandable icon rail —
-       white/light color scheme)
+   16. HOME PAGE SHELL (Sept 2026 update 7 — HeyGen-style floating flyout)
    ------------------------------------------------------------
-   Styles for buildHomeShell() in the engine JS. A slim, always-visible
-   icon rail that expands into a wider labeled panel as an overlay on
-   top of .home-content, toggled by .home-sidebar-toggle at the top of
-   the rail — the HeyGen-style "collapsed and simple, but you can see it
-   both open and closed" pattern. Sept 2026 update: recolored from a
-   dark umber sidebar to a white/off-white scheme matching HeyGen's own
-   light panel (white background, muted-grey resting icons/text, a soft
-   rounded highlight behind the active item instead of a dark fill) —
-   built from Stratum's own palette (Clay/Gold for the active highlight
-   and accents, Umber for text) rather than HeyGen's blue.
+   Styles for buildHomeShell() in the engine JS. Same two-state element
+   (.home-sidebar), same panel ids/data-home-target values, same
+   home-navlink/home-modules-*/home-sidebar-scrim class names as before —
+   only the shape and elevation changed this round, plus the toggle's own
+   isolation. stratum-lesson-engine.js does not need to be redelivered
+   for this round (all changes are CSS-only, icons already use
+   currentColor).
 
-   Structure (unchanged panel ids/data-home-target values — only the
-   markup inside each .home-navlink button and the sidebar's own
-   width/position/color behavior changed):
-     .home-shell
-       .home-sidebar                (the rail itself; gets .expanded)
-         .home-sidebar-toggle       (hamburger button, always visible)
-         .home-navlink              (icon span + label span, per item)
-         .home-modules-wrap         (Writing Modules, own dropdown)
-       .home-content                (unchanged — plain white panels)
-       .home-sidebar-scrim          (overlay behind the expanded rail)
+   COLLAPSED — unchanged in spirit: a slim, always-visible icon rail,
+   flush against the left edge of .home-shell. Straight edges, no
+   radius, no shadow — this is docked page chrome, not a floating
+   element, matching HeyGen's own collapsed strip.
 
-   Collapsed: fixed 60px width, icon-only (labels width:0/opacity:0 and
-   clipped via overflow:hidden on the button, not display:none, so the
-   width transition animates smoothly rather than snapping labels in/out).
-   Expanded (.home-sidebar.expanded): widens to 248px, position:absolute
-   so it overlays .home-content instead of reflowing it (.home-shell
-   stays position:relative to anchor this), with a soft box-shadow (needs
-   to read clearly now that the panel is white against white/light
-   content, unlike the old dark-on-white contrast) and the scrim visible
-   behind it.
+   EXPANDED (.home-sidebar.expanded) — previously a flush 248px-wide
+   rectangle stretching the full height of .home-shell (touching top,
+   left, and bottom edges, no radius). Now pulled in from all three of
+   those free edges by a fixed 12px margin, rounded on all four
+   corners, and lifted off the page with a two-layer soft shadow —
+   HeyGen's flyout panel, not a flush-docked drawer. It still overlays
+   .home-content via position:absolute, and .home-sidebar-scrim still
+   dims the content behind it (scrim itself is unchanged — it still
+   covers the full .home-shell, since its job is dimming the content,
+   not tracing the card's new rounded outline).
+
+   TOGGLE — previously just the first button in the same flex column as
+   the nav links, distinguished only by a small margin-bottom. Now its
+   own isolated row: more top/bottom padding and a hairline
+   border-bottom separate it from Home/WIP/etc. below, so it reads as a
+   persistent "menu" control the way HeyGen's does rather than another
+   nav item.
+
+   Color scheme is unchanged from round 2 (white/light throughout,
+   muted warm-grey icons/text at rest, gold-tan active highlight) —
+   this round only touches shape, elevation, and the toggle's spacing.
    ============================================================ */
 
 .home-shell{
@@ -2138,7 +2140,7 @@ button.download-btn:hover { background-color: #5a4535; }
   display:flex;
   align-items:stretch;
   min-height:520px;
-  overflow:hidden;
+  overflow:visible;
   background:#ffffff;
 }
 
@@ -2151,28 +2153,45 @@ button.download-btn:hover { background-color: #5a4535; }
   flex-direction:column;
   background:#ffffff;
   border-right:1px solid #EAE2CE;
-  padding:10px 0;
+  border-radius:0;
+  padding:0 0 10px;
   overflow:hidden;
-  transition:width .22s ease, box-shadow .22s ease;
+  box-shadow:none;
+  transition:width .22s ease, border-radius .22s ease, box-shadow .22s ease;
 }
+
+/* Floating-card state. Pulled off the top/left/bottom edges of
+   .home-shell by a fixed margin (the right edge is a free edge over
+   .home-content, so no margin needed there beyond the card's own
+   width) so it reads as a lifted panel rather than a docked drawer —
+   same idiom as HeyGen's own expanded flyout. */
 .home-sidebar.expanded{
   position:absolute;
-  inset:0 auto 0 0;
+  top:12px;
+  left:12px;
+  bottom:12px;
   width:248px;
-  box-shadow:8px 0 28px rgba(40,30,22,.14);
+  border:1px solid rgba(58,47,36,.08);
+  border-radius:18px;
+  box-shadow:0 18px 44px rgba(40,30,22,.20), 0 2px 8px rgba(40,30,22,.08);
   overflow:visible;
 }
 
+/* Toggle sits in its own row, separated from the nav links below it by
+   a hairline rule and extra top/bottom padding — HeyGen keeps its menu
+   control isolated from the list rather than styling it as the first
+   nav item. */
 .home-sidebar-toggle{
   appearance:none;
   background:none;
   border:none;
+  border-bottom:1px solid #F0EAD8;
   display:flex;
   align-items:center;
   gap:14px;
   width:100%;
-  padding:10px 19px;
-  margin-bottom:6px;
+  padding:16px 19px 14px;
+  margin:0 0 10px;
   cursor:pointer;
   color:#8a7a5e;
   transition:color .15s ease,background-color .15s ease;
@@ -2296,9 +2315,10 @@ button.download-btn:hover { background-color: #5a4535; }
 
 /* Scrim behind the expanded rail — click target to collapse it again,
    same overlay idiom as .srx-identity-overlay elsewhere in this file.
-   Sits between the rail (z-index:20) and the content. Kept as a dark,
-   low-opacity wash even though the rail itself is now light, since its
-   job is to dim the CONTENT behind the flyout, not match the rail. */
+   Sits between the rail (z-index:20) and the content. Covers the full
+   .home-shell rectangle (not the card's rounded outline) since its job
+   is dimming the CONTENT behind the flyout, not matching the card's
+   shape. */
 .home-sidebar-scrim{
   position:absolute;
   inset:0;
@@ -2314,9 +2334,10 @@ button.download-btn:hover { background-color: #5a4535; }
 }
 
 @media (max-width:640px){
-  .home-sidebar{ flex-basis:52px; width:52px; padding:8px 0; }
-  .home-sidebar.expanded{ width:224px; }
+  .home-sidebar{ flex-basis:52px; width:52px; }
+  .home-sidebar.expanded{ top:8px; left:8px; bottom:8px; width:224px; border-radius:16px; }
   .home-navlink,.home-sidebar-toggle{ padding:11px 12px; }
+  .home-sidebar-toggle{ padding:14px 12px 12px; }
   .home-modules-item{ padding:9px 12px 9px 28px; }
 }
 
