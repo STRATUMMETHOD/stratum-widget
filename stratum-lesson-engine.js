@@ -3492,6 +3492,20 @@
          for now. Add a new module by adding one entry to HOME_MODULES
          below - nowhere else needs to change for the nav/dropdown
          itself to pick it up.
+
+     Sept 2026 update (collapsed/expandable rail): the sidebar built by
+     buildHomeShell() below no longer stays a fixed wide column. It is
+     now a slim, always-visible icon rail (HOME_SIDEBAR_COLLAPSED_WIDTH)
+     that expands into a wider labeled panel (HOME_SIDEBAR_EXPANDED_WIDTH)
+     as an overlay on top of .home-content, toggled by a button at the
+     top of the rail (home-sidebar-toggle) - the same collapsed/expanded
+     pattern used by several dashboard-style apps. Nothing about panel
+     ids, data-home-target values, or the underlying openHomePanel()/
+     refreshGatedTabs() logic changed - only the markup inside each
+     .home-navlink button gained an icon span and a label span so the
+     label can be hidden by CSS while collapsed, and the shell gained a
+     toggle button + scrim. See HOME_ICONS and buildHomeShell() below,
+     and section 16 of the engine CSS.
      ========================================================== */
   var HOME_NAV_ITEMS = [
     { id: 'Home', label: 'Home', build: buildBlankHomePanel },
@@ -3507,6 +3521,26 @@
     // real - registering a module here is the only change the dropdown
     // itself needs.
   ];
+  // Sept 2026: inline SVG icons for the collapsed rail, keyed by the same
+  // id used in HOME_NAV_ITEMS/HOME_MODULES (plus 'menu' for the toggle
+  // button and 'writingModules' for the dropdown trigger). Simple,
+  // single-color line icons using stroke="currentColor" so they inherit
+  // whatever color the surrounding button/text rule sets (resting,
+  // hover, active) with no separate icon-color CSS needed. 22x22
+  // viewBox, 1.6 stroke weight - kept deliberately plain rather than
+  // filled/branded glyphs, since these sit in a very small collapsed
+  // space and need to read clearly at that size.
+  var HOME_ICONS = {
+    menu: '<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="3" y1="6" x2="19" y2="6"/><line x1="3" y1="11" x2="19" y2="11"/><line x1="3" y1="16" x2="19" y2="16"/></svg>',
+    Home: '<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5L11 4l7.5 6.5"/><path d="M5.5 9v8h11V9"/><path d="M9 17v-5h4v5"/></svg>',
+    Project: '<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h7l4 4v12H6z"/><path d="M13 3v4h4"/><path d="M8.5 12h5M8.5 15h5"/></svg>',
+    writingModules: '<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3l8 4.5-8 4.5-8-4.5z"/><path d="M3 12.5l8 4.5 8-4.5"/></svg>',
+    CharacterExcavation: '<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h14M4 11h14M4 16h9"/></svg>',
+    Notes: '<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3.5c-3 0-5.2 2.2-5.2 5 0 1.9 1 3.1 2 4.1.6.6 1 1.2 1 2.1h4.4c0-.9.4-1.5 1-2.1 1-1 2-2.2 2-4.1 0-2.8-2.2-5-5.2-5z"/><path d="M9 17h4M9.5 19h3"/></svg>',
+    Tasks: '<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="14" height="15" rx="1.2"/><path d="M7.5 9.5l1.5 1.5 3-3M7.5 15h7"/></svg>',
+    Vocabulary: '<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5c2-1 4.5-1 6.5.5V17c-2-1.3-4.5-1.3-6.5-.3z"/><path d="M18 4.5c-2-1-4.5-1-6.5.5V17c2-1.3 4.5-1.3 6.5-.3z"/></svg>',
+    Help: '<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5"/><path d="M8.7 8.8c.3-1.1 1.2-1.8 2.4-1.8 1.3 0 2.4.9 2.4 2.1 0 1.6-2.2 1.7-2.4 3.3"/><circle cx="11" cy="15" r=".15" fill="currentColor" stroke="none"/></svg>'
+  };
   /* ==========================================================
      CHARACTER EXCAVATION LADDER (Sept 2026)
      ------------------------------------------------------------
@@ -3867,13 +3901,20 @@
       if (directLink) directLink.classList.add('active');
     }
   }
+  // Sept 2026: takes the sidebar element so it can force-expand the rail
+  // when the student opens this dropdown while collapsed - the submenu's
+  // text labels are meaningless in the 60px collapsed state, so opening
+  // the dropdown always means "show me the full panel" first.
   function buildHomeModulesDropdown(nav) {
     var wrap = el('div', 'home-modules-wrap');
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.id = 'homeModulesBtn';
     btn.className = 'home-navlink home-modules-btn';
-    btn.appendChild(document.createTextNode('Writing Modules'));
+    var btnIcon = el('span', 'home-navlink-icon');
+    btnIcon.innerHTML = HOME_ICONS.writingModules;
+    mount(btn, btnIcon);
+    mount(btn, el('span', 'home-navlink-label', 'Writing Modules'));
     mount(btn, el('span', 'home-modules-caret', '\u25BE'));
     mount(wrap, btn);
     var menu = el('div', 'home-modules-menu');
@@ -3882,7 +3923,10 @@
       var item = document.createElement('button');
       item.type = 'button';
       item.className = 'home-modules-item';
-      item.textContent = mod.label;
+      var itemIcon = el('span', 'home-modules-item-icon');
+      itemIcon.innerHTML = HOME_ICONS[mod.id] || '';
+      mount(item, itemIcon);
+      mount(item, el('span', null, mod.label));
       item.addEventListener('click', function () {
         openHomePanel(mod.id);
         menu.style.display = 'none';
@@ -3893,6 +3937,14 @@
     mount(wrap, menu);
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
+      // Force the rail open first - a submenu with hidden labels isn't
+      // usable, so this doubles as "expand" whenever the rail is still
+      // collapsed when Writing Modules is clicked.
+      if (nav && !nav.classList.contains('expanded')) {
+        nav.classList.add('expanded');
+        var scrim = nav.parentNode && nav.parentNode.querySelector('.home-sidebar-scrim');
+        if (scrim) scrim.classList.add('visible');
+      }
       var isOpen = menu.style.display !== 'none';
       menu.style.display = isOpen ? 'none' : 'block';
       wrap.classList.toggle('open', !isOpen);
@@ -3905,10 +3957,24 @@
     });
     mount(nav, wrap);
   }
+  // Sept 2026 (collapsed/expandable rail): builds the always-visible icon
+  // rail plus its expand/collapse toggle and scrim overlay. Every
+  // .home-navlink button still carries the same id/data-home-target and
+  // still lives inside the same .home-sidebar container queried by
+  // openHomePanel()/refreshGatedTabs() elsewhere in this file - the only
+  // change is that each button's content is now an icon span (always
+  // visible) plus a label span (visible only once .home-sidebar has the
+  // "expanded" class, via CSS - see engine CSS section 16).
   function buildHomeShell(container) {
     container.innerHTML = '';
     var shell = el('div', 'home-shell');
     var nav = el('div', 'home-sidebar');
+    var toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'home-sidebar-toggle';
+    toggleBtn.setAttribute('aria-label', 'Expand navigation');
+    toggleBtn.innerHTML = HOME_ICONS.menu;
+    mount(nav, toggleBtn);
     HOME_NAV_ITEMS.forEach(function (item) {
       // Writing Modules sits between WIP and the tool tabs - Home, WIP,
       // Writing Modules, Idea Log, Action Items, Glossary, Help - so it's
@@ -3918,7 +3984,10 @@
       btn.type = 'button';
       btn.className = 'home-navlink';
       btn.setAttribute('data-home-target', item.id);
-      btn.textContent = item.labelKey ? t(item.labelKey) : item.label;
+      var iconSpan = el('span', 'home-navlink-icon');
+      iconSpan.innerHTML = HOME_ICONS[item.id] || '';
+      mount(btn, iconSpan);
+      mount(btn, el('span', 'home-navlink-label', item.labelKey ? t(item.labelKey) : item.label));
       btn.addEventListener('click', function () { openHomePanel(item.id); });
       mount(nav, btn);
     });
@@ -3931,7 +4000,34 @@
       mount(content, panel);
     });
     mount(shell, content);
+    // Scrim: a soft overlay over .home-content while the rail is
+    // expanded, so the flyout reads clearly on top of the page (same
+    // pattern used by the identity modal's own overlay elsewhere in this
+    // file) and gives the student an obvious click-target to dismiss it.
+    var scrim = el('div', 'home-sidebar-scrim');
+    mount(shell, scrim);
     mount(container, shell);
+    function setExpanded(state) {
+      nav.classList.toggle('expanded', state);
+      scrim.classList.toggle('visible', state);
+      toggleBtn.setAttribute('aria-label', state ? 'Collapse navigation' : 'Expand navigation');
+    }
+    toggleBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setExpanded(!nav.classList.contains('expanded'));
+    });
+    scrim.addEventListener('click', function () { setExpanded(false); });
+    // Clicking any nav item while expanded (other than the Writing
+    // Modules dropdown, which manages its own submenu open/close above)
+    // collapses the rail back down after navigating, matching the
+    // "pick something, panel closes" behavior students expect from a
+    // flyout nav rather than leaving it pinned open indefinitely.
+    nav.querySelectorAll('.home-navlink:not(.home-modules-btn)').forEach(function (btn) {
+      btn.addEventListener('click', function () { setExpanded(false); });
+    });
+    document.addEventListener('click', function (e) {
+      if (nav.classList.contains('expanded') && !nav.contains(e.target)) setExpanded(false);
+    });
     openHomePanel('Home');
     if (!isEmailConfirmed()) {
       showIdentityModal();
