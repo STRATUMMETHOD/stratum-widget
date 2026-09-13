@@ -3907,9 +3907,10 @@
   }
   function buildHomeShell(container) {
     container.innerHTML = '';
-    var nav = el('div', 'home-nav');
+    var shell = el('div', 'home-shell');
+    var nav = el('div', 'home-sidebar');
     HOME_NAV_ITEMS.forEach(function (item) {
-      // Writing Modules sits between Home and the tool tabs - Home,
+      // Writing Modules sits between WIP and the tool tabs - Home, WIP,
       // Writing Modules, Idea Log, Action Items, Glossary, Help - so it's
       // inserted right before the Notes (Idea Log) button.
       if (item.id === 'Notes') buildHomeModulesDropdown(nav);
@@ -3921,13 +3922,16 @@
       btn.addEventListener('click', function () { openHomePanel(item.id); });
       mount(nav, btn);
     });
-    mount(container, nav);
+    mount(shell, nav);
+    var content = el('div', 'home-content');
     HOME_NAV_ITEMS.concat(HOME_MODULES).forEach(function (item) {
       var panel = el('div', 'home-panel');
       panel.id = item.id;
       item.build(panel);
-      mount(container, panel);
+      mount(content, panel);
     });
+    mount(shell, content);
+    mount(container, shell);
     openHomePanel('Home');
     if (!isEmailConfirmed()) {
       showIdentityModal();
