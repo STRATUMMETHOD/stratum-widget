@@ -158,6 +158,14 @@
   color: var(--sh-paper);
   flex-shrink: 0;
 }
+.sh-avatar-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
 
 /* ---- Welcome line ---- */
 .sh-welcome-row {
