@@ -219,6 +219,20 @@
 .sh-resume-btn:hover { opacity: .92; }
 .sh-resume-btn:disabled { opacity: .5; cursor: default; }
 
+/* ---- Strata artwork (right-edge background accent) ----
+   Abstract geological cross-section echoing the excavation concept —
+   sits behind the welcome/hero rows, fades into the dark background
+   on its left edge so it reads as texture, not a competing graphic. */
+.sh-strata-art {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 380px;
+  pointer-events: none;
+  z-index: 0;
+}
+
 @media (max-width: 640px) {
   .sh-hero-row { grid-template-columns: 1fr; }
   .sh-nav { gap: 14px; }
