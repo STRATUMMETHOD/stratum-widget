@@ -166,6 +166,19 @@
   display: flex;
   align-items: center;
 }
+.sh-topbar--standalone {
+  background: var(--sh-ink);
+  border-radius: 16px 16px 0 0;
+}
+
+/* Full-bleed dark page background for any page that reuses this shared
+   topbar (WIP Profile, future Coach session pages) — without this, only
+   the card itself is dark and the rest of the browser viewport stays the
+   theme's default white, which is exactly the "floating card on a blank
+   white page, disconnected from the System Page" look Ted flagged. */
+body:has(.sh-topbar--standalone) {
+  background: var(--sh-ink);
+}
 
 /* ---- Welcome line ---- */
 .sh-welcome-row {
@@ -184,12 +197,16 @@
 /* ---- WIP hero row ---- */
 .sh-hero-row {
   display: grid;
-  grid-template-columns: 1fr auto 0.4fr;
+  grid-template-columns: 1fr auto 1fr;
   align-items: flex-end;
   gap: 24px;
   padding: 14px 28px 26px;
   position: relative;
   z-index: 1;
+}
+.sh-hero-row .sh-resume-btn,
+.sh-hero-row .sh-save-btn {
+  justify-self: center;
 }
 .sh-eyebrow {
   font-size: 11px;

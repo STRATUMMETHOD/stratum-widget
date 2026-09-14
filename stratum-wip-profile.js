@@ -231,6 +231,7 @@
   function buildGate(container) {
     container.innerHTML = '';
     var wrap = el('div', 'sh-wrap sh-page');
+    if (window.StratumHeader) window.StratumHeader.buildTopbar(wrap);
     var body = el('div', 'sh-gate');
     var msg = WP_USER.loggedIn
       ? 'Your account doesn\u2019t have an active Stratum Method membership yet.'
@@ -248,13 +249,20 @@
   function buildForm(container) {
     var wrap = el('div', 'sh-wrap sh-page');
 
-    var topbar = el('div', 'sh-page-topbar');
+    // Same persistent top nav (logo, Coach/Practice/Library/Tutorial/
+    // Language, avatar) as the System Page — see window.StratumHeader in
+    // stratum-header.js. This page used to render only a bare "← Back to
+    // Dashboard" link with no other chrome, which read as a disconnected
+    // page rather than part of the same product; a small breadcrumb back
+    // link is kept below the shared nav for a quick way back to /system/.
+    if (window.StratumHeader) window.StratumHeader.buildTopbar(wrap);
+    var crumb = el('div', 'sh-page-topbar');
     var back = document.createElement('a');
     back.className = 'sh-page-back';
     back.href = '/system/';
     back.textContent = '\u2190 Back to Dashboard';
-    mount(topbar, back);
-    mount(wrap, topbar);
+    mount(crumb, back);
+    mount(wrap, crumb);
 
     var body = el('div', 'sh-form-body');
     mount(body, el('h1', 'sh-form-title', 'My WIP'));

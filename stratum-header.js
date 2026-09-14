@@ -58,14 +58,23 @@
   // Server-authoritative login/membership state — see stratum-identity.js.
   var WP_USER = window.StratumIdentity ? window.StratumIdentity.getWpUser() : { loggedIn: false, hasMembership: false, firstName: '', email: '', loginUrl: '#' };
 
-  // TODO: real page slugs once Coach / Practice(Glossary) / Library pages exist.
+  // TODO: real page slugs once Practice(Glossary) / Library pages exist.
   var NAV_LINKS = {
-    coach: '#',
     practice: '#',
     library: '#',
     userProfile: '/membership-account/',
     wipProfile: '/wip-profile/'
   };
+
+  // Coach dropdown — one entry per coaching session, matching
+  // SESSION_DEFINITIONS in stratum-coach.js. Character Excavation is the
+  // only one that exists today; adding a future session (Essentials,
+  // Mastery) is one more entry here plus a matching SESSION_DEFINITIONS
+  // entry and WordPress page — no other nav code changes.
+  var COACHING_SESSIONS = [
+    { label: 'Character Excavation', href: '/coach/character-excavation/' }
+    // TODO: 'Essentials', 'Mastery' — add once those sessions exist.
+  ];
 
   // TODO: populate with real Wistia media IDs once tutorial videos are recorded.
   // Shape: [{ label: 'Getting started', wistiaId: 'xxxxxxxxxx' }, ...]
@@ -109,6 +118,22 @@
       wrap.classList.toggle('open', willOpen);
     });
     return wrap;
+  }
+
+  function buildCoachDropdown() {
+    return buildDropdown('Coach', function (panel) {
+      if (!COACHING_SESSIONS.length) {
+        mount(panel, el('div', 'sh-dropdown-empty', 'Coaching sessions coming soon'));
+        return;
+      }
+      COACHING_SESSIONS.forEach(function (session) {
+        var item = document.createElement('a');
+        item.className = 'sh-dropdown-item';
+        item.href = session.href;
+        item.textContent = session.label;
+        mount(panel, item);
+      });
+    });
   }
 
   function buildTutorialDropdown() {
@@ -264,35 +289,52 @@
   // Abstract geological strata cross-section, echoing the excavation
   // concept, rendered as a background accent along the header's right
   // edge. Static decoration — inserted as raw markup, not built via el().
+  //
+  // Sept 2026 revision: the six tones now blend into each other via one
+  // continuous vertical gradient (shStrataGrad) instead of flat, hard-
+  // edged <rect> bands — the original read as blocky slabs rather than
+  // graduated sediment. The fade-into-background overlay (shFade) also
+  // moved its transition zone from the artwork's left edge (0-31% of its
+  // width) to be centered nearer the middle (35-70%), so the artwork
+  // doesn't cut off abruptly right where it meets the text column.
   var STRATA_ART_SVG =
     '<svg class="sh-strata-art" viewBox="0 0 380 260" preserveAspectRatio="xMaxYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
       '<defs>' +
+        '<linearGradient id="shStrataGrad" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0%" stop-color="#1E1E22"/>' +
+          '<stop offset="12%" stop-color="#332821"/>' +
+          '<stop offset="28%" stop-color="#4A3626"/>' +
+          '<stop offset="42%" stop-color="#1E1E22"/>' +
+          '<stop offset="58%" stop-color="#5C4230"/>' +
+          '<stop offset="68%" stop-color="#332821"/>' +
+          '<stop offset="78%" stop-color="#C97C4A"/>' +
+          '<stop offset="88%" stop-color="#1E1E22"/>' +
+          '<stop offset="100%" stop-color="#4A3626"/>' +
+        '</linearGradient>' +
         '<linearGradient id="shFade" x1="0" y1="0" x2="1" y2="0">' +
           '<stop offset="0%" stop-color="#0E0E10" stop-opacity="1"/>' +
+          '<stop offset="35%" stop-color="#0E0E10" stop-opacity="1"/>' +
+          '<stop offset="70%" stop-color="#0E0E10" stop-opacity="0"/>' +
           '<stop offset="100%" stop-color="#0E0E10" stop-opacity="0"/>' +
         '</linearGradient>' +
       '</defs>' +
-      '<rect x="0" y="0" width="380" height="30" fill="#1E1E22"/>' +
-      '<rect x="0" y="30" width="380" height="26" fill="#332821"/>' +
-      '<rect x="0" y="56" width="380" height="34" fill="#4A3626"/>' +
-      '<rect x="0" y="90" width="380" height="22" fill="#1E1E22"/>' +
-      '<rect x="0" y="112" width="380" height="40" fill="#5C4230"/>' +
-      '<rect x="0" y="152" width="380" height="18" fill="#332821"/>' +
-      '<rect x="0" y="170" width="380" height="36" fill="#C97C4A" opacity="0.35"/>' +
-      '<rect x="0" y="206" width="380" height="24" fill="#1E1E22"/>' +
-      '<rect x="0" y="230" width="380" height="30" fill="#4A3626"/>' +
+      '<rect x="0" y="0" width="380" height="260" fill="url(#shStrataGrad)"/>' +
       '<line x1="60" y1="0" x2="60" y2="260" stroke="#C97C4A" stroke-opacity="0.25" stroke-width="1" stroke-dasharray="4 6"/>' +
       '<line x1="230" y1="0" x2="230" y2="260" stroke="#C97C4A" stroke-opacity="0.15" stroke-width="1" stroke-dasharray="4 6"/>' +
       '<circle cx="150" cy="128" r="4" fill="#C97C4A"/>' +
       '<circle cx="290" cy="184" r="3" fill="#F4F2ED" opacity="0.5"/>' +
-      '<rect x="0" y="0" width="120" height="260" fill="url(#shFade)"/>' +
+      '<rect x="0" y="0" width="380" height="260" fill="url(#shFade)"/>' +
     '</svg>';
 
-  function buildHeader(container) {
-    var wrap = el('div', 'sh-wrap');
-    wrap.insertAdjacentHTML('afterbegin', STRATA_ART_SVG);
-
-    // ---- Top bar: brand + nav ----
+  // Builds the persistent top bar (logo, Coach/Practice/Library/Tutorial/
+  // Language nav, avatar dropdown) — mounted at the top of the System
+  // Page's own dark card by buildHeader() below, AND reused as-is by
+  // every other Stratum page (WIP Profile, future Coach session pages)
+  // via window.StratumHeader.buildTopbar(), so every page in the product
+  // carries identical, persistent navigation rather than feeling like a
+  // disconnected page with no way back. One implementation, one place to
+  // change it.
+  function buildTopbar() {
     var topbar = el('div', 'sh-topbar');
     var brand = el('div', 'sh-brand');
     mount(brand, el('div', 'sh-brand-mark'));
@@ -304,7 +346,8 @@
     mount(topbar, brand);
 
     var nav = el('div', 'sh-nav');
-    [['Coach', NAV_LINKS.coach], ['Practice', NAV_LINKS.practice], ['Library', NAV_LINKS.library]].forEach(function (pair) {
+    mount(nav, buildCoachDropdown());
+    [['Practice', NAV_LINKS.practice], ['Library', NAV_LINKS.library]].forEach(function (pair) {
       var a = document.createElement('a');
       a.className = 'sh-nav-link';
       a.href = pair[1];
@@ -315,7 +358,13 @@
     mount(nav, buildLanguageDropdown());
     mount(nav, buildAvatarDropdown());
     mount(topbar, nav);
-    mount(wrap, topbar);
+    return topbar;
+  }
+
+  function buildHeader(container) {
+    var wrap = el('div', 'sh-wrap');
+    wrap.insertAdjacentHTML('afterbegin', STRATA_ART_SVG);
+    mount(wrap, buildTopbar());
 
     // ---- Welcome ----
     var welcomeRow = el('div', 'sh-welcome-row');
@@ -363,12 +412,15 @@
       mount(left, titleEl);
       genreEl = el('p', 'sh-wip-genre', '');
       mount(left, genreEl);
-      resumeBtn = el('button', 'sh-resume-btn', 'Resume excavating \u2192');
-      resumeBtn.type = 'button';
-      resumeBtn.disabled = true; // enabled once Coach destination exists — see NAV_LINKS.coach TODO
-      resumeBtn.addEventListener('click', function () {
-        if (NAV_LINKS.coach && NAV_LINKS.coach !== '#') window.location.href = NAV_LINKS.coach;
-      });
+      // Points at Character Excavation — the only coaching session that
+      // exists today. Once a WIP has more than one session in progress,
+      // this should route to whichever one is actually in progress
+      // rather than always assuming Character Excavation; worth
+      // revisiting once a second session (Essentials/Mastery) exists.
+      resumeBtn = document.createElement('a');
+      resumeBtn.className = 'sh-resume-btn';
+      resumeBtn.href = COACHING_SESSIONS[0] ? COACHING_SESSIONS[0].href : '#';
+      resumeBtn.textContent = 'Resume excavating \u2192';
     }
 
     mount(heroRow, left);
@@ -406,12 +458,22 @@
 
   function init() {
     var container = document.getElementById('stratum-header');
-    if (!container) {
-      console.error('[Stratum] No #stratum-header container found on this page.');
-      return;
-    }
+    if (!container) return; // normal on pages that only use window.StratumHeader.buildTopbar() — not an error
     buildHeader(container);
   }
+
+  // Public API for other pages (WIP Profile, future Coach session pages)
+  // that want the SAME persistent top nav bar as the System Page, without
+  // the dashboard-specific welcome/WIP-hero/Focus-Tracking content below
+  // it. One shared implementation — see buildTopbar() above.
+  window.StratumHeader = {
+    buildTopbar: function (container) {
+      if (!container) return;
+      var bar = buildTopbar();
+      bar.classList.add('sh-topbar--standalone');
+      mount(container, bar);
+    }
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

@@ -1,0 +1,256 @@
+/* ============================================================
+   STRATUM COACH — COACHING SESSION PAGE (Sept 2026)
+   ------------------------------------------------------------
+   Character Excavation is the first of these; the format is meant
+   to be reused for every future coaching session (Essentials,
+   Mastery) per Ted's spec — see SESSION_DEFINITIONS in
+   stratum-coach.js. Reuses the --sh-* custom properties from
+   stratum-header.css (load that file's CSS on this page too, for
+   the shared palette) rather than redeclaring them.
+   ============================================================ */
+
+.sh-coach-page {
+  max-width: 1100px;
+  margin: 0 auto 40px;
+}
+
+.sh-coach-video-wrap {
+  width: 100%;
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  background: #000;
+}
+.sh-coach-video-wrap wistia-player {
+  display: block;
+  width: 100%;
+}
+
+.sh-coach-body {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  padding: 24px 0 0;
+}
+
+/* ---- Strata rail ---- */
+.sh-rail {
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--sh-line);
+}
+.sh-rail-layer {
+  flex: 1;
+  min-height: 78px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  transition: opacity .2s ease;
+}
+.sh-rail-layer.sh-pending { opacity: 0.38; }
+.sh-rail-layer.sh-current { opacity: 1; box-shadow: inset 0 0 0 2px var(--sh-warm); }
+.sh-rail-layer.sh-done { opacity: 0.85; }
+.sh-rail-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(244,242,237,.5);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--sh-paper);
+}
+.sh-rail-layer.sh-done .sh-rail-check {
+  background: var(--sh-warm);
+  border-color: var(--sh-warm);
+  color: var(--sh-ink);
+}
+.sh-rail-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--sh-paper);
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+  line-height: 1.3;
+}
+
+/* ---- Coaching chat panel ---- */
+.sh-coach-panel {
+  background: var(--sh-panel2);
+  border: 1px solid var(--sh-line);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 560px;
+}
+.sh-coach-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px 22px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 62vh;
+}
+.sh-msg-row { display: flex; max-width: 100%; }
+.sh-msg-row.sh-assistant { align-self: flex-start; width: 100%; }
+.sh-msg-row.sh-user { align-self: flex-end; max-width: 80%; }
+.sh-msg-bubble {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 15.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: var(--sh-paper);
+}
+.sh-msg-row.sh-user .sh-msg-bubble {
+  background: #2A2A2F;
+  border-radius: 14px;
+  padding: 10px 15px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+.sh-msg-divider {
+  align-self: center;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--sh-sub);
+  margin: 6px 0;
+}
+.sh-typing { display: flex; gap: 4px; padding: 2px 0; }
+.sh-typing span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--sh-warm);
+  animation: sh-bounce 1.2s infinite ease-in-out;
+}
+.sh-typing span:nth-child(2) { animation-delay: .15s; }
+.sh-typing span:nth-child(3) { animation-delay: .3s; }
+@keyframes sh-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: .4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+.sh-coach-form {
+  display: flex;
+  gap: 10px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--sh-line);
+  background: #1A1A1E;
+}
+.sh-coach-input {
+  flex: 1;
+  resize: none;
+  border: 1px solid var(--sh-line);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  background: #26262B;
+  color: var(--sh-paper);
+  max-height: 120px;
+}
+.sh-coach-input:focus { outline: none; border-color: var(--sh-warm); }
+.sh-coach-send {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: none;
+  background: var(--sh-warm);
+  color: var(--sh-ink);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sh-coach-send:disabled { opacity: 0.5; cursor: default; }
+
+/* ---- Deliverable / synthesis card ---- */
+.sh-deliverable-card {
+  margin: 4px 22px 18px;
+  background: #26262B;
+  border: 1px solid var(--sh-line);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+.sh-deliverable-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  margin: 0 0 4px;
+}
+.sh-deliverable-label:not(:first-child) { margin-top: 14px; }
+.sh-deliverable-value {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 16px;
+  color: var(--sh-paper);
+}
+.sh-deliverable-instance {
+  font-size: 13px;
+  color: var(--sh-sub);
+  padding: 6px 0 6px 12px;
+  border-left: 2px solid var(--sh-warm);
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
+.sh-synthesis-card {
+  max-width: 760px;
+  margin: 20px auto;
+  background: var(--sh-panel2);
+  border: 1px solid var(--sh-line);
+  border-radius: 14px;
+  padding: 28px 30px;
+}
+.sh-synthesis-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 24px;
+  color: var(--sh-paper);
+  margin: 0 0 4px;
+}
+.sh-synthesis-sub {
+  font-size: 13px;
+  color: var(--sh-sub);
+  margin: 0 0 20px;
+}
+.sh-synthesis-text {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--sh-paper);
+}
+.sh-synthesis-text p { margin: 0 0 16px; }
+.sh-synthesis-download {
+  margin-top: 20px;
+  background: var(--sh-warm);
+  color: var(--sh-ink);
+  border: none;
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+}
+
+.sh-coach-loading {
+  padding: 60px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--sh-sub);
+}
+
+@media (max-width: 780px) {
+  .sh-coach-body { grid-template-columns: 1fr; }
+  .sh-rail { flex-direction: row; overflow-x: auto; }
+  .sh-rail-layer { min-height: auto; flex-direction: column; text-align: center; gap: 6px; padding: 10px 12px; }
+  .sh-rail-label { font-size: 11px; }
+}
