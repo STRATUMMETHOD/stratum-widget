@@ -13,12 +13,20 @@
    'stratum:header-mounted' handoff that file publishes (window.
    STRATUM_HEADER_WRAP + a matching event, so load order never
    matters) — this file never builds its own separate container.
+
+   Data timing: stratum-header.js resolves the stratum_sid identity
+   cookie asynchronously (a /resolve-identity round trip when logging
+   in fresh via WordPress — see ensureIdentityFromWpUser() there), so
+   this file does NOT read that cookie itself at load time, which
+   would race that resolution and often run before the cookie exists.
+   Instead it waits for the header's 'stratum:identity-ready' event
+   and uses the studentId it carries, which is only fired once
+   resolution has settled one way or another.
    ============================================================ */
 (function () {
   'use strict';
 
   var PROXY_URL = 'https://stratum-proxy.tedbaker0207.workers.dev';
-  var SID_COOKIE = 'stratum_sid';
   var IDEA_LOG_LIMIT = 4;
   var REMINDERS_LIMIT = 4;
 
@@ -28,16 +36,7 @@
     reminders: '#'
   };
 
-  function readCookie(name) {
-    var parts = document.cookie ? document.cookie.split(';') : [];
-    for (var i = 0; i < parts.length; i++) {
-      var kv = parts[i].trim();
-      var eq = kv.indexOf('=');
-      if (eq > -1 && kv.slice(0, eq) === name) return decodeURIComponent(kv.slice(eq + 1));
-    }
-    return null;
-  }
-  var STUDENT_ID = readCookie(SID_COOKIE);
+  var STUDENT_ID = null; // set from the 'stratum:identity-ready' event detail — see init()
 
   function el(tag, className, text) {
     var node = document.createElement(tag);
@@ -183,13 +182,23 @@
     mount(wrapEl, buildDashboardSection());
   }
 
+  // identity-ready always fires after the header's wrap element is
+  // already mounted (see stratum-header.js — the wrap is built and
+  // published before identity resolution even starts), so waiting on
+  // this one signal covers both "DOM is ready" and "STUDENT_ID is
+  // settled" — no separate wait on 'stratum:header-mounted' needed.
+  function proceed(studentId) {
+    STUDENT_ID = studentId || null;
+    mountInto(window.STRATUM_HEADER_WRAP);
+  }
+
   function init() {
-    if (window.STRATUM_HEADER_WRAP) {
-      mountInto(window.STRATUM_HEADER_WRAP);
+    if (window.STRATUM_IDENTITY_READY) {
+      proceed(window.STRATUM_STUDENT_ID);
       return;
     }
-    document.addEventListener('stratum:header-mounted', function (e) {
-      mountInto(e.detail && e.detail.wrapEl);
+    document.addEventListener('stratum:identity-ready', function (e) {
+      proceed(e.detail && e.detail.studentId);
     });
   }
 
