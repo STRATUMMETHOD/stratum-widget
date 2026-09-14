@@ -212,8 +212,36 @@
       .catch(function () { callback(null); });
   }
 
+  // Abstract geological strata cross-section, echoing the excavation
+  // concept, rendered as a background accent along the header's right
+  // edge. Static decoration — inserted as raw markup, not built via el().
+  var STRATA_ART_SVG =
+    '<svg class="sh-strata-art" viewBox="0 0 380 260" preserveAspectRatio="xMaxYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<defs>' +
+        '<linearGradient id="shFade" x1="0" y1="0" x2="1" y2="0">' +
+          '<stop offset="0%" stop-color="#0E0E10" stop-opacity="1"/>' +
+          '<stop offset="100%" stop-color="#0E0E10" stop-opacity="0"/>' +
+        '</linearGradient>' +
+      '</defs>' +
+      '<rect x="0" y="0" width="380" height="30" fill="#1E1E22"/>' +
+      '<rect x="0" y="30" width="380" height="26" fill="#332821"/>' +
+      '<rect x="0" y="56" width="380" height="34" fill="#4A3626"/>' +
+      '<rect x="0" y="90" width="380" height="22" fill="#1E1E22"/>' +
+      '<rect x="0" y="112" width="380" height="40" fill="#5C4230"/>' +
+      '<rect x="0" y="152" width="380" height="18" fill="#332821"/>' +
+      '<rect x="0" y="170" width="380" height="36" fill="#C97C4A" opacity="0.35"/>' +
+      '<rect x="0" y="206" width="380" height="24" fill="#1E1E22"/>' +
+      '<rect x="0" y="230" width="380" height="30" fill="#4A3626"/>' +
+      '<line x1="60" y1="0" x2="60" y2="260" stroke="#C97C4A" stroke-opacity="0.25" stroke-width="1" stroke-dasharray="4 6"/>' +
+      '<line x1="230" y1="0" x2="230" y2="260" stroke="#C97C4A" stroke-opacity="0.15" stroke-width="1" stroke-dasharray="4 6"/>' +
+      '<circle cx="150" cy="128" r="4" fill="#C97C4A"/>' +
+      '<circle cx="290" cy="184" r="3" fill="#F4F2ED" opacity="0.5"/>' +
+      '<rect x="0" y="0" width="120" height="260" fill="url(#shFade)"/>' +
+    '</svg>';
+
   function buildHeader(container) {
     var wrap = el('div', 'sh-wrap');
+    wrap.insertAdjacentHTML('afterbegin', STRATA_ART_SVG);
 
     // ---- Top bar: brand + nav ----
     var topbar = el('div', 'sh-topbar');
