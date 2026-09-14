@@ -346,6 +346,11 @@
     mount(topbar, brand);
 
     var nav = el('div', 'sh-nav');
+    var homeLink = document.createElement('a');
+    homeLink.className = 'sh-nav-link';
+    homeLink.href = '/system/';
+    homeLink.textContent = 'Home';
+    mount(nav, homeLink);
     mount(nav, buildCoachDropdown());
     [['Practice', NAV_LINKS.practice], ['Library', NAV_LINKS.library]].forEach(function (pair) {
       var a = document.createElement('a');

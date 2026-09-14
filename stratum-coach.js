@@ -48,6 +48,7 @@
   // ----------------------------------------------------------
   var SESSION_DEFINITIONS = {
     'character-excavation': {
+      title: 'Character Excavation',
       tier: 'guided',
       synthesisEndpoint: '/excavation/synthesize',       // unchanged Worker endpoint — scoped to the 1.x ids today
       masterDeliverableEndpoint: '/excavation/master-deliverable',
@@ -148,12 +149,21 @@
   // ----------------------------------------------------------
   // STRATA RAIL
   // ----------------------------------------------------------
+  // Graduated brown/sediment tones, lightest to darkest — same palette
+  // family as the header's strata artwork. The warm accent color is
+  // deliberately NOT used as a base fill here; it's reserved for the
+  // current-layer ring and the done checkmark, so it stays a clear
+  // "this is active/complete" signal rather than blending into decoration.
+  var RAIL_TONES = ['#2E2620', '#3A2E22', '#46362A', '#523F2E', '#5E4834', '#6A503A'];
   function renderRail() {
     railEl.innerHTML = '';
     SESSION.layers.forEach(function (layer, i) {
-      var state = completedLayerIds[layer.id] ? 'sh-done' : (i === currentLayerIndex ? 'sh-current' : 'sh-pending');
+      var isDone = !!completedLayerIds[layer.id];
+      var isCurrent = i === currentLayerIndex;
+      var state = isDone ? 'sh-done' : (isCurrent ? 'sh-current' : 'sh-pending');
       var row = el('div', 'sh-rail-layer ' + state);
-      var check = el('div', 'sh-rail-check', completedLayerIds[layer.id] ? '\u2713' : '');
+      row.style.background = RAIL_TONES[i % RAIL_TONES.length];
+      var check = el('div', 'sh-rail-check', isDone ? '\u2713' : '');
       mount(row, check);
       mount(row, el('div', 'sh-rail-label', layer.label));
       mount(railEl, row);
@@ -749,12 +759,18 @@
   function buildPage(container) {
     var shell = el('div', 'sh-wrap');
     if (window.StratumHeader) window.StratumHeader.buildTopbar(shell);
-    mount(container, shell);
 
     var page = el('div', 'sh-coach-page');
+    mount(page, el('h1', 'sh-coach-title', SESSION.title || ''));
+    var videoOuter = el('div', 'sh-coach-video-outer');
     var videoSlot = el('div');
     videoSlot.id = 'shCoachVideoSlot';
-    mount(page, videoSlot);
+    mount(videoOuter, videoSlot);
+    mount(page, videoOuter);
+
+    var introSlot = el('div');
+    introSlot.id = 'shCoachIntroSlot';
+    mount(page, introSlot);
 
     var body = el('div', 'sh-coach-body');
     railEl = el('div', 'sh-rail');
@@ -762,16 +778,37 @@
     contentEl = el('div');
     mount(body, contentEl);
     mount(page, body);
-    mount(container, page);
+
+    mount(shell, page);      // <-- was mounted to `container` directly before, as a SIBLING of the
+    mount(container, shell); //     dark card rather than inside it — that's why the page background
+                              //     showed white beneath/around the video and rail.
 
     buildChatPanel(contentEl);
     renderRail();
 
     loadLayerConfig(SESSION.layers[0].id, function (cfg) {
       if (cfg && cfg.video && cfg.video.mediaId) buildVideo(videoSlot, cfg.video.mediaId);
+      if (cfg && cfg.coachingIntro && cfg.coachingIntro.text) buildCoachingIntro(introSlot, cfg.coachingIntro);
     });
 
     loadProgressThenStart();
+  }
+
+  // "Before You Begin" — the same admin-authored coaching intro field the
+  // old per-lesson engine showed (Coaching Intro Text in the Stratum
+  // admin), rendered once above the chat panel using the SESSION's first
+  // layer's intro. Collapsible, closed by default, matching the admin
+  // panel's own "default closed" framing for this field.
+  function buildCoachingIntro(container, intro) {
+    var details = document.createElement('details');
+    details.className = 'sh-coach-intro';
+    var summary = document.createElement('summary');
+    summary.textContent = intro.title || 'Before You Begin';
+    mount(details, summary);
+    var body = el('div', 'sh-coach-intro-body');
+    body.innerHTML = textToParagraphs(intro.text);
+    mount(details, body);
+    mount(container, details);
   }
 
   function init() {

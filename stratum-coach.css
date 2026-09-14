@@ -12,11 +12,28 @@
 .sh-coach-page {
   max-width: 1100px;
   margin: 0 auto 40px;
+  padding: 0 28px;
 }
 
+.sh-coach-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--sh-paper);
+  margin: 22px 0 16px;
+}
+
+/* Video is deliberately NOT full-bleed — full width at a wide aspect
+   ratio was pushing the page height way past the fold. Constrained to a
+   narrower centered block at a standard 16:9, so the rail/chat below it
+   is reachable without excessive scrolling. */
+.sh-coach-video-outer {
+  max-width: 640px;
+  margin: 0 auto 20px;
+}
 .sh-coach-video-wrap {
   width: 100%;
-  border-radius: 0 0 16px 16px;
+  border-radius: 12px;
   overflow: hidden;
   background: #000;
 }
@@ -25,11 +42,40 @@
   width: 100%;
 }
 
+/* ---- Before You Begin (coaching intro) ---- */
+.sh-coach-intro {
+  border: 1px solid var(--sh-line);
+  border-radius: 10px;
+  margin: 0 0 18px;
+  overflow: hidden;
+}
+.sh-coach-intro summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  background: var(--sh-panel2);
+}
+.sh-coach-intro summary::-webkit-details-marker { display: none; }
+.sh-coach-intro[open] summary { border-bottom: 1px solid var(--sh-line); }
+.sh-coach-intro-body {
+  padding: 14px 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--sh-paper);
+}
+.sh-coach-intro-body p { margin: 0 0 10px; }
+.sh-coach-intro-body p:last-child { margin-bottom: 0; }
+
 .sh-coach-body {
   display: grid;
   grid-template-columns: 260px 1fr;
   gap: 24px;
-  padding: 24px 0 0;
+  padding: 0;
 }
 
 /* ---- Strata rail ---- */
@@ -87,16 +133,14 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 560px;
 }
 .sh-coach-messages {
-  flex: 1;
   overflow-y: auto;
   padding: 22px 22px 12px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 62vh;
+  max-height: 55vh;
 }
 .sh-msg-row { display: flex; max-width: 100%; }
 .sh-msg-row.sh-assistant { align-self: flex-start; width: 100%; }
