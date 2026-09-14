@@ -149,14 +149,31 @@
   // ----------------------------------------------------------
   // STRATA RAIL
   // ----------------------------------------------------------
-  // Graduated brown/sediment tones, lightest to darkest — same palette
-  // family as the header's strata artwork. The warm accent color is
-  // deliberately NOT used as a base fill here; it's reserved for the
-  // current-layer ring and the done checkmark, so it stays a clear
-  // "this is active/complete" signal rather than blending into decoration.
-  var RAIL_TONES = ['#2E2620', '#3A2E22', '#46362A', '#523F2E', '#5E4834', '#6A503A'];
+  // Graduated brown/sediment tones, lightest to darkest — same muted
+  // ancient palette family as the header's strata artwork. The warm
+  // accent color is deliberately NOT used as a base fill here; it's
+  // reserved for the current-layer ring, the progress track, and the
+  // done checkmark, so it stays a clear "this is active/complete" signal
+  // rather than blending into decoration.
+  var RAIL_TONES = ['#2A2217', '#332A1C', '#3D3220', '#463A26', '#4F422C', '#584A32'];
+
+  // Sept 2026: a vertical progress track runs down the rail's left edge,
+  // filling (with a smooth CSS transition) to mark how far the student
+  // has advanced, plus a pulsing marker dot at the current position —
+  // per Ted's request for a real "sense of movement" as layers complete,
+  // rather than a static list of rows that only differ by opacity.
   function renderRail() {
     railEl.innerHTML = '';
+    var track = el('div', 'sh-rail-track');
+    var fill = el('div', 'sh-rail-track-fill');
+    var fillPct = (currentLayerIndex / SESSION.layers.length) * 100;
+    fill.style.height = fillPct + '%';
+    mount(track, fill);
+    var marker = el('div', 'sh-rail-marker');
+    marker.style.top = fillPct + '%';
+    mount(track, marker);
+    mount(railEl, track);
+
     SESSION.layers.forEach(function (layer, i) {
       var isDone = !!completedLayerIds[layer.id];
       var isCurrent = i === currentLayerIndex;

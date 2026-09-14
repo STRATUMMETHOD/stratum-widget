@@ -85,16 +85,58 @@
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--sh-line);
+  position: relative;
 }
+
+/* Vertical progress track — a literal "how far down have you dug" line
+   running the full height of the rail, filling smoothly as layers
+   complete. Sits just inside the rail's left edge, in front of the row
+   backgrounds but behind their text/check content. */
+.sh-rail-track {
+  position: absolute;
+  top: 0;
+  left: 10px;
+  width: 3px;
+  height: 100%;
+  background: rgba(234, 224, 201, 0.12);
+  z-index: 1;
+  pointer-events: none;
+}
+.sh-rail-track-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: var(--sh-warm);
+  transition: height .6s cubic-bezier(.4, 0, .2, 1);
+}
+.sh-rail-marker {
+  position: absolute;
+  left: 50%;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--sh-warm);
+  transform: translate(-50%, -50%);
+  transition: top .6s cubic-bezier(.4, 0, .2, 1);
+  box-shadow: 0 0 0 4px rgba(160, 124, 62, 0.25);
+  animation: sh-rail-pulse 2s ease-in-out infinite;
+}
+@keyframes sh-rail-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(160, 124, 62, 0.25); }
+  50% { box-shadow: 0 0 0 8px rgba(160, 124, 62, 0.08); }
+}
+
 .sh-rail-layer {
   flex: 1;
   min-height: 78px;
-  padding: 14px 16px;
+  padding: 14px 16px 14px 30px;
   display: flex;
   align-items: center;
   gap: 10px;
   position: relative;
-  transition: opacity .2s ease;
+  z-index: 2;
+  transition: opacity .3s ease, box-shadow .4s ease;
 }
 .sh-rail-layer.sh-pending { opacity: 0.38; }
 .sh-rail-layer.sh-current { opacity: 1; box-shadow: inset 0 0 0 2px var(--sh-warm); }
