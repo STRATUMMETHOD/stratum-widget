@@ -21,12 +21,17 @@
        — so if/when the engine is reintroduced for body content, the
        two stay in sync automatically.
 
-   Known placeholder, flagged for a one-line swap once the
-   login/registration/purchase plugin exists:
-     PLACEHOLDER_STUDENT_NAME — used for "Welcome back" until real
-     account data is wired in. Profile name is deliberately NOT
-     sourced from the WIP profile (Ted's own instruction: the future
-     account/profile record is separate from the WIP record).
+   Real login/membership data (Sept 2026): reads window.STRATUM_WP_USER,
+   injected server-side by system-page-template.php via wp_get_current_user()
+   / pmpro_hasMembershipLevel(). The old PLACEHOLDER_STUDENT_NAME stub is
+   gone — this file now shows the real logged-in name, or a login prompt
+   if nobody's logged in.
+
+   Identity resolution (stratum_sid cookie ↔ WP login email) now lives in
+   stratum-identity.js, a shared module — load that file BEFORE this one.
+   It's shared because stratum-wip-profile.js needs the exact same
+   resolution logic on a different page, and duplicating it a second
+   time would just be two copies to keep in sync.
 
    Assumptions made without explicit confirmation (flag for review):
      - Coach / Practice / Library nav links point to '#' placeholders
@@ -35,39 +40,39 @@
      - Tutorial dropdown renders with its open/close interaction
        working now, but an empty state (no dummy Wistia entries)
        until real video IDs are supplied — see TUTORIAL_VIDEOS below.
+     - "User Profile" links to PMPro's own account page
+       (/membership-account/, matching the page PMPro's setup wizard
+       already generated) rather than a custom-built duplicate — PMPro
+       already owns password/email changes correctly; no reason to
+       rebuild that.
+     - "WIP Profile" links to /wip-profile/, a new page built from the
+       wip-profile-template.php template — TODO: confirm/adjust this
+       slug to whatever the real WordPress page ends up using.
    ============================================================ */
 (function () {
   'use strict';
 
-  var PROXY_URL = 'https://stratum-proxy.tedbaker0207.workers.dev';
-  var SID_COOKIE = 'stratum_sid';
-  var LANG_STORE_KEY = 'wlfc_preferred_lang'; // same key the engine already uses — keep in sync
-  var PLACEHOLDER_STUDENT_NAME = 'Ted'; // TODO: swap for real account data once the login/registration plugin exists
+  var PROXY_URL = window.StratumIdentity ? window.StratumIdentity.PROXY_URL : 'https://stratum-proxy.tedbaker0207.workers.dev';
+  var LANG_STORE_KEY = 'wlfc_preferred_lang'; // same key the old engine already uses — keep in sync
+
+  // Server-authoritative login/membership state — see stratum-identity.js.
+  var WP_USER = window.StratumIdentity ? window.StratumIdentity.getWpUser() : { loggedIn: false, hasMembership: false, firstName: '', email: '', loginUrl: '#' };
 
   // TODO: real page slugs once Coach / Practice(Glossary) / Library pages exist.
   var NAV_LINKS = {
     coach: '#',
     practice: '#',
-    library: '#'
+    library: '#',
+    userProfile: '/membership-account/',
+    wipProfile: '/wip-profile/'
   };
 
   // TODO: populate with real Wistia media IDs once tutorial videos are recorded.
   // Shape: [{ label: 'Getting started', wistiaId: 'xxxxxxxxxx' }, ...]
   var TUTORIAL_VIDEOS = [];
 
-  function readCookie(name) {
-    var parts = document.cookie ? document.cookie.split(';') : [];
-    for (var i = 0; i < parts.length; i++) {
-      var kv = parts[i].trim();
-      var eq = kv.indexOf('=');
-      if (eq > -1 && kv.slice(0, eq) === name) return decodeURIComponent(kv.slice(eq + 1));
-    }
-    return null;
-  }
   function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
   function lsSet(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
-
-  var STUDENT_ID = readCookie(SID_COOKIE);
 
   function el(tag, className, text) {
     var node = document.createElement(tag);
@@ -188,28 +193,72 @@
 
   function switchLanguage(code, coachingName) {
     lsSet(LANG_STORE_KEY, code);
-    if (STUDENT_ID) {
-      fetch(PROXY_URL + '/student/lang', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId: STUDENT_ID, lang: code, language: coachingName || undefined })
-      })
-        .catch(function () {})
-        .then(function () { location.reload(); });
-    } else {
-      location.reload();
-    }
+    window.StratumIdentity.init(function (studentId) {
+      if (studentId) {
+        fetch(PROXY_URL + '/student/lang', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId: studentId, lang: code, language: coachingName || undefined })
+        })
+          .catch(function () {})
+          .then(function () { location.reload(); });
+      } else {
+        location.reload();
+      }
+    });
   }
 
-  function fetchWipSummary(callback) {
-    if (!STUDENT_ID) { callback(null); return; }
-    fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(STUDENT_ID))
+  function fetchWipSummary(studentId, callback) {
+    if (!studentId) { callback(null); return; }
+    fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(studentId))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || !d.known) { callback(null); return; }
         callback({ wipTitle: d.wipTitle || '', genre: d.genre || '' });
       })
       .catch(function () { callback(null); });
+  }
+
+  // Avatar dropdown — "User Profile" links to PMPro's own account page
+  // (name/email/password, already handled correctly there — no reason to
+  // rebuild it); "WIP Profile" links to the new dedicated page holding
+  // the full work-in-progress form (title, genre, characters, etc.).
+  // Logged-out visitors get a single "Log in" item instead.
+  function buildAvatarDropdown() {
+    var avatarInitial = WP_USER.loggedIn && WP_USER.firstName ? WP_USER.firstName.charAt(0).toUpperCase() : '?';
+    var wrap = el('div', 'sh-nav-dropdown');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'sh-avatar-btn';
+    mount(btn, el('div', 'sh-avatar', avatarInitial));
+    mount(wrap, btn);
+    var panel = el('div', 'sh-dropdown-panel');
+    if (WP_USER.loggedIn) {
+      var profileLink = document.createElement('a');
+      profileLink.className = 'sh-dropdown-item';
+      profileLink.href = NAV_LINKS.userProfile;
+      profileLink.textContent = 'User Profile';
+      mount(panel, profileLink);
+      var wipLink = document.createElement('a');
+      wipLink.className = 'sh-dropdown-item';
+      wipLink.href = NAV_LINKS.wipProfile;
+      wipLink.textContent = 'WIP Profile';
+      mount(panel, wipLink);
+    } else {
+      var loginLink = document.createElement('a');
+      loginLink.className = 'sh-dropdown-item';
+      loginLink.href = WP_USER.loginUrl;
+      loginLink.textContent = 'Log in';
+      mount(panel, loginLink);
+    }
+    mount(wrap, panel);
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var willOpen = !wrap.classList.contains('open');
+      closeAllDropdowns();
+      wrap.classList.toggle('open', willOpen);
+    });
+    return wrap;
   }
 
   // Abstract geological strata cross-section, echoing the excavation
@@ -264,31 +313,65 @@
     });
     mount(nav, buildTutorialDropdown());
     mount(nav, buildLanguageDropdown());
-    mount(nav, el('div', 'sh-avatar', PLACEHOLDER_STUDENT_NAME.charAt(0).toUpperCase()));
+    mount(nav, buildAvatarDropdown());
     mount(topbar, nav);
     mount(wrap, topbar);
 
     // ---- Welcome ----
     var welcomeRow = el('div', 'sh-welcome-row');
-    mount(welcomeRow, el('h2', 'sh-welcome', 'Welcome back, ' + PLACEHOLDER_STUDENT_NAME));
+    var welcomeText = WP_USER.loggedIn
+      ? 'Welcome back, ' + (WP_USER.firstName || 'there')
+      : 'Welcome to The Stratum Method';
+    mount(welcomeRow, el('h2', 'sh-welcome', welcomeText));
     mount(wrap, welcomeRow);
 
     // ---- WIP hero ----
     var heroRow = el('div', 'sh-hero-row');
     var left = document.createElement('div');
-    mount(left, el('p', 'sh-eyebrow', 'You are currently excavating'));
-    var titleEl = el('h1', 'sh-wip-title', 'Loading\u2026');
-    mount(left, titleEl);
-    var genreEl = el('p', 'sh-wip-genre', '');
-    mount(left, genreEl);
-    mount(heroRow, left);
+    var titleEl, genreEl, resumeBtn;
 
-    var resumeBtn = el('button', 'sh-resume-btn', 'Resume excavating \u2192');
-    resumeBtn.type = 'button';
-    resumeBtn.disabled = true; // enabled once Coach destination exists — see NAV_LINKS.coach TODO
-    resumeBtn.addEventListener('click', function () {
-      if (NAV_LINKS.coach && NAV_LINKS.coach !== '#') window.location.href = NAV_LINKS.coach;
-    });
+    if (!WP_USER.loggedIn) {
+      // Logged out: no WIP to show, and the resume button becomes a real
+      // login link rather than the disabled placeholder used elsewhere.
+      // Once the System Page itself is restricted to "The Stratum Method"
+      // level via PMPro's Content Settings, a logged-out visitor won't
+      // reach this template at all — this branch is a safety fallback
+      // for while that restriction isn't configured yet.
+      mount(left, el('p', 'sh-eyebrow', 'Members only'));
+      titleEl = el('h1', 'sh-wip-title', 'Log in to continue');
+      mount(left, titleEl);
+      genreEl = el('p', 'sh-wip-genre', '');
+      mount(left, genreEl);
+      resumeBtn = document.createElement('a');
+      resumeBtn.className = 'sh-resume-btn';
+      resumeBtn.href = WP_USER.loginUrl;
+      resumeBtn.textContent = 'Log in \u2192';
+    } else if (!WP_USER.hasMembership) {
+      // Logged in, but no active membership on this account — e.g. a WP
+      // account exists without a completed/active PMPro membership.
+      mount(left, el('p', 'sh-eyebrow', 'Account found'));
+      titleEl = el('h1', 'sh-wip-title', 'No active membership yet');
+      mount(left, titleEl);
+      genreEl = el('p', 'sh-wip-genre', '');
+      mount(left, genreEl);
+      resumeBtn = el('button', 'sh-resume-btn', 'Resume excavating \u2192');
+      resumeBtn.type = 'button';
+      resumeBtn.disabled = true;
+    } else {
+      mount(left, el('p', 'sh-eyebrow', 'You are currently excavating'));
+      titleEl = el('h1', 'sh-wip-title', 'Loading\u2026');
+      mount(left, titleEl);
+      genreEl = el('p', 'sh-wip-genre', '');
+      mount(left, genreEl);
+      resumeBtn = el('button', 'sh-resume-btn', 'Resume excavating \u2192');
+      resumeBtn.type = 'button';
+      resumeBtn.disabled = true; // enabled once Coach destination exists — see NAV_LINKS.coach TODO
+      resumeBtn.addEventListener('click', function () {
+        if (NAV_LINKS.coach && NAV_LINKS.coach !== '#') window.location.href = NAV_LINKS.coach;
+      });
+    }
+
+    mount(heroRow, left);
     mount(heroRow, resumeBtn);
     mount(heroRow, document.createElement('div'));
     mount(wrap, heroRow);
@@ -303,14 +386,21 @@
     window.STRATUM_HEADER_WRAP = wrap;
     document.dispatchEvent(new CustomEvent('stratum:header-mounted', { detail: { wrapEl: wrap } }));
 
-    fetchWipSummary(function (summary) {
-      if (summary && summary.wipTitle) {
-        titleEl.textContent = summary.wipTitle;
-        genreEl.textContent = summary.genre || '';
-      } else {
-        titleEl.textContent = 'No WIP on file yet';
-        genreEl.textContent = 'Add your WIP details to get started';
-      }
+    // stratum-identity.js owns resolution + broadcasting (sync global +
+    // event, so dashboard.js and any other consumer never race this) —
+    // this call either returns already-settled instantly, or queues the
+    // callback until the in-flight /resolve-identity call finishes.
+    window.StratumIdentity.init(function (studentId) {
+      if (!WP_USER.loggedIn || !WP_USER.hasMembership) return; // titleEl/genreEl only exist in the active-member branch above
+      fetchWipSummary(studentId, function (summary) {
+        if (summary && summary.wipTitle) {
+          titleEl.textContent = summary.wipTitle;
+          genreEl.textContent = summary.genre || '';
+        } else {
+          titleEl.textContent = 'No WIP on file yet';
+          genreEl.textContent = 'Add your WIP details to get started';
+        }
+      });
     });
   }
 
