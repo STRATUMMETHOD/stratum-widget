@@ -16,7 +16,7 @@
    ============================================================ */
 
 .sh-dash-section {
-  padding: 8px 28px 26px;
+  padding: 16px 28px 26px;
   position: relative;
   z-index: 1;
 }
@@ -82,8 +82,8 @@
   gap: 10px;
 }
 .sh-idea-entry {
-  background: #26262B;
-  border: 1px solid #333339;
+  background: #221D15;
+  border: 1px solid #3A3123;
   border-radius: 8px;
   padding: 10px 12px;
   display: flex;
@@ -93,7 +93,7 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: #3A2E22;
+  background: #332A1C;
   color: var(--sh-warm);
   display: flex;
   align-items: center;

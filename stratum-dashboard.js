@@ -169,7 +169,6 @@
 
   function buildDashboardSection() {
     var section = el('div', 'sh-dash-section');
-    mount(section, el('p', 'sh-dash-label', 'Focus Tracking'));
     var panels = el('div', 'sh-dash-panels');
     mount(panels, buildIdeaLogCard());
     mount(panels, buildRemindersCard());

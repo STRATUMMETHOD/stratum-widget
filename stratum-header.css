@@ -253,13 +253,13 @@ body:has(.sh-topbar--standalone) {
   top: 0;
   right: 0;
   height: 100%;
-  width: 66.66%;
+  width: 82%;
   pointer-events: none;
   z-index: 0;
 }
 
 @media (max-width: 640px) {
-  .sh-strata-art { width: 60%; }
+  .sh-strata-art { width: 72%; }
   .sh-nav { gap: 14px; }
   .sh-welcome { font-size: 26px; }
   .sh-wip-title { font-size: 30px; }
