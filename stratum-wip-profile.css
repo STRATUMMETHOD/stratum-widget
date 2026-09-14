@@ -1,0 +1,144 @@
+/* ============================================================
+   STRATUM WIP PROFILE — PAGE STYLES (Sept 2026)
+   ------------------------------------------------------------
+   Deliberately reuses the --sh-* custom properties and the .sh-wrap
+   dark-card look already defined in stratum-header.css (load that
+   file on this page too, alongside this one) rather than redeclaring
+   the palette — same visual system as the System Page header, just a
+   different page. This file only adds the form-specific styles that
+   file doesn't have.
+   ============================================================ */
+
+.sh-page {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0;
+}
+.sh-page-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px;
+  border-bottom: 0.5px solid var(--sh-line);
+}
+.sh-page-back {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sh-sub);
+  text-decoration: none;
+}
+.sh-page-back:hover { color: var(--sh-paper); }
+
+.sh-form-body {
+  padding: 24px 28px 28px;
+}
+.sh-form-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: var(--sh-paper);
+}
+.sh-form-sub {
+  font-size: 13px;
+  color: var(--sh-sub);
+  margin: 0 0 26px;
+  max-width: 60ch;
+  line-height: 1.5;
+}
+
+.sh-field { margin-bottom: 18px; }
+.sh-field-row {
+  display: flex;
+  gap: 16px;
+}
+.sh-field-row .sh-field { flex: 1; }
+.sh-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  margin-bottom: 6px;
+}
+.sh-field-hint {
+  display: block;
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--sh-sub);
+  margin: -3px 0 7px;
+}
+.sh-field input[type="text"],
+.sh-field select,
+.sh-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  background: #1E1E22;
+  color: var(--sh-paper);
+  border: 1px solid var(--sh-line);
+  border-radius: 8px;
+  line-height: 1.4;
+}
+.sh-field textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.sh-field input[type="text"]:focus,
+.sh-field select:focus,
+.sh-field textarea:focus {
+  outline: none;
+  border-color: var(--sh-warm);
+}
+.sh-field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%238E8E96' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.sh-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 8px;
+  padding-top: 18px;
+  border-top: 0.5px solid var(--sh-line);
+}
+.sh-save-btn {
+  background: var(--sh-warm);
+  color: var(--sh-ink);
+  border: none;
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sh-save-btn:hover { opacity: 0.92; }
+.sh-save-btn:disabled { opacity: 0.5; cursor: default; }
+.sh-save-status {
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--sh-sub);
+}
+.sh-save-status.sh-ok { color: #7FBF8A; font-style: normal; }
+.sh-save-status.sh-err { color: #E08A6B; font-style: normal; }
+
+.sh-gate {
+  padding: 60px 28px;
+  text-align: center;
+}
+.sh-gate p {
+  font-size: 14px;
+  color: var(--sh-sub);
+  margin: 0 0 18px;
+}
+
+@media (max-width: 640px) {
+  .sh-field-row { flex-direction: column; gap: 0; }
+}
