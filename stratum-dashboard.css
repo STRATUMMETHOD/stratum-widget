@@ -1,0 +1,172 @@
+/* ============================================================
+   STRATUM DASHBOARD — FOCUS TRACKING SECTION (Sept 2026)
+   ------------------------------------------------------------
+   Mounts INTO the same dark .sh-wrap card stratum-header.js builds
+   (see the 'stratum:header-mounted' handoff in that file) so the
+   header and this section read as one continuous dashboard, not two
+   stacked components. Deliberately reuses the --sh-* custom
+   properties declared on .sh-wrap (ink/panel2/line/paper/warm/sub)
+   rather than redefining them here — this file only makes sense
+   nested inside that card and inherits its palette by design.
+
+   Idea Log and Reminders (formerly "Action Items"/tasks) are the
+   SAME records the old engine's Notes/Tasks tabs already read and
+   wrote via /notes and /tasks — see stratum-dashboard.js. This file
+   is presentation only.
+   ============================================================ */
+
+.sh-dash-section {
+  padding: 8px 28px 26px;
+  position: relative;
+  z-index: 1;
+}
+.sh-dash-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--sh-sub);
+  margin: 0 0 12px;
+}
+.sh-dash-panels {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 16px;
+}
+.sh-dash-card {
+  background: var(--sh-panel2);
+  border: 1px solid var(--sh-line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.sh-dash-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--sh-line);
+}
+.sh-dash-card-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--sh-paper);
+  margin: 0;
+}
+.sh-dash-open-btn {
+  background: var(--sh-warm);
+  color: var(--sh-ink);
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  font-family: inherit;
+}
+.sh-dash-card-body {
+  padding: 14px 18px 16px;
+}
+.sh-dash-empty {
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--sh-sub);
+  padding: 4px 0;
+}
+
+/* ---- Idea Log ---- */
+.sh-idea-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.sh-idea-entry {
+  background: #26262B;
+  border: 1px solid #333339;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  gap: 10px;
+}
+.sh-idea-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #3A2E22;
+  color: var(--sh-warm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.sh-idea-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--sh-sub);
+  margin-bottom: 2px;
+}
+.sh-idea-tag {
+  font-weight: 800;
+  color: var(--sh-warm);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.sh-idea-text {
+  font-size: 12.5px;
+  color: var(--sh-paper);
+  line-height: 1.35;
+}
+
+/* ---- Reminders ---- */
+.sh-reminder-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--sh-line);
+}
+.sh-reminder-row:last-child { border-bottom: none; }
+.sh-check {
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  border: 1.5px solid var(--sh-warm);
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--sh-ink);
+}
+.sh-check.sh-done { background: var(--sh-warm); }
+.sh-reminder-text { flex: 1; min-width: 0; }
+.sh-reminder-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--sh-paper);
+}
+.sh-reminder-row.sh-row-done .sh-reminder-title {
+  color: var(--sh-sub);
+  text-decoration: line-through;
+}
+.sh-reminder-meta {
+  font-size: 10.5px;
+  color: var(--sh-sub);
+  margin-top: 1px;
+}
+.sh-reminder-date {
+  font-size: 11px;
+  color: var(--sh-sub);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .sh-dash-panels { grid-template-columns: 1fr; }
+  .sh-idea-grid { grid-template-columns: 1fr; }
+}
