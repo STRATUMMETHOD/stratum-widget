@@ -295,6 +295,14 @@
 
     mount(container, wrap);
 
+    // Publish the mounted card so other modules (e.g. stratum-dashboard.js)
+    // can append their own sections into this SAME dark container instead
+    // of building a second, disconnected one. Both a global reference (for
+    // a module that loads after this one) and an event (for a module that
+    // loads before/concurrently) are provided so load order never matters.
+    window.STRATUM_HEADER_WRAP = wrap;
+    document.dispatchEvent(new CustomEvent('stratum:header-mounted', { detail: { wrapEl: wrap } }));
+
     fetchWipSummary(function (summary) {
       if (summary && summary.wipTitle) {
         titleEl.textContent = summary.wipTitle;
