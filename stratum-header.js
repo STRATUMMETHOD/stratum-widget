@@ -58,9 +58,9 @@
   // Server-authoritative login/membership state — see stratum-identity.js.
   var WP_USER = window.StratumIdentity ? window.StratumIdentity.getWpUser() : { loggedIn: false, hasMembership: false, firstName: '', email: '', loginUrl: '#' };
 
-  // TODO: real page slugs once Practice(Glossary) / Library pages exist.
+  // TODO: real page slug once Library exists.
   var NAV_LINKS = {
-    practice: '#',
+    practice: '/practice/',
     library: '#',
     userProfile: '/membership-account/',
     wipProfile: '/wip-profile/'

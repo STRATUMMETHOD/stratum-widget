@@ -1,0 +1,218 @@
+/* ============================================================
+   STRATUM PRACTICE LAB — PAGE STYLES (Sept 2026)
+   ------------------------------------------------------------
+   Reuses --sh-* variables and .sh-wrap/.sh-page/.sh-page-topbar/
+   .sh-form-title/.sh-form-sub/.sh-save-btn from stratum-header.css
+   and stratum-wip-profile.css (load both on this page too) rather
+   than redeclaring them.
+   ============================================================ */
+
+.sh-pl-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.sh-pl-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 240px;
+}
+.sh-pl-search-input {
+  flex: 1;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  background: #1E1E22;
+  color: var(--sh-paper);
+  border: 1px solid var(--sh-line);
+  border-radius: 8px;
+}
+.sh-pl-search-input:focus { outline: none; border-color: var(--sh-warm); }
+.sh-pl-search-btn {
+  background: var(--sh-warm);
+  color: var(--sh-ink);
+  border: none;
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+}
+.sh-pl-filter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.sh-pl-filter-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--sh-sub);
+  white-space: nowrap;
+}
+.sh-pl-filter-select {
+  padding: 7px 9px;
+  font-size: 12.5px;
+  font-family: Arial, sans-serif;
+  background: #1E1E22;
+  color: var(--sh-paper);
+  border: 1px solid var(--sh-line);
+  border-radius: 8px;
+}
+.sh-pl-clear-btn {
+  background: none;
+  border: 1px solid var(--sh-line);
+  color: var(--sh-sub);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+}
+.sh-pl-clear-btn:hover { border-color: var(--sh-warm); color: var(--sh-warm); }
+
+.sh-pl-list { display: flex; flex-direction: column; gap: 10px; }
+.sh-pl-empty {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--sh-sub);
+  padding: 24px 0;
+  text-align: center;
+}
+
+.sh-pl-entry {
+  background: var(--sh-panel2);
+  border: 1px solid var(--sh-line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.sh-pl-entry > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 14px 16px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sh-pl-entry > summary::-webkit-details-marker { display: none; }
+.sh-pl-entry > summary::before {
+  content: '\25B8';
+  font-size: 11px;
+  color: var(--sh-warm);
+  margin-right: 2px;
+  transition: transform .15s ease;
+}
+.sh-pl-entry[open] > summary::before { transform: rotate(90deg); }
+.sh-pl-entry[open] > summary { border-bottom: 1px solid var(--sh-line); }
+.sh-pl-word {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--sh-paper);
+}
+.sh-pl-summary-meta {
+  font-size: 11px;
+  color: var(--sh-sub);
+}
+.sh-pl-entry-body { padding: 14px 16px 16px; }
+.sh-pl-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.sh-pl-tag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  border: 1px solid var(--sh-warm);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+.sh-pl-definition {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--sh-paper);
+}
+
+.sh-pl-exercise {
+  margin-top: 14px;
+  background: #1E1E22;
+  border: 1px solid var(--sh-line);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.sh-pl-exercise-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  margin-bottom: 6px;
+}
+.sh-pl-exercise-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--sh-paper);
+}
+.sh-pl-exercise-list li { margin-bottom: 4px; }
+
+.sh-pl-crosslinks { margin-top: 14px; }
+.sh-pl-crosslink-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--sh-sub);
+  margin-bottom: 8px;
+}
+.sh-pl-crosslink-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.sh-pl-crosslink-chip {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sh-warm);
+  background: none;
+  border: 1px solid var(--sh-warm);
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+}
+.sh-pl-crosslink-chip:hover { background: rgba(160, 124, 62, 0.12); }
+
+.sh-pl-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+.sh-pl-pager-btn {
+  background: none;
+  border: 1px solid var(--sh-warm);
+  color: var(--sh-warm);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+}
+.sh-pl-pager-btn:hover:not(:disabled) { background: rgba(160, 124, 62, 0.12); }
+.sh-pl-pager-btn:disabled { opacity: 0.4; cursor: default; }
+.sh-pl-pager-status { font-size: 12px; color: var(--sh-sub); }
+
+@media (max-width: 640px) {
+  .sh-pl-toolbar { flex-direction: column; align-items: stretch; }
+  .sh-pl-filter-wrap { justify-content: space-between; }
+}
