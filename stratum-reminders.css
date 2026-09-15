@@ -1,0 +1,137 @@
+/* ============================================================
+   STRATUM REMINDERS — PAGE STYLES (Sept 2026)
+   ------------------------------------------------------------
+   Reuses --sh-* variables and .sh-wrap/.sh-page/.sh-page-topbar/
+   .sh-form-title/.sh-form-sub/.sh-save-btn from stratum-header.css
+   and stratum-wip-profile.css (load both on this page too) rather
+   than redeclaring them.
+   ============================================================ */
+
+.sh-rm-form {
+  background: var(--sh-panel2);
+  border: 1px solid var(--sh-line);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+.sh-rm-preset-row { margin-bottom: 10px; }
+.sh-rm-preset-select {
+  width: 100%;
+  padding: 9px 10px;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  background: #1E1E22;
+  color: var(--sh-paper);
+  border: 1px solid var(--sh-line);
+  border-radius: 8px;
+}
+.sh-rm-input-row {
+  display: flex;
+  gap: 10px;
+}
+.sh-rm-text-input {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-family: Arial, sans-serif;
+  background: #1E1E22;
+  color: var(--sh-paper);
+  border: 1px solid var(--sh-line);
+  border-radius: 8px;
+}
+.sh-rm-date-input {
+  flex: 0 0 150px;
+  padding: 10px 10px;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  background: #1E1E22;
+  color: var(--sh-paper);
+  border: 1px solid var(--sh-line);
+  border-radius: 8px;
+}
+.sh-rm-preset-select:focus,
+.sh-rm-text-input:focus,
+.sh-rm-date-input:focus { outline: none; border-color: var(--sh-warm); }
+
+.sh-rm-count {
+  font-size: 12.5px;
+  color: var(--sh-sub);
+  margin: 4px 2px 14px;
+}
+
+.sh-rm-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.sh-rm-empty {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--sh-sub);
+  padding: 20px 0;
+  text-align: center;
+}
+.sh-rm-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--sh-panel2);
+  border: 1px solid var(--sh-line);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.sh-rm-checkbox {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--sh-warm);
+  margin-top: 2px;
+  cursor: pointer;
+  position: relative;
+}
+.sh-rm-item.sh-rm-done .sh-rm-checkbox { background: var(--sh-warm); }
+.sh-rm-item.sh-rm-done .sh-rm-checkbox::after {
+  content: '\2713';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -52%);
+  font-size: 11px;
+  color: var(--sh-ink);
+}
+.sh-rm-text-wrap { flex: 1; min-width: 0; }
+.sh-rm-text {
+  font-size: 14px;
+  color: var(--sh-paper);
+  cursor: pointer;
+  line-height: 1.4;
+}
+.sh-rm-item.sh-rm-done .sh-rm-text { color: var(--sh-sub); text-decoration: line-through; }
+.sh-rm-due { font-size: 11px; color: var(--sh-sub); margin-top: 3px; }
+.sh-rm-due.sh-rm-overdue { color: #C46B4E; font-weight: 700; }
+.sh-rm-delete {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--sh-sub);
+  font-size: 17px;
+  cursor: pointer;
+  line-height: 1;
+}
+.sh-rm-delete:hover { color: var(--sh-warm); }
+
+.sh-rm-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.sh-rm-action-btn {
+  background: none;
+  border: 1px solid var(--sh-line);
+  color: var(--sh-paper);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+}
+.sh-rm-action-btn:hover { border-color: var(--sh-warm); color: var(--sh-warm); }
+.sh-rm-action-btn--danger:hover { border-color: #C46B4E; color: #C46B4E; }
+
+@media (max-width: 640px) {
+  .sh-rm-input-row { flex-direction: column; }
+  .sh-rm-date-input { flex: 1; }
+}

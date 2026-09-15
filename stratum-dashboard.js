@@ -30,10 +30,9 @@
   var IDEA_LOG_LIMIT = 4;
   var REMINDERS_LIMIT = 4;
 
-  // TODO: real page slugs once the full Idea Log / Reminders pages exist.
   var OPEN_LINKS = {
-    ideaLog: '#',
-    reminders: '#'
+    ideaLog: '/idea-log/',
+    reminders: '/reminders/'
   };
 
   var STUDENT_ID = null; // set from the 'stratum:identity-ready' event detail — see init()
