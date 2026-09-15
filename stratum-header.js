@@ -66,13 +66,6 @@
     userProfile: '/membership-account/'
   };
 
-  // Coach dropdown — one entry per coaching session, sourced from the
-  // shared registry (stratum-sessions.js, loaded before this file) so
-  // this list and stratum-coach.js's session data can never drift apart.
-  var COACHING_SESSIONS = window.StratumSessions
-    ? window.StratumSessions.list().map(function (s) { return { label: s.title, href: s.href }; })
-    : [];
-
   // TODO: populate with real Wistia media IDs once tutorial videos are recorded.
   // Shape: [{ label: 'Getting started', wistiaId: 'xxxxxxxxxx' }, ...]
   var TUTORIAL_VIDEOS = [];
@@ -115,22 +108,6 @@
       wrap.classList.toggle('open', willOpen);
     });
     return wrap;
-  }
-
-  function buildCoachDropdown() {
-    return buildDropdown('Excavation Center', function (panel) {
-      if (!COACHING_SESSIONS.length) {
-        mount(panel, el('div', 'sh-dropdown-empty', 'Coaching sessions coming soon'));
-        return;
-      }
-      COACHING_SESSIONS.forEach(function (session) {
-        var item = document.createElement('a');
-        item.className = 'sh-dropdown-item';
-        item.href = session.href;
-        item.textContent = session.label;
-        mount(panel, item);
-      });
-    });
   }
 
   function buildTutorialDropdown() {
@@ -335,7 +312,6 @@
     homeLink.href = '/system/';
     homeLink.textContent = 'Home';
     mount(nav, homeLink);
-    mount(nav, buildCoachDropdown());
     [['Practice', NAV_LINKS.practice], ['Library', NAV_LINKS.library]].forEach(function (pair) {
       var a = document.createElement('a');
       a.className = 'sh-nav-link';
@@ -365,11 +341,12 @@
 
     // Sept 2026: the "You are currently excavating" eyebrow and the
     // Resume Excavating button are both retired per Ted's request — the
-    // WIP panel and the Excavation Center nav dropdown cover that need
-    // now. A minimal fallback notice is kept ONLY for the logged-out /
-    // no-membership edge cases, since PMPro's own page-level Content
-    // Settings restriction is what's actually supposed to keep those
-    // visitors off this page entirely — this is a safety net for while
+    // WIP panel and the dashboard's Excavation Center section (see
+    // stratum-excavation-center.js) cover that need now. A minimal
+    // fallback notice is kept ONLY for the logged-out / no-membership
+    // edge cases, since PMPro's own page-level Content Settings
+    // restriction is what's actually supposed to keep those visitors
+    // off this page entirely — this is a safety net for while
     // that restriction isn't configured, not a normal-path UI element.
     if (!WP_USER.loggedIn) {
       var loggedOutRow = el('div', 'sh-hero-row sh-hero-row--notice');

@@ -7,6 +7,43 @@
    than redeclaring them.
    ============================================================ */
 
+.sh-pl-progress {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--sh-warm);
+  margin: 0 0 22px;
+}
+
+.sh-pl-today-card {
+  background: var(--sh-panel2);
+  border: 1.5px solid var(--sh-warm);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 26px;
+}
+.sh-pl-today-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  margin: 12px 0 10px 14px;
+}
+.sh-pl-today-card .sh-pl-entry {
+  border: none;
+  background: none;
+}
+
+.sh-pl-level-header {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sh-sub);
+  margin: 18px 0 8px;
+}
+.sh-pl-level-header:first-child { margin-top: 0; }
+
 .sh-pl-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -94,7 +131,9 @@
   border-radius: 10px;
   overflow: hidden;
 }
-.sh-pl-entry > summary {
+.sh-pl-entry.sh-pl-practiced { border-color: var(--sh-warm); }
+.sh-pl-entry > summary,
+.sh-pl-static-head {
   cursor: pointer;
   list-style: none;
   padding: 14px 16px;
@@ -103,6 +142,7 @@
   gap: 10px;
   flex-wrap: wrap;
 }
+.sh-pl-static-head { cursor: default; border-bottom: 1px solid var(--sh-line); }
 .sh-pl-entry > summary::-webkit-details-marker { display: none; }
 .sh-pl-entry > summary::before {
   content: '\25B8';
@@ -122,6 +162,16 @@
 .sh-pl-summary-meta {
   font-size: 11px;
   color: var(--sh-sub);
+}
+.sh-pl-practiced-badge {
+  margin-left: auto;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: var(--sh-ink);
+  background: var(--sh-warm);
+  border-radius: 999px;
+  padding: 2px 10px;
 }
 .sh-pl-entry-body { padding: 14px 16px 16px; }
 .sh-pl-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
@@ -165,6 +215,29 @@
   color: var(--sh-paper);
 }
 .sh-pl-exercise-list li { margin-bottom: 4px; }
+.sh-pl-applied-hint {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--sh-sub);
+  margin-top: 8px;
+}
+.sh-pl-practice-btn {
+  margin-top: 12px;
+  background: none;
+  border: 1px solid var(--sh-warm);
+  color: var(--sh-warm);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+}
+.sh-pl-practice-btn:hover { background: rgba(160, 124, 62, 0.12); }
+.sh-pl-practice-btn--done {
+  background: var(--sh-warm);
+  color: var(--sh-ink);
+}
 
 .sh-pl-crosslinks { margin-top: 14px; }
 .sh-pl-crosslink-label {

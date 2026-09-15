@@ -272,6 +272,7 @@
       .then(function (d) {
         if (d && d.ok) {
           currentProfile = Object.assign({}, currentProfile, d);
+          renderSummary(currentProfile);
           setStatus('Saved', 'sh-ok');
           fadeStatusSoon();
         } else {
@@ -319,14 +320,66 @@
   // ----------------------------------------------------------
   // BUILD
   // ----------------------------------------------------------
+  // Sept 2026: wrapped in the same sh-dash-card container + collapsed/
+  // Open pattern as Idea Log, Reminders, and Excavation Center, per
+  // Ted's request. Deliberately reuses stratum-dashboard.css's sh-dash-*
+  // classes rather than defining new ones — that file is already loaded
+  // on this page, and reusing its classes is what guarantees this looks
+  // IDENTICAL to the other cards rather than a close visual approximation.
+  // The full form is built once, up front, and only ever shown/hidden
+  // (not destroyed/rebuilt) when toggling — autosave's debounce timer
+  // and DOM references stay valid across a collapse/expand cycle.
+  var expanded = false;
+  var summaryEl = null;
+  var formWrapEl = null;
+  var openBtn = null;
+
+  function renderSummary(profile) {
+    if (!summaryEl) return;
+    summaryEl.innerHTML = '';
+    if (!profile || (!profile.wipTitle && !(profile.characters || []).length)) {
+      mount(summaryEl, el('div', 'sh-dash-empty', 'No WIP profile yet \u2014 open to add yours.'));
+      return;
+    }
+    var bits = [];
+    if (profile.wipTitle) bits.push(profile.wipTitle);
+    if (profile.genre) bits.push(profile.genre);
+    var charCount = (profile.characters || []).filter(function (c) { return c && c.name; }).length;
+    if (charCount) bits.push(charCount + ' character' + (charCount === 1 ? '' : 's'));
+    mount(summaryEl, el('div', 'sh-wip-summary-line', bits.join(' \u00b7 ') || 'Untitled WIP'));
+  }
+
+  function toggleExpanded() {
+    expanded = !expanded;
+    openBtn.textContent = expanded ? 'Close' : 'Open';
+    summaryEl.style.display = expanded ? 'none' : '';
+    formWrapEl.style.display = expanded ? '' : 'none';
+  }
+
   function buildPanel(wrapEl) {
-    var section = el('div', 'sh-wip-section');
+    var card = el('div', 'sh-dash-card');
+    var head = el('div', 'sh-dash-card-head');
+    mount(head, el('p', 'sh-dash-card-title', 'Profile'));
+    openBtn = document.createElement('button');
+    openBtn.type = 'button';
+    openBtn.className = 'sh-dash-open-btn';
+    openBtn.textContent = 'Open';
+    openBtn.addEventListener('click', toggleExpanded);
+    mount(head, openBtn);
+    mount(card, head);
+
+    var body = el('div', 'sh-dash-card-body');
+    summaryEl = el('div', 'sh-wip-summary');
+    mount(body, summaryEl);
+
+    formWrapEl = el('div', 'sh-wip-section');
+    formWrapEl.style.display = 'none';
 
     var topActions = el('div', 'sh-wip-top-actions');
     mount(topActions, el('p', 'sh-wip-col-label sh-wip-autosave-label', 'Your changes save automatically'));
     statusEl = el('span', 'sh-wip-status');
     mount(topActions, statusEl);
-    mount(section, topActions);
+    mount(formWrapEl, topActions);
 
     var grid = el('div', 'sh-wip-grid');
 
@@ -409,8 +462,10 @@
     mount(col2, addBtn);
 
     mount(grid, col2);
-    mount(section, grid);
-    mount(wrapEl, section);
+    mount(formWrapEl, grid);
+    mount(body, formWrapEl);
+    mount(card, body);
+    mount(wrapEl, card);
 
     return {
       titleInput: titleInput, genreSelect: genreSelect, stageSelect: stageSelect,
@@ -439,15 +494,16 @@
     fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(STUDENT_ID))
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (!d || !d.known) return;
+        if (!d || !d.known) { renderSummary(null); return; }
         currentProfile = d;
         fillForm(d); // filling from a fresh load never itself schedules an autosave — only real user input does
+        renderSummary(d);
       })
-      .catch(function () {});
+      .catch(function () { renderSummary(null); });
   }
 
   function mountInto(wrapEl) {
-    if (!wrapEl || wrapEl.querySelector('.sh-wip-section')) return; // avoid double-mount
+    if (!wrapEl || wrapEl.querySelector('.sh-wip-summary')) return; // avoid double-mount
     fields = buildPanel(wrapEl);
   }
 

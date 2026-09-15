@@ -1,0 +1,49 @@
+/* ============================================================
+   STRATUM PRACTICE TEASER — DASHBOARD CARD STYLES (Sept 2026)
+   ------------------------------------------------------------
+   Only styles the parts unique to this card's content (word/snippet/
+   progress) — the card shell itself (.sh-dash-card, .sh-dash-card-
+   head, .sh-dash-card-title, .sh-dash-open-btn, .sh-dash-card-body,
+   .sh-dash-empty) comes from stratum-dashboard.css, reused directly
+   rather than redefined, which is what makes this card look IDENTICAL
+   to Idea Log/Reminders rather than a close approximation.
+   ============================================================ */
+
+.sh-pt-section {
+  padding: 4px 28px 26px;
+  position: relative;
+  z-index: 1;
+}
+.sh-pt-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  margin: 0 0 6px;
+}
+.sh-pt-word {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--sh-paper);
+  margin-bottom: 6px;
+}
+.sh-pt-snippet {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--sh-sub);
+  margin-bottom: 10px;
+}
+.sh-pt-progress {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--sh-warm);
+}
+
+@media (max-width: 640px) {
+  .sh-pt-section { padding-left: 16px; padding-right: 16px; }
+}
+@media (max-width: 400px) {
+  .sh-pt-section { padding-left: 12px; padding-right: 12px; }
+}
