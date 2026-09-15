@@ -1,0 +1,129 @@
+/* ============================================================
+   STRATUM LIBRARY — PAGE STYLES (Sept 2026)
+   ------------------------------------------------------------
+   Reuses --sh-* variables from stratum-header.css, .sh-wrap/.sh-
+   page-topbar/.sh-form-title/.sh-form-sub/.sh-save-btn/.sh-gate
+   from stratum-wip-profile.css, and .sh-pl-toolbar/.sh-pl-filter-*/
+   .sh-pl-progress/.sh-pl-empty from stratum-practice.css (load all
+   three on this page too) rather than redeclaring them — same
+   filter-toolbar treatment as Practice Lab, for visual consistency.
+   ============================================================ */
+
+.sh-lib-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sh-lib-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--sh-panel2);
+  border: 1px solid var(--sh-line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color .15s ease;
+}
+.sh-lib-row:hover { border-color: var(--sh-warm); }
+
+.sh-lib-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  background: #1E1A13;
+  color: var(--sh-warm);
+}
+.sh-lib-icon--video { color: var(--sh-paper); background: #3A2E1A; }
+
+.sh-lib-text { flex: 1; min-width: 0; }
+.sh-lib-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sh-paper);
+  margin-bottom: 4px;
+}
+.sh-lib-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.sh-lib-tag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  border: 1px solid var(--sh-warm);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+.sh-lib-tag--topic { color: var(--sh-sub); border-color: var(--sh-line); }
+
+.sh-lib-open-label {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  white-space: nowrap;
+}
+
+/* ---- Popup overlay (PDF viewer / video), same pattern as the
+   Tutorial video popup elsewhere in this codebase ---- */
+.sh-lib-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 6, 3, 0.72);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.sh-lib-popup-box {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.sh-lib-popup-box--video { aspect-ratio: 16 / 9; }
+.sh-lib-popup-box--pdf { height: 88vh; max-width: 760px; }
+.sh-lib-pdf-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+}
+.sh-lib-popup-box wistia-player {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.sh-lib-popup-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--sh-paper);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .sh-lib-row { flex-wrap: wrap; }
+  .sh-lib-open-label { margin-left: 50px; }
+  .sh-lib-popup-box--pdf { height: 82vh; }
+}
