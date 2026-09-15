@@ -30,8 +30,8 @@
   'use strict';
 
   var PROXY_URL = window.StratumIdentity ? window.StratumIdentity.PROXY_URL : 'https://stratum-proxy.tedbaker0207.workers.dev';
-  var IDEA_LOG_LIMIT = 4;    // shown in the collapsed summary view
-  var REMINDERS_LIMIT = 4;   // shown in the collapsed summary view
+  var IDEA_LOG_LIMIT = 1;    // shown in the collapsed summary view — only the latest entry
+  var REMINDERS_LIMIT = 1;   // shown in the collapsed summary view — only the latest reminder
 
   var IDEA_LOG_CATEGORIES = ['Character', 'Plot', 'Theme', 'Revision', 'Research', 'Deadlines', 'Inspiration'];
   var GENERAL_CATEGORY = 'General'; // tag used for migrated legacy single-blob notes
@@ -327,8 +327,12 @@
 
   function renderRemindersCollapsed() {
     remindersBodyEl.innerHTML = '';
-    var ordered = tasks.slice().sort(function (a, b) { return (a.done ? 1 : 0) - (b.done ? 1 : 0); });
-    var visible = ordered.slice(0, REMINDERS_LIMIT);
+    // "Latest" = most recently added, regardless of done state — ids are
+    // Date.now().toString(), so sorting numerically descending gives
+    // true recency rather than the old open-before-done ordering, which
+    // stopped making sense once only one item is ever shown here.
+    var sorted = tasks.slice().sort(function (a, b) { return Number(b.id) - Number(a.id); });
+    var visible = sorted.slice(0, REMINDERS_LIMIT);
     if (!visible.length) {
       mount(remindersBodyEl, el('div', 'sh-dash-empty', 'No reminders yet.'));
       return;

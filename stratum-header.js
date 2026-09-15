@@ -66,15 +66,12 @@
     userProfile: '/membership-account/'
   };
 
-  // Coach dropdown — one entry per coaching session, matching
-  // SESSION_DEFINITIONS in stratum-coach.js. Character Excavation is the
-  // only one that exists today; adding a future session (Essentials,
-  // Mastery) is one more entry here plus a matching SESSION_DEFINITIONS
-  // entry and WordPress page — no other nav code changes.
-  var COACHING_SESSIONS = [
-    { label: 'Character Excavation', href: '/coach/character-excavation/' }
-    // TODO: 'Essentials', 'Mastery' — add once those sessions exist.
-  ];
+  // Coach dropdown — one entry per coaching session, sourced from the
+  // shared registry (stratum-sessions.js, loaded before this file) so
+  // this list and stratum-coach.js's session data can never drift apart.
+  var COACHING_SESSIONS = window.StratumSessions
+    ? window.StratumSessions.list().map(function (s) { return { label: s.title, href: s.href }; })
+    : [];
 
   // TODO: populate with real Wistia media IDs once tutorial videos are recorded.
   // Shape: [{ label: 'Getting started', wistiaId: 'xxxxxxxxxx' }, ...]

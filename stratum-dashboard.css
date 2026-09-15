@@ -78,7 +78,7 @@
 /* ---- Idea Log ---- */
 .sh-idea-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr; /* collapsed view now shows only the single latest entry */
   gap: 10px;
 }
 .sh-idea-entry {
@@ -335,7 +335,6 @@
 
 @media (max-width: 640px) {
   .sh-dash-panels { grid-template-columns: 1fr; }
-  .sh-idea-grid { grid-template-columns: 1fr; }
   .sh-dash-section { padding-left: 16px; padding-right: 16px; }
   .sh-dash-form-row { flex-direction: column; }
   .sh-dash-select { flex: 1; }

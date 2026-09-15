@@ -1,0 +1,86 @@
+/* ============================================================
+   STRATUM EXCAVATION CENTER — DASHBOARD SECTION STYLES (Sept 2026)
+   ------------------------------------------------------------
+   Reuses --sh-* variables from stratum-header.css — no new palette
+   introduced. Same "quiet section label, compact rows" language
+   already used by the WIP panel's column labels, so this reads as
+   part of the same dashboard rather than a bolted-on new widget.
+   ============================================================ */
+
+.sh-ec-section {
+  padding: 4px 28px 26px;
+  position: relative;
+  z-index: 1;
+}
+.sh-ec-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  margin: 0 0 12px;
+}
+
+.sh-ec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sh-ec-empty {
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--sh-sub);
+  padding: 10px 0;
+}
+
+.sh-ec-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: var(--sh-panel2);
+  border: 1px solid var(--sh-line);
+  border-radius: 10px;
+  padding: 13px 16px;
+}
+.sh-ec-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sh-paper);
+  text-decoration: none;
+}
+.sh-ec-title:hover { color: var(--sh-warm); }
+
+.sh-ec-badge {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+.sh-ec-badge--not-started {
+  color: var(--sh-sub);
+  border: 1px solid var(--sh-line);
+}
+.sh-ec-badge--in-progress {
+  color: var(--sh-warm);
+  border: 1px solid var(--sh-warm);
+  background: rgba(160, 124, 62, 0.1);
+}
+.sh-ec-badge--completed {
+  color: var(--sh-ink);
+  background: var(--sh-warm);
+  border: 1px solid var(--sh-warm);
+}
+
+@media (max-width: 640px) {
+  .sh-ec-section { padding-left: 16px; padding-right: 16px; }
+}
+@media (max-width: 400px) {
+  .sh-ec-section { padding-left: 12px; padding-right: 12px; }
+  .sh-ec-row { flex-wrap: wrap; gap: 8px; }
+}

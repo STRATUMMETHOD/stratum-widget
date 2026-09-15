@@ -3,7 +3,8 @@
    ------------------------------------------------------------
    Character Excavation is the first coaching session built on this
    page; the format is designed to be reused for every future one
-   (Essentials, Mastery per Ted) — see SESSION_DEFINITIONS below.
+   (Essentials, Mastery per Ted) — see window.StratumSessions in
+   stratum-sessions.js, the shared registry this file reads from.
    This is a port of the working "ladder" coaching logic that
    already existed in stratum-lesson-engine.js (LADDER_MODE and its
    supporting functions), restyled for the new dark/warm design
@@ -14,26 +15,28 @@
    capture, same /excavation/synthesize + /excavation/master-
    deliverable endpoints for the single end-of-session synthesis.
 
-   Session → layer mapping lives here (SESSION_DEFINITIONS), not in
-   the Stratum admin, per Ted's decision to keep the admin panel
-   untouched this round — the admin panel still edits each LAYER's
-   content (areas, coaching approach, deliverable fields, and, for
-   the first layer only, the one video for the whole session); this
-   file just knows which ordered set of layer ids make up which
-   session and what their on-screen strata labels are. Adding a
-   future session (Essentials, Mastery) is a new entry here, not new
-   code, once those layers' lesson_configs ids are decided.
+   Session → layer mapping lives in stratum-sessions.js (load that
+   file before this one), not in the Stratum admin, per Ted's decision
+   to keep the admin panel untouched this round — the admin panel
+   still edits each LAYER's content (areas, coaching approach,
+   deliverable fields, and, for the first layer only, the one video
+   for the whole session); the registry just knows which ordered set
+   of layer ids make up which session and what their on-screen strata
+   labels are. Adding a future session (Essentials, Mastery) is a new
+   entry in stratum-sessions.js, not new code here, once those layers'
+   lesson_configs ids are decided.
 
    IMPORTANT — data sourcing: this file fetches WIP profile, Idea
    Log, and Reminders context directly from /project, /notes, /tasks
    at conversation-start time, NOT from localStorage. The old
    engine's PROJ_KEYS/NOTES_KEY/TRACKER_KEY localStorage cache is not
-   populated anywhere in this new architecture (stratum-wip-
-   profile.js and stratum-dashboard.js both read/write the server
-   directly) — reusing those keys here would silently see nothing.
+   populated anywhere in this new architecture (stratum-wip-panel.js
+   and stratum-dashboard.js both read/write the server directly) —
+   reusing those keys here would silently see nothing.
 
-   Requires stratum-identity.js AND stratum-header.js (for
-   window.StratumHeader.buildTopbar) loaded first on this page.
+   Requires stratum-identity.js, stratum-header.js (for
+   window.StratumHeader.buildTopbar), AND stratum-sessions.js loaded
+   first on this page.
    ============================================================ */
 (function () {
   'use strict';
@@ -43,31 +46,6 @@
   var LANG_STORE_KEY = 'wlfc_preferred_lang'; // same key stratum-header.js's Language dropdown writes
   var MODEL = 'claude-sonnet-4-5';
 
-  // ----------------------------------------------------------
-  // SESSION DEFINITIONS
-  // ----------------------------------------------------------
-  var SESSION_DEFINITIONS = {
-    'character-excavation': {
-      title: 'Character Excavation',
-      tier: 'guided',
-      synthesisEndpoint: '/excavation/synthesize',       // unchanged Worker endpoint — scoped to the 1.x ids today
-      masterDeliverableEndpoint: '/excavation/master-deliverable',
-      layers: [
-        { id: '1.1', label: 'The Anchor Behavior' },
-        { id: '1.2', label: 'The Hidden Truth' },
-        { id: '1.3', label: 'The Formative Wound' },
-        { id: '1.4', label: 'The Lies They Believe' },
-        { id: '1.5', label: 'Their Wants and Needs' },
-        { id: '1.6', label: 'Their Fears & Desires' }
-      ]
-    }
-    // TODO: 'essentials', 'mastery' — add here once their layer ids and
-    // on-screen labels are finalized. synthesisEndpoint/
-    // masterDeliverableEndpoint above are Character-Excavation-specific
-    // in the Worker today (LADDER_LESSON_IDS is hardcoded to 1.1-1.6) —
-    // the Worker will need a matching generalization before a second
-    // session can actually synthesize its own deliverable.
-  };
 
   function el(tag, className, text) {
     var node = document.createElement(tag);
@@ -834,7 +812,7 @@
       return;
     }
     var slug = window.STRATUM_SESSION_SLUG || '';
-    SESSION = SESSION_DEFINITIONS[slug];
+    SESSION = window.StratumSessions ? window.StratumSessions.get(slug) : null;
     if (!SESSION) {
       buildGate(container, 'This coaching session hasn\u2019t been configured yet.', '/system/', '\u2190 Back to Dashboard');
       return;
