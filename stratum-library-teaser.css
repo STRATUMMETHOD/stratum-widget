@@ -1,0 +1,27 @@
+/* ============================================================
+   STRATUM LIBRARY TEASER — DASHBOARD CARD STYLES (Sept 2026)
+   ------------------------------------------------------------
+   Reuses .sh-dash-card/.sh-dash-card-head/.sh-dash-card-title/
+   .sh-dash-open-btn/.sh-dash-card-body/.sh-dash-empty from stratum-
+   dashboard.css, and .sh-pt-label/.sh-pt-word from stratum-practice-
+   teaser.css (same "Today's ___" label + headline treatment) — only
+   the category/type tag row here is genuinely new.
+   ============================================================ */
+
+.sh-lt-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.sh-lt-tag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  border: 1px solid var(--sh-warm);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+.sh-lt-tag--type { color: var(--sh-sub); border-color: var(--sh-line); }

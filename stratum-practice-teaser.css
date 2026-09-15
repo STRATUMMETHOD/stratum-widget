@@ -7,13 +7,28 @@
    .sh-dash-empty) comes from stratum-dashboard.css, reused directly
    rather than redefined, which is what makes this card look IDENTICAL
    to Idea Log/Reminders rather than a close approximation.
+
+   .sh-teaser-section/.sh-teaser-row are the shared two-column row
+   Practice Lab and Library sit in side by side (Sept 2026) — same
+   grid treatment as .sh-dash-panels (Idea Log/Reminders). Defined
+   here since this file loads first in the mount order, but also
+   referenced identically by stratum-library-teaser.css; whichever
+   file's JS actually creates the row first doesn't matter since both
+   stylesheets agree on what it looks like.
    ============================================================ */
 
-.sh-pt-section {
+.sh-teaser-section {
   padding: 4px 28px 26px;
   position: relative;
   z-index: 1;
 }
+.sh-teaser-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.sh-pt-slot, .sh-lt-slot { min-width: 0; }
+
 .sh-pt-label {
   font-size: 10.5px;
   font-weight: 800;
@@ -42,8 +57,9 @@
 }
 
 @media (max-width: 640px) {
-  .sh-pt-section { padding-left: 16px; padding-right: 16px; }
+  .sh-teaser-section { padding-left: 16px; padding-right: 16px; }
+  .sh-teaser-row { grid-template-columns: 1fr; }
 }
 @media (max-width: 400px) {
-  .sh-pt-section { padding-left: 12px; padding-right: 12px; }
+  .sh-teaser-section { padding-left: 12px; padding-right: 12px; }
 }

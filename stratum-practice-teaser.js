@@ -105,15 +105,29 @@
     return card;
   }
 
-  function buildSection(studentId) {
-    var section = el('div', 'sh-pt-section');
-    mount(section, buildCard(studentId));
-    return section;
+  // Sept 2026: Practice Lab and Library now sit side by side in one
+  // shared two-column row (same "teaser row" pattern), per Ted's
+  // request — this function is duplicated identically in stratum-
+  // library-teaser.js so either file can find-or-create the shared
+  // row and slot its own card into it, regardless of which script
+  // actually finishes loading/mounting first (same order-independence
+  // technique already used for window.STRATUM_HEADER_WRAP elsewhere).
+  function getOrCreateTeaserRow(wrapEl) {
+    var existing = wrapEl.querySelector('.sh-teaser-row');
+    if (existing) return existing;
+    var section = el('div', 'sh-teaser-section');
+    var row = el('div', 'sh-teaser-row');
+    mount(section, row);
+    mount(wrapEl, section);
+    return row;
   }
 
   function mountInto(wrapEl, studentId) {
-    if (!wrapEl || wrapEl.querySelector('.sh-pt-section')) return; // avoid double-mount
-    mount(wrapEl, buildSection(studentId));
+    if (!wrapEl || wrapEl.querySelector('.sh-pt-slot')) return; // avoid double-mount
+    var row = getOrCreateTeaserRow(wrapEl);
+    var slot = el('div', 'sh-pt-slot');
+    mount(slot, buildCard(studentId));
+    mount(row, slot);
   }
 
   function proceed(studentId) {

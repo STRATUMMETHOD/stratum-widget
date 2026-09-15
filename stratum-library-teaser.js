@@ -1,0 +1,124 @@
+/* ============================================================
+   STRATUM LIBRARY TEASER — DASHBOARD CARD (Sept 2026)
+   ------------------------------------------------------------
+   Sits in the shared two-column "teaser row" alongside Practice
+   Lab's dashboard card (see stratum-practice-teaser.js/.css for the
+   getOrCreateTeaserRow() pattern this file mirrors exactly — either
+   file can find-or-create the shared row and slot its own card in,
+   regardless of which script actually finishes loading first).
+
+   Surfaces one deterministically-featured resource per day — same
+   day-of-year-modulo pick technique as Practice Lab's "Today's
+   Practice Term" (intentionally duplicated logic, not shared code,
+   same reasoning as there: this file and stratum-library.js's own
+   copy load on different pages). "A new file every day" — yes, this
+   is exactly that: the pick changes once per calendar day, same
+   featured resource for every student that day, cycling through the
+   full active resource list in order.
+
+   Reuses stratum-dashboard.css's sh-dash-card classes directly so it
+   looks IDENTICAL to the other dashboard cards, same as every other
+   teaser/section on this page.
+
+   Requires stratum-identity.js loaded first on this page.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var PROXY_URL = window.StratumIdentity ? window.StratumIdentity.PROXY_URL : 'https://stratum-proxy.tedbaker0207.workers.dev';
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+  function mount(parent, child) { parent.appendChild(child); return child; }
+
+  // Same day-of-year-modulo approach as stratum-practice-teaser.js and
+  // stratum-practice.js's pickTodaysTerm() — intentionally duplicated,
+  // not shared, since this loads on a different page than either.
+  function dayOfYear() {
+    var now = new Date();
+    var start = new Date(now.getFullYear(), 0, 0);
+    return Math.floor((now - start) / 86400000);
+  }
+
+  function fetchResources(callback) {
+    fetch(PROXY_URL + '/library')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { callback((d && Array.isArray(d.resources)) ? d.resources : []); })
+      .catch(function () { callback([]); });
+  }
+
+  function buildCard() {
+    var card = el('div', 'sh-dash-card');
+    var head = el('div', 'sh-dash-card-head');
+    mount(head, el('p', 'sh-dash-card-title', 'Library'));
+    var openLink = document.createElement('a');
+    openLink.className = 'sh-dash-open-btn';
+    openLink.href = '/library/';
+    openLink.textContent = 'Open';
+    mount(head, openLink);
+    mount(card, head);
+
+    var body = el('div', 'sh-dash-card-body');
+    mount(card, body);
+
+    fetchResources(function (resources) {
+      if (!resources.length) {
+        mount(body, el('div', 'sh-dash-empty', 'No resources yet.'));
+        return;
+      }
+      var resource = resources[dayOfYear() % resources.length];
+      mount(body, el('p', 'sh-pt-label', "Today's Featured Resource"));
+      mount(body, el('div', 'sh-pt-word', resource.title));
+      var meta = el('div', 'sh-lt-meta');
+      mount(meta, el('span', 'sh-lt-tag', resource.category));
+      mount(meta, el('span', 'sh-lt-tag sh-lt-tag--type', resource.type === 'video' ? 'Video' : 'PDF'));
+      mount(body, meta);
+    });
+
+    return card;
+  }
+
+  // Same find-or-create shared row as stratum-practice-teaser.js — see
+  // that file for the fuller comment on why this is order-independent.
+  function getOrCreateTeaserRow(wrapEl) {
+    var existing = wrapEl.querySelector('.sh-teaser-row');
+    if (existing) return existing;
+    var section = el('div', 'sh-teaser-section');
+    var row = el('div', 'sh-teaser-row');
+    mount(section, row);
+    mount(wrapEl, section);
+    return row;
+  }
+
+  function mountInto(wrapEl) {
+    if (!wrapEl || wrapEl.querySelector('.sh-lt-slot')) return; // avoid double-mount
+    var row = getOrCreateTeaserRow(wrapEl);
+    var slot = el('div', 'sh-lt-slot');
+    mount(slot, buildCard());
+    mount(row, slot);
+  }
+
+  function proceed() {
+    mountInto(window.STRATUM_HEADER_WRAP);
+  }
+
+  function init() {
+    if (window.STRATUM_IDENTITY_READY) {
+      proceed();
+      return;
+    }
+    document.addEventListener('stratum:identity-ready', function () {
+      proceed();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
