@@ -121,7 +121,7 @@
   }
 
   function buildCoachDropdown() {
-    return buildDropdown('Coach', function (panel) {
+    return buildDropdown('Excavation Center', function (panel) {
       if (!COACHING_SESSIONS.length) {
         mount(panel, el('div', 'sh-dropdown-empty', 'Coaching sessions coming soon'));
         return;
@@ -361,55 +361,38 @@
     // ---- Welcome ----
     var welcomeRow = el('div', 'sh-welcome-row');
     var welcomeText = WP_USER.loggedIn
-      ? 'Welcome back, ' + (WP_USER.firstName || 'there')
+      ? 'Welcome, ' + (WP_USER.firstName || 'there')
       : 'Welcome to The Stratum Method';
     mount(welcomeRow, el('h2', 'sh-welcome', welcomeText));
     mount(wrap, welcomeRow);
 
-    // ---- Compact hero: eyebrow + Resume button only ----
-    // Sept 2026: the big serif WIP title + genre display and the
-    // fetchWipSummary() call that populated it are both retired — that
-    // same data now lives in the editable stratum-wip-panel.js section
-    // mounted directly below (see the 'stratum:identity-ready' handoff),
-    // so showing it twice (once as static decoration here, once as the
-    // real editable field there) would be redundant. What research on
-    // course-dashboard conventions consistently calls out as worth
-    // protecting is a prominent, low-friction "resume" call-to-action
-    // near the top — that's kept; the duplicate title isn't.
-    var heroRow = el('div', 'sh-hero-row');
-    var resumeBtn;
-
+    // Sept 2026: the "You are currently excavating" eyebrow and the
+    // Resume Excavating button are both retired per Ted's request — the
+    // WIP panel and the Excavation Center nav dropdown cover that need
+    // now. A minimal fallback notice is kept ONLY for the logged-out /
+    // no-membership edge cases, since PMPro's own page-level Content
+    // Settings restriction is what's actually supposed to keep those
+    // visitors off this page entirely — this is a safety net for while
+    // that restriction isn't configured, not a normal-path UI element.
     if (!WP_USER.loggedIn) {
-      // Once the System Page itself is restricted to "The Stratum
-      // Method" level via PMPro's Content Settings, a logged-out
-      // visitor won't reach this template at all — this branch is a
-      // safety fallback for while that restriction isn't configured yet.
-      mount(heroRow, el('p', 'sh-eyebrow', 'Members only \u2014 log in to continue'));
-      resumeBtn = document.createElement('a');
-      resumeBtn.className = 'sh-resume-btn';
-      resumeBtn.href = WP_USER.loginUrl;
-      resumeBtn.textContent = 'Log in \u2192';
+      var loggedOutRow = el('div', 'sh-hero-row sh-hero-row--notice');
+      mount(loggedOutRow, el('p', 'sh-eyebrow', 'Members only \u2014 log in to continue'));
+      var loginLink = document.createElement('a');
+      loginLink.className = 'sh-resume-btn sh-resume-btn--inline';
+      loginLink.href = WP_USER.loginUrl;
+      loginLink.textContent = 'Log in \u2192';
+      mount(loggedOutRow, loginLink);
+      mount(wrap, loggedOutRow);
     } else if (!WP_USER.hasMembership) {
-      mount(heroRow, el('p', 'sh-eyebrow', 'Account found \u2014 no active membership yet'));
-      resumeBtn = el('button', 'sh-resume-btn', 'Resume excavating \u2192');
-      resumeBtn.type = 'button';
-      resumeBtn.disabled = true;
-    } else {
-      mount(heroRow, el('p', 'sh-eyebrow', 'You are currently excavating'));
-      // Points at Character Excavation — the only coaching session that
-      // exists today. Once a WIP has more than one session in progress,
-      // this should route to whichever one is actually in progress
-      // rather than always assuming Character Excavation; worth
-      // revisiting once a second session (Essentials/Mastery) exists.
-      resumeBtn = document.createElement('a');
-      resumeBtn.className = 'sh-resume-btn';
-      resumeBtn.href = COACHING_SESSIONS[0] ? COACHING_SESSIONS[0].href : '#';
-      resumeBtn.textContent = 'Resume excavating \u2192';
+      var noMembershipRow = el('div', 'sh-hero-row sh-hero-row--notice');
+      mount(noMembershipRow, el('p', 'sh-eyebrow', 'Account found \u2014 no active membership yet'));
+      var acctLink = document.createElement('a');
+      acctLink.className = 'sh-resume-btn sh-resume-btn--inline';
+      acctLink.href = '/membership-account/';
+      acctLink.textContent = 'Go to My Account \u2192';
+      mount(noMembershipRow, acctLink);
+      mount(wrap, noMembershipRow);
     }
-
-    resumeBtn.classList.add('sh-resume-btn--inline');
-    mount(heroRow, resumeBtn);
-    mount(wrap, heroRow);
 
     mount(container, wrap);
 

@@ -16,7 +16,7 @@
    earlier teal direction per Ted's Sept 2026 design review.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Newsreader:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Montserrat:wght@700;800&family=Newsreader:wght@600&display=swap');
 
 .sh-wrap, .sh-wrap * {
   box-sizing: border-box;
@@ -177,25 +177,30 @@ body:has(.sh-topbar--standalone) {
 
 /* ---- Welcome line ---- */
 .sh-welcome-row {
-  padding: 24px 28px 0;
+  padding: 24px 28px 28px;
+  text-align: center;
   position: relative;
   z-index: 1;
 }
 .sh-welcome {
+  font-family: 'Montserrat', Arial, sans-serif;
   font-size: 34px;
   line-height: 1;
-  font-weight: 900;
-  letter-spacing: -1px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
   margin: 0;
 }
 
-/* ---- Compact hero: eyebrow + Resume button ---- */
-/* Sept 2026: this used to also hold a large serif WIP title + genre
-   line, populated by a fetchWipSummary() call in stratum-header.js.
-   Both are retired — that data now lives as an editable field in
-   stratum-wip-panel.js's section, mounted directly below this. */
-.sh-hero-row {
-  padding: 14px 28px 24px;
+/* ---- Notice row (logged-out / no-membership edge cases only) ----
+   Sept 2026: the "You are currently excavating" eyebrow and the Resume
+   Excavating button that used to live here for every visitor are both
+   retired — the Excavation Center nav dropdown and the WIP panel below
+   cover that need now. What's left only ever renders for the two edge
+   cases where PMPro's own page-level restriction hasn't kept a logged-
+   out or non-member visitor off this page — see stratum-header.js. */
+.sh-hero-row--notice {
+  padding: 0 28px 26px;
+  text-align: center;
   position: relative;
   z-index: 1;
 }
@@ -250,7 +255,7 @@ body:has(.sh-topbar--standalone) {
   .sh-welcome { font-size: 26px; }
   .sh-topbar { padding: 14px 16px; }
   .sh-welcome-row { padding: 20px 16px 0; }
-  .sh-hero-row { padding: 14px 16px 22px; }
+  .sh-hero-row--notice { padding: 14px 16px 22px; }
 }
 
 @media (max-width: 400px) {
@@ -260,7 +265,7 @@ body:has(.sh-topbar--standalone) {
   .sh-brand-name { font-size: 14px; }
   .sh-for-writers { font-size: 15px !important; }
   .sh-welcome { font-size: 22px; }
-  .sh-welcome-row, .sh-hero-row { padding-left: 12px; padding-right: 12px; }
+  .sh-welcome-row, .sh-hero-row--notice { padding-left: 12px; padding-right: 12px; }
   /* A 200px-min dropdown panel anchored right:0 can overflow the left
      edge of a viewport this narrow — clamp it down and let it wrap
      rather than assume desktop-width breathing room. */
