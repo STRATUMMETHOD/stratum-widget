@@ -537,6 +537,7 @@
     <button class="nav-item" id="tabDeliverablesBtn" type="button"><span class="nav-dot"></span>Deliverables</button>
     <button class="nav-item" id="tabTestimonialsBtn" type="button"><span class="nav-dot"></span>Testimonials</button>
     <button class="nav-item" id="tabVocabularyBtn" type="button"><span class="nav-dot"></span>Vocabulary</button>
+    <button class="nav-item" id="tabLibraryBtn" type="button"><span class="nav-dot"></span>Library</button>
     <button class="nav-item" id="tabExcavationBtn" type="button"><span class="nav-dot"></span>Excavation</button>
   </div>
   <div class="nav-spacer"></div>
@@ -764,6 +765,24 @@
       <div id="vcbList"></div>
       <button class="add-btn" id="vcbAddBtn" type="button">+ Add vocabulary term</button>
     </div>
+    <div id="libraryView" style="display:none;">
+      <div class="tst-toolbar">
+        <span class="sub" style="margin:0;">One common place for every resource document and video, replacing the old per-lesson Resource PDFs. PDFs are hosted on GitHub Pages &mdash; enter only the filename (e.g. The_Science_Of_Anchor_Behavior.pdf), not the full URL. Videos are hosted on Wistia &mdash; enter only the Wistia media ID.</span>
+      </div>
+      <div class="tst-toolbar">
+        <button class="btn secondary" id="libReloadBtn" type="button">Reload</button>
+        <span class="vcb-filter-label">Filter by Category:</span>
+        <select id="libCategoryFilter" class="vcb-filter-select"></select>
+        <span class="vcb-filter-label">Filter by Excavation Topic:</span>
+        <select id="libTopicFilter" class="vcb-filter-select"></select>
+        <div class="spacer"></div>
+        <span id="libStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
+      </div>
+      <datalist id="libCategoryDatalist"></datalist>
+      <datalist id="libTopicDatalist"></datalist>
+      <div id="libList"></div>
+      <button class="add-btn" id="libAddBtn" type="button">+ Add resource</button>
+    </div>
     <div id="excavationView" style="display:none;">
       <div class="exc-toolbar">
         <span class="sub" style="margin:0;">The 5-Minute Character Excavation &mdash; started / completed / traffic source / surprise rating.</span>
@@ -862,19 +881,6 @@
           <div class="card-body">
           <div class="field">
             <textarea id="gTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
-          </div>
-        </div>
-        </details>
-        <details class="card" data-group="plain">
-          <summary class="card-title">Resource</summary>
-          <div class="card-body">
-          <div class="toggle-row">
-            <input type="checkbox" id="gHasResource" />
-            <label for="gHasResource" style="margin:0;">This lesson has resource PDFs</label>
-          </div>
-          <div id="gResourceFields" class="resource-fields disabled">
-            <div id="gPdfsList"></div>
-            <button class="add-btn" id="gAddPdfBtn" type="button">+ Add PDF</button>
           </div>
         </div>
         </details>
@@ -1080,19 +1086,6 @@
       </div>
       </details>
       <details class="card" data-group="plain">
-        <summary class="card-title">Resource</summary>
-        <div class="card-body">
-        <div class="toggle-row">
-          <input type="checkbox" id="eHasResource" />
-          <label for="eHasResource" style="margin:0;">This lesson has resource PDFs</label>
-        </div>
-        <div id="eResourceFields" class="resource-fields disabled">
-          <div id="ePdfsList"></div>
-          <button class="add-btn" id="eAddPdfBtn" type="button">+ Add PDF</button>
-        </div>
-      </div>
-      </details>
-      <details class="card" data-group="plain">
         <summary class="card-title">Coaching intro text</summary>
         <div class="card-body">
         <div class="toggle-row">
@@ -1186,19 +1179,6 @@
           <div class="card-body">
           <div class="field">
             <textarea id="mTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
-          </div>
-        </div>
-        </details>
-        <details class="card" data-group="plain">
-          <summary class="card-title">Resource</summary>
-          <div class="card-body">
-          <div class="toggle-row">
-            <input type="checkbox" id="mHasResource" />
-            <label for="mHasResource" style="margin:0;">This lesson has resource PDFs</label>
-          </div>
-          <div id="mResourceFields" class="resource-fields disabled">
-            <div id="mPdfsList"></div>
-            <button class="add-btn" id="mAddPdfBtn" type="button">+ Add PDF</button>
           </div>
         </div>
         </details>
@@ -1369,10 +1349,7 @@ var LANGUAGES = [
 ];
 var adminKey = '';
 var gAreaCounter = 0;
-var gPdfCounter = 0;
-var ePdfCounter = 0;
 var mAreaCounter = 0;
-var mPdfCounter = 0;
 var authInput = document.getElementById('adminKeyInput');
 var authStatus = document.getElementById('authStatus');
 var panel = document.getElementById('panel');
@@ -1640,6 +1617,7 @@ var tabDashboardBtn = document.getElementById('tabDashboardBtn');
 var tabDeliverablesBtn = document.getElementById('tabDeliverablesBtn');
 var tabTestimonialsBtn = document.getElementById('tabTestimonialsBtn');
 var tabVocabularyBtn = document.getElementById('tabVocabularyBtn');
+var tabLibraryBtn = document.getElementById('tabLibraryBtn');
 var tabGlobalInstructionsBtn = document.getElementById('tabGlobalInstructionsBtn');
 var tabExcavationBtn = document.getElementById('tabExcavationBtn');
 var tabGuidedBtn = document.getElementById('tabGuidedBtn');
@@ -1650,6 +1628,7 @@ var dashboardView = document.getElementById('dashboardView');
 var deliverablesView = document.getElementById('deliverablesView');
 var testimonialsView = document.getElementById('testimonialsView');
 var vocabularyView = document.getElementById('vocabularyView');
+var libraryView = document.getElementById('libraryView');
 var globalInstructionsView = document.getElementById('globalInstructionsView');
 var excavationView = document.getElementById('excavationView');
 var guidedView = document.getElementById('guidedView');
@@ -1661,6 +1640,7 @@ var PAGE_HEADERS = {
   deliverables: ['Deliverables', "Confirms every completed session actually captured a real, validated deliverable \u2014 not just the summary sentence."],
   testimonials: ['Testimonials', 'Shown in the homepage rotator, fading from one to the next.'],
   vocabulary: ['Vocabulary', "Writer's Vocabulary glossary shown on the student Vocabulary tab."],
+  library: ['Library', 'Every resource PDF and video, in one place \u2014 replaces the old per-lesson Resource PDFs.'],
   globalInstructions: ['Global Instructions', 'Standing coaching direction that applies to every lesson, every session.'],
   excavation: ['Excavation', 'The 5-Minute Character Excavation \u2014 started / completed / traffic source / surprise rating.'],
   guided: ['Course', "Enter or edit any lesson's coaching content. Saves go straight to the database \u2014 the live lesson page picks up changes on next load."],
@@ -1672,6 +1652,7 @@ function showTopTab(which) {
   tabDeliverablesBtn.className = 'nav-item' + (which === 'deliverables' ? ' active' : '');
   tabTestimonialsBtn.className = 'nav-item' + (which === 'testimonials' ? ' active' : '');
   tabVocabularyBtn.className = 'nav-item' + (which === 'vocabulary' ? ' active' : '');
+  tabLibraryBtn.className = 'nav-item' + (which === 'library' ? ' active' : '');
   tabGlobalInstructionsBtn.className = 'nav-item' + (which === 'globalInstructions' ? ' active' : '');
   tabExcavationBtn.className = 'nav-item' + (which === 'excavation' ? ' active' : '');
   tabGuidedBtn.className = 'nav-item' + (which === 'guided' ? ' active' : '');
@@ -1684,6 +1665,7 @@ function showTopTab(which) {
   deliverablesView.style.display = which === 'deliverables' ? '' : 'none';
   testimonialsView.style.display = which === 'testimonials' ? '' : 'none';
   vocabularyView.style.display = which === 'vocabulary' ? '' : 'none';
+  libraryView.style.display = which === 'library' ? '' : 'none';
   globalInstructionsView.style.display = which === 'globalInstructions' ? '' : 'none';
   excavationView.style.display = which === 'excavation' ? '' : 'none';
   guidedView.style.display = which === 'guided' ? '' : 'none';
@@ -1710,6 +1692,10 @@ tabTestimonialsBtn.addEventListener('click', function () {
 tabVocabularyBtn.addEventListener('click', function () {
   showTopTab('vocabulary');
   loadVocabulary();
+});
+tabLibraryBtn.addEventListener('click', function () {
+  showTopTab('library');
+  loadLibrary();
 });
 tabGlobalInstructionsBtn.addEventListener('click', function () {
   showTopTab('globalInstructions');
@@ -2864,6 +2850,369 @@ function addVocabularyBlock(term, isNew) {
       .catch(function () { saveStatus.textContent = 'Delete failed.'; });
   });
 }
+// ---- Library (Sept 2026) ----
+// One common place for every resource document and video, replacing the
+// old per-lesson Resource PDFs (removed from the Guided/Essentials/
+// Mastery lesson editors this same round — see collectGuidedConfig()/
+// collectEssentialsConfig()/collectMasteryConfig(), each now hardcodes
+// resource: null). Same /admin/library CRUD pattern as Testimonials.
+//
+// PDFs: admin enters ONLY the filename (e.g. The_Science_Of_
+// Anchor_Behavior.pdf) - LIB_PDF_BASE_URL below is prefixed onto it
+// wherever the full URL is needed (this admin's own preview link, and
+// the student-facing Library page). Keeping just the filename in the
+// database, rather than the full URL, means the base path only ever
+// needs to change in one place if it ever does.
+//
+// Videos: admin enters ONLY the Wistia media ID - the student-facing
+// page builds the actual embed from that, same pattern already used
+// for lesson videos elsewhere in this admin.
+//
+// Category and Excavation Topic are BOTH simple free-text fields with
+// on-the-fly suggestions (an HTML5 <datalist> populated from whatever
+// distinct values already exist across loaded resources) rather than a
+// separately-managed list - typing a new one and saving is all "adding"
+// a category/topic means. Excavation Topic is optional (a resource
+// doesn't have to belong to a specific coaching session); Category is
+// required, seeded with "Character" as the first real value once
+// you've saved at least one resource under it.
+var LIB_PDF_BASE_URL = 'https://stratummethod.github.io/stratum-widget/';
+var libList = document.getElementById('libList');
+var libStatus = document.getElementById('libStatus');
+var libCategoryFilter = document.getElementById('libCategoryFilter');
+var libTopicFilter = document.getElementById('libTopicFilter');
+var libAllItemsCache = [];
+
+function libLoadedTitle(entry) {
+  return (entry && entry.title) ? entry.title : 'New resource';
+}
+
+function libUniqueSorted(values) {
+  var seen = {};
+  var out = [];
+  values.forEach(function (v) {
+    v = (v || '').trim();
+    if (!v || seen[v]) return;
+    seen[v] = true;
+    out.push(v);
+  });
+  out.sort(function (a, b) { return a.localeCompare(b); });
+  return out;
+}
+
+// Refreshes both filter <select> dropdowns AND every open block's own
+// Category/Topic <datalist> suggestions, from whatever's currently in
+// libAllItemsCache - called after load and after every save, so a
+// brand-new category/topic typed on one block becomes an offered
+// suggestion for every other block (including the "+ Add resource" one)
+// without needing a full Reload.
+function libRefreshFacets() {
+  var categories = libUniqueSorted(libAllItemsCache.map(function (e) { return e.category; }).concat(['Character']));
+  var topics = libUniqueSorted(libAllItemsCache.map(function (e) { return e.topic; }));
+
+  function fillFilterSelect(select, values, allLabel) {
+    var current = select.value;
+    select.innerHTML = '';
+    var allOpt = document.createElement('option');
+    allOpt.value = '';
+    allOpt.textContent = allLabel;
+    select.appendChild(allOpt);
+    values.forEach(function (v) {
+      var o = document.createElement('option');
+      o.value = v;
+      o.textContent = v;
+      select.appendChild(o);
+    });
+    if (values.indexOf(current) !== -1) select.value = current;
+  }
+  fillFilterSelect(libCategoryFilter, categories, 'All categories');
+  fillFilterSelect(libTopicFilter, topics, 'All topics');
+
+  var catDatalist = document.getElementById('libCategoryDatalist');
+  if (catDatalist) {
+    catDatalist.innerHTML = '';
+    categories.forEach(function (v) {
+      var o = document.createElement('option');
+      o.value = v;
+      catDatalist.appendChild(o);
+    });
+  }
+  var topicDatalist = document.getElementById('libTopicDatalist');
+  if (topicDatalist) {
+    topicDatalist.innerHTML = '';
+    topics.forEach(function (v) {
+      var o = document.createElement('option');
+      o.value = v;
+      topicDatalist.appendChild(o);
+    });
+  }
+}
+
+function libApplyFilter() {
+  var cat = libCategoryFilter.value;
+  var topic = libTopicFilter.value;
+  libList.querySelectorAll('.tst-block').forEach(function (block) {
+    var matchesCat = !cat || block.dataset.category === cat;
+    var matchesTopic = !topic || block.dataset.topic === topic;
+    block.style.display = (matchesCat && matchesTopic) ? '' : 'none';
+  });
+}
+libCategoryFilter.addEventListener('change', libApplyFilter);
+libTopicFilter.addEventListener('change', libApplyFilter);
+
+function loadLibrary() {
+  if (!adminKey) { libStatus.textContent = 'Unlock the panel first.'; return; }
+  libStatus.textContent = 'Loading...';
+  fetch(PROXY_URL + '/admin/library', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      libList.innerHTML = '';
+      libAllItemsCache = (d && Array.isArray(d.resources)) ? d.resources : [];
+      libRefreshFacets();
+      libAllItemsCache.forEach(function (entry) { addLibraryBlock(entry, false); });
+      libStatus.textContent = '';
+      libApplyFilter();
+    })
+    .catch(function () { libStatus.textContent = 'Could not load Library.'; });
+}
+document.getElementById('libReloadBtn').addEventListener('click', loadLibrary);
+document.getElementById('libAddBtn').addEventListener('click', function () {
+  addLibraryBlock({}, true);
+});
+
+function addLibraryBlock(entry, isNew) {
+  var block = document.createElement('details');
+  block.className = 'tst-block';
+  if (entry.isActive === false) block.style.opacity = '0.65';
+  block.dataset.category = entry.category || '';
+  block.dataset.topic = entry.topic || '';
+  var summary = document.createElement('summary');
+  summary.textContent = libLoadedTitle(entry);
+  block.appendChild(summary);
+  var bodyWrap = document.createElement('div');
+  bodyWrap.className = 'tst-block-body';
+
+  var head = document.createElement('div');
+  head.className = 'tst-block-head';
+  var titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.className = 'tst-name';
+  titleInput.placeholder = 'Resource title';
+  titleInput.value = entry.title || '';
+  titleInput.addEventListener('input', function () {
+    summary.textContent = titleInput.value.trim() || (isNew ? 'New resource' : '(untitled)');
+  });
+  head.appendChild(titleInput);
+  if (entry.isActive === false) {
+    var tag = document.createElement('span');
+    tag.className = 'tst-inactive-tag';
+    tag.textContent = 'Inactive';
+    head.appendChild(tag);
+  }
+  bodyWrap.appendChild(head);
+
+  // ---- Type: PDF or Video — each resource is strictly one or the other ----
+  var typeRow = document.createElement('div');
+  typeRow.className = 'tst-meta-row';
+  var typeField = document.createElement('div');
+  typeField.className = 'field';
+  var typeLabel = document.createElement('label');
+  typeLabel.textContent = 'Type';
+  var typeSelect = document.createElement('select');
+  typeSelect.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  [['pdf', 'PDF'], ['video', 'Video (Wistia)']].forEach(function (pair) {
+    var o = document.createElement('option');
+    o.value = pair[0];
+    o.textContent = pair[1];
+    typeSelect.appendChild(o);
+  });
+  typeSelect.value = entry.type === 'video' ? 'video' : 'pdf';
+  typeField.appendChild(typeLabel);
+  typeField.appendChild(typeSelect);
+  typeRow.appendChild(typeField);
+  bodyWrap.appendChild(typeRow);
+
+  // ---- PDF filename field ----
+  var pdfField = document.createElement('div');
+  pdfField.className = 'field';
+  var pdfLabel = document.createElement('label');
+  pdfLabel.textContent = 'PDF filename only (not the full URL)';
+  var pdfInput = document.createElement('input');
+  pdfInput.type = 'text';
+  pdfInput.placeholder = 'The_Science_Of_Anchor_Behavior.pdf';
+  pdfInput.value = entry.pdfFilename || '';
+  pdfInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  pdfField.appendChild(pdfLabel);
+  pdfField.appendChild(pdfInput);
+  var pdfPreview = document.createElement('div');
+  pdfPreview.style.cssText = 'font-size:11px;color:#9A927E;margin-top:4px;word-break:break-all;';
+  function updatePdfPreview() {
+    pdfPreview.textContent = pdfInput.value.trim() ? (LIB_PDF_BASE_URL + pdfInput.value.trim()) : '';
+  }
+  pdfInput.addEventListener('input', updatePdfPreview);
+  updatePdfPreview();
+  pdfField.appendChild(pdfPreview);
+  bodyWrap.appendChild(pdfField);
+
+  // ---- Wistia ID field ----
+  var videoField = document.createElement('div');
+  videoField.className = 'field';
+  var videoLabel = document.createElement('label');
+  videoLabel.textContent = 'Wistia media ID only';
+  var videoInput = document.createElement('input');
+  videoInput.type = 'text';
+  videoInput.placeholder = 'e.g. ab12cd34ef';
+  videoInput.value = entry.wistiaId || '';
+  videoInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  videoField.appendChild(videoLabel);
+  videoField.appendChild(videoInput);
+  bodyWrap.appendChild(videoField);
+
+  function updateTypeVisibility() {
+    var isVideo = typeSelect.value === 'video';
+    pdfField.style.display = isVideo ? 'none' : '';
+    videoField.style.display = isVideo ? '' : 'none';
+  }
+  typeSelect.addEventListener('change', updateTypeVisibility);
+  updateTypeVisibility();
+
+  // ---- Category (required) + Excavation Topic (optional) ----
+  var metaRow = document.createElement('div');
+  metaRow.className = 'tst-meta-row';
+  var catField = document.createElement('div');
+  catField.className = 'field';
+  var catLabel = document.createElement('label');
+  catLabel.textContent = 'Category';
+  var catInput = document.createElement('input');
+  catInput.type = 'text';
+  catInput.setAttribute('list', 'libCategoryDatalist');
+  catInput.placeholder = 'e.g. Character';
+  catInput.value = entry.category || '';
+  catInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  catField.appendChild(catLabel);
+  catField.appendChild(catInput);
+  metaRow.appendChild(catField);
+
+  var topicField = document.createElement('div');
+  topicField.className = 'field';
+  var topicLabel = document.createElement('label');
+  topicLabel.textContent = 'Excavation Topic (optional)';
+  var topicInput = document.createElement('input');
+  topicInput.type = 'text';
+  topicInput.setAttribute('list', 'libTopicDatalist');
+  topicInput.placeholder = 'e.g. Character Excavation';
+  topicInput.value = entry.topic || '';
+  topicInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  topicField.appendChild(topicLabel);
+  topicField.appendChild(topicInput);
+  metaRow.appendChild(topicField);
+  bodyWrap.appendChild(metaRow);
+
+  var activeRow = document.createElement('div');
+  activeRow.className = 'toggle-row';
+  activeRow.style.marginTop = '4px';
+  var activeCb = document.createElement('input');
+  activeCb.type = 'checkbox';
+  activeCb.checked = entry.isActive !== false;
+  activeCb.id = 'libActive_' + (entry.id || 'new_' + Math.random().toString(36).slice(2));
+  var activeCbLabel = document.createElement('label');
+  activeCbLabel.setAttribute('for', activeCb.id);
+  activeCbLabel.style.margin = '0';
+  activeCbLabel.textContent = 'Visible to students';
+  activeRow.appendChild(activeCb);
+  activeRow.appendChild(activeCbLabel);
+  bodyWrap.appendChild(activeRow);
+
+  var foot = document.createElement('div');
+  foot.className = 'tst-block-foot';
+  var saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = 'tst-save-btn';
+  saveBtn.textContent = isNew ? 'Add resource' : 'Save';
+  foot.appendChild(saveBtn);
+  var deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'remove-btn';
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.style.display = isNew ? 'none' : '';
+  foot.appendChild(deleteBtn);
+  var saveStatus = document.createElement('span');
+  saveStatus.className = 'tst-save-status';
+  foot.appendChild(saveStatus);
+  bodyWrap.appendChild(foot);
+
+  block.appendChild(bodyWrap);
+  block.open = !!isNew;
+  libList.appendChild(block);
+
+  var currentId = entry.id || null;
+  function payload() {
+    return {
+      id: currentId,
+      title: titleInput.value.trim(),
+      type: typeSelect.value,
+      pdfFilename: typeSelect.value === 'pdf' ? pdfInput.value.trim() : '',
+      wistiaId: typeSelect.value === 'video' ? videoInput.value.trim() : '',
+      category: catInput.value.trim(),
+      topic: topicInput.value.trim(),
+      isActive: activeCb.checked
+    };
+  }
+  saveBtn.addEventListener('click', function () {
+    var p = payload();
+    if (!p.title) { saveStatus.textContent = 'Title is required.'; return; }
+    if (!p.category) { saveStatus.textContent = 'Category is required.'; return; }
+    if (p.type === 'pdf' && !p.pdfFilename) { saveStatus.textContent = 'PDF filename is required.'; return; }
+    if (p.type === 'video' && !p.wistiaId) { saveStatus.textContent = 'Wistia media ID is required.'; return; }
+    saveStatus.textContent = 'Saving...';
+    fetch(PROXY_URL + '/admin/library', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+      body: JSON.stringify(p)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) { saveStatus.textContent = 'Save failed.'; return; }
+        currentId = d.id;
+        isNew = false;
+        saveBtn.textContent = 'Save';
+        deleteBtn.style.display = '';
+        saveStatus.textContent = 'Saved.';
+        setTimeout(function () { saveStatus.textContent = ''; }, 2000);
+        block.dataset.category = p.category;
+        block.dataset.topic = p.topic;
+        var cacheEntry = libAllItemsCache.find(function (e) { return String(e.id) === String(currentId); });
+        if (cacheEntry) {
+          cacheEntry.category = p.category;
+          cacheEntry.topic = p.topic;
+        } else {
+          libAllItemsCache.push({ id: currentId, category: p.category, topic: p.topic });
+        }
+        libRefreshFacets();
+      })
+      .catch(function () { saveStatus.textContent = 'Save failed.'; });
+  });
+  deleteBtn.addEventListener('click', function () {
+    if (!currentId) { block.remove(); return; }
+    if (!confirm('Delete "' + (payload().title || 'this resource') + '"? This cannot be undone.')) return;
+    fetch(PROXY_URL + '/admin/library?id=' + encodeURIComponent(currentId), {
+      method: 'DELETE',
+      headers: { 'X-Stratum-Admin-Key': adminKey }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok) {
+          block.remove();
+          libAllItemsCache = libAllItemsCache.filter(function (e) { return String(e.id) !== String(currentId); });
+          libRefreshFacets();
+        } else {
+          saveStatus.textContent = 'Delete failed.';
+        }
+      })
+      .catch(function () { saveStatus.textContent = 'Delete failed.'; });
+  });
+}
+
 // ---- Import vocabulary terms from a file (Sept 2026) ----
 // Accepts a JSON array of term objects (or {"terms": [...]}), or a CSV
 // with a header row matching the same field names. Adds new entries only
@@ -4003,9 +4352,6 @@ function populateSelect(selectEl, lessons) {
 }
 var gLessonSelect = document.getElementById('gLessonSelect');
 var gAreasList = document.getElementById('gAreasList');
-var gResourceFields = document.getElementById('gResourceFields');
-var gPdfsList = document.getElementById('gPdfsList');
-var gHasResourceCb = document.getElementById('gHasResource');
 var gCoachingIntroFields = document.getElementById('gCoachingIntroFields');
 var gHasCoachingIntroCb = document.getElementById('gHasCoachingIntro');
 var gDeliverableFields = document.getElementById('gDeliverableFields');
@@ -4202,51 +4548,6 @@ function gRenumberAreas() {
 document.getElementById('gAddAreaBtn').addEventListener('click', function () {
   gAddAreaBlock('', '');
 });
-function gAddPdfBlock(title, url) {
-  gPdfCounter++;
-  var id = 'gpdf_' + gPdfCounter;
-  var block = document.createElement('div');
-  block.className = 'area-block pdf-block';
-  block.dataset.id = id;
-  var head = document.createElement('div');
-  head.className = 'area-block-head';
-  var num = document.createElement('span');
-  num.className = 'area-num';
-  head.appendChild(num);
-  var titleInput = document.createElement('input');
-  titleInput.type = 'text';
-  titleInput.className = 'pdf-title';
-  titleInput.placeholder = 'Document title';
-  titleInput.value = title || '';
-  head.appendChild(titleInput);
-  var removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'remove-btn';
-  removeBtn.textContent = 'Remove';
-  removeBtn.addEventListener('click', function () {
-    block.remove();
-    gRenumberPdfs();
-  });
-  head.appendChild(removeBtn);
-  block.appendChild(head);
-  var urlInput = document.createElement('input');
-  urlInput.type = 'text';
-  urlInput.className = 'pdf-url pdf-url-input';
-  urlInput.placeholder = 'https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf';
-  urlInput.value = url || '';
-  block.appendChild(urlInput);
-  gPdfsList.appendChild(block);
-  gRenumberPdfs();
-}
-function gRenumberPdfs() {
-  var blocks = gPdfsList.querySelectorAll('.pdf-block');
-  blocks.forEach(function (b, i) {
-    b.querySelector('.area-num').textContent = (i + 1);
-  });
-}
-document.getElementById('gAddPdfBtn').addEventListener('click', function () {
-  gAddPdfBlock('', '');
-});
 document.getElementById('gExpandAllBtn').addEventListener('click', function () {
   lessonEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
 });
@@ -4261,25 +4562,12 @@ lessonEditorView.querySelectorAll('details.card[data-group="auto"]').forEach(fun
     if (!card.open) card.open = true;
   });
 });
-gHasResourceCb.addEventListener('change', function () {
-  gResourceFields.className = 'resource-fields' + (gHasResourceCb.checked ? '' : ' disabled');
-});
 gHasCoachingIntroCb.addEventListener('change', function () {
   gCoachingIntroFields.className = 'resource-fields' + (gHasCoachingIntroCb.checked ? '' : ' disabled');
 });
 gHasDeliverableCb.addEventListener('change', function () {
   gDeliverableFields.className = 'resource-fields' + (gHasDeliverableCb.checked ? '' : ' disabled');
 });
-function getConfigPdfs(resource) {
-  if (!resource) return [];
-  if (Array.isArray(resource.pdfs)) {
-    return resource.pdfs.filter(function (p) { return p && p.url; });
-  }
-  if (resource.pdfUrl) {
-    return [{ title: resource.pdfTitle || resource.title || '', url: resource.pdfUrl }];
-  }
-  return [];
-}
 function gRefreshAddLangOptions() {
   var existing = Array.prototype.map.call(
     gTranslationsList.querySelectorAll('.lang-block'),
@@ -4335,9 +4623,6 @@ function clearGuidedForm() {
   document.getElementById('gScopeNote').value = '';
   document.getElementById('gMediaId').value = '';
   document.getElementById('gTranscript').value = '';
-  gHasResourceCb.checked = false;
-  gResourceFields.className = 'resource-fields disabled';
-  gPdfsList.innerHTML = '';
   gHasCoachingIntroCb.checked = false;
   gCoachingIntroFields.className = 'resource-fields disabled';
   document.getElementById('gCoachingIntroTitle').value = '';
@@ -4375,10 +4660,6 @@ function fillGuidedForm(config) {
   document.getElementById('gTryThisNow').value = config.tryThisNow || '';
   document.getElementById('gCourseShapeReminder').value = config.courseShapeReminder || '';
   document.getElementById('gNextStepTeaser').value = config.nextStepTeaser || '';
-  var pdfs = getConfigPdfs(config.resource);
-  gHasResourceCb.checked = pdfs.length > 0;
-  gResourceFields.className = 'resource-fields' + (pdfs.length > 0 ? '' : ' disabled');
-  pdfs.forEach(function (p) { gAddPdfBlock(p.title, p.url); });
   var ci = config.coachingIntro;
   if (!ci && config.resource && config.resource.title && config.resource.text) {
     ci = { title: config.resource.title, text: config.resource.text };
@@ -4430,13 +4711,6 @@ function collectGuidedConfig() {
     var fresh = b.querySelector('.lang-fresh').value.trim();
     if (fresh) translations[lang] = { fresh: fresh };
   });
-  var pdfs = [];
-  gPdfsList.querySelectorAll('.pdf-block').forEach(function (b) {
-    var title = b.querySelector('.pdf-title').value.trim();
-    var url = b.querySelector('.pdf-url').value.trim();
-    if (url) pdfs.push({ title: title, url: url });
-  });
-  var resourceObj = (gHasResourceCb.checked && pdfs.length) ? { pdfs: pdfs } : null;
   var coachingIntroObj = null;
   if (gHasCoachingIntroCb.checked) {
     var ciTitle = document.getElementById('gCoachingIntroTitle').value.trim();
@@ -4465,7 +4739,7 @@ function collectGuidedConfig() {
     nextStepTeaser: document.getElementById('gNextStepTeaser').value.trim(),
     video: { mediaId: document.getElementById('gMediaId').value.trim() },
     transcript: document.getElementById('gTranscript').value.trim(),
-    resource: resourceObj,
+    resource: null, // Resource PDFs retired Sept 2026 — see the new Library section
     coachingIntro: coachingIntroObj,
     essentials: { exerciseFormId: '', reflectionFormId: '' },
     reflectionFramework: {
@@ -4749,9 +5023,6 @@ function refreshDeliverablesLessonList() {
 }
 var mLessonSelect = document.getElementById('mLessonSelect');
 var mAreasList = document.getElementById('mAreasList');
-var mResourceFields = document.getElementById('mResourceFields');
-var mPdfsList = document.getElementById('mPdfsList');
-var mHasResourceCb = document.getElementById('mHasResource');
 var mCoachingIntroFields = document.getElementById('mCoachingIntroFields');
 var mHasCoachingIntroCb = document.getElementById('mHasCoachingIntro');
 var mDeliverableFields = document.getElementById('mDeliverableFields');
@@ -4834,51 +5105,6 @@ function mRenumberAreas() {
 document.getElementById('mAddAreaBtn').addEventListener('click', function () {
   mAddAreaBlock('', '');
 });
-function mAddPdfBlock(title, url) {
-  mPdfCounter++;
-  var id = 'gpdf_' + mPdfCounter;
-  var block = document.createElement('div');
-  block.className = 'area-block pdf-block';
-  block.dataset.id = id;
-  var head = document.createElement('div');
-  head.className = 'area-block-head';
-  var num = document.createElement('span');
-  num.className = 'area-num';
-  head.appendChild(num);
-  var titleInput = document.createElement('input');
-  titleInput.type = 'text';
-  titleInput.className = 'pdf-title';
-  titleInput.placeholder = 'Document title';
-  titleInput.value = title || '';
-  head.appendChild(titleInput);
-  var removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'remove-btn';
-  removeBtn.textContent = 'Remove';
-  removeBtn.addEventListener('click', function () {
-    block.remove();
-    mRenumberPdfs();
-  });
-  head.appendChild(removeBtn);
-  block.appendChild(head);
-  var urlInput = document.createElement('input');
-  urlInput.type = 'text';
-  urlInput.className = 'pdf-url pdf-url-input';
-  urlInput.placeholder = 'https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf';
-  urlInput.value = url || '';
-  block.appendChild(urlInput);
-  mPdfsList.appendChild(block);
-  mRenumberPdfs();
-}
-function mRenumberPdfs() {
-  var blocks = mPdfsList.querySelectorAll('.pdf-block');
-  blocks.forEach(function (b, i) {
-    b.querySelector('.area-num').textContent = (i + 1);
-  });
-}
-document.getElementById('mAddPdfBtn').addEventListener('click', function () {
-  mAddPdfBlock('', '');
-});
 document.getElementById('mExpandAllBtn').addEventListener('click', function () {
   masteryEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
 });
@@ -4892,9 +5118,6 @@ masteryEditorView.querySelectorAll('details.card[data-group="auto"]').forEach(fu
   card.addEventListener('focusin', function () {
     if (!card.open) card.open = true;
   });
-});
-mHasResourceCb.addEventListener('change', function () {
-  mResourceFields.className = 'resource-fields' + (mHasResourceCb.checked ? '' : ' disabled');
 });
 mHasCoachingIntroCb.addEventListener('change', function () {
   mCoachingIntroFields.className = 'resource-fields' + (mHasCoachingIntroCb.checked ? '' : ' disabled');
@@ -4957,9 +5180,6 @@ function clearMasteryForm() {
   document.getElementById('mScopeNote').value = '';
   document.getElementById('mMediaId').value = '';
   document.getElementById('mTranscript').value = '';
-  mHasResourceCb.checked = false;
-  mResourceFields.className = 'resource-fields disabled';
-  mPdfsList.innerHTML = '';
   mHasCoachingIntroCb.checked = false;
   mCoachingIntroFields.className = 'resource-fields disabled';
   document.getElementById('mCoachingIntroTitle').value = '';
@@ -4997,10 +5217,6 @@ function fillMasteryForm(config) {
   document.getElementById('mTryThisNow').value = config.tryThisNow || '';
   document.getElementById('mCourseShapeReminder').value = config.courseShapeReminder || '';
   document.getElementById('mNextStepTeaser').value = config.nextStepTeaser || '';
-  var pdfs = getConfigPdfs(config.resource);
-  mHasResourceCb.checked = pdfs.length > 0;
-  mResourceFields.className = 'resource-fields' + (pdfs.length > 0 ? '' : ' disabled');
-  pdfs.forEach(function (p) { mAddPdfBlock(p.title, p.url); });
   var ci = config.coachingIntro;
   if (!ci && config.resource && config.resource.title && config.resource.text) {
     ci = { title: config.resource.title, text: config.resource.text };
@@ -5052,13 +5268,6 @@ function collectMasteryConfig() {
     var fresh = b.querySelector('.lang-fresh').value.trim();
     if (fresh) translations[lang] = { fresh: fresh };
   });
-  var pdfs = [];
-  mPdfsList.querySelectorAll('.pdf-block').forEach(function (b) {
-    var title = b.querySelector('.pdf-title').value.trim();
-    var url = b.querySelector('.pdf-url').value.trim();
-    if (url) pdfs.push({ title: title, url: url });
-  });
-  var resourceObj = (mHasResourceCb.checked && pdfs.length) ? { pdfs: pdfs } : null;
   var coachingIntroObj = null;
   if (mHasCoachingIntroCb.checked) {
     var ciTitle = document.getElementById('mCoachingIntroTitle').value.trim();
@@ -5087,7 +5296,7 @@ function collectMasteryConfig() {
     nextStepTeaser: document.getElementById('mNextStepTeaser').value.trim(),
     video: { mediaId: document.getElementById('mMediaId').value.trim() },
     transcript: document.getElementById('mTranscript').value.trim(),
-    resource: resourceObj,
+    resource: null, // Resource PDFs retired Sept 2026 — see the new Library section
     coachingIntro: coachingIntroObj,
     essentials: { exerciseFormId: '', reflectionFormId: '' },
     reflectionFramework: {
@@ -5204,9 +5413,6 @@ document.getElementById('mDeleteBtn').addEventListener('click', function () {
     });
 });
 var eLessonSelect = document.getElementById('eLessonSelect');
-var eResourceFields = document.getElementById('eResourceFields');
-var ePdfsList = document.getElementById('ePdfsList');
-var eHasResourceCb = document.getElementById('eHasResource');
 var eCoachingIntroFields = document.getElementById('eCoachingIntroFields');
 var eHasCoachingIntroCb = document.getElementById('eHasCoachingIntro');
 var eSaveStatus = document.getElementById('eSaveStatus');
@@ -5230,54 +5436,6 @@ function loadEssentialsLesson(lessonId) {
     })
     .catch(function () { alert('Could not load that lesson.'); });
 }
-function eAddPdfBlock(title, url) {
-  ePdfCounter++;
-  var id = 'epdf_' + ePdfCounter;
-  var block = document.createElement('div');
-  block.className = 'area-block pdf-block';
-  block.dataset.id = id;
-  var head = document.createElement('div');
-  head.className = 'area-block-head';
-  var num = document.createElement('span');
-  num.className = 'area-num';
-  head.appendChild(num);
-  var titleInput = document.createElement('input');
-  titleInput.type = 'text';
-  titleInput.className = 'pdf-title';
-  titleInput.placeholder = 'Document title';
-  titleInput.value = title || '';
-  head.appendChild(titleInput);
-  var removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'remove-btn';
-  removeBtn.textContent = 'Remove';
-  removeBtn.addEventListener('click', function () {
-    block.remove();
-    eRenumberPdfs();
-  });
-  head.appendChild(removeBtn);
-  block.appendChild(head);
-  var urlInput = document.createElement('input');
-  urlInput.type = 'text';
-  urlInput.className = 'pdf-url pdf-url-input';
-  urlInput.placeholder = 'https://stratummethod.github.io/stratum-widget/resources/lesson-2-1.pdf';
-  urlInput.value = url || '';
-  block.appendChild(urlInput);
-  ePdfsList.appendChild(block);
-  eRenumberPdfs();
-}
-function eRenumberPdfs() {
-  var blocks = ePdfsList.querySelectorAll('.pdf-block');
-  blocks.forEach(function (b, i) {
-    b.querySelector('.area-num').textContent = (i + 1);
-  });
-}
-document.getElementById('eAddPdfBtn').addEventListener('click', function () {
-  eAddPdfBlock('', '');
-});
-eHasResourceCb.addEventListener('change', function () {
-  eResourceFields.className = 'resource-fields' + (eHasResourceCb.checked ? '' : ' disabled');
-});
 eHasCoachingIntroCb.addEventListener('change', function () {
   eCoachingIntroFields.className = 'resource-fields' + (eHasCoachingIntroCb.checked ? '' : ' disabled');
 });
@@ -5287,9 +5445,6 @@ function clearEssentialsForm() {
   document.getElementById('eScopeNote').value = '';
   document.getElementById('eMediaId').value = '';
   document.getElementById('eTranscript').value = '';
-  eHasResourceCb.checked = false;
-  eResourceFields.className = 'resource-fields disabled';
-  ePdfsList.innerHTML = '';
   eHasCoachingIntroCb.checked = false;
   eCoachingIntroFields.className = 'resource-fields disabled';
   document.getElementById('eCoachingIntroTitle').value = '';
@@ -5305,10 +5460,6 @@ function fillEssentialsForm(config) {
   document.getElementById('eScopeNote').value = config.scopeNote || '';
   document.getElementById('eMediaId').value = (config.video && config.video.mediaId) || '';
   document.getElementById('eTranscript').value = config.transcript || '';
-  var pdfs = getConfigPdfs(config.resource);
-  eHasResourceCb.checked = pdfs.length > 0;
-  eResourceFields.className = 'resource-fields' + (pdfs.length > 0 ? '' : ' disabled');
-  pdfs.forEach(function (p) { eAddPdfBlock(p.title, p.url); });
   var ci = config.coachingIntro;
   if (!ci && config.resource && config.resource.title && config.resource.text) {
     ci = { title: config.resource.title, text: config.resource.text };
@@ -5328,13 +5479,6 @@ function fillEssentialsForm(config) {
   updateEssentialsJsonPreview();
 }
 function collectEssentialsConfig() {
-  var pdfs = [];
-  ePdfsList.querySelectorAll('.pdf-block').forEach(function (b) {
-    var title = b.querySelector('.pdf-title').value.trim();
-    var url = b.querySelector('.pdf-url').value.trim();
-    if (url) pdfs.push({ title: title, url: url });
-  });
-  var resourceObj = (eHasResourceCb.checked && pdfs.length) ? { pdfs: pdfs } : null;
   var coachingIntroObj = null;
   if (eHasCoachingIntroCb.checked) {
     var ciTitle = document.getElementById('eCoachingIntroTitle').value.trim();
@@ -5349,7 +5493,7 @@ function collectEssentialsConfig() {
     nextLessonLabel: document.getElementById('eNextLessonLabel').value.trim(),
     video: { mediaId: document.getElementById('eMediaId').value.trim() },
     transcript: document.getElementById('eTranscript').value.trim(),
-    resource: resourceObj,
+    resource: null, // Resource PDFs retired Sept 2026 — see the new Library section
     coachingIntro: coachingIntroObj,
     essentials: {
       exerciseFormId: document.getElementById('eExerciseFormId').value.trim(),
