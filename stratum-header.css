@@ -35,11 +35,6 @@
   overflow: hidden;
   position: relative;
 }
-.sh-wrap .sh-wip-title {
-  font-family: 'Newsreader', Georgia, serif;
-  font-weight: 600;
-  margin: 0;
-}
 .sh-wrap .sh-for-writers {
   font-family: 'Dancing Script', cursive;
   font-weight: 600;
@@ -194,9 +189,13 @@ body:has(.sh-topbar--standalone) {
   margin: 0;
 }
 
-/* ---- WIP hero row ---- */
+/* ---- Compact hero: eyebrow + Resume button ---- */
+/* Sept 2026: this used to also hold a large serif WIP title + genre
+   line, populated by a fetchWipSummary() call in stratum-header.js.
+   Both are retired — that data now lives as an editable field in
+   stratum-wip-panel.js's section, mounted directly below this. */
 .sh-hero-row {
-  padding: 14px 28px 26px;
+  padding: 14px 28px 24px;
   position: relative;
   z-index: 1;
 }
@@ -206,20 +205,7 @@ body:has(.sh-topbar--standalone) {
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--sh-warm);
-  margin: 0 0 8px;
-}
-.sh-wip-title {
-  font-size: 42px;
-  line-height: 0.95;
-  letter-spacing: -1px;
-}
-.sh-wip-genre {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--sh-sub);
-  margin: 8px 0 0;
+  margin: 0 0 14px;
 }
 .sh-resume-btn {
   background: var(--sh-warm);
@@ -236,7 +222,7 @@ body:has(.sh-topbar--standalone) {
   text-decoration: none;
 }
 .sh-resume-btn--inline {
-  margin-top: 18px;
+  margin-top: 0;
 }
 .sh-resume-btn:hover { opacity: .92; }
 .sh-resume-btn:disabled { opacity: .5; cursor: default; }
@@ -262,5 +248,21 @@ body:has(.sh-topbar--standalone) {
   .sh-strata-art { width: 72%; }
   .sh-nav { gap: 14px; }
   .sh-welcome { font-size: 26px; }
-  .sh-wip-title { font-size: 30px; }
+  .sh-topbar { padding: 14px 16px; }
+  .sh-welcome-row { padding: 20px 16px 0; }
+  .sh-hero-row { padding: 14px 16px 22px; }
+}
+
+@media (max-width: 400px) {
+  .sh-topbar { padding: 12px 12px; }
+  .sh-nav { gap: 10px; }
+  .sh-nav-link { font-size: 12px; }
+  .sh-brand-name { font-size: 14px; }
+  .sh-for-writers { font-size: 15px !important; }
+  .sh-welcome { font-size: 22px; }
+  .sh-welcome-row, .sh-hero-row { padding-left: 12px; padding-right: 12px; }
+  /* A 200px-min dropdown panel anchored right:0 can overflow the left
+     edge of a viewport this narrow — clamp it down and let it wrap
+     rather than assume desktop-width breathing room. */
+  .sh-dropdown-panel { min-width: 160px; max-width: calc(100vw - 24px); }
 }

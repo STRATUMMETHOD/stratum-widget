@@ -45,9 +45,11 @@
        already generated) rather than a custom-built duplicate — PMPro
        already owns password/email changes correctly; no reason to
        rebuild that.
-     - "WIP Profile" links to /wip-profile/, a new page built from the
-       wip-profile-template.php template — TODO: confirm/adjust this
-       slug to whatever the real WordPress page ends up using.
+     - WIP Profile is no longer a separate page/nav item as of Sept
+       2026 — it moved into an editable section embedded directly in
+       this header (see stratum-wip-panel.js). The old /wip-profile/
+       page, stratum-wip-profile.js/.css, and wip-profile-template.php
+       are retired; nothing in this file links to them anymore.
    ============================================================ */
 (function () {
   'use strict';
@@ -61,8 +63,7 @@
   var NAV_LINKS = {
     practice: '/practice/',
     library: '/library/',
-    userProfile: '/membership-account/',
-    wipProfile: '/wip-profile/'
+    userProfile: '/membership-account/'
   };
 
   // Coach dropdown — one entry per coaching session, matching
@@ -232,22 +233,13 @@
     });
   }
 
-  function fetchWipSummary(studentId, callback) {
-    if (!studentId) { callback(null); return; }
-    fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(studentId))
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d || !d.known) { callback(null); return; }
-        callback({ wipTitle: d.wipTitle || '', genre: d.genre || '' });
-      })
-      .catch(function () { callback(null); });
-  }
-
   // Avatar dropdown — "User Profile" links to PMPro's own account page
   // (name/email/password, already handled correctly there — no reason to
-  // rebuild it); "WIP Profile" links to the new dedicated page holding
-  // the full work-in-progress form (title, genre, characters, etc.).
-  // Logged-out visitors get a single "Log in" item instead.
+  // rebuild it). "WIP Profile" was a separate menu item/page here until
+  // Sept 2026; it's retired now that the WIP profile is an editable
+  // section embedded directly in the header (see stratum-wip-panel.js) —
+  // there's no separate page left to link to. Logged-out visitors get a
+  // single "Log in" item instead.
   function buildAvatarDropdown() {
     var avatarInitial = WP_USER.loggedIn && WP_USER.firstName ? WP_USER.firstName.charAt(0).toUpperCase() : '?';
     var wrap = el('div', 'sh-nav-dropdown');
@@ -263,11 +255,6 @@
       profileLink.href = NAV_LINKS.userProfile;
       profileLink.textContent = 'User Profile';
       mount(panel, profileLink);
-      var wipLink = document.createElement('a');
-      wipLink.className = 'sh-dropdown-item';
-      wipLink.href = NAV_LINKS.wipProfile;
-      wipLink.textContent = 'WIP Profile';
-      mount(panel, wipLink);
     } else {
       var loginLink = document.createElement('a');
       loginLink.className = 'sh-dropdown-item';
@@ -379,44 +366,36 @@
     mount(welcomeRow, el('h2', 'sh-welcome', welcomeText));
     mount(wrap, welcomeRow);
 
-    // ---- WIP hero ----
+    // ---- Compact hero: eyebrow + Resume button only ----
+    // Sept 2026: the big serif WIP title + genre display and the
+    // fetchWipSummary() call that populated it are both retired — that
+    // same data now lives in the editable stratum-wip-panel.js section
+    // mounted directly below (see the 'stratum:identity-ready' handoff),
+    // so showing it twice (once as static decoration here, once as the
+    // real editable field there) would be redundant. What research on
+    // course-dashboard conventions consistently calls out as worth
+    // protecting is a prominent, low-friction "resume" call-to-action
+    // near the top — that's kept; the duplicate title isn't.
     var heroRow = el('div', 'sh-hero-row');
-    var left = document.createElement('div');
-    var titleEl, genreEl, resumeBtn;
+    var resumeBtn;
 
     if (!WP_USER.loggedIn) {
-      // Logged out: no WIP to show, and the resume button becomes a real
-      // login link rather than the disabled placeholder used elsewhere.
-      // Once the System Page itself is restricted to "The Stratum Method"
-      // level via PMPro's Content Settings, a logged-out visitor won't
-      // reach this template at all — this branch is a safety fallback
-      // for while that restriction isn't configured yet.
-      mount(left, el('p', 'sh-eyebrow', 'Members only'));
-      titleEl = el('h1', 'sh-wip-title', 'Log in to continue');
-      mount(left, titleEl);
-      genreEl = el('p', 'sh-wip-genre', '');
-      mount(left, genreEl);
+      // Once the System Page itself is restricted to "The Stratum
+      // Method" level via PMPro's Content Settings, a logged-out
+      // visitor won't reach this template at all — this branch is a
+      // safety fallback for while that restriction isn't configured yet.
+      mount(heroRow, el('p', 'sh-eyebrow', 'Members only \u2014 log in to continue'));
       resumeBtn = document.createElement('a');
       resumeBtn.className = 'sh-resume-btn';
       resumeBtn.href = WP_USER.loginUrl;
       resumeBtn.textContent = 'Log in \u2192';
     } else if (!WP_USER.hasMembership) {
-      // Logged in, but no active membership on this account — e.g. a WP
-      // account exists without a completed/active PMPro membership.
-      mount(left, el('p', 'sh-eyebrow', 'Account found'));
-      titleEl = el('h1', 'sh-wip-title', 'No active membership yet');
-      mount(left, titleEl);
-      genreEl = el('p', 'sh-wip-genre', '');
-      mount(left, genreEl);
+      mount(heroRow, el('p', 'sh-eyebrow', 'Account found \u2014 no active membership yet'));
       resumeBtn = el('button', 'sh-resume-btn', 'Resume excavating \u2192');
       resumeBtn.type = 'button';
       resumeBtn.disabled = true;
     } else {
-      mount(left, el('p', 'sh-eyebrow', 'You are currently excavating'));
-      titleEl = el('h1', 'sh-wip-title', 'Loading\u2026');
-      mount(left, titleEl);
-      genreEl = el('p', 'sh-wip-genre', '');
-      mount(left, genreEl);
+      mount(heroRow, el('p', 'sh-eyebrow', 'You are currently excavating'));
       // Points at Character Excavation — the only coaching session that
       // exists today. Once a WIP has more than one session in progress,
       // this should route to whichever one is actually in progress
@@ -428,39 +407,30 @@
       resumeBtn.textContent = 'Resume excavating \u2192';
     }
 
-    // Button now sits directly under the genre line, in the same left
-    // column, instead of its own middle grid column beside the title.
     resumeBtn.classList.add('sh-resume-btn--inline');
-    mount(left, resumeBtn);
-    mount(heroRow, left);
+    mount(heroRow, resumeBtn);
     mount(wrap, heroRow);
 
     mount(container, wrap);
 
-    // Publish the mounted card so other modules (e.g. stratum-dashboard.js)
-    // can append their own sections into this SAME dark container instead
-    // of building a second, disconnected one. Both a global reference (for
-    // a module that loads after this one) and an event (for a module that
-    // loads before/concurrently) are provided so load order never matters.
+    // Publish the mounted card so other modules (stratum-dashboard.js,
+    // stratum-wip-panel.js) can append their own sections into this SAME
+    // dark container instead of building a second, disconnected one.
+    // Both a global reference (for a module that loads after this one)
+    // and an event (for a module that loads before/concurrently) are
+    // provided so load order never matters.
     window.STRATUM_HEADER_WRAP = wrap;
     document.dispatchEvent(new CustomEvent('stratum:header-mounted', { detail: { wrapEl: wrap } }));
 
     // stratum-identity.js owns resolution + broadcasting (sync global +
-    // event, so dashboard.js and any other consumer never race this) —
-    // this call either returns already-settled instantly, or queues the
-    // callback until the in-flight /resolve-identity call finishes.
-    window.StratumIdentity.init(function (studentId) {
-      if (!WP_USER.loggedIn || !WP_USER.hasMembership) return; // titleEl/genreEl only exist in the active-member branch above
-      fetchWipSummary(studentId, function (summary) {
-        if (summary && summary.wipTitle) {
-          titleEl.textContent = summary.wipTitle;
-          genreEl.textContent = summary.genre || '';
-        } else {
-          titleEl.textContent = 'No WIP on file yet';
-          genreEl.textContent = 'Add your WIP details to get started';
-        }
-      });
-    });
+    // event, so dashboard.js/wip-panel.js and any other consumer never
+    // race this) — this call either returns already-settled instantly,
+    // or queues the callback until the in-flight /resolve-identity call
+    // finishes. Nothing in THIS file needs the resolved studentId
+    // anymore (the WIP panel fetches its own data), but the resolution
+    // still needs to be triggered from somewhere on page load, and the
+    // header is the natural place for that.
+    window.StratumIdentity.init(function () {});
   }
 
   function init() {

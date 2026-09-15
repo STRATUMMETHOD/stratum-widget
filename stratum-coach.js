@@ -167,10 +167,10 @@
     var track = el('div', 'sh-rail-track');
     var fill = el('div', 'sh-rail-track-fill');
     var fillPct = (currentLayerIndex / SESSION.layers.length) * 100;
-    fill.style.height = fillPct + '%';
+    fill.style.setProperty('--sh-rail-fill-pct', fillPct + '%');
     mount(track, fill);
     var marker = el('div', 'sh-rail-marker');
-    marker.style.top = fillPct + '%';
+    marker.style.setProperty('--sh-rail-fill-pct', fillPct + '%');
     mount(track, marker);
     mount(railEl, track);
 
@@ -192,14 +192,6 @@
   // Instructions) — all server-authoritative, fetched fresh, not from
   // localStorage. See file header note.
   // ----------------------------------------------------------
-  var FOCUS_GUIDANCE = {
-    character_depth: 'They specifically want to know whether their character feels real rather than constructed. When character work comes up, that means leaning toward substrate and compensation - what the character is protecting - rather than staying on surface traits.',
-    dialogue: 'They specifically want to know whether their dialogue sounds authentic. When dialogue work comes up, that means leaning toward what is being left unsaid, and whether lines read as protection rather than direct statement.',
-    pacing_structure: 'They specifically want to know whether their pacing and structure are working. When structural work comes up, that means paying attention to where scenes might be doing too much or too little.',
-    emotional_impact: 'They specifically want to know whether the emotional beats are landing. That means paying attention to earned versus unearned emotion - whether the reader has been given enough to feel what the scene wants them to feel.',
-    consistency: "They specifically want to know whether their character's choices feel consistent, or interestingly inconsistent. That means paying attention to contradiction as potential depth rather than automatically treating it as an error to fix.",
-    not_sure: 'They are not yet sure what they most need help seeing. Do not push them to decide right now - let it surface naturally as the conversation goes.'
-  };
 
   function fetchProjectData(callback) {
     fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(STUDENT_ID))
@@ -231,27 +223,34 @@
       .catch(function () { callback([]); });
   }
 
+  // Sept 2026: reads the restructured /project record — wipTitle/genre/
+  // stage/storyStyle/pov unchanged, theme now holds the MERGED Theme/
+  // Focus free text (the old separate "focus" enum field and its
+  // FOCUS_GUIDANCE lookup are retired along with the "challenges" field
+  // — see stratum-wip-panel.js), and mcName/antagonistName/
+  // antagonistType/mcGoal are replaced by a real characters[] list, each
+  // with name/type/roleType/coreConflict, listed out individually so the
+  // coach has the full cast, not just one protagonist and one antagonist.
   function buildProjectContextBlock(project, ideaLog, tasks, globalInstructions) {
     var block = '';
     if (project) {
       var lines = [];
       if (project.wipTitle) lines.push('Working title: ' + project.wipTitle);
-      if (project.type) lines.push('Project type: ' + project.type);
       if (project.genre) lines.push('Genre: ' + project.genre);
       if (project.storyStyle) lines.push('Story style: ' + project.storyStyle);
       if (project.pov) lines.push('Point of view: ' + project.pov);
       if (project.stage) lines.push('Stage of progress: ' + project.stage);
-      if (project.mcName) lines.push('Main character: ' + project.mcName);
-      if (project.mcGoal) lines.push('Their core conflict or goal: ' + project.mcGoal);
-      if (project.antagonistName) lines.push('Antagonist: ' + project.antagonistName);
-      if (project.antagonistType) lines.push('Type of antagonist: ' + project.antagonistType);
-      if (project.theme) lines.push('Theme or focus: ' + project.theme);
-      if (project.challenges) lines.push('Where they are currently stuck: ' + project.challenges);
+      if (project.theme) lines.push('Theme/focus: ' + project.theme);
       if (lines.length) {
         block += '\n\nSTUDENT PROJECT CONTEXT (from their WIP profile - use naturally where relevant, do not interrogate them about these facts, they already told you once):\n' + lines.join('\n');
       }
-      if (project.focus && FOCUS_GUIDANCE[project.focus]) {
-        block += '\n\nWhat they most want to understand right now: ' + FOCUS_GUIDANCE[project.focus];
+      var characters = Array.isArray(project.characters) ? project.characters.filter(function (c) { return c && c.name; }) : [];
+      if (characters.length) {
+        var charLines = characters.map(function (c) {
+          var bits = [c.type, c.roleType, c.coreConflict].filter(Boolean).join(' \u2014 ');
+          return c.name + (bits ? ' (' + bits + ')' : '');
+        });
+        block += '\n\nCHARACTERS (the student\'s full cast, as they defined it - use naturally, do not interrogate them about these facts, they already told you once):\n' + charLines.join('\n');
       }
       if (project.language) {
         block += '\n\nLANGUAGE: This student has selected ' + project.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + project.language + ', every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically, not as a literal translation. Exception: keep every hidden bracket tag exactly in English bracket format as instructed elsewhere in this prompt - only the name inside a NAME tag and the content inside deliverable field tags should reflect what the student actually said.';

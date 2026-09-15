@@ -1,0 +1,172 @@
+/* ============================================================
+   STRATUM WIP PANEL — EMBEDDED PROFILE STYLES (Sept 2026)
+   ------------------------------------------------------------
+   Design intent (per Ted's brief: complimentary to the theme, easy
+   to read/use, not overwhelming despite the volume of data):
+     - Column 1 stays a simple vertical stack of labeled fields —
+       the familiar "form" pattern, nothing novel to learn.
+     - Column 2's Characters list uses a compact spreadsheet-row
+       pattern (one header row of labels, then plain rows of inputs)
+       rather than repeating a full labeled mini-form per character —
+       at up to 15 rows, repeated field labels would be the single
+       biggest source of visual noise, so they're shown once.
+     - One Save action for the whole section, not per-field autosave —
+       a clear, single decision point rather than the constant
+       low-grade advice of "did this save?" during a lot of typing.
+     - Reuses --sh-* variables from stratum-header.css — no new
+       palette introduced.
+   ============================================================ */
+
+.sh-wip-section {
+  padding: 4px 28px 28px;
+  position: relative;
+  z-index: 1;
+}
+
+.sh-wip-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.sh-wip-status {
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--sh-sub);
+}
+.sh-wip-status.sh-ok { color: #8FAE7E; font-style: normal; }
+.sh-wip-status.sh-err { color: #C46B4E; font-style: normal; }
+
+.sh-wip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 40px;
+}
+.sh-wip-col-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  margin: 0 0 16px;
+}
+
+/* ---- Column 1 fields ---- */
+.sh-wip-field { margin-bottom: 16px; }
+.sh-wip-field:last-child { margin-bottom: 0; }
+.sh-wip-field label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--sh-sub);
+  margin-bottom: 5px;
+}
+.sh-wip-input,
+.sh-wip-select,
+.sh-wip-textarea {
+  width: 100%;
+  padding: 9px 11px;
+  font-size: 13.5px;
+  font-family: Arial, sans-serif;
+  background: #1E1A13;
+  color: var(--sh-paper);
+  border: 1px solid var(--sh-line);
+  border-radius: 8px;
+}
+.sh-wip-textarea {
+  min-height: 70px;
+  resize: vertical;
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 14.5px;
+}
+.sh-wip-input:focus, .sh-wip-select:focus, .sh-wip-textarea:focus {
+  outline: none;
+  border-color: var(--sh-warm);
+}
+
+/* ---- Column 2: Characters ---- */
+.sh-char-head {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1.2fr 1.4fr 22px;
+  gap: 8px;
+  padding: 0 4px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--sh-sub);
+}
+.sh-char-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.sh-char-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1.2fr 1.4fr 22px;
+  gap: 8px;
+  align-items: center;
+}
+.sh-char-name,
+.sh-char-type,
+.sh-char-role,
+.sh-char-conflict {
+  width: 100%;
+  padding: 7px 8px;
+  font-size: 12.5px;
+  font-family: Arial, sans-serif;
+  background: #1E1A13;
+  color: var(--sh-paper);
+  border: 1px solid var(--sh-line);
+  border-radius: 6px;
+}
+.sh-char-role:disabled, .sh-char-conflict:disabled { opacity: 0.5; }
+.sh-char-name:focus, .sh-char-type:focus, .sh-char-role:focus, .sh-char-conflict:focus {
+  outline: none;
+  border-color: var(--sh-warm);
+}
+.sh-char-remove {
+  background: none;
+  border: none;
+  color: var(--sh-sub);
+  font-size: 17px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  justify-self: center;
+}
+.sh-char-remove:hover { color: #C46B4E; }
+.sh-char-add {
+  background: none;
+  border: 1px dashed var(--sh-line);
+  color: var(--sh-sub);
+  border-radius: 8px;
+  padding: 9px;
+  width: 100%;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+}
+.sh-char-add:hover:not(:disabled) { border-color: var(--sh-warm); color: var(--sh-warm); }
+.sh-char-add:disabled { opacity: 0.5; cursor: default; }
+
+@media (max-width: 900px) {
+  .sh-wip-grid { grid-template-columns: 1fr; gap: 28px; }
+}
+@media (max-width: 640px) {
+  .sh-wip-section { padding-left: 16px; padding-right: 16px; }
+  .sh-char-head { display: none; } /* labels crowd badly at this width — each row's own select text still identifies the field */
+  .sh-char-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 10px;
+    background: #1E1A13;
+    border: 1px solid var(--sh-line);
+    border-radius: 8px;
+    margin-bottom: 4px;
+  }
+  .sh-char-remove { justify-self: end; }
+}
