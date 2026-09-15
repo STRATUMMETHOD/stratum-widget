@@ -166,7 +166,182 @@
   flex-shrink: 0;
 }
 
+/* ---- Expanded state: add form (shared by both cards) ---- */
+.sh-dash-form {
+  background: #1A160F;
+  border: 1px solid var(--sh-line);
+  border-radius: 10px;
+  padding: 14px;
+  margin: 4px 0 14px;
+}
+.sh-dash-form-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.sh-dash-select,
+.sh-dash-input,
+.sh-dash-date-input {
+  padding: 8px 9px;
+  font-size: 12.5px;
+  font-family: Arial, sans-serif;
+  background: #221D15;
+  color: var(--sh-paper);
+  border: 1px solid var(--sh-line);
+  border-radius: 7px;
+}
+.sh-dash-select { flex: 0 0 150px; }
+.sh-dash-select--full { width: 100%; margin-bottom: 8px; flex: none; }
+.sh-dash-input { flex: 1; }
+.sh-dash-date-input { flex: 0 0 130px; }
+.sh-dash-textarea {
+  flex: 1;
+  padding: 9px 10px;
+  font-size: 13px;
+  font-family: 'Newsreader', Georgia, serif;
+  background: #221D15;
+  color: var(--sh-paper);
+  border: 1px solid var(--sh-line);
+  border-radius: 7px;
+  resize: vertical;
+  min-height: 40px;
+}
+.sh-dash-select:focus, .sh-dash-input:focus, .sh-dash-date-input:focus, .sh-dash-textarea:focus {
+  outline: none;
+  border-color: var(--sh-warm);
+}
+.sh-dash-form-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.sh-dash-add-status {
+  font-size: 11px;
+  color: var(--sh-sub);
+  font-style: italic;
+}
+.sh-dash-add-btn {
+  background: var(--sh-warm);
+  color: var(--sh-ink);
+  border: none;
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+}
+
+/* ---- Expanded state: filter/action toolbar ---- */
+.sh-dash-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.sh-dash-filter-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--sh-sub);
+}
+.sh-dash-download-btn {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--sh-warm);
+  color: var(--sh-warm);
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+}
+.sh-dash-download-btn:hover { background: rgba(160, 124, 62, 0.12); }
+.sh-dash-download-btn--danger { border-color: #C46B4E; color: #C46B4E; }
+.sh-dash-download-btn--danger:hover { background: rgba(196, 107, 78, 0.12); }
+
+/* ---- Expanded state: full list (shared by both cards) ---- */
+.sh-dash-full-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.sh-dash-list-entry {
+  position: relative;
+  background: #1A160F;
+  border: 1px solid var(--sh-line);
+  border-radius: 8px;
+  padding: 10px 34px 10px 12px;
+}
+.sh-dash-list-entry.sh-dash-legacy { opacity: 0.85; }
+.sh-dash-list-entry-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.sh-dash-list-entry-date {
+  font-size: 10.5px;
+  color: var(--sh-sub);
+  font-style: italic;
+}
+.sh-dash-list-entry-text {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--sh-paper);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.sh-dash-list-delete {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--sh-sub);
+  font-size: 15px;
+  cursor: pointer;
+  line-height: 1;
+}
+.sh-dash-list-delete:hover { color: var(--sh-warm); }
+
+/* Reminders full-list rows reuse .sh-dash-list-entry but lay out like
+   the compact checkbox rows (checkbox + text + date inline) rather than
+   the Idea Log's stacked tag/date/text layout. */
+.sh-dash-reminder-full {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 34px 9px 12px;
+}
+.sh-dash-reminder-full-text {
+  flex: 1;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+}
+.sh-dash-reminder-full.sh-row-done .sh-dash-reminder-full-text {
+  color: var(--sh-sub);
+  text-decoration: line-through;
+}
+.sh-dash-overdue { color: #C46B4E; font-weight: 700; font-style: normal; }
+
 @media (max-width: 640px) {
   .sh-dash-panels { grid-template-columns: 1fr; }
   .sh-idea-grid { grid-template-columns: 1fr; }
+  .sh-dash-section { padding-left: 16px; padding-right: 16px; }
+  .sh-dash-form-row { flex-direction: column; }
+  .sh-dash-select { flex: 1; }
+  .sh-dash-date-input { flex: 1; }
+}
+
+@media (max-width: 400px) {
+  .sh-dash-section { padding-left: 12px; padding-right: 12px; }
 }

@@ -179,11 +179,15 @@
     if (data && data.roleType) row.roleTypeSelect.value = data.roleType;
     if (data && data.coreConflict) row.coreConflictSelect.value = data.coreConflict;
 
-    typeSelect.addEventListener('change', function () { repopulateCascadingSelects(row); });
+    typeSelect.addEventListener('change', function () { repopulateCascadingSelects(row); scheduleAutosave(); });
+    roleTypeSelect.addEventListener('change', scheduleAutosave);
+    coreConflictSelect.addEventListener('change', scheduleAutosave);
+    nameInput.addEventListener('input', scheduleAutosave);
     removeBtn.addEventListener('click', function () {
       characterRows = characterRows.filter(function (r) { return r.id !== row.id; });
       rowEl.remove();
       updateAddButtonState(addBtn, listEl);
+      scheduleAutosave();
     });
 
     updateAddButtonState(addBtn, listEl);
@@ -210,17 +214,118 @@
   }
 
   // ----------------------------------------------------------
+  // AUTOSAVE
+  // ----------------------------------------------------------
+  // Sept 2026: replaces the old explicit "Save Profile" button per Ted's
+  // decision — every field change schedules a save after a short pause
+  // in activity, rather than requiring a manual click. A shared debounce
+  // timer across the WHOLE form (not per-field) means rapid successive
+  // changes — e.g. typing a title, then immediately picking a genre —
+  // collapse into one save once things settle, not one request per
+  // keystroke. This also naturally handles the cascading Type dropdown:
+  // changing Type resets Role Type/Core Conflict to blank synchronously,
+  // but the debounce window gives the student time to pick the real
+  // values before anything is actually sent — if they walk away right
+  // after changing Type, the blank role/conflict just saves as-is and
+  // gets corrected by the next autosave whenever they do fill it in.
+  var AUTOSAVE_DEBOUNCE_MS = 800;
+  var autosaveTimer = null;
+  var statusEl = null;
+  var statusFadeTimer = null;
+
+  function setStatus(text, cls) {
+    if (!statusEl) return;
+    if (statusFadeTimer) { clearTimeout(statusFadeTimer); statusFadeTimer = null; }
+    statusEl.textContent = text;
+    statusEl.className = 'sh-wip-status' + (cls ? ' ' + cls : '');
+  }
+  function fadeStatusSoon() {
+    if (statusFadeTimer) clearTimeout(statusFadeTimer);
+    statusFadeTimer = setTimeout(function () { if (statusEl) statusEl.textContent = ''; }, 2200);
+  }
+
+  function collectProfilePayload() {
+    return {
+      studentId: STUDENT_ID,
+      email: (currentProfile && currentProfile.email) || undefined,
+      studentName: (currentProfile && currentProfile.studentName) || '', // preserved, not edited here — see WordPress account
+      language: (currentProfile && currentProfile.language) || '',       // preserved, not edited here — see header Language dropdown
+      wipTitle: fields.titleInput.value.trim(),
+      genre: fields.genreSelect.value,
+      stage: fields.stageSelect.value,
+      storyStyle: fields.styleSelect.value,
+      pov: fields.povSelect.value,
+      theme: fields.themeInput.value.trim(),
+      characters: collectCharacters()
+    };
+  }
+
+  function doSave() {
+    var payload = collectProfilePayload();
+    setStatus('Saving\u2026');
+    fetch(PROXY_URL + '/project', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok) {
+          currentProfile = Object.assign({}, currentProfile, d);
+          setStatus('Saved', 'sh-ok');
+          fadeStatusSoon();
+        } else {
+          setStatus('Could not save \u2014 will retry on your next change', 'sh-err');
+        }
+      })
+      .catch(function () {
+        setStatus('Network error \u2014 will retry on your next change', 'sh-err');
+      });
+  }
+
+  function scheduleAutosave() {
+    if (autosaveTimer) clearTimeout(autosaveTimer);
+    setStatus('Editing\u2026');
+    autosaveTimer = setTimeout(function () {
+      autosaveTimer = null;
+      doSave();
+    }, AUTOSAVE_DEBOUNCE_MS);
+  }
+
+  // Safety net: if the student navigates away (or the tab is hidden)
+  // while a debounced save is still pending, don't lose those last few
+  // seconds of edits — fire an immediate best-effort save. keepalive
+  // lets this fetch outlive the page unload; sendBeacon isn't used here
+  // since the /project endpoint needs a JSON POST body with headers,
+  // which sendBeacon doesn't support cleanly.
+  function flushPendingSave() {
+    if (!autosaveTimer) return; // nothing pending — last change was already saved
+    clearTimeout(autosaveTimer);
+    autosaveTimer = null;
+    try {
+      fetch(PROXY_URL + '/project', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(collectProfilePayload()),
+        keepalive: true
+      });
+    } catch (e) {}
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') flushPendingSave();
+  });
+  window.addEventListener('pagehide', flushPendingSave);
+
+  // ----------------------------------------------------------
   // BUILD
   // ----------------------------------------------------------
   function buildPanel(wrapEl) {
     var section = el('div', 'sh-wip-section');
 
     var topActions = el('div', 'sh-wip-top-actions');
-    var saveBtn = el('button', 'sh-save-btn', 'Save Profile');
-    saveBtn.type = 'button';
-    mount(topActions, saveBtn);
-    var status = el('span', 'sh-wip-status');
-    mount(topActions, status);
+    mount(topActions, el('p', 'sh-wip-col-label sh-wip-autosave-label', 'Your changes save automatically'));
+    statusEl = el('span', 'sh-wip-status');
+    mount(topActions, statusEl);
     mount(section, topActions);
 
     var grid = el('div', 'sh-wip-grid');
@@ -236,30 +341,35 @@
     titleInput.className = 'sh-wip-input';
     titleInput.maxLength = 150;
     titleInput.placeholder = 'e.g. What the River Kept';
+    titleInput.addEventListener('input', scheduleAutosave);
     mount(titleField, titleInput);
     mount(col1, titleField);
 
     var genreField = el('div', 'sh-wip-field');
     mount(genreField, el('label', null, 'Genre'));
     var genreSelect = buildSelect('sh-wip-select', GENRE_OPTIONS);
+    genreSelect.addEventListener('change', scheduleAutosave);
     mount(genreField, genreSelect);
     mount(col1, genreField);
 
     var stageField = el('div', 'sh-wip-field');
     mount(stageField, el('label', null, 'Stage of Progress'));
     var stageSelect = buildSelect('sh-wip-select', STAGE_OPTIONS);
+    stageSelect.addEventListener('change', scheduleAutosave);
     mount(stageField, stageSelect);
     mount(col1, stageField);
 
     var styleField = el('div', 'sh-wip-field');
     mount(styleField, el('label', null, 'Story Style'));
     var styleSelect = buildSelect('sh-wip-select', STORY_STYLE_OPTIONS);
+    styleSelect.addEventListener('change', scheduleAutosave);
     mount(styleField, styleSelect);
     mount(col1, styleField);
 
     var povField = el('div', 'sh-wip-field');
     mount(povField, el('label', null, 'POV'));
     var povSelect = buildSelect('sh-wip-select', POV_OPTIONS);
+    povSelect.addEventListener('change', scheduleAutosave);
     mount(povField, povSelect);
     mount(col1, povField);
 
@@ -269,6 +379,7 @@
     themeInput.className = 'sh-wip-textarea';
     themeInput.maxLength = 600;
     themeInput.placeholder = 'What big idea are you exploring, and what do you most want your coach to focus on?';
+    themeInput.addEventListener('input', scheduleAutosave);
     mount(themeField, themeInput);
     mount(col1, themeField);
 
@@ -291,14 +402,15 @@
 
     var addBtn = el('button', 'sh-char-add', '+ Add Character');
     addBtn.type = 'button';
-    addBtn.addEventListener('click', function () { buildCharacterRow(null, charList, addBtn); });
+    addBtn.addEventListener('click', function () {
+      buildCharacterRow(null, charList, addBtn);
+      scheduleAutosave();
+    });
     mount(col2, addBtn);
 
     mount(grid, col2);
     mount(section, grid);
     mount(wrapEl, section);
-
-    saveBtn.addEventListener('click', function () { saveProfile(saveBtn, status); });
 
     return {
       titleInput: titleInput, genreSelect: genreSelect, stageSelect: stageSelect,
@@ -329,50 +441,9 @@
       .then(function (d) {
         if (!d || !d.known) return;
         currentProfile = d;
-        fillForm(d);
+        fillForm(d); // filling from a fresh load never itself schedules an autosave — only real user input does
       })
       .catch(function () {});
-  }
-
-  function saveProfile(saveBtn, status) {
-    var payload = {
-      studentId: STUDENT_ID,
-      email: (currentProfile && currentProfile.email) || undefined,
-      studentName: (currentProfile && currentProfile.studentName) || '', // preserved, not edited here — see WordPress account
-      language: (currentProfile && currentProfile.language) || '',       // preserved, not edited here — see header Language dropdown
-      wipTitle: fields.titleInput.value.trim(),
-      genre: fields.genreSelect.value,
-      stage: fields.stageSelect.value,
-      storyStyle: fields.styleSelect.value,
-      pov: fields.povSelect.value,
-      theme: fields.themeInput.value.trim(),
-      characters: collectCharacters()
-    };
-    saveBtn.disabled = true;
-    status.textContent = 'Saving\u2026';
-    status.className = 'sh-wip-status';
-    fetch(PROXY_URL + '/project', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        saveBtn.disabled = false;
-        if (d && d.ok) {
-          currentProfile = Object.assign({}, currentProfile, d);
-          status.textContent = 'Saved. Your coach will use this from your next session.';
-          status.className = 'sh-wip-status sh-ok';
-        } else {
-          status.textContent = 'Could not save \u2014 please try again.';
-          status.className = 'sh-wip-status sh-err';
-        }
-      })
-      .catch(function () {
-        saveBtn.disabled = false;
-        status.textContent = 'Network error \u2014 please try again.';
-        status.className = 'sh-wip-status sh-err';
-      });
   }
 
   function mountInto(wrapEl) {

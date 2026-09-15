@@ -57,7 +57,7 @@
     return window.STRATUM_WP_USER || { loggedIn: false, hasMembership: false, firstName: '', email: '', loginUrl: '#' };
   }
 
-  var studentId = readCookie(SID_COOKIE);
+  var studentId = readCookie(SID_COOKIE); // local cache only now — never trusted on its own, see resolve() below
   var pendingCallbacks = [];
   var resolving = false;
 
@@ -70,13 +70,29 @@
     pendingCallbacks = [];
   }
 
+  // Sept 2026 fix: a stratum_sid cookie's mere PRESENCE used to be treated
+  // as sufficient proof of correctness — this function only ever called
+  // /resolve-identity when the cookie was completely absent, which meant
+  // a stale cookie (e.g. left over from testing, or from a different
+  // account previously logged into the same browser/shared device) would
+  // be trusted forever, silently pointing at the wrong student's data.
+  // Fix: whenever WordPress reports a logged-in, active member, ALWAYS
+  // resolve/verify against that authoritative email (window.
+  // STRATUM_WP_USER.email, from wp_get_current_user() server-side) —
+  // every page load, not just when the cookie is missing. /resolve-
+  // identity is idempotent (same email always returns the same
+  // stratumId), so this costs one extra network call per page load in
+  // exchange for identity being fully, provably derived from the real
+  // WordPress session rather than ever trusting a cached cookie value on
+  // faith. The cookie is now only a fallback used when there's nothing
+  // to resolve against at all (logged out, no membership, no email).
   function resolve() {
     if (resolving) return; // already in flight — every caller's callback is queued in pendingCallbacks
     resolving = true;
     var wpUser = getWpUser();
-    if (studentId || !wpUser.loggedIn || !wpUser.hasMembership || !wpUser.email) {
-      // Nothing to resolve: cookie already set, or nothing to resolve it
-      // from (logged out / no active membership / no email on file).
+    if (!wpUser.loggedIn || !wpUser.hasMembership || !wpUser.email) {
+      // Nothing to verify against — fall back to whatever's cached
+      // locally (may be null), same as before.
       finalize(studentId);
       return;
     }
@@ -91,10 +107,13 @@
           setCookie(SID_COOKIE, d.stratumId, SID_COOKIE_MAX_AGE);
           finalize(d.stratumId);
         } else {
-          finalize(null);
+          // Resolution call failed for some reason — fall back to
+          // whatever was cached locally rather than leaving the page
+          // with no identity at all.
+          finalize(studentId);
         }
       })
-      .catch(function () { finalize(null); });
+      .catch(function () { finalize(studentId); });
   }
 
   function init(callback) {
