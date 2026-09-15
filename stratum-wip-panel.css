@@ -17,6 +17,18 @@
        palette introduced.
    ============================================================ */
 
+.sh-wip-panel-section {
+  padding: 4px 28px 26px;
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 640px) {
+  .sh-wip-panel-section { padding-left: 16px; padding-right: 16px; }
+}
+@media (max-width: 400px) {
+  .sh-wip-panel-section { padding-left: 12px; padding-right: 12px; }
+}
+
 .sh-wip-section {
   padding-top: 6px;
   position: relative;

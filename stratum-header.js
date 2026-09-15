@@ -312,7 +312,7 @@
     homeLink.href = '/system/';
     homeLink.textContent = 'Home';
     mount(nav, homeLink);
-    [['Practice', NAV_LINKS.practice], ['Library', NAV_LINKS.library]].forEach(function (pair) {
+    [['Practice Lab', NAV_LINKS.practice], ['Library', NAV_LINKS.library]].forEach(function (pair) {
       var a = document.createElement('a');
       a.className = 'sh-nav-link';
       a.href = pair[1];

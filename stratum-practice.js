@@ -325,7 +325,7 @@
 
   function buildGate(container, message, linkHref, linkText) {
     container.innerHTML = '';
-    var wrap = el('div', 'sh-wrap sh-page');
+    var wrap = el('div', 'sh-wrap');
     if (window.StratumHeader) window.StratumHeader.buildTopbar(wrap);
     var body = el('div', 'sh-gate');
     mount(body, el('p', null, message));
@@ -339,7 +339,7 @@
   }
 
   function buildPage(container) {
-    var wrap = el('div', 'sh-wrap sh-page');
+    var wrap = el('div', 'sh-wrap');
     if (window.StratumHeader) window.StratumHeader.buildTopbar(wrap);
 
     var crumb = el('div', 'sh-page-topbar');

@@ -465,7 +465,9 @@
     mount(formWrapEl, grid);
     mount(body, formWrapEl);
     mount(card, body);
-    mount(wrapEl, card);
+    var section = el('div', 'sh-wip-panel-section');
+    mount(section, card);
+    mount(wrapEl, section);
 
     return {
       titleInput: titleInput, genreSelect: genreSelect, stageSelect: stageSelect,
