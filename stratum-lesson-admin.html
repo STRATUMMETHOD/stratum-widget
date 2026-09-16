@@ -3767,7 +3767,7 @@ function formatExcDate(iso) {
 function loadExcavations() {
   if (!adminKey) { excStatus.textContent = 'Unlock the panel first.'; return; }
   excStatus.textContent = 'Loading...';
-  fetch(PROXY_URL + '/admin/excavations', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+  fetch(PROXY_URL + '/admin/excavation-stats', { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) {
       excavationsLoaded = true;
