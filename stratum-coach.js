@@ -1,38 +1,32 @@
 /* ============================================================
    STRATUM COACH — COACHING SESSION PAGE LOGIC (Sept 2026)
    ------------------------------------------------------------
-   Character Excavation is the first coaching session built on this
-   page; the format is designed to be reused for every future one
-   (Essentials, Mastery per Ted) — see window.StratumSessions in
-   stratum-sessions.js, the shared registry this file reads from.
-   This is a port of the working "ladder" coaching logic that
-   already existed in stratum-lesson-engine.js (LADDER_MODE and its
-   supporting functions), restyled for the new dark/warm design
-   system and reconnected to stratum-identity.js instead of that
-   file's own cookie-only identity handling. The underlying data
-   model is UNCHANGED: same lesson_configs records (tier 'guided',
-   ids 1.1-1.6), same /complete per-layer completion + deliverable
-   capture, same /excavation/synthesize + /excavation/master-
-   deliverable endpoints for the single end-of-session synthesis.
+   Character Excavation is the first Excavation built on this page;
+   the format is reused for every future one (a growing list, managed
+   entirely from the Stratum admin's Excavations tab — see stratum-
+   lesson-admin.html). This is a port of the working "ladder" coaching
+   logic that originally existed in stratum-lesson-engine.js, restyled
+   for the dark/warm design system and reconnected to stratum-
+   identity.js instead of that file's own cookie-only identity
+   handling.
 
-   Session → layer mapping lives in stratum-sessions.js (load that
-   file before this one), not in the Stratum admin, per Ted's decision
-   to keep the admin panel untouched this round — the admin panel
-   still edits each LAYER's content (areas, coaching approach,
-   deliverable fields, and, for the first layer only, the one video
-   for the whole session); the registry just knows which ordered set
-   of layer ids make up which session and what their on-screen strata
-   labels are. Adding a future session (Essentials, Mastery) is a new
-   entry in stratum-sessions.js, not new code here, once those layers'
-   lesson_configs ids are decided.
+   Data model: an Excavation (title, ONE video, ONE shared transcript,
+   ONE coaching intro) has an ordered list of Layers, each keyed by a
+   simple 1/2/3... layer_number scoped to that excavation (not the old
+   free-text lesson ids). Session/layer data comes LIVE from the
+   Worker via window.StratumSessions (stratum-sessions.js) — no more
+   static per-session registry file; a new Excavation the admin
+   creates shows up here automatically. Layer completions, transcripts,
+   and the end-of-excavation synthesis are all keyed server-side by
+   the compound string "excavationSlug:layerNumber" (see lessonKey()
+   below) — a bare layer number alone isn't unique across excavations.
 
    IMPORTANT — data sourcing: this file fetches WIP profile, Idea
    Log, and Reminders context directly from /project, /notes, /tasks
-   at conversation-start time, NOT from localStorage. The old
-   engine's PROJ_KEYS/NOTES_KEY/TRACKER_KEY localStorage cache is not
-   populated anywhere in this new architecture (stratum-wip-panel.js
-   and stratum-dashboard.js both read/write the server directly) —
-   reusing those keys here would silently see nothing.
+   at conversation-start time, NOT from localStorage. stratum-wip-
+   panel.js and stratum-dashboard.js both read/write the server
+   directly — reusing an old localStorage cache here would silently
+   see nothing.
 
    Requires stratum-identity.js, stratum-header.js (for
    window.StratumHeader.buildTopbar), AND stratum-sessions.js loaded
@@ -153,7 +147,7 @@
     mount(railEl, track);
 
     SESSION.layers.forEach(function (layer, i) {
-      var isDone = !!completedLayerIds[layer.id];
+      var isDone = !!completedLayerIds[lessonKey(layer.layerNumber)];
       var isCurrent = i === currentLayerIndex;
       var state = isDone ? 'sh-done' : (isCurrent ? 'sh-current' : 'sh-pending');
       var row = el('div', 'sh-rail-layer ' + state);
@@ -294,10 +288,10 @@
     var calibration = (LAYER_CONFIG.reflectionFramework.calibrationExamples || []).map(function (ex) { return '- ' + ex; }).join('\n');
     var scopeNote = LAYER_CONFIG.scopeNote || layer.label;
     var parts = [
-      'You are Ted Baker. You are speaking in first person, live, as though this is a real one-on-one coaching conversation exploring "' + layer.label + '" as part of the Character Excavation coaching session on The Stratum Method. You spent thirty-five years as a behavioral consultant working with more than twenty thousand people before turning that same work toward fiction writers. This is who you are in this conversation: warm, direct, genuinely curious about this specific person, unhurried, occasionally willing to admit your own doubt or history if it helps someone open up.',
+      'You are Ted Baker. You are speaking in first person, live, as though this is a real one-on-one coaching conversation exploring "' + layer.label + '" as part of the ' + SESSION.title + ' coaching session on The Stratum Method. You spent thirty-five years as a behavioral consultant working with more than twenty thousand people before turning that same work toward fiction writers. This is who you are in this conversation: warm, direct, genuinely curious about this specific person, unhurried, occasionally willing to admit your own doubt or history if it helps someone open up.',
       'STAY IN VOICE: Speak only as Ted, first person, for the entire conversation. If the student sincerely and directly asks whether they are talking to a real person or an AI, answer honestly and briefly - you are an AI coach built on Ted\'s method and trained in his voice, not Ted live - then gently continue in that same voice.',
       'CRITICAL FORMATTING RULE: Never wrap any word in asterisks for emphasis - this chat renders plain text only, so *anything like this* appears to the student as literal asterisks. If a word needs emphasis, use plain phrasing or sentence rhythm instead.',
-      'WHAT THIS LAYER COVERS (' + scopeNote + '):\n"""\n' + (LAYER_CONFIG.transcript || '') + '\n"""',
+      'WHAT THIS LAYER COVERS (' + scopeNote + '):\n"""\n' + (SESSION.transcript || '') + '\n"""',
       'WHAT THIS CONVERSATION IS FOR:\nThis single, continuous, natural conversation IS the exploration of ' + layer.label + '. Your job is to walk the student through the areas below - in whatever order the conversation naturally takes - making sure, by the end, all of them have been genuinely explored:\n\n' + areas
     ];
     if (contextBlock) parts.push(contextBlock);
@@ -442,7 +436,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         studentId: STUDENT_ID,
-        lesson: SESSION.layers[currentLayerIndex].id,
+        lesson: lessonKey(SESSION.layers[currentLayerIndex].layerNumber),
         conversationId: conversationId,
         history: conversationHistory,
         studentName: studentName,
@@ -452,7 +446,7 @@
   }
   function reportLayerComplete(summaryText) {
     if (!STUDENT_ID) return;
-    var body = { studentId: STUDENT_ID, lesson: SESSION.layers[currentLayerIndex].id, summary: summaryText || null };
+    var body = { studentId: STUDENT_ID, lesson: lessonKey(SESSION.layers[currentLayerIndex].layerNumber), summary: summaryText || null };
     if (lastDeliverable) body.deliverable = lastDeliverable;
     fetch(PROXY_URL + '/complete', {
       method: 'POST',
@@ -497,7 +491,7 @@
         messages: conversationHistory
       };
       if (STUDENT_ID) {
-        body.stratum = { studentId: STUDENT_ID, conversationId: conversationId, lesson: SESSION.layers[currentLayerIndex].id, email: WP_USER.email || null };
+        body.stratum = { studentId: STUDENT_ID, conversationId: conversationId, lesson: lessonKey(SESSION.layers[currentLayerIndex].layerNumber), email: WP_USER.email || null };
       }
       fetch(PROXY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
         .then(function (r) { return r.json(); })
@@ -584,14 +578,21 @@
   // ----------------------------------------------------------
   // LAYER LOADING / BOOTING / ADVANCING
   // ----------------------------------------------------------
-  function loadLayerConfig(layerId, callback) {
-    fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(layerId) + '&tier=' + SESSION.tier + '&lang=' + encodeURIComponent(LANG))
+  // Every layer completion/transcript/synthesis input is keyed server-side
+  // as "excavationSlug:layerNumber" (see worker.js) — a plain layer number
+  // alone isn't unique across excavations, since Character Excavation's
+  // Layer 1 and a future Worldbuilding's Layer 1 are different things.
+  function lessonKey(layerNumber) {
+    return SESSION.slug + ':' + layerNumber;
+  }
+
+  function loadLayerConfig(layerNumber, callback) {
+    fetch(PROXY_URL + '/excavation-layer?excavationSlug=' + encodeURIComponent(SESSION.slug) + '&layerNumber=' + layerNumber + '&lang=' + encodeURIComponent(LANG))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || !d.known || !d.config) { callback(null); return; }
         var cfg = d.config;
         cfg.scopeNote = cfg.scopeNote || '';
-        cfg.transcript = cfg.transcript || '';
         cfg.reflectionFramework = cfg.reflectionFramework || { areas: [], calibrationExamples: [] };
         cfg.greeting = cfg.greeting || {};
         callback(cfg);
@@ -623,7 +624,7 @@
     currentLayerIndex = index;
     renderRail();
     var layer = SESSION.layers[index];
-    loadLayerConfig(layer.id, function (cfg) {
+    loadLayerConfig(layer.layerNumber, function (cfg) {
       if (!cfg) {
         addMessage('assistant', 'This layer hasn\u2019t been set up yet. Let Ted know.');
         return;
@@ -645,7 +646,7 @@
 
   function advanceOrFinish() {
     var layer = SESSION.layers[currentLayerIndex];
-    completedLayerIds[layer.id] = true;
+    completedLayerIds[lessonKey(layer.layerNumber)] = true;
     var nextIndex = currentLayerIndex + 1;
     if (nextIndex < SESSION.layers.length) {
       bootLayer(nextIndex, true);
@@ -661,14 +662,14 @@
   function synthesizeMasterDeliverable() {
     contentEl.innerHTML = '';
     mount(contentEl, el('div', 'sh-coach-loading', 'Bringing together everything you\u2019ve excavated\u2026'));
-    fetch(PROXY_URL + SESSION.masterDeliverableEndpoint + '?studentId=' + encodeURIComponent(STUDENT_ID))
+    fetch(PROXY_URL + '/excavation/master-deliverable?studentId=' + encodeURIComponent(STUDENT_ID) + '&excavationSlug=' + encodeURIComponent(SESSION.slug))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d && d.known && d.text) { renderSynthesisCard(d.text); return; }
-        return fetch(PROXY_URL + SESSION.synthesisEndpoint, {
+        return fetch(PROXY_URL + '/excavation/synthesize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ studentId: STUDENT_ID })
+          body: JSON.stringify({ studentId: STUDENT_ID, excavationSlug: SESSION.slug, lang: LANG })
         })
           .then(function (r2) { return r2.json(); })
           .then(function (d2) {
@@ -683,8 +684,9 @@
   function renderSynthesisCard(text) {
     contentEl.innerHTML = '';
     var card = el('div', 'sh-synthesis-card');
-    mount(card, el('div', 'sh-synthesis-title', 'Character Excavation \u2014 Complete'));
-    mount(card, el('p', 'sh-synthesis-sub', studentName ? ('Nice work, ' + studentName + '. All six layers are excavated.') : 'All six layers are excavated.'));
+    mount(card, el('div', 'sh-synthesis-title', SESSION.title + ' \u2014 Complete'));
+    var layerCount = SESSION.layers.length;
+    mount(card, el('p', 'sh-synthesis-sub', studentName ? ('Nice work, ' + studentName + '. All ' + layerCount + ' layers are excavated.') : ('All ' + layerCount + ' layers are excavated.')));
     var body = el('div', 'sh-synthesis-text');
     body.innerHTML = textToParagraphs(text);
     mount(card, body);
@@ -697,12 +699,12 @@
   function downloadSynthesis(text) {
     var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     var who = studentName || 'Student';
-    var txt = 'CHARACTER EXCAVATION \u2014 COMPLETE PROFILE\n' + who + ' \u2014 ' + dateStr + '\n' +
+    var txt = SESSION.title.toUpperCase() + ' \u2014 COMPLETE PROFILE\n' + who + ' \u2014 ' + dateStr + '\n' +
       '==========================================\n\n' + text;
     var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
     var link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'Character-Excavation-' + who.replace(/\s+/g, '-') + '.txt';
+    link.download = SESSION.title.replace(/\s+/g, '-') + '-' + who.replace(/\s+/g, '-') + '.txt';
     link.click();
   }
 
@@ -718,7 +720,7 @@
         completions.forEach(function (c) { completedLayerIds[c.lesson] = true; });
         var firstIncomplete = -1;
         for (var i = 0; i < SESSION.layers.length; i++) {
-          if (!completedLayerIds[SESSION.layers[i].id]) { firstIncomplete = i; break; }
+          if (!completedLayerIds[lessonKey(SESSION.layers[i].layerNumber)]) { firstIncomplete = i; break; }
         }
         if (firstIncomplete === -1) {
           renderRail();
@@ -780,10 +782,8 @@
     buildChatPanel(contentEl);
     renderRail();
 
-    loadLayerConfig(SESSION.layers[0].id, function (cfg) {
-      if (cfg && cfg.video && cfg.video.mediaId) buildVideo(videoSlot, cfg.video.mediaId);
-      if (cfg && cfg.coachingIntro && cfg.coachingIntro.text) buildCoachingIntro(introSlot, cfg.coachingIntro);
-    });
+    if (SESSION.videoMediaId) buildVideo(videoSlot, SESSION.videoMediaId);
+    if (SESSION.coachingIntro && SESSION.coachingIntro.text) buildCoachingIntro(introSlot, SESSION.coachingIntro);
 
     loadProgressThenStart();
   }
@@ -812,26 +812,32 @@
       return;
     }
     var slug = window.STRATUM_SESSION_SLUG || '';
-    SESSION = window.StratumSessions ? window.StratumSessions.get(slug) : null;
-    if (!SESSION) {
+    if (!window.StratumSessions) {
       buildGate(container, 'This coaching session hasn\u2019t been configured yet.', '/system/', '\u2190 Back to Dashboard');
       return;
     }
-    if (!WP_USER.loggedIn) {
-      buildGate(container, 'Please log in to start this coaching session.', WP_USER.loginUrl, 'Log in');
-      return;
-    }
-    if (!WP_USER.hasMembership) {
-      buildGate(container, 'Your account doesn\u2019t have an active Stratum Method membership yet.', '/membership-account/', 'Go to My Account');
-      return;
-    }
-    window.StratumIdentity.init(function (studentId) {
-      if (!studentId) {
-        buildGate(container, 'Could not connect your account. Refresh and try again.', '/system/', '\u2190 Back to Dashboard');
+    window.StratumSessions.ready(function () {
+      SESSION = window.StratumSessions.get(slug);
+      if (!SESSION) {
+        buildGate(container, 'This coaching session hasn\u2019t been configured yet.', '/system/', '\u2190 Back to Dashboard');
         return;
       }
-      STUDENT_ID = studentId;
-      buildPage(container);
+      if (!WP_USER.loggedIn) {
+        buildGate(container, 'Please log in to start this coaching session.', WP_USER.loginUrl, 'Log in');
+        return;
+      }
+      if (!WP_USER.hasMembership) {
+        buildGate(container, 'Your account doesn\u2019t have an active Stratum Method membership yet.', '/membership-account/', 'Go to My Account');
+        return;
+      }
+      window.StratumIdentity.init(function (studentId) {
+        if (!studentId) {
+          buildGate(container, 'Could not connect your account. Refresh and try again.', '/system/', '\u2190 Back to Dashboard');
+          return;
+        }
+        STUDENT_ID = studentId;
+        buildPage(container);
+      });
     });
   }
 

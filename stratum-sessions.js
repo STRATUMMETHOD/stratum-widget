@@ -1,77 +1,72 @@
 /* ============================================================
-   STRATUM SESSIONS — SHARED REGISTRY (Sept 2026)
+   STRATUM SESSIONS — LIVE EXCAVATIONS REGISTRY (Sept 2026)
    ------------------------------------------------------------
-   Single source of truth for coaching session metadata, consumed by:
-     - stratum-header.js (the Coach nav dropdown)
-     - stratum-coach.js (the actual coaching engine on each session's page)
-     - stratum-excavation-center.js (the dashboard section listing
-       sessions with their completion status)
+   Was a static, hand-maintained list of coaching sessions; now fetches
+   the real Excavations + Layers data from the Worker (/excavations —
+   see the new admin-managed excavations/excavation_layers tables and
+   the Excavations tab in stratum-lesson-admin.html), so a new
+   Excavation the admin creates shows up automatically everywhere this
+   file is read, with no code change and no redeploy needed here.
 
-   Before this file existed, the same facts (session label, href,
-   layer ids/labels) were duplicated across stratum-header.js and
-   stratum-coach.js independently — a real drift risk (add a session
-   in one place, forget the other, and the two silently disagree).
-   Adding a third consumer (Excavation Center) made a third copy of
-   the same data indefensible, so this got pulled out now rather than
-   compounding the problem further.
+   Consumers: stratum-excavation-center.js (the dashboard section
+   listing every excavation with completion status) and stratum-
+   coach.js (the actual coaching page, looking up one excavation by
+   slug). Neither of those needed a nav dropdown anymore once the
+   Excavation Center dashboard section became the entry point (that
+   dropdown was removed from stratum-header.js per Ted's request) —
+   so this file no longer needs to serve stratum-header.js at all.
 
-   Character Excavation is the only session that exists today; adding
-   a future one (Essentials, Mastery) is one more entry here — no
-   other file needs to change to pick it up, aside from
-   synthesisEndpoint/masterDeliverableEndpoint below being Character-
-   Excavation-specific in the Worker currently (LADDER_LESSON_IDS is
-   hardcoded to the 1.x ids) — the Worker needs a matching
-   generalization before a second session can synthesize its own
-   deliverable. See stratum-coach.js for where that matters.
+   Same async-ready coordination pattern already used by stratum-
+   identity.js (sync flag + pending-callback queue + a matching event),
+   since fetching live data means callers can no longer assume list()/
+   get() are answerable the instant this script finishes loading.
+   Language: reads the same 'wlfc_preferred_lang' localStorage key the
+   header's Language dropdown already writes, same as stratum-coach.js
+   and stratum-practice.js already do.
 
-   Load this file BEFORE stratum-header.js, stratum-coach.js, and
-   stratum-excavation-center.js on any page that uses any of them —
-   same in-order loading requirement (async=false) as every other
-   shared module in this codebase.
+   Load this file AFTER stratum-identity.js (for PROXY_URL) and BEFORE
+   stratum-excavation-center.js / stratum-coach.js on any page that
+   uses either — same in-order loading requirement (async=false) as
+   every other shared module in this codebase.
    ============================================================ */
 (function () {
   'use strict';
 
-  var SESSION_DEFINITIONS = {
-    'character-excavation': {
-      title: 'Character Excavation',
-      href: '/coach/character-excavation/',
-      tier: 'guided',
-      synthesisEndpoint: '/excavation/synthesize',       // Character-Excavation-specific in the Worker today
-      masterDeliverableEndpoint: '/excavation/master-deliverable',
-      layers: [
-        { id: '1.1', label: 'The Anchor Behavior' },
-        { id: '1.2', label: 'The Hidden Truth' },
-        { id: '1.3', label: 'The Formative Wound' },
-        { id: '1.4', label: 'The Lies They Believe' },
-        { id: '1.5', label: 'Their Wants and Needs' },
-        { id: '1.6', label: 'Their Fears & Desires' }
-      ]
-    }
-    // TODO: 'essentials', 'mastery' — add here once their layer ids and
-    // on-screen labels are finalized.
-  };
+  var PROXY_URL = window.StratumIdentity ? window.StratumIdentity.PROXY_URL : 'https://stratum-proxy.tedbaker0207.workers.dev';
+  var LANG_STORE_KEY = 'wlfc_preferred_lang';
 
-  // Ordered list — object key order isn't guaranteed in every JS engine
-  // for non-integer-like keys, though it is in practice for modern
-  // browsers; this makes display order an explicit, intentional choice
-  // rather than relying on that.
-  var SESSION_ORDER = ['character-excavation'];
+  function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  var LANG = lsGet(LANG_STORE_KEY) || 'en';
+
+  var cachedExcavations = null; // null until the fetch resolves; [] is a valid resolved-but-empty result
+  var pendingCallbacks = [];
+
+  function finalize(excavations) {
+    cachedExcavations = excavations || [];
+    window.STRATUM_EXCAVATIONS_READY = true;
+    document.dispatchEvent(new CustomEvent('stratum:excavations-ready', { detail: { excavations: cachedExcavations } }));
+    pendingCallbacks.forEach(function (cb) { cb(cachedExcavations); });
+    pendingCallbacks = [];
+  }
+
+  fetch(PROXY_URL + '/excavations?lang=' + encodeURIComponent(LANG))
+    .then(function (r) { return r.json(); })
+    .then(function (d) { finalize((d && Array.isArray(d.excavations)) ? d.excavations : []); })
+    .catch(function () { finalize([]); });
 
   window.StratumSessions = {
-    definitions: SESSION_DEFINITIONS,
-    order: SESSION_ORDER,
-    // Convenience accessor — returns [{ slug, ...definition }, ...] in
-    // SESSION_ORDER, skipping any slug in ORDER with no matching
-    // definition (defensive, shouldn't normally happen).
-    list: function () {
-      return SESSION_ORDER
-        .filter(function (slug) { return !!SESSION_DEFINITIONS[slug]; })
-        .map(function (slug) {
-          var def = SESSION_DEFINITIONS[slug];
-          return Object.assign({ slug: slug }, def);
-        });
+    // Call before using list()/get() unless you've already confirmed
+    // window.STRATUM_EXCAVATIONS_READY is true — callback fires
+    // immediately if the fetch has already resolved, or once it does.
+    ready: function (callback) {
+      if (cachedExcavations !== null) { callback(cachedExcavations); return; }
+      pendingCallbacks.push(callback);
     },
-    get: function (slug) { return SESSION_DEFINITIONS[slug] || null; }
+    // Synchronous accessors — only meaningful after ready() has fired
+    // (matches window.StratumIdentity's init()-then-read pattern).
+    list: function () { return cachedExcavations || []; },
+    get: function (slug) {
+      return (cachedExcavations || []).find(function (ex) { return ex.slug === slug; }) || null;
+    }
   };
 })();

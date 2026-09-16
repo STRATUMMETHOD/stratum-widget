@@ -50,9 +50,11 @@
       .catch(function () { callback([]); });
   }
 
-  function computeStatus(session, completedLessonIds) {
+  function computeStatus(session, completedLessonKeys) {
     var total = session.layers.length;
-    var done = session.layers.filter(function (l) { return completedLessonIds.indexOf(l.id) !== -1; }).length;
+    var done = session.layers.filter(function (l) {
+      return completedLessonKeys.indexOf(session.slug + ':' + l.layerNumber) !== -1;
+    }).length;
     if (done === 0) return { key: 'not-started', label: 'Not Started' };
     if (done === total) return { key: 'completed', label: 'Completed' };
     return { key: 'in-progress', label: 'In Progress' };
@@ -62,7 +64,11 @@
     var row = el('div', 'sh-ec-row');
     var link = document.createElement('a');
     link.className = 'sh-ec-title';
-    link.href = session.href;
+    // No href is stored in the admin-managed excavation data — derived
+    // from the slug instead, matching the WordPress page Ted creates
+    // manually for each excavation (/coach/<slug>/). See the "automatic
+    // listing, still-manual page creation" split Ted confirmed.
+    link.href = '/coach/' + session.slug + '/';
     link.textContent = session.title;
     mount(row, link);
     mount(row, el('span', 'sh-ec-badge sh-ec-badge--' + status.key, status.label));
@@ -75,19 +81,26 @@
 
     var listEl = el('div', 'sh-ec-list');
     mount(section, listEl);
+    mount(listEl, el('div', 'sh-ec-empty', 'Loading\u2026'));
 
-    var sessions = window.StratumSessions ? window.StratumSessions.list() : [];
-    if (!sessions.length) {
+    if (!window.StratumSessions) {
+      listEl.innerHTML = '';
       mount(listEl, el('div', 'sh-ec-empty', 'No coaching sessions available yet.'));
       return section;
     }
-
-    fetchCompletions(studentId, function (completions) {
-      var completedLessonIds = completions.map(function (c) { return c.lesson; });
-      listEl.innerHTML = '';
-      sessions.forEach(function (session) {
-        var status = computeStatus(session, completedLessonIds);
-        mount(listEl, buildRow(session, status));
+    window.StratumSessions.ready(function (sessions) {
+      if (!sessions.length) {
+        listEl.innerHTML = '';
+        mount(listEl, el('div', 'sh-ec-empty', 'No coaching sessions available yet.'));
+        return;
+      }
+      fetchCompletions(studentId, function (completions) {
+        var completedLessonKeys = completions.map(function (c) { return c.lesson; });
+        listEl.innerHTML = '';
+        sessions.forEach(function (session) {
+          var status = computeStatus(session, completedLessonKeys);
+          mount(listEl, buildRow(session, status));
+        });
       });
     });
 
