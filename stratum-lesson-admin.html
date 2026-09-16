@@ -531,7 +531,7 @@
 <aside class="sidebar">
   <div class="brand">STRATUM <span>ADMIN</span></div>
   <div class="nav-group" id="mainNavGroup" style="display:none;">
-    <button class="nav-item" id="tabGuidedBtn" type="button"><span class="nav-dot"></span>Course</button>
+    <button class="nav-item" id="tabGuidedBtn" type="button"><span class="nav-dot"></span>Excavations</button>
     <button class="nav-item" id="tabGlobalInstructionsBtn" type="button"><span class="nav-dot"></span>Global Instructions</button>
     <button class="nav-item" id="tabDashboardBtn" type="button"><span class="nav-dot"></span>Students</button>
     <button class="nav-item" id="tabDeliverablesBtn" type="button"><span class="nav-dot"></span>Deliverables</button>
@@ -544,11 +544,6 @@
   <div class="nav-bottom">
     <button class="nav-item" id="tabAdminBtn" type="button"><span class="nav-dot"></span>Admin</button>
   </div>
-  <!-- Self-Guided and Master Coach are temporarily hidden from the sidebar while only
-       Course (Coach) is being marketed. Underlying tabs/logic are untouched below -
-       restoring visibility later is a one-line change, not a rebuild. -->
-  <button id="tabEssentialsBtn" type="button" style="display:none;"></button>
-  <button id="tabMasteryBtn" type="button" style="display:none;"></button>
 </aside>
 <main class="main">
   <div class="page-head">
@@ -832,44 +827,39 @@
       </div>
       <div id="lessonEditorView">
         <div class="toolbar">
-          <select id="gLessonSelect"></select>
-          <button class="btn secondary" id="gLoadBtn" type="button">Load</button>
-          <button class="btn secondary" id="gDownloadContentBtn" type="button">Download Coaching Content</button>
-          <button class="btn secondary" id="gNewLessonBtn" type="button">+ New Lesson</button>
-          <button class="btn danger" id="gDeleteBtn" type="button">Delete Lesson</button>
+          <select id="gExcavationSelect"></select>
+          <button class="btn secondary" id="gLoadExcavationBtn" type="button">Load</button>
+          <button class="btn secondary" id="gNewExcavationBtn" type="button">+ New Excavation</button>
+          <button class="btn danger" id="gDeleteExcavationBtn" type="button">Delete Excavation</button>
           <div class="spacer"></div>
-          <span class="save-status" id="gSaveStatus"></span>
-          <button class="btn" id="gSaveBtn" type="button">Save Lesson</button>
-        </div>
-        <div class="accordion-bar">
-          <button class="btn secondary" id="gExpandAllBtn" type="button">Expand all</button>
-          <button class="btn secondary" id="gCollapseAllBtn" type="button">Collapse all</button>
+          <span class="save-status" id="gExcSaveStatus"></span>
+          <button class="btn" id="gSaveExcavationBtn" type="button">Save Excavation</button>
         </div>
         <details class="card" data-group="open" open>
-          <summary class="card-title">Lesson identity</summary>
+          <summary class="card-title">Excavation</summary>
           <div class="card-body">
           <div class="row2">
             <div class="field">
-              <label for="gLessonId">Lesson ID</label>
-              <span class="hint">e.g. 1.1, 2.3, 4.2</span>
-              <input type="text" id="gLessonId" placeholder="1.1" />
+              <label for="gExcavationTitle">Title</label>
+              <span class="hint">e.g. Character Excavation, Worldbuilding</span>
+              <input type="text" id="gExcavationTitle" placeholder="Character Excavation" />
             </div>
             <div class="field">
-              <label for="gNextLessonLabel">Next lesson label</label>
-              <span class="hint">Used in the coach's closing message</span>
-              <input type="text" id="gNextLessonLabel" placeholder="Lecture 1.2" />
+              <label for="gExcavationSlug">Slug</label>
+              <span class="hint">Used to match the WordPress coaching-session page &mdash; auto-filled from Title, edit only if you know what you're changing</span>
+              <input type="text" id="gExcavationSlug" placeholder="character-excavation" />
             </div>
           </div>
-          <div class="field">
-            <label for="gScopeNote">Scope note</label>
-            <span class="hint">How the coach refers to this lesson internally &mdash; e.g. "Lecture 2.1 - Empty Your Cup"</span>
-            <input type="text" id="gScopeNote" placeholder="Lecture 1.1 - Welcome and What to Expect" />
+          <div class="toggle-row">
+            <input type="checkbox" id="gExcavationActive" checked />
+            <label for="gExcavationActive" style="margin:0;">Visible to students (shows in their Excavation Center)</label>
           </div>
         </div>
         </details>
         <details class="card" data-group="open" open>
           <summary class="card-title">Video</summary>
           <div class="card-body">
+          <span class="hint" style="display:block;margin-bottom:10px;">One video for the entire excavation &mdash; shown once, above all layers.</span>
           <div class="field">
             <label for="gMediaId">Wistia media ID</label>
             <input type="text" id="gMediaId" placeholder="0owdas4mfp" />
@@ -879,17 +869,19 @@
         <details class="card" data-group="open" open>
           <summary class="card-title">Lecture transcript</summary>
           <div class="card-body">
+          <span class="hint" style="display:block;margin-bottom:10px;">Shared across every layer in this excavation &mdash; not specific to any one layer.</span>
           <div class="field">
-            <textarea id="gTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
+            <textarea id="gTranscript" rows="6" placeholder="Full transcript text the coach references..."></textarea>
           </div>
         </div>
         </details>
         <details class="card" data-group="plain">
           <summary class="card-title">Coaching intro text</summary>
           <div class="card-body">
+          <span class="hint" style="display:block;margin-bottom:10px;">One per excavation, shown once at the very start &mdash; not repeated per layer.</span>
           <div class="toggle-row">
             <input type="checkbox" id="gHasCoachingIntro" />
-            <label for="gHasCoachingIntro" style="margin:0;">This lesson shows an intro message at the top of Coaching, default closed</label>
+            <label for="gHasCoachingIntro" style="margin:0;">This excavation shows an intro message at the top of Coaching, default closed</label>
           </div>
           <div id="gCoachingIntroFields" class="resource-fields disabled">
             <div class="field">
@@ -905,6 +897,39 @@
           </div>
         </div>
         </details>
+        <div class="card" style="padding:16px 18px;">
+          <div class="card-title" style="margin-bottom:12px;">Layers</div>
+          <div id="gLayersList"></div>
+          <button class="add-btn" id="gAddLayerBtn" type="button">+ Add Layer</button>
+        </div>
+        <div id="gLayerEditor" style="display:none;">
+        <div class="toolbar">
+          <span id="gLayerEditorHeading" style="font-weight:600;"></span>
+          <button class="btn secondary" id="gDownloadContentBtn" type="button">Download Coaching Content</button>
+          <div class="spacer"></div>
+          <span class="save-status" id="gSaveStatus"></span>
+          <button class="btn danger" id="gDeleteBtn" type="button">Delete Layer</button>
+          <button class="btn" id="gSaveBtn" type="button">Save Layer</button>
+        </div>
+        <div class="accordion-bar">
+          <button class="btn secondary" id="gExpandAllBtn" type="button">Expand all</button>
+          <button class="btn secondary" id="gCollapseAllBtn" type="button">Collapse all</button>
+        </div>
+        <details class="card" data-group="open" open>
+          <summary class="card-title">Layer identity</summary>
+          <div class="card-body">
+          <div class="field">
+            <label for="gNextLessonLabel">Next layer label</label>
+            <span class="hint">Used in the coach's closing message when moving to the next layer</span>
+            <input type="text" id="gNextLessonLabel" placeholder="Layer 2 - The Hidden Truth" />
+          </div>
+          <div class="field">
+            <label for="gScopeNote">Scope note</label>
+            <span class="hint">How the coach refers to this layer internally &mdash; e.g. "Layer 2 - The Hidden Truth"</span>
+            <input type="text" id="gScopeNote" placeholder="Layer 1 - The Anchor Behavior" />
+          </div>
+        </div>
+        </details>
         <details class="card" data-group="auto">
           <summary class="card-title">Reflection framework &mdash; areas</summary>
           <div class="card-body">
@@ -917,33 +942,26 @@
           <div class="card-body">
           <div class="toggle-row">
             <input type="checkbox" id="gHasDeliverable" />
-            <label for="gHasDeliverable" style="margin:0;">This lesson has a required, validated deliverable</label>
+            <label for="gHasDeliverable" style="margin:0;">This layer has a required, validated deliverable</label>
           </div>
           <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until every field below has been captured, real and specific &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done. Confirm captured deliverables under the Deliverables tab.</span>
           <div id="gDeliverableFields" class="resource-fields disabled">
             <div id="gDeliverableFieldsList"></div>
             <button class="add-btn" id="gAddDeliverableFieldBtn" type="button">+ Add deliverable field</button>
-            <span class="hint" style="display:block;margin-top:8px;">Field key: a short camelCase identifier the coach's hidden tags will use (e.g. <code>hiddenTruth</code>). Single value: one field, one answer (e.g. a causal lock sentence). Repeatable list: N required items (e.g. 3 instances) &mdash; optionally split each item into comma-separated sub-parts (e.g. <code>context, people, action</code>) the way Lesson 1's instances work; leave sub-parts blank for a plain list of single strings.</span>
+            <span class="hint" style="display:block;margin-top:8px;">Field key: a short camelCase identifier the coach's hidden tags will use (e.g. <code>hiddenTruth</code>). Single value: one field, one answer (e.g. a causal lock sentence). Repeatable list: N required items (e.g. 3 instances) &mdash; optionally split each item into comma-separated sub-parts (e.g. <code>context, people, action</code>) the way Layer 1's instances work; leave sub-parts blank for a plain list of single strings.</span>
           </div>
         </div>
         </details>
         <details class="card" data-group="plain">
           <summary class="card-title">Deliverable card &mdash; layer &amp; next steps</summary>
           <div class="card-body">
-          <span class="hint" style="display:block;margin-bottom:12px;">Feeds the closing card the student sees after this lesson's deliverable is captured. All fields here are optional &mdash; leave any of them blank and the card simply skips that section or falls back to the standard default line.</span>
+          <span class="hint" style="display:block;margin-bottom:12px;">Feeds the closing card the student sees after this layer's deliverable is captured. All fields here are optional &mdash; leave any of them blank and the card simply skips that section or falls back to the standard default line.</span>
           <button class="btn secondary" id="gPreviewDeliverableBtn" type="button" style="margin-bottom:16px;">Preview Deliverable Card</button>
-          <span class="hint" style="display:block;margin:-10px 0 16px;">Opens the closing card exactly as a student would see it, filled in with realistic sample content wherever this lesson has a structured deliverable field &mdash; use it to check that everything fits the page correctly. Reads whatever is currently in this form, including unsaved edits.</span>
-          <div class="row2">
-            <div class="field">
-              <label for="gLayerPosition">Layer position</label>
-              <span class="hint">This lesson's number in the 7-layer course, e.g. 1</span>
-              <input type="text" id="gLayerPosition" placeholder="1" style="max-width:100px;" />
-            </div>
-            <div class="field">
-              <label for="gLayerLabel">Layer label</label>
-              <span class="hint">e.g. The Anchor Behavior, The Hidden Truth, The Formative Wound, The Lie They Believe, The Want vs. The Need, The Fears &amp; Desires, Psychological Integration</span>
-              <input type="text" id="gLayerLabel" placeholder="The Anchor Behavior" />
-            </div>
+          <span class="hint" style="display:block;margin:-10px 0 16px;">Opens the closing card exactly as a student would see it, filled in with realistic sample content wherever this layer has a structured deliverable field &mdash; use it to check that everything fits the page correctly. Reads whatever is currently in this form, including unsaved edits.</span>
+          <div class="field">
+            <label for="gLayerLabel">Layer label</label>
+            <span class="hint">The on-screen strata label students see &mdash; e.g. The Anchor Behavior, The Hidden Truth, The Formative Wound. This layer's position number is set automatically by where it sits in the Layers list above, not entered here.</span>
+            <input type="text" id="gLayerLabel" placeholder="The Anchor Behavior" />
           </div>
           <div class="field">
             <label for="gNiceWorkTitle">Congrats title</label>
@@ -952,7 +970,7 @@
           </div>
           <div class="field">
             <label for="gNiceWorkSub">Congrats subtitle</label>
-            <span class="hint">The line shown just below the congrats title. Optional &mdash; leave blank to use the standard default line for this lesson.</span>
+            <span class="hint">The line shown just below the congrats title. Optional &mdash; leave blank to use the standard default line for this layer.</span>
             <textarea id="gNiceWorkSub" rows="2" placeholder="You didn't stop at the first answer &mdash; that's the harder part."></textarea>
           </div>
           <div class="field">
@@ -961,13 +979,13 @@
             <textarea id="gTryThisNow" rows="3" placeholder="Before you close this tab &mdash; find one more place in your draft where this behavior shows up. Does the same thing happen?"></textarea>
           </div>
           <div class="field">
-            <label for="gCourseShapeReminder">Course shape reminder</label>
-            <span class="hint">The &quot;this course builds in layers, not conclusions&quot; block on the closing card. Optional &mdash; leave blank to use the standard default line for this lesson.</span>
-            <textarea id="gCourseShapeReminder" rows="3" placeholder="This course builds in layers, not conclusions. What you find today becomes the material the next lesson digs into. The payoff isn't in any one lesson &mdash; it's in what they add up to."></textarea>
+            <label for="gCourseShapeReminder">Excavation shape reminder</label>
+            <span class="hint">The &quot;this excavation builds in layers, not conclusions&quot; block on the closing card. Optional &mdash; leave blank to use the standard default line for this layer.</span>
+            <textarea id="gCourseShapeReminder" rows="3" placeholder="This excavation builds in layers, not conclusions. What you find today becomes the material the next layer digs into. The payoff isn't in any one layer &mdash; it's in what they add up to."></textarea>
           </div>
           <div class="field">
             <label for="gNextStepTeaser">Next step teaser</label>
-            <span class="hint">Shown in the &quot;Up next&quot; block alongside the Next lesson label above &mdash; avoid repeating the lesson name here since the label already shows it; &quot;the next strata&quot; or &quot;the layer underneath this one&quot; reads better than naming it twice.</span>
+            <span class="hint">Shown in the &quot;Up next&quot; block alongside the Next layer label above &mdash; avoid repeating the layer name here since the label already shows it; &quot;the next strata&quot; or &quot;the layer underneath this one&quot; reads better than naming it twice.</span>
             <textarea id="gNextStepTeaser" rows="3" placeholder="You've named what Jennifer does. The next strata takes that same behavior and asks what it's protecting &mdash; not a new discovery, the layer underneath this one."></textarea>
           </div>
         </div>
@@ -976,7 +994,7 @@
           <summary class="card-title">Coaching approach</summary>
           <div class="card-body">
           <div class="field">
-            <span class="hint">Private instructional guidance for the AI on how to conduct THIS lesson's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student, and separate from the resource document. Optional &mdash; most lessons will not need this.</span>
+            <span class="hint">Private instructional guidance for the AI on how to conduct THIS layer's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student. Optional &mdash; most layers will not need this.</span>
             <textarea id="gCoachingApproach" rows="5"></textarea>
           </div>
         </div>
@@ -1000,324 +1018,30 @@
           </div>
         </div>
         </details>
-        <details class="card" data-group="plain">
-          <summary class="card-title">Greeting translations (optional)</summary>
-          <div class="card-body">
-          <div class="field">
-            <span class="hint">Lessons without a translation for a language fall back to English automatically &mdash; these do not need to be filled in before launch.</span>
-          </div>
-          <div id="gTranslationsList"></div>
-          <div class="add-lang-row">
-            <select id="gAddLangSelect"></select>
-            <button class="btn secondary" id="gAddLangBtn" type="button">+ Add language</button>
-          </div>
-        </div>
-        </details>
         <details class="json-preview">
           <summary>View raw config JSON (for reference / debugging)</summary>
           <pre id="gJsonPreview"></pre>
         </details>
+        </div>
       </div>
       <div id="courseAssistantView" style="display:none;">
         <div class="card">
           <div class="chat-window">
             <div class="chat-messages" id="chatMessages">
-              <div class="chat-empty" id="chatEmptyState">Ask about continuity across Coach lessons &mdash; tone, repeated questions, whether a reflection area overlaps one already covered elsewhere. This reads your saved Coach lesson configs; it doesn't write to them. Self-Guided lessons have no AI coach, so they aren't part of this corpus.</div>
+              <div class="chat-empty" id="chatEmptyState">Ask about continuity across Excavations &mdash; tone, repeated questions, whether a reflection area overlaps one already covered elsewhere. This reads your saved Excavation/Layer data; it doesn't write to them.</div>
             </div>
             <div class="chat-options-row">
               <input type="checkbox" id="chatIncludeTranscripts" />
-              <label for="chatIncludeTranscripts">Include full transcripts &amp; resource text (slower, more context)</label>
+              <label for="chatIncludeTranscripts">Include full transcripts (slower, more context)</label>
             </div>
             <div class="chat-input-row">
-              <textarea id="chatInput" rows="2" placeholder="e.g. Does 3.2's reflection overlap with anything in 2.2?"></textarea>
+              <textarea id="chatInput" rows="2" placeholder="e.g. Does Layer 3 of Character Excavation overlap with anything in Layer 2?"></textarea>
               <button class="btn" id="chatSendBtn" type="button">Send</button>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div id="essentialsView" style="display:none;">
-      <div class="toolbar">
-        <select id="eLessonSelect"></select>
-        <button class="btn secondary" id="eLoadBtn" type="button">Load</button>
-        <button class="btn secondary" id="eNewLessonBtn" type="button">+ New Lesson</button>
-        <button class="btn danger" id="eDeleteBtn" type="button">Delete Lesson</button>
-        <div class="spacer"></div>
-        <span class="save-status" id="eSaveStatus"></span>
-        <button class="btn" id="eSaveBtn" type="button">Save Lesson</button>
-      </div>
-      <details class="card" data-group="open" open>
-        <summary class="card-title">Lesson identity</summary>
-        <div class="card-body">
-        <div class="row2">
-          <div class="field">
-            <label for="eLessonId">Lesson ID</label>
-            <span class="hint">e.g. 1.1, 2.3, 4.2</span>
-            <input type="text" id="eLessonId" placeholder="1.1" />
-          </div>
-          <div class="field">
-            <label for="eNextLessonLabel">Next lesson label</label>
-            <span class="hint">Shown on the page as the link to the next lesson</span>
-            <input type="text" id="eNextLessonLabel" placeholder="Lecture 1.2" />
-          </div>
-        </div>
-        <div class="field">
-          <label for="eScopeNote">Scope note</label>
-          <span class="hint">Internal reference label for this lesson</span>
-          <input type="text" id="eScopeNote" placeholder="Lecture 1.1 - Welcome and What to Expect" />
-        </div>
-      </div>
-      </details>
-      <details class="card" data-group="open" open>
-        <summary class="card-title">Video</summary>
-        <div class="card-body">
-        <div class="field">
-          <label for="eMediaId">Wistia media ID</label>
-          <input type="text" id="eMediaId" placeholder="0owdas4mfp" />
-        </div>
-      </div>
-      </details>
-      <details class="card" data-group="open" open>
-        <summary class="card-title">Lecture transcript</summary>
-        <div class="card-body">
-        <div class="field">
-          <textarea id="eTranscript" rows="6" placeholder="Full transcript text shown on the lecture page..."></textarea>
-        </div>
-      </div>
-      </details>
-      <details class="card" data-group="plain">
-        <summary class="card-title">Coaching intro text</summary>
-        <div class="card-body">
-        <div class="toggle-row">
-          <input type="checkbox" id="eHasCoachingIntro" />
-          <label for="eHasCoachingIntro" style="margin:0;">This lesson shows an intro message above the Exercise/Reflection forms, default closed</label>
-        </div>
-        <div id="eCoachingIntroFields" class="resource-fields disabled">
-          <div class="field">
-            <label for="eCoachingIntroTitle">Intro title</label>
-            <span class="hint">Shown on the labeled bar above the intro text</span>
-            <input type="text" id="eCoachingIntroTitle" placeholder="Before You Start" />
-          </div>
-          <div class="field">
-            <label for="eCoachingIntroText">Intro content</label>
-            <span class="hint">Plain text &mdash; renders inline above the Exercise/Reflection forms</span>
-            <textarea id="eCoachingIntroText" rows="6"></textarea>
-          </div>
-        </div>
-      </div>
-      </details>
-      <details class="card" data-group="open" open>
-        <summary class="card-title">Self-Guided &mdash; Jotform tabs</summary>
-        <div class="card-body">
-        <span class="hint" style="display:block;margin-bottom:10px;">The self-guided lesson page shows an Exercise tab and a Reflection tab, each embedding the matching Jotform form. There is no AI coach on Self-Guided pages.</span>
-        <div class="field">
-          <label for="eExerciseFormId">Exercise &mdash; Jotform form ID</label>
-          <span class="hint">From the form's Jotform URL or share settings</span>
-          <input type="text" id="eExerciseFormId" placeholder="241234567890123" />
-        </div>
-        <div class="field">
-          <label for="eReflectionFormId">Reflection &mdash; Jotform form ID</label>
-          <span class="hint">From the form's Jotform URL or share settings</span>
-          <input type="text" id="eReflectionFormId" placeholder="241234567890124" />
-        </div>
-      </div>
-      </details>
-      <details class="json-preview">
-        <summary>View raw config JSON (for reference / debugging)</summary>
-        <pre id="eJsonPreview"></pre>
-      </details>
-    </div>
-    <div id="masteryView" style="display:none;">
-      <div id="masteryEditorView">
-        <div class="toolbar">
-          <select id="mLessonSelect"></select>
-          <button class="btn secondary" id="mLoadBtn" type="button">Load</button>
-          <button class="btn secondary" id="mDownloadContentBtn" type="button">Download Coaching Content</button>
-          <button class="btn secondary" id="mNewLessonBtn" type="button">+ New Lesson</button>
-          <button class="btn danger" id="mDeleteBtn" type="button">Delete Lesson</button>
-          <div class="spacer"></div>
-          <span class="save-status" id="mSaveStatus"></span>
-          <button class="btn" id="mSaveBtn" type="button">Save Lesson</button>
-        </div>
-        <div class="accordion-bar">
-          <button class="btn secondary" id="mExpandAllBtn" type="button">Expand all</button>
-          <button class="btn secondary" id="mCollapseAllBtn" type="button">Collapse all</button>
-        </div>
-        <details class="card" data-group="open" open>
-          <summary class="card-title">Lesson identity</summary>
-          <div class="card-body">
-          <div class="row2">
-            <div class="field">
-              <label for="mLessonId">Lesson ID</label>
-              <span class="hint">e.g. 5.1, 6.3</span>
-              <input type="text" id="mLessonId" placeholder="5.1" />
-            </div>
-            <div class="field">
-              <label for="mNextLessonLabel">Next lesson label</label>
-              <span class="hint">Used in the coach's closing message</span>
-              <input type="text" id="mNextLessonLabel" placeholder="Lecture 5.2" />
-            </div>
-          </div>
-          <div class="field">
-            <label for="mScopeNote">Scope note</label>
-            <span class="hint">How the coach refers to this lesson internally &mdash; e.g. "Lecture 2.1 - Empty Your Cup"</span>
-            <input type="text" id="mScopeNote" placeholder="Lecture 5.1 - The Surface Pattern" />
-          </div>
-        </div>
-        </details>
-        <details class="card" data-group="open" open>
-          <summary class="card-title">Video</summary>
-          <div class="card-body">
-          <div class="field">
-            <label for="mMediaId">Wistia media ID</label>
-            <input type="text" id="mMediaId" placeholder="0owdas4mfp" />
-          </div>
-        </div>
-        </details>
-        <details class="card" data-group="open" open>
-          <summary class="card-title">Lecture transcript</summary>
-          <div class="card-body">
-          <div class="field">
-            <textarea id="mTranscript" rows="6" placeholder="Full transcript text the coach references during the session..."></textarea>
-          </div>
-        </div>
-        </details>
-        <details class="card" data-group="plain">
-          <summary class="card-title">Coaching intro text</summary>
-          <div class="card-body">
-          <div class="toggle-row">
-            <input type="checkbox" id="mHasCoachingIntro" />
-            <label for="mHasCoachingIntro" style="margin:0;">This lesson shows an intro message at the top of Coaching, default closed</label>
-          </div>
-          <div id="mCoachingIntroFields" class="resource-fields disabled">
-            <div class="field">
-              <label for="mCoachingIntroTitle">Intro title</label>
-              <span class="hint">Shown on the labeled bar above the intro text</span>
-              <input type="text" id="mCoachingIntroTitle" placeholder="Preparation For First Coaching Session" />
-            </div>
-            <div class="field">
-              <label for="mCoachingIntroText">Intro content</label>
-              <span class="hint">Plain text &mdash; renders inline at the top of the Coaching tab</span>
-              <textarea id="mCoachingIntroText" rows="6"></textarea>
-            </div>
-          </div>
-        </div>
-        </details>
-        <details class="card" data-group="auto">
-          <summary class="card-title">Reflection framework &mdash; areas</summary>
-          <div class="card-body">
-          <div id="mAreasList"></div>
-          <button class="add-btn" id="mAddAreaBtn" type="button">+ Add area</button>
-        </div>
-        </details>
-        <details class="card" data-group="plain">
-          <summary class="card-title">Structured deliverable (optional)</summary>
-          <div class="card-body">
-          <div class="toggle-row">
-            <input type="checkbox" id="mHasDeliverable" />
-            <label for="mHasDeliverable" style="margin:0;">This lesson has a required, validated deliverable</label>
-          </div>
-          <span class="hint" style="display:block;margin:-6px 0 12px;">When checked, the coach cannot close the session until every field below has been captured, real and specific &mdash; the engine validates this itself and silently prompts the coach to keep asking if anything is missing or vague, rather than trusting the coach's word that it's done. Confirm captured deliverables under the Deliverables tab.</span>
-          <div id="mDeliverableFields" class="resource-fields disabled">
-            <div id="mDeliverableFieldsList"></div>
-            <button class="add-btn" id="mAddDeliverableFieldBtn" type="button">+ Add deliverable field</button>
-            <span class="hint" style="display:block;margin-top:8px;">Field key: a short camelCase identifier the coach's hidden tags will use (e.g. <code>hiddenTruth</code>). Single value: one field, one answer. Repeatable list: N required items &mdash; optionally split each item into comma-separated sub-parts (e.g. <code>context, people, action</code>); leave sub-parts blank for a plain list of single strings.</span>
-          </div>
-        </div>
-        </details>
-        <details class="card" data-group="plain">
-          <summary class="card-title">Deliverable card &mdash; layer &amp; next steps</summary>
-          <div class="card-body">
-          <span class="hint" style="display:block;margin-bottom:12px;">Feeds the closing card the student sees after this lesson's deliverable is captured. All fields here are optional &mdash; leave any of them blank and the card simply skips that section or falls back to the standard default line.</span>
-          <button class="btn secondary" id="mPreviewDeliverableBtn" type="button" style="margin-bottom:16px;">Preview Deliverable Card</button>
-          <span class="hint" style="display:block;margin:-10px 0 16px;">Opens the closing card exactly as a student would see it, filled in with realistic sample content wherever this lesson has a structured deliverable field &mdash; use it to check that everything fits the page correctly. Reads whatever is currently in this form, including unsaved edits.</span>
-          <div class="row2">
-            <div class="field">
-              <label for="mLayerPosition">Layer position</label>
-              <span class="hint">This lesson's number in the 7-layer course, e.g. 1</span>
-              <input type="text" id="mLayerPosition" placeholder="1" style="max-width:100px;" />
-            </div>
-            <div class="field">
-              <label for="mLayerLabel">Layer label</label>
-              <span class="hint">e.g. The Anchor Behavior, The Hidden Truth, The Formative Wound, The Lie They Believe, The Want vs. The Need, The Fears &amp; Desires, Psychological Integration</span>
-              <input type="text" id="mLayerLabel" placeholder="The Anchor Behavior" />
-            </div>
-          </div>
-          <div class="field">
-            <label for="mNiceWorkTitle">Congrats title</label>
-            <span class="hint">The closing-card headline once the deliverable is captured. Use the literal token {name} anywhere you want the student's first name inserted &mdash; it's dropped cleanly (with any leading comma) if no name is known yet. Optional &mdash; leave blank to use the standard default ("Nice work, {name}" / "Nice work").</span>
-            <input type="text" id="mNiceWorkTitle" placeholder="Nice work, {name}" />
-          </div>
-          <div class="field">
-            <label for="mNiceWorkSub">Congrats subtitle</label>
-            <span class="hint">The line shown just below the congrats title. Optional &mdash; leave blank to use the standard default line for this lesson.</span>
-            <textarea id="mNiceWorkSub" rows="2" placeholder="You didn't stop at the first answer &mdash; that's the harder part."></textarea>
-          </div>
-          <div class="field">
-            <label for="mTryThisNow">Try this now</label>
-            <span class="hint">A same-session micro-challenge shown right after the captured deliverable &mdash; generic enough to apply to any student's WIP, not this transcript's specifics.</span>
-            <textarea id="mTryThisNow" rows="3" placeholder="Before you close this tab &mdash; find one more place in your draft where this behavior shows up. Does the same thing happen?"></textarea>
-          </div>
-          <div class="field">
-            <label for="mCourseShapeReminder">Course shape reminder</label>
-            <span class="hint">The &quot;this course builds in layers, not conclusions&quot; block on the closing card. Optional &mdash; leave blank to use the standard default line for this lesson.</span>
-            <textarea id="mCourseShapeReminder" rows="3" placeholder="This course builds in layers, not conclusions. What you find today becomes the material the next lesson digs into. The payoff isn't in any one lesson &mdash; it's in what they add up to."></textarea>
-          </div>
-          <div class="field">
-            <label for="mNextStepTeaser">Next step teaser</label>
-            <span class="hint">Shown in the &quot;Up next&quot; block alongside the Next lesson label above &mdash; avoid repeating the lesson name here since the label already shows it; &quot;the next strata&quot; or &quot;the layer underneath this one&quot; reads better than naming it twice.</span>
-            <textarea id="mNextStepTeaser" rows="3" placeholder="You've named what Jennifer does. The next strata takes that same behavior and asks what it's protecting &mdash; not a new discovery, the layer underneath this one."></textarea>
-          </div>
-        </div>
-        </details>
-        <details class="card" data-group="auto">
-          <summary class="card-title">Coaching approach</summary>
-          <div class="card-body">
-          <div class="field">
-            <span class="hint">Private instructional guidance for the AI on how to conduct THIS lesson's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student, and separate from the resource document. Optional &mdash; most lessons will not need this.</span>
-            <textarea id="mCoachingApproach" rows="5"></textarea>
-          </div>
-        </div>
-        </details>
-        <details class="card" data-group="auto">
-          <summary class="card-title">Calibration examples</summary>
-          <div class="card-body">
-          <div class="field">
-            <span class="hint">One per line. Shown to the coach only, never to the student.</span>
-            <textarea id="mCalibration" rows="4"></textarea>
-          </div>
-        </div>
-        </details>
-        <details class="card" data-group="plain">
-          <summary class="card-title">Greeting</summary>
-          <div class="card-body">
-          <div class="field">
-            <label for="mGreetingFresh">Greeting</label>
-            <span class="hint">Shown instantly when the student opens Coaching, before the session begins</span>
-            <textarea id="mGreetingFresh" rows="3"></textarea>
-          </div>
-        </div>
-        </details>
-        <details class="card" data-group="plain">
-          <summary class="card-title">Greeting translations (optional)</summary>
-          <div class="card-body">
-          <div class="field">
-            <span class="hint">Lessons without a translation for a language fall back to English automatically &mdash; these do not need to be filled in before launch.</span>
-          </div>
-          <div id="mTranslationsList"></div>
-          <div class="add-lang-row">
-            <select id="mAddLangSelect"></select>
-            <button class="btn secondary" id="mAddLangBtn" type="button">+ Add language</button>
-          </div>
-        </div>
-        </details>
-        <details class="json-preview">
-          <summary>View raw config JSON (for reference / debugging)</summary>
-          <pre id="mJsonPreview"></pre>
-        </details>
-      </div>
-    </div>
-  </div>
 </main>
 <div class="dc-preview-overlay" id="dcPreviewOverlay">
   <div class="dc-preview-panel">
@@ -1365,7 +1089,7 @@ function unlock() {
   if (!key) { authStatus.textContent = 'Enter a key first.'; authStatus.className = ''; return; }
   authStatus.textContent = 'Checking...';
   authStatus.className = '';
-  fetch(PROXY_URL + '/lesson-configs?tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), {
+  fetch(PROXY_URL + '/admin/excavations?lang=' + encodeURIComponent(ADMIN_LANG), {
     headers: { 'X-Stratum-Admin-Key': key }
   })
     .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
@@ -1376,10 +1100,10 @@ function unlock() {
         authStatus.textContent = 'Unlocked.';
         authStatus.className = 'ok';
         mainNavGroup.style.display = '';
-        refreshLessonListsForLang(result.data.lessons || []);
+        loadExcavationsList();
         loadAdminLanguages();
-        // Sept 2026: lands on Course (the lesson editor) instead of
-        // Students on unlock - Course is where most sessions actually
+        // Sept 2026: lands on Excavations (the layer editor) instead of
+        // Students on unlock - Excavations is where most sessions actually
         // start. loadStudents() still runs here so the Students table is
         // already populated in the background by the time it's clicked.
         showTopTab('guided');
@@ -1394,39 +1118,20 @@ function unlock() {
       authStatus.className = '';
     });
 }
-// Keeps only the most-recently-updated row per lesson_id. lesson_configs is
-// keyed (lesson_id, tier, lang) on the Worker/D1 side, so a tier+lang-scoped
-// /lesson-configs response should already be unique per lesson_id - this is
-// a cheap, synchronous safety net against any stray duplicate, not a fix
-// for a real server-side bug (there isn't one: confirmed against the live
-// Worker source, which filters tier/lang in the SQL WHERE clause itself).
-function dedupeLessonsByLatest(lessons) {
-  var map = {};
-  (lessons || []).forEach(function (l) {
-    if (!l || !l.lesson_id) return;
-    var existing = map[l.lesson_id];
-    if (!existing || String(l.updated_at || '') > String(existing.updated_at || '')) {
-      map[l.lesson_id] = l;
-    }
+function refreshDeliverablesLessonList(excavations) {
+  var items = [];
+  (excavations || []).forEach(function (ex) {
+    (ex.layers || []).forEach(function (layer) {
+      items.push({ value: ex.slug + ':' + layer.layerNumber, label: ex.title + ' \u2014 Layer ' + layer.layerNumber + ': ' + (layer.label || '(untitled)') });
+    });
   });
-  return Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b) {
-    return String(a.lesson_id).localeCompare(String(b.lesson_id), undefined, { numeric: true });
+  dlvLessonSelect.innerHTML = '';
+  items.forEach(function (it) {
+    var opt = document.createElement('option');
+    opt.value = it.value;
+    opt.textContent = it.label;
+    dlvLessonSelect.appendChild(opt);
   });
-}
-// Course/Deliverables dropdowns show Coach-tier lessons only (IDs starting
-// 5./6. are Master Coach, filtered out here even though they currently
-// share the same tier="guided" rows - see isMasteryLessonId below).
-function guidedOnlyLessons(lessons) {
-  return dedupeLessonsByLatest(lessons).filter(function (l) { return !isMasteryLessonId(l.lesson_id); });
-}
-function refreshLessonListsForLang(lessons) {
-  var guidedOnly = guidedOnlyLessons(lessons);
-  populateSelect(gLessonSelect, guidedOnly);
-  populateSelect(dlvLessonSelect, guidedOnly);
-  // Master Coach tab is hidden from the sidebar for now; leave its list on
-  // the simpler raw/ID-pattern filter since it isn't user-facing today.
-  populateSelect(mLessonSelect, (lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); }));
-  refreshEssentialsList();
 }
 // Populates the "Editing content in:" picker from the languages registry
 // and re-pulls the lesson lists under whichever language is selected.
@@ -1602,10 +1307,7 @@ document.getElementById('addLanguageBtn').addEventListener('click', function () 
 document.getElementById('adminLangSelect').addEventListener('change', function () {
   ADMIN_LANG = this.value;
   if (!adminKey) return;
-  fetch(PROXY_URL + '/lesson-configs?lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
-    .then(function (r) { return r.json(); })
-    .then(function (d) { refreshLessonListsForLang(d.lessons || []); })
-    .catch(function () {});
+  loadExcavationsList();
   // Sept 2026: Vocabulary is also per-language now - if that tab is the
   // one currently open, reload it under the newly selected language too.
   // (If it's not open, it'll simply fetch fresh under the new ADMIN_LANG
@@ -1621,8 +1323,6 @@ var tabLibraryBtn = document.getElementById('tabLibraryBtn');
 var tabGlobalInstructionsBtn = document.getElementById('tabGlobalInstructionsBtn');
 var tabExcavationBtn = document.getElementById('tabExcavationBtn');
 var tabGuidedBtn = document.getElementById('tabGuidedBtn');
-var tabEssentialsBtn = document.getElementById('tabEssentialsBtn');
-var tabMasteryBtn = document.getElementById('tabMasteryBtn');
 var tabAdminBtn = document.getElementById('tabAdminBtn');
 var dashboardView = document.getElementById('dashboardView');
 var deliverablesView = document.getElementById('deliverablesView');
@@ -1632,8 +1332,6 @@ var libraryView = document.getElementById('libraryView');
 var globalInstructionsView = document.getElementById('globalInstructionsView');
 var excavationView = document.getElementById('excavationView');
 var guidedView = document.getElementById('guidedView');
-var essentialsView = document.getElementById('essentialsView');
-var masteryView = document.getElementById('masteryView');
 var PAGE_HEADERS = {
   admin: ['Admin', 'Panel access and admin key.'],
   dashboard: ['Students', 'Search, add, and manage student records.'],
@@ -1643,9 +1341,7 @@ var PAGE_HEADERS = {
   library: ['Library', 'Every resource PDF and video, in one place \u2014 replaces the old per-lesson Resource PDFs.'],
   globalInstructions: ['Global Instructions', 'Standing coaching direction that applies to every lesson, every session.'],
   excavation: ['Excavation', 'The 5-Minute Character Excavation \u2014 started / completed / traffic source / surprise rating.'],
-  guided: ['Course', "Enter or edit any lesson's coaching content. Saves go straight to the database \u2014 the live lesson page picks up changes on next load."],
-  essentials: ['Self-Guided', 'Self-Guided lesson editor.'],
-  mastery: ['Master Coach', 'Master Coach lesson editor.']
+  guided: ['Excavations', "Manage every Excavation (Character Excavation, and any future ones) and their Layers. Saves go straight to the database \u2014 the live coaching page picks up changes on next load."]
 };
 function showTopTab(which) {
   tabDashboardBtn.className = 'nav-item' + (which === 'dashboard' ? ' active' : '');
@@ -1656,8 +1352,6 @@ function showTopTab(which) {
   tabGlobalInstructionsBtn.className = 'nav-item' + (which === 'globalInstructions' ? ' active' : '');
   tabExcavationBtn.className = 'nav-item' + (which === 'excavation' ? ' active' : '');
   tabGuidedBtn.className = 'nav-item' + (which === 'guided' ? ' active' : '');
-  tabEssentialsBtn.className = 'nav-item' + (which === 'essentials' ? ' active' : '');
-  tabMasteryBtn.className = 'nav-item' + (which === 'mastery' ? ' active' : '');
   tabAdminBtn.className = 'nav-item' + (which === 'admin' ? ' active' : '');
   adminView.style.display = which === 'admin' ? '' : 'none';
   panel.style.display = which === 'admin' ? 'none' : 'block';
@@ -1669,8 +1363,6 @@ function showTopTab(which) {
   globalInstructionsView.style.display = which === 'globalInstructions' ? '' : 'none';
   excavationView.style.display = which === 'excavation' ? '' : 'none';
   guidedView.style.display = which === 'guided' ? '' : 'none';
-  essentialsView.style.display = which === 'essentials' ? '' : 'none';
-  masteryView.style.display = which === 'mastery' ? '' : 'none';
   var t = PAGE_HEADERS[which] || ['Stratum Lesson Admin', ''];
   pageTitle.textContent = t[0];
   pageSub.textContent = t[1];
@@ -1706,8 +1398,6 @@ tabExcavationBtn.addEventListener('click', function () {
   loadExcavations();
 });
 tabGuidedBtn.addEventListener('click', function () { showTopTab('guided'); });
-tabEssentialsBtn.addEventListener('click', function () { showTopTab('essentials'); });
-tabMasteryBtn.addEventListener('click', function () { showTopTab('mastery'); });
 var studentsTableBody = document.getElementById('studentsTableBody');
 var studentsStatus = document.getElementById('studentsStatus');
 var studentSearch = document.getElementById('studentSearch');
@@ -1926,22 +1616,23 @@ function formatDlvDate(iso) {
   if (isNaN(d.getTime())) return iso;
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
-// Layer position/label live on the lesson's config, not on each captured
-// deliverable row, so they're fetched once per lesson selection (not
-// per row) and shown as a single line above the table - see Instruction
-// 12: surface the closing card's layer context in this view too.
-function loadDlvLayerInfo(lessonId) {
+// The layer's label lives on its own config, not on each captured
+// deliverable row, so it's fetched once per selection (not per row) and
+// shown as a single line above the table - see Instruction 12: surface
+// the closing card's layer context in this view too. dlvLessonSelect's
+// value is "excavationSlug:layerNumber" (see refreshDeliverablesLessonList) -
+// split it to call the real per-layer endpoint.
+function loadDlvLayerInfo(compoundKey) {
   dlvLayerInfo.style.display = 'none';
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided&lang=' + encodeURIComponent(ADMIN_LANG))
+  var parts = String(compoundKey || '').split(':');
+  var excavationSlug = parts[0];
+  var layerNumber = Number(parts[1]);
+  if (!excavationSlug || !Number.isInteger(layerNumber)) return;
+  fetch(PROXY_URL + '/excavation-layer?excavationSlug=' + encodeURIComponent(excavationSlug) + '&layerNumber=' + layerNumber + '&lang=' + encodeURIComponent(ADMIN_LANG))
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (!d || !d.known || !d.config) return;
-      var cfg = d.config;
-      if (!cfg.layerPosition && !cfg.layerLabel) return;
-      var parts = [];
-      if (cfg.layerPosition) parts.push('Layer ' + cfg.layerPosition + ' of 7');
-      if (cfg.layerLabel) parts.push(cfg.layerLabel);
-      dlvLayerInfo.textContent = parts.join(' \u2014 ');
+      dlvLayerInfo.textContent = 'Layer ' + layerNumber + (d.config.label ? ' \u2014 ' + d.config.label : '');
       dlvLayerInfo.style.display = '';
     })
     .catch(function () {});
@@ -4350,7 +4041,16 @@ function populateSelect(selectEl, lessons) {
     selectEl.appendChild(opt);
   });
 }
-var gLessonSelect = document.getElementById('gLessonSelect');
+var gExcavationSelect = document.getElementById('gExcavationSelect');
+var gLayersList = document.getElementById('gLayersList');
+var gLayerEditor = document.getElementById('gLayerEditor');
+var gLayerEditorHeading = document.getElementById('gLayerEditorHeading');
+var gCurrentExcavationSlug = null;
+var gCurrentLayers = []; // [{layerNumber, label}] for the loaded excavation
+var gCurrentLayerNumber = null; // null = new/unsaved layer
+function slugify(text) {
+  return String(text || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+}
 var gAreasList = document.getElementById('gAreasList');
 var gCoachingIntroFields = document.getElementById('gCoachingIntroFields');
 var gHasCoachingIntroCb = document.getElementById('gHasCoachingIntro');
@@ -4480,28 +4180,45 @@ var gLoadedHadDeliverable = false;
 document.getElementById('gAddDeliverableFieldBtn').addEventListener('click', function () {
   gDeliverableEditor.addFieldBlock({});
 });
-var gTranslationsList = document.getElementById('gTranslationsList');
-var gAddLangSelect = document.getElementById('gAddLangSelect');
 var gSaveStatus = document.getElementById('gSaveStatus');
-document.getElementById('gLoadBtn').addEventListener('click', function () {
-  var id = gLessonSelect.value;
-  if (!id) return;
-  loadGuidedLesson(id);
-});
-document.getElementById('gNewLessonBtn').addEventListener('click', function () {
-  var id = prompt('New Coach lesson ID (e.g. 1.2):');
-  if (!id) return;
-  clearGuidedForm();
-  document.getElementById('gLessonId').value = id.trim();
-});
-function loadGuidedLesson(lessonId) {
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided&lang=' + encodeURIComponent(ADMIN_LANG))
+var gExcSaveStatus = document.getElementById('gExcSaveStatus');
+function loadExcavationsList() {
+  fetch(PROXY_URL + '/admin/excavations?lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) {
-      if (!d || !d.known) { alert('No Coach config found for ' + lessonId + ' yet.'); return; }
-      fillGuidedForm(d.config);
+      var excavations = d.excavations || [];
+      gExcavationSelect.innerHTML = '';
+      excavations.forEach(function (ex) {
+        var opt = document.createElement('option');
+        opt.value = ex.slug;
+        opt.textContent = ex.title;
+        gExcavationSelect.appendChild(opt);
+      });
+      refreshDeliverablesLessonList(excavations);
     })
-    .catch(function () { alert('Could not load that lesson.'); });
+    .catch(function () {});
+}
+document.getElementById('gLoadExcavationBtn').addEventListener('click', function () {
+  var slug = gExcavationSelect.value;
+  if (!slug) return;
+  loadExcavation(slug);
+});
+document.getElementById('gNewExcavationBtn').addEventListener('click', function () {
+  clearExcavationForm();
+  gCurrentExcavationSlug = null;
+  gCurrentLayers = [];
+  renderLayersList();
+  hideLayerEditor();
+});
+function loadExcavation(slug) {
+  fetch(PROXY_URL + '/admin/excavations?lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var ex = (d.excavations || []).find(function (e) { return e.slug === slug; });
+      if (!ex) { alert('No excavation found for ' + slug + '.'); return; }
+      fillExcavationForm(ex);
+    })
+    .catch(function () { alert('Could not load that excavation.'); });
 }
 function gAddAreaBlock(title, instructions) {
   gAreaCounter++;
@@ -4549,12 +4266,12 @@ document.getElementById('gAddAreaBtn').addEventListener('click', function () {
   gAddAreaBlock('', '');
 });
 document.getElementById('gExpandAllBtn').addEventListener('click', function () {
-  lessonEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
+  gLayerEditor.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
 });
 document.getElementById('gCollapseAllBtn').addEventListener('click', function () {
-  lessonEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = false; });
+  gLayerEditor.querySelectorAll('details.card').forEach(function (d) { d.open = false; });
 });
-lessonEditorView.querySelectorAll('details.card[data-group="auto"]').forEach(function (card) {
+gLayerEditor.querySelectorAll('details.card[data-group="auto"]').forEach(function (card) {
   card.addEventListener('input', function () {
     if (!card.open) card.open = true;
   });
@@ -4568,71 +4285,135 @@ gHasCoachingIntroCb.addEventListener('change', function () {
 gHasDeliverableCb.addEventListener('change', function () {
   gDeliverableFields.className = 'resource-fields' + (gHasDeliverableCb.checked ? '' : ' disabled');
 });
-function gRefreshAddLangOptions() {
-  var existing = Array.prototype.map.call(
-    gTranslationsList.querySelectorAll('.lang-block'),
-    function (b) { return b.dataset.lang; }
-  );
-  gAddLangSelect.innerHTML = '';
-  LANGUAGES.filter(function (l) { return existing.indexOf(l) === -1; }).forEach(function (l) {
-    var opt = document.createElement('option');
-    opt.value = l;
-    opt.textContent = l;
-    gAddLangSelect.appendChild(opt);
-  });
-}
-function gAddLangBlock(lang, fresh) {
-  var block = document.createElement('div');
-  block.className = 'lang-block';
-  block.dataset.lang = lang;
-  var head = document.createElement('div');
-  head.className = 'lang-block-head';
-  head.appendChild(document.createTextNode(lang));
-  var removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'remove-btn';
-  removeBtn.textContent = 'Remove';
-  removeBtn.addEventListener('click', function () {
-    block.remove();
-    gRefreshAddLangOptions();
-  });
-  head.appendChild(removeBtn);
-  block.appendChild(head);
-  var freshField = document.createElement('div');
-  freshField.className = 'field';
-  var freshLabel = document.createElement('label');
-  freshLabel.textContent = 'Greeting';
-  freshField.appendChild(freshLabel);
-  var freshTa = document.createElement('textarea');
-  freshTa.className = 'lang-fresh';
-  freshTa.rows = 2;
-  freshTa.value = fresh || '';
-  freshField.appendChild(freshTa);
-  block.appendChild(freshField);
-  gTranslationsList.appendChild(block);
-  gRefreshAddLangOptions();
-}
-document.getElementById('gAddLangBtn').addEventListener('click', function () {
-  var lang = gAddLangSelect.value;
-  if (!lang) return;
-  gAddLangBlock(lang, '', '');
-});
-function clearGuidedForm() {
-  document.getElementById('gLessonId').value = '';
-  document.getElementById('gNextLessonLabel').value = '';
-  document.getElementById('gScopeNote').value = '';
+function clearExcavationForm() {
+  document.getElementById('gExcavationTitle').value = '';
+  document.getElementById('gExcavationSlug').value = '';
+  document.getElementById('gExcavationActive').checked = true;
   document.getElementById('gMediaId').value = '';
   document.getElementById('gTranscript').value = '';
   gHasCoachingIntroCb.checked = false;
   gCoachingIntroFields.className = 'resource-fields disabled';
   document.getElementById('gCoachingIntroTitle').value = '';
   document.getElementById('gCoachingIntroText').value = '';
+  gExcSaveStatus.textContent = '';
+  gSlugManuallyEdited = false;
+}
+var gSlugManuallyEdited = false;
+document.getElementById('gExcavationSlug').addEventListener('input', function () { gSlugManuallyEdited = true; });
+document.getElementById('gExcavationTitle').addEventListener('input', function () {
+  if (!gSlugManuallyEdited) {
+    document.getElementById('gExcavationSlug').value = slugify(document.getElementById('gExcavationTitle').value);
+  }
+});
+function fillExcavationForm(ex) {
+  clearExcavationForm();
+  gCurrentExcavationSlug = ex.slug;
+  document.getElementById('gExcavationTitle').value = ex.title || '';
+  document.getElementById('gExcavationSlug').value = ex.slug || '';
+  gSlugManuallyEdited = true; // an existing excavation's slug is never auto-derived again
+  document.getElementById('gExcavationActive').checked = !(ex.isActive === 0 || ex.isActive === false);
+  document.getElementById('gMediaId').value = ex.videoMediaId || '';
+  document.getElementById('gTranscript').value = ex.transcript || '';
+  if (ex.coachingIntroTitle || ex.coachingIntroText) {
+    gHasCoachingIntroCb.checked = true;
+    gCoachingIntroFields.className = 'resource-fields';
+    document.getElementById('gCoachingIntroTitle').value = ex.coachingIntroTitle || '';
+    document.getElementById('gCoachingIntroText').value = ex.coachingIntroText || '';
+  }
+  gCurrentLayers = ex.layers || [];
+  renderLayersList();
+  hideLayerEditor();
+}
+function collectExcavationPayload() {
+  var title = document.getElementById('gExcavationTitle').value.trim();
+  var slugInput = document.getElementById('gExcavationSlug').value.trim();
+  var slug = slugInput || slugify(title);
+  return {
+    slug: slug,
+    lang: ADMIN_LANG,
+    title: title,
+    videoMediaId: document.getElementById('gMediaId').value.trim(),
+    transcript: document.getElementById('gTranscript').value.trim(),
+    coachingIntro: gHasCoachingIntroCb.checked ? {
+      title: document.getElementById('gCoachingIntroTitle').value.trim(),
+      text: document.getElementById('gCoachingIntroText').value.trim()
+    } : { title: '', text: '' },
+    isActive: document.getElementById('gExcavationActive').checked
+  };
+}
+// ---- Layers list (below the Excavation's own general fields) ----
+function renderLayersList() {
+  gLayersList.innerHTML = '';
+  if (!gCurrentExcavationSlug) {
+    gLayersList.innerHTML = '<span class="hint">Save the excavation above first, then add layers.</span>';
+    return;
+  }
+  if (!gCurrentLayers.length) {
+    gLayersList.innerHTML = '<span class="hint">No layers yet.</span>';
+  }
+  gCurrentLayers.forEach(function (layer) {
+    var row = document.createElement('div');
+    row.className = 'area-block-head';
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #ECE7DC;';
+    var link = document.createElement('a');
+    link.href = '#';
+    link.textContent = 'Layer ' + layer.layerNumber + ': ' + (layer.label || '(untitled)');
+    link.style.cssText = 'flex:1;color:#3A2E22;text-decoration:none;font-weight:600;';
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      loadLayer(gCurrentExcavationSlug, layer.layerNumber);
+    });
+    row.appendChild(link);
+    var delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'remove-btn';
+    delBtn.textContent = 'Delete';
+    delBtn.addEventListener('click', function () {
+      if (!confirm('Delete Layer ' + layer.layerNumber + '? Later layers will renumber down by one. This cannot be undone.')) return;
+      fetch(PROXY_URL + '/admin/excavation-layer?excavationSlug=' + encodeURIComponent(gCurrentExcavationSlug) + '&layerNumber=' + layer.layerNumber + '&lang=' + encodeURIComponent(ADMIN_LANG), {
+        method: 'DELETE',
+        headers: { 'X-Stratum-Admin-Key': adminKey }
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d && d.ok) { hideLayerEditor(); loadExcavation(gCurrentExcavationSlug); loadExcavationsList(); }
+        });
+    });
+    row.appendChild(delBtn);
+    gLayersList.appendChild(row);
+  });
+}
+document.getElementById('gAddLayerBtn').addEventListener('click', function () {
+  if (!gCurrentExcavationSlug) { alert('Save the excavation first.'); return; }
+  clearLayerForm();
+  gCurrentLayerNumber = null;
+  gLayerEditorHeading.textContent = 'New Layer (will become Layer ' + (gCurrentLayers.length + 1) + ')';
+  document.getElementById('gDeleteBtn').style.display = 'none';
+  gLayerEditor.style.display = '';
+  gLayerEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+function hideLayerEditor() {
+  gLayerEditor.style.display = 'none';
+}
+function loadLayer(excavationSlug, layerNumber) {
+  fetch(PROXY_URL + '/excavation-layer?excavationSlug=' + encodeURIComponent(excavationSlug) + '&layerNumber=' + layerNumber + '&lang=' + encodeURIComponent(ADMIN_LANG))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.known) { alert('No layer config found.'); return; }
+      fillLayerForm(d.config, layerNumber);
+      gLayerEditor.style.display = '';
+      gLayerEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    })
+    .catch(function () { alert('Could not load that layer.'); });
+}
+function clearLayerForm() {
+  document.getElementById('gNextLessonLabel').value = '';
+  document.getElementById('gScopeNote').value = '';
   gAreasList.innerHTML = '';
   gHasDeliverableCb.checked = false;
   gDeliverableFields.className = 'resource-fields disabled';
   gDeliverableEditor.clear();
   gLoadedHadDeliverable = false;
-  document.getElementById('gLayerPosition').value = '';
   document.getElementById('gLayerLabel').value = '';
   document.getElementById('gNiceWorkTitle').value = '';
   document.getElementById('gNiceWorkSub').value = '';
@@ -4642,37 +4423,21 @@ function clearGuidedForm() {
   document.getElementById('gCoachingApproach').value = '';
   document.getElementById('gCalibration').value = '';
   document.getElementById('gGreetingFresh').value = '';
-  gTranslationsList.innerHTML = '';
-  gRefreshAddLangOptions();
   updateGuidedJsonPreview();
 }
-function fillGuidedForm(config) {
-  clearGuidedForm();
-  document.getElementById('gLessonId').value = config.lessonId || '';
+function fillLayerForm(config, layerNumber) {
+  clearLayerForm();
+  gCurrentLayerNumber = layerNumber;
+  gLayerEditorHeading.textContent = 'Layer ' + layerNumber + ' of ' + gCurrentLayers.length;
+  document.getElementById('gDeleteBtn').style.display = '';
   document.getElementById('gNextLessonLabel').value = config.nextLessonLabel || '';
   document.getElementById('gScopeNote').value = config.scopeNote || '';
-  document.getElementById('gMediaId').value = (config.video && config.video.mediaId) || '';
-  document.getElementById('gTranscript').value = config.transcript || '';
-  document.getElementById('gLayerPosition').value = config.layerPosition != null ? String(config.layerPosition) : '';
-  document.getElementById('gLayerLabel').value = config.layerLabel || '';
+  document.getElementById('gLayerLabel').value = config.label || '';
   document.getElementById('gNiceWorkTitle').value = config.niceWorkTitle || '';
   document.getElementById('gNiceWorkSub').value = config.niceWorkSub || '';
   document.getElementById('gTryThisNow').value = config.tryThisNow || '';
   document.getElementById('gCourseShapeReminder').value = config.courseShapeReminder || '';
   document.getElementById('gNextStepTeaser').value = config.nextStepTeaser || '';
-  var ci = config.coachingIntro;
-  if (!ci && config.resource && config.resource.title && config.resource.text) {
-    ci = { title: config.resource.title, text: config.resource.text };
-  }
-  if (ci && (ci.title || ci.text)) {
-    gHasCoachingIntroCb.checked = true;
-    gCoachingIntroFields.className = 'resource-fields';
-    document.getElementById('gCoachingIntroTitle').value = ci.title || '';
-    document.getElementById('gCoachingIntroText').value = ci.text || '';
-  } else {
-    gHasCoachingIntroCb.checked = false;
-    gCoachingIntroFields.className = 'resource-fields disabled';
-  }
   var rf = config.reflectionFramework || {};
   (rf.areas || []).forEach(function (a) { gAddAreaBlock(a.title, a.instructions); });
   document.getElementById('gCoachingApproach').value = rf.coachingApproach || '';
@@ -4690,13 +4455,9 @@ function fillGuidedForm(config) {
   gLoadedHadDeliverable = !!(dv && dv.required);
   var g = config.greeting || {};
   document.getElementById('gGreetingFresh').value = g.fresh || '';
-  var translations = g.translations || {};
-  Object.keys(translations).forEach(function (lang) {
-    gAddLangBlock(lang, translations[lang].fresh);
-  });
   updateGuidedJsonPreview();
 }
-function collectGuidedConfig() {
+function collectLayerConfig() {
   var areas = [];
   gAreasList.querySelectorAll('.area-block').forEach(function (b) {
     var title = b.querySelector('.area-title').value.trim();
@@ -4705,43 +4466,20 @@ function collectGuidedConfig() {
   });
   var calibrationExamples = document.getElementById('gCalibration').value
     .split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
-  var translations = {};
-  gTranslationsList.querySelectorAll('.lang-block').forEach(function (b) {
-    var lang = b.dataset.lang;
-    var fresh = b.querySelector('.lang-fresh').value.trim();
-    if (fresh) translations[lang] = { fresh: fresh };
-  });
-  var coachingIntroObj = null;
-  if (gHasCoachingIntroCb.checked) {
-    var ciTitle = document.getElementById('gCoachingIntroTitle').value.trim();
-    var ciText = document.getElementById('gCoachingIntroText').value.trim();
-    if (ciTitle || ciText) coachingIntroObj = { title: ciTitle, text: ciText };
-  }
   var deliverableObj = null;
   if (gHasDeliverableCb.checked) {
     var gFields = gDeliverableEditor.collectFields();
     if (gFields.length) deliverableObj = { required: true, fields: gFields };
   }
-  var gLayerPositionRaw = document.getElementById('gLayerPosition').value.trim();
-  var gLayerPositionNum = gLayerPositionRaw ? parseInt(gLayerPositionRaw, 10) : null;
   return {
-    lessonId: document.getElementById('gLessonId').value.trim(),
-    tier: 'guided',
-    lang: ADMIN_LANG,
     scopeNote: document.getElementById('gScopeNote').value.trim(),
     nextLessonLabel: document.getElementById('gNextLessonLabel').value.trim(),
-    layerPosition: (gLayerPositionNum && gLayerPositionNum > 0) ? gLayerPositionNum : null,
-    layerLabel: document.getElementById('gLayerLabel').value.trim(),
+    label: document.getElementById('gLayerLabel').value.trim(),
     niceWorkTitle: document.getElementById('gNiceWorkTitle').value.trim(),
     niceWorkSub: document.getElementById('gNiceWorkSub').value.trim(),
     tryThisNow: document.getElementById('gTryThisNow').value.trim(),
     courseShapeReminder: document.getElementById('gCourseShapeReminder').value.trim(),
     nextStepTeaser: document.getElementById('gNextStepTeaser').value.trim(),
-    video: { mediaId: document.getElementById('gMediaId').value.trim() },
-    transcript: document.getElementById('gTranscript').value.trim(),
-    resource: null, // Resource PDFs retired Sept 2026 — see the new Library section
-    coachingIntro: coachingIntroObj,
-    essentials: { exerciseFormId: '', reflectionFormId: '' },
     reflectionFramework: {
       areas: areas,
       deliverable: deliverableObj,
@@ -4749,20 +4487,19 @@ function collectGuidedConfig() {
       calibrationExamples: calibrationExamples
     },
     greeting: {
-      fresh: document.getElementById('gGreetingFresh').value.trim(),
-      translations: translations
+      fresh: document.getElementById('gGreetingFresh').value.trim()
     }
   };
 }
 function updateGuidedJsonPreview() {
-  document.getElementById('gJsonPreview').textContent = JSON.stringify(collectGuidedConfig(), null, 2);
+  document.getElementById('gJsonPreview').textContent = JSON.stringify(collectLayerConfig(), null, 2);
 }
 var gPreviewTimer = null;
-lessonEditorView.addEventListener('input', function () {
+gLayerEditor.addEventListener('input', function () {
   clearTimeout(gPreviewTimer);
   gPreviewTimer = setTimeout(updateGuidedJsonPreview, 300);
 });
-lessonEditorView.addEventListener('change', updateGuidedJsonPreview);
+gLayerEditor.addEventListener('change', updateGuidedJsonPreview);
 function downloadJSON(filename, dataObj) {
   var blob = new Blob([JSON.stringify(dataObj, null, 2)], { type: 'application/json' });
   var url = URL.createObjectURL(blob);
@@ -4881,51 +4618,50 @@ function configToReadableText(config, savedAt) {
   }
   return lines.join('\n');
 }
-function backupExistingConfig(lessonId, tier, onDone) {
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=' + encodeURIComponent(tier) + '&lang=' + encodeURIComponent(ADMIN_LANG))
+function backupExistingLayer(excavationSlug, layerNumber, onDone) {
+  fetch(PROXY_URL + '/excavation-layer?excavationSlug=' + encodeURIComponent(excavationSlug) + '&layerNumber=' + layerNumber + '&lang=' + encodeURIComponent(ADMIN_LANG))
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d && d.known && d.config) {
         var stamp = new Date().toISOString().replace(/[:.]/g, '-');
-        var safeId = String(lessonId).replace(/\./g, '-');
-        downloadJSON('stratum-backup_' + safeId + '_' + tier + '_' + ADMIN_LANG + '_' + stamp + '.json', d.config);
+        downloadJSON('stratum-backup_' + excavationSlug + '-layer' + layerNumber + '_' + ADMIN_LANG + '_' + stamp + '.json', d.config);
       }
     })
     .catch(function () { /* best-effort - proceed to save regardless */ })
     .then(onDone);
 }
 // Standalone "Download Coaching Content" report (Sept 2026) - a
-// per-lesson, no-save-required export of everything the coach reads for
-// a given lesson, using the exact same readable-text renderer that
+// per-layer, no-save-required export of everything the coach reads for
+// a given layer, using the exact same readable-text renderer that
 // already runs automatically after every Save (configToReadableText).
 // Fetches fresh from the server rather than reading unsaved form edits,
 // so the report always reflects what the LIVE coach is actually working
 // from, not whatever's sitting half-edited in the form.
-function downloadCoachingContentReport(lessonId, tier) {
-  if (!lessonId) { alert('Select or load a lesson first.'); return; }
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=' + encodeURIComponent(tier) + '&lang=' + encodeURIComponent(ADMIN_LANG))
+function downloadCoachingContentReport(excavationSlug, layerNumber) {
+  if (!excavationSlug || layerNumber == null) { alert('Load a layer first.'); return; }
+  fetch(PROXY_URL + '/excavation-layer?excavationSlug=' + encodeURIComponent(excavationSlug) + '&layerNumber=' + layerNumber + '&lang=' + encodeURIComponent(ADMIN_LANG))
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (!d || !d.known || !d.config) {
-        alert('No saved config found for ' + lessonId + ' (' + tier + ', ' + ADMIN_LANG + ') yet.');
+        alert('No saved config found for that layer yet.');
         return;
       }
       var now = new Date();
       var stamp = now.toISOString().replace(/[:.]/g, '-');
-      var safeId = String(lessonId).replace(/\./g, '-');
-      downloadText('stratum-coaching-content_' + safeId + '_' + tier + '_' + ADMIN_LANG + '_' + stamp + '.txt', configToReadableText(d.config, now));
+      downloadText('stratum-coaching-content_' + excavationSlug + '-layer' + layerNumber + '_' + ADMIN_LANG + '_' + stamp + '.txt', configToReadableText(d.config, now));
     })
-    .catch(function () { alert('Could not load that lesson to generate the report.'); });
+    .catch(function () { alert('Could not load that layer to generate the report.'); });
 }
 document.getElementById('gDownloadContentBtn').addEventListener('click', function () {
-  downloadCoachingContentReport(gLessonSelect.value, 'guided');
+  downloadCoachingContentReport(gCurrentExcavationSlug, gCurrentLayerNumber);
 });
 document.getElementById('gSaveBtn').addEventListener('click', function () {
-  var config = collectGuidedConfig();
+  if (!gCurrentExcavationSlug) { gSaveStatus.textContent = 'Save the excavation first.'; gSaveStatus.className = 'save-status err'; return; }
+  var config = collectLayerConfig();
   var gStillHasDeliverable = !!(config.reflectionFramework.deliverable && config.reflectionFramework.deliverable.required);
   if (gLoadedHadDeliverable && !gStillHasDeliverable) {
     var gConfirmWipe = confirm(
-      'This lesson currently has a required deliverable, but the deliverable section is now unchecked or empty.\n\n' +
+      'This layer currently has a required deliverable, but the deliverable section is now unchecked or empty.\n\n' +
       'Saving will remove it. Are you sure you want to continue?'
     );
     if (!gConfirmWipe) {
@@ -4934,37 +4670,39 @@ document.getElementById('gSaveBtn').addEventListener('click', function () {
       return;
     }
   }
-  if (!config.lessonId) {
-    gSaveStatus.textContent = 'Lesson ID is required.';
-    gSaveStatus.className = 'save-status err';
-    return;
-  }
-  if (!config.video.mediaId) {
-    gSaveStatus.textContent = 'Video media ID is required.';
+  if (!config.label) {
+    gSaveStatus.textContent = 'Layer label is required.';
     gSaveStatus.className = 'save-status err';
     return;
   }
   gSaveStatus.textContent = 'Backing up current version...';
   gSaveStatus.className = 'save-status';
-  backupExistingConfig(config.lessonId, 'guided', function () {
+  var doBackup = gCurrentLayerNumber != null
+    ? function (onDone) { backupExistingLayer(gCurrentExcavationSlug, gCurrentLayerNumber, onDone); }
+    : function (onDone) { onDone(); }; // new layer - nothing to back up yet
+  doBackup(function () {
     gSaveStatus.textContent = 'Saving...';
-    fetch(PROXY_URL + '/lesson-config', {
+    var payload = { excavationSlug: gCurrentExcavationSlug, lang: ADMIN_LANG, label: config.label, config: config };
+    if (gCurrentLayerNumber != null) payload.layerNumber = gCurrentLayerNumber;
+    fetch(PROXY_URL + '/admin/excavation-layer', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-Stratum-Admin-Key': adminKey
       },
-      body: JSON.stringify({ lessonId: config.lessonId, tier: 'guided', lang: ADMIN_LANG, config: config })
+      body: JSON.stringify(payload)
     })
       .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
       .then(function (result) {
         if (result.status === 200 && result.data && result.data.ok) {
+          gCurrentLayerNumber = result.data.layerNumber;
           var gNow = new Date();
           var gStamp = gNow.toISOString().replace(/[:.]/g, '-');
-          downloadText('stratum-record_' + config.lessonId.replace(/\./g, '-') + '_guided_' + gStamp + '.txt', configToReadableText(config, gNow));
-          gSaveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + gNow.toLocaleTimeString() + '. Backup + record downloaded.';
+          downloadText('stratum-record_' + gCurrentExcavationSlug + '-layer' + gCurrentLayerNumber + '_' + gStamp + '.txt', configToReadableText(config, gNow));
+          gSaveStatus.textContent = 'Saved Layer ' + gCurrentLayerNumber + ' at ' + gNow.toLocaleTimeString() + '. Backup + record downloaded.';
           gSaveStatus.className = 'save-status ok';
-          refreshGuidedList();
+          loadExcavation(gCurrentExcavationSlug);
+          loadExcavationsList();
         } else {
           gSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
           gSaveStatus.className = 'save-status err';
@@ -4976,32 +4714,23 @@ document.getElementById('gSaveBtn').addEventListener('click', function () {
       });
   });
 });
-function refreshGuidedList() {
-  fetch(PROXY_URL + '/lesson-configs?tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      populateSelect(gLessonSelect, guidedOnlyLessons(d.lessons || []));
-      refreshDeliverablesLessonList();
-    })
-    .catch(function () {});
-}
 document.getElementById('gDeleteBtn').addEventListener('click', function () {
-  var id = gLessonSelect.value || document.getElementById('gLessonId').value.trim();
-  if (!id) { gSaveStatus.textContent = 'No lesson selected.'; gSaveStatus.className = 'save-status err'; return; }
-  if (!confirm('Delete Coach lesson "' + id + '"? This cannot be undone.')) return;
+  if (!gCurrentExcavationSlug || gCurrentLayerNumber == null) { gSaveStatus.textContent = 'No layer loaded.'; gSaveStatus.className = 'save-status err'; return; }
+  if (!confirm('Delete Layer ' + gCurrentLayerNumber + '? Later layers will renumber down by one. This cannot be undone.')) return;
   gSaveStatus.textContent = 'Deleting...';
   gSaveStatus.className = 'save-status';
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), {
+  fetch(PROXY_URL + '/admin/excavation-layer?excavationSlug=' + encodeURIComponent(gCurrentExcavationSlug) + '&layerNumber=' + gCurrentLayerNumber + '&lang=' + encodeURIComponent(ADMIN_LANG), {
     method: 'DELETE',
     headers: { 'X-Stratum-Admin-Key': adminKey }
   })
     .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
     .then(function (result) {
       if (result.status === 200 && result.data && result.data.ok) {
-        gSaveStatus.textContent = 'Deleted ' + id + '.';
+        gSaveStatus.textContent = 'Deleted.';
         gSaveStatus.className = 'save-status ok';
-        clearGuidedForm();
-        refreshGuidedList();
+        hideLayerEditor();
+        loadExcavation(gCurrentExcavationSlug);
+        loadExcavationsList();
       } else {
         gSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
         gSaveStatus.className = 'save-status err';
@@ -5012,582 +4741,59 @@ document.getElementById('gDeleteBtn').addEventListener('click', function () {
       gSaveStatus.className = 'save-status err';
     });
 });
-function isMasteryLessonId(id) {
-  return /^[56]\./.test(String(id || ''));
-}
-function refreshDeliverablesLessonList() {
-  fetch(PROXY_URL + '/lesson-configs?tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
-    .then(function (r) { return r.json(); })
-    .then(function (d) { populateSelect(dlvLessonSelect, guidedOnlyLessons(d.lessons || [])); })
-    .catch(function () {});
-}
-var mLessonSelect = document.getElementById('mLessonSelect');
-var mAreasList = document.getElementById('mAreasList');
-var mCoachingIntroFields = document.getElementById('mCoachingIntroFields');
-var mHasCoachingIntroCb = document.getElementById('mHasCoachingIntro');
-var mDeliverableFields = document.getElementById('mDeliverableFields');
-var mHasDeliverableCb = document.getElementById('mHasDeliverable');
-var mDeliverableEditor = makeDeliverableFieldEditor(document.getElementById('mDeliverableFieldsList'));
-// See gLoadedHadDeliverable above - identical purpose for the Master Coach
-// form. Set in fillMasteryForm(), reset in clearMasteryForm().
-var mLoadedHadDeliverable = false;
-document.getElementById('mAddDeliverableFieldBtn').addEventListener('click', function () {
-  mDeliverableEditor.addFieldBlock({});
-});
-var mTranslationsList = document.getElementById('mTranslationsList');
-var mAddLangSelect = document.getElementById('mAddLangSelect');
-var mSaveStatus = document.getElementById('mSaveStatus');
-document.getElementById('mLoadBtn').addEventListener('click', function () {
-  var id = mLessonSelect.value;
-  if (!id) return;
-  loadMasteryLesson(id);
-});
-document.getElementById('mDownloadContentBtn').addEventListener('click', function () {
-  downloadCoachingContentReport(mLessonSelect.value, 'guided');
-});
-document.getElementById('mNewLessonBtn').addEventListener('click', function () {
-  var id = prompt('New Master Coach lesson ID (e.g. 5.2):');
-  if (!id) return;
-  clearMasteryForm();
-  document.getElementById('mLessonId').value = id.trim();
-});
-function loadMasteryLesson(lessonId) {
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=guided&lang=' + encodeURIComponent(ADMIN_LANG))
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      if (!d || !d.known) { alert('No Master Coach config found for ' + lessonId + ' yet.'); return; }
-      fillMasteryForm(d.config);
-    })
-    .catch(function () { alert('Could not load that lesson.'); });
-}
-function mAddAreaBlock(title, instructions) {
-  mAreaCounter++;
-  var id = 'garea_' + mAreaCounter;
-  var block = document.createElement('div');
-  block.className = 'area-block';
-  block.dataset.id = id;
-  var head = document.createElement('div');
-  head.className = 'area-block-head';
-  var num = document.createElement('span');
-  num.className = 'area-num';
-  head.appendChild(num);
-  var titleInput = document.createElement('input');
-  titleInput.type = 'text';
-  titleInput.className = 'area-title';
-  titleInput.placeholder = 'AREA TITLE';
-  titleInput.value = title || '';
-  head.appendChild(titleInput);
-  var removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'remove-btn';
-  removeBtn.textContent = 'Remove';
-  removeBtn.addEventListener('click', function () {
-    block.remove();
-    mRenumberAreas();
-  });
-  head.appendChild(removeBtn);
-  block.appendChild(head);
-  var instrTextarea = document.createElement('textarea');
-  instrTextarea.className = 'area-instructions';
-  instrTextarea.rows = 5;
-  instrTextarea.placeholder = 'Instructions for the coach on drawing out this area...';
-  instrTextarea.value = instructions || '';
-  block.appendChild(instrTextarea);
-  mAreasList.appendChild(block);
-  mRenumberAreas();
-}
-function mRenumberAreas() {
-  var blocks = mAreasList.querySelectorAll('.area-block');
-  blocks.forEach(function (b, i) {
-    b.querySelector('.area-num').textContent = (i + 1);
-  });
-}
-document.getElementById('mAddAreaBtn').addEventListener('click', function () {
-  mAddAreaBlock('', '');
-});
-document.getElementById('mExpandAllBtn').addEventListener('click', function () {
-  masteryEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
-});
-document.getElementById('mCollapseAllBtn').addEventListener('click', function () {
-  masteryEditorView.querySelectorAll('details.card').forEach(function (d) { d.open = false; });
-});
-masteryEditorView.querySelectorAll('details.card[data-group="auto"]').forEach(function (card) {
-  card.addEventListener('input', function () {
-    if (!card.open) card.open = true;
-  });
-  card.addEventListener('focusin', function () {
-    if (!card.open) card.open = true;
-  });
-});
-mHasCoachingIntroCb.addEventListener('change', function () {
-  mCoachingIntroFields.className = 'resource-fields' + (mHasCoachingIntroCb.checked ? '' : ' disabled');
-});
-mHasDeliverableCb.addEventListener('change', function () {
-  mDeliverableFields.className = 'resource-fields' + (mHasDeliverableCb.checked ? '' : ' disabled');
-});
-function mRefreshAddLangOptions() {
-  var existing = Array.prototype.map.call(
-    mTranslationsList.querySelectorAll('.lang-block'),
-    function (b) { return b.dataset.lang; }
-  );
-  mAddLangSelect.innerHTML = '';
-  LANGUAGES.filter(function (l) { return existing.indexOf(l) === -1; }).forEach(function (l) {
-    var opt = document.createElement('option');
-    opt.value = l;
-    opt.textContent = l;
-    mAddLangSelect.appendChild(opt);
-  });
-}
-function mAddLangBlock(lang, fresh) {
-  var block = document.createElement('div');
-  block.className = 'lang-block';
-  block.dataset.lang = lang;
-  var head = document.createElement('div');
-  head.className = 'lang-block-head';
-  head.appendChild(document.createTextNode(lang));
-  var removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'remove-btn';
-  removeBtn.textContent = 'Remove';
-  removeBtn.addEventListener('click', function () {
-    block.remove();
-    mRefreshAddLangOptions();
-  });
-  head.appendChild(removeBtn);
-  block.appendChild(head);
-  var freshField = document.createElement('div');
-  freshField.className = 'field';
-  var freshLabel = document.createElement('label');
-  freshLabel.textContent = 'Greeting';
-  freshField.appendChild(freshLabel);
-  var freshTa = document.createElement('textarea');
-  freshTa.className = 'lang-fresh';
-  freshTa.rows = 2;
-  freshTa.value = fresh || '';
-  freshField.appendChild(freshTa);
-  block.appendChild(freshField);
-  mTranslationsList.appendChild(block);
-  mRefreshAddLangOptions();
-}
-document.getElementById('mAddLangBtn').addEventListener('click', function () {
-  var lang = mAddLangSelect.value;
-  if (!lang) return;
-  mAddLangBlock(lang, '', '');
-});
-function clearMasteryForm() {
-  document.getElementById('mLessonId').value = '';
-  document.getElementById('mNextLessonLabel').value = '';
-  document.getElementById('mScopeNote').value = '';
-  document.getElementById('mMediaId').value = '';
-  document.getElementById('mTranscript').value = '';
-  mHasCoachingIntroCb.checked = false;
-  mCoachingIntroFields.className = 'resource-fields disabled';
-  document.getElementById('mCoachingIntroTitle').value = '';
-  document.getElementById('mCoachingIntroText').value = '';
-  mAreasList.innerHTML = '';
-  mHasDeliverableCb.checked = false;
-  mDeliverableFields.className = 'resource-fields disabled';
-  mDeliverableEditor.clear();
-  mLoadedHadDeliverable = false;
-  document.getElementById('mLayerPosition').value = '';
-  document.getElementById('mLayerLabel').value = '';
-  document.getElementById('mNiceWorkTitle').value = '';
-  document.getElementById('mNiceWorkSub').value = '';
-  document.getElementById('mTryThisNow').value = '';
-  document.getElementById('mCourseShapeReminder').value = '';
-  document.getElementById('mNextStepTeaser').value = '';
-  document.getElementById('mCoachingApproach').value = '';
-  document.getElementById('mCalibration').value = '';
-  document.getElementById('mGreetingFresh').value = '';
-  mTranslationsList.innerHTML = '';
-  mRefreshAddLangOptions();
-  updateMasteryJsonPreview();
-}
-function fillMasteryForm(config) {
-  clearMasteryForm();
-  document.getElementById('mLessonId').value = config.lessonId || '';
-  document.getElementById('mNextLessonLabel').value = config.nextLessonLabel || '';
-  document.getElementById('mScopeNote').value = config.scopeNote || '';
-  document.getElementById('mMediaId').value = (config.video && config.video.mediaId) || '';
-  document.getElementById('mTranscript').value = config.transcript || '';
-  document.getElementById('mLayerPosition').value = config.layerPosition != null ? String(config.layerPosition) : '';
-  document.getElementById('mLayerLabel').value = config.layerLabel || '';
-  document.getElementById('mNiceWorkTitle').value = config.niceWorkTitle || '';
-  document.getElementById('mNiceWorkSub').value = config.niceWorkSub || '';
-  document.getElementById('mTryThisNow').value = config.tryThisNow || '';
-  document.getElementById('mCourseShapeReminder').value = config.courseShapeReminder || '';
-  document.getElementById('mNextStepTeaser').value = config.nextStepTeaser || '';
-  var ci = config.coachingIntro;
-  if (!ci && config.resource && config.resource.title && config.resource.text) {
-    ci = { title: config.resource.title, text: config.resource.text };
-  }
-  if (ci && (ci.title || ci.text)) {
-    mHasCoachingIntroCb.checked = true;
-    mCoachingIntroFields.className = 'resource-fields';
-    document.getElementById('mCoachingIntroTitle').value = ci.title || '';
-    document.getElementById('mCoachingIntroText').value = ci.text || '';
-  } else {
-    mHasCoachingIntroCb.checked = false;
-    mCoachingIntroFields.className = 'resource-fields disabled';
-  }
-  var rf = config.reflectionFramework || {};
-  (rf.areas || []).forEach(function (a) { mAddAreaBlock(a.title, a.instructions); });
-  document.getElementById('mCoachingApproach').value = rf.coachingApproach || '';
-  document.getElementById('mCalibration').value = (rf.calibrationExamples || []).join('\n');
-  var dv = normalizeDeliverableConfigForAdmin(rf.deliverable);
-  mDeliverableEditor.clear();
-  if (dv && dv.required) {
-    mHasDeliverableCb.checked = true;
-    mDeliverableFields.className = 'resource-fields';
-    dv.fields.forEach(function (f) { mDeliverableEditor.addFieldBlock(f); });
-  } else {
-    mHasDeliverableCb.checked = false;
-    mDeliverableFields.className = 'resource-fields disabled';
-  }
-  mLoadedHadDeliverable = !!(dv && dv.required);
-  var g = config.greeting || {};
-  document.getElementById('mGreetingFresh').value = g.fresh || '';
-  var translations = g.translations || {};
-  Object.keys(translations).forEach(function (lang) {
-    mAddLangBlock(lang, translations[lang].fresh);
-  });
-  updateMasteryJsonPreview();
-}
-function collectMasteryConfig() {
-  var areas = [];
-  mAreasList.querySelectorAll('.area-block').forEach(function (b) {
-    var title = b.querySelector('.area-title').value.trim();
-    var instructions = b.querySelector('.area-instructions').value.trim();
-    if (title || instructions) areas.push({ title: title, instructions: instructions });
-  });
-  var calibrationExamples = document.getElementById('mCalibration').value
-    .split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
-  var translations = {};
-  mTranslationsList.querySelectorAll('.lang-block').forEach(function (b) {
-    var lang = b.dataset.lang;
-    var fresh = b.querySelector('.lang-fresh').value.trim();
-    if (fresh) translations[lang] = { fresh: fresh };
-  });
-  var coachingIntroObj = null;
-  if (mHasCoachingIntroCb.checked) {
-    var ciTitle = document.getElementById('mCoachingIntroTitle').value.trim();
-    var ciText = document.getElementById('mCoachingIntroText').value.trim();
-    if (ciTitle || ciText) coachingIntroObj = { title: ciTitle, text: ciText };
-  }
-  var deliverableObj = null;
-  if (mHasDeliverableCb.checked) {
-    var mFields = mDeliverableEditor.collectFields();
-    if (mFields.length) deliverableObj = { required: true, fields: mFields };
-  }
-  var mLayerPositionRaw = document.getElementById('mLayerPosition').value.trim();
-  var mLayerPositionNum = mLayerPositionRaw ? parseInt(mLayerPositionRaw, 10) : null;
-  return {
-    lessonId: document.getElementById('mLessonId').value.trim(),
-    tier: 'guided',
-    lang: ADMIN_LANG,
-    scopeNote: document.getElementById('mScopeNote').value.trim(),
-    nextLessonLabel: document.getElementById('mNextLessonLabel').value.trim(),
-    layerPosition: (mLayerPositionNum && mLayerPositionNum > 0) ? mLayerPositionNum : null,
-    layerLabel: document.getElementById('mLayerLabel').value.trim(),
-    niceWorkTitle: document.getElementById('mNiceWorkTitle').value.trim(),
-    niceWorkSub: document.getElementById('mNiceWorkSub').value.trim(),
-    tryThisNow: document.getElementById('mTryThisNow').value.trim(),
-    courseShapeReminder: document.getElementById('mCourseShapeReminder').value.trim(),
-    nextStepTeaser: document.getElementById('mNextStepTeaser').value.trim(),
-    video: { mediaId: document.getElementById('mMediaId').value.trim() },
-    transcript: document.getElementById('mTranscript').value.trim(),
-    resource: null, // Resource PDFs retired Sept 2026 — see the new Library section
-    coachingIntro: coachingIntroObj,
-    essentials: { exerciseFormId: '', reflectionFormId: '' },
-    reflectionFramework: {
-      areas: areas,
-      deliverable: deliverableObj,
-      coachingApproach: document.getElementById('mCoachingApproach').value.trim(),
-      calibrationExamples: calibrationExamples
-    },
-    greeting: {
-      fresh: document.getElementById('mGreetingFresh').value.trim(),
-      translations: translations
-    }
-  };
-}
-function updateMasteryJsonPreview() {
-  document.getElementById('mJsonPreview').textContent = JSON.stringify(collectMasteryConfig(), null, 2);
-}
-var mPreviewTimer = null;
-masteryEditorView.addEventListener('input', function () {
-  clearTimeout(mPreviewTimer);
-  mPreviewTimer = setTimeout(updateMasteryJsonPreview, 300);
-});
-masteryEditorView.addEventListener('change', updateMasteryJsonPreview);
-document.getElementById('mSaveBtn').addEventListener('click', function () {
-  var config = collectMasteryConfig();
-  var mStillHasDeliverable = !!(config.reflectionFramework.deliverable && config.reflectionFramework.deliverable.required);
-  if (mLoadedHadDeliverable && !mStillHasDeliverable) {
-    var mConfirmWipe = confirm(
-      'This lesson currently has a required deliverable, but the deliverable section is now unchecked or empty.\n\n' +
-      'Saving will remove it. Are you sure you want to continue?'
-    );
-    if (!mConfirmWipe) {
-      mSaveStatus.textContent = 'Save cancelled - deliverable was not removed.';
-      mSaveStatus.className = 'save-status';
-      return;
-    }
-  }
-  if (!config.lessonId) {
-    mSaveStatus.textContent = 'Lesson ID is required.';
-    mSaveStatus.className = 'save-status err';
-    return;
-  }
-  if (!config.video.mediaId) {
-    mSaveStatus.textContent = 'Video media ID is required.';
-    mSaveStatus.className = 'save-status err';
-    return;
-  }
-  mSaveStatus.textContent = 'Backing up current version...';
-  mSaveStatus.className = 'save-status';
-  backupExistingConfig(config.lessonId, 'guided', function () {
-    mSaveStatus.textContent = 'Saving...';
-    fetch(PROXY_URL + '/lesson-config', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Stratum-Admin-Key': adminKey
-      },
-      body: JSON.stringify({ lessonId: config.lessonId, tier: 'guided', lang: ADMIN_LANG, config: config })
-    })
-      .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
-      .then(function (result) {
-        if (result.status === 200 && result.data && result.data.ok) {
-          var mNow = new Date();
-          var mStamp = mNow.toISOString().replace(/[:.]/g, '-');
-          downloadText('stratum-record_' + config.lessonId.replace(/\./g, '-') + '_guided_' + mStamp + '.txt', configToReadableText(config, mNow));
-          mSaveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + mNow.toLocaleTimeString() + '. Backup + record downloaded.';
-          mSaveStatus.className = 'save-status ok';
-          refreshMasteryList();
-        } else {
-          mSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
-          mSaveStatus.className = 'save-status err';
-        }
-      })
-      .catch(function (e) {
-        mSaveStatus.textContent = 'Network error: ' + e.message;
-        mSaveStatus.className = 'save-status err';
-      });
-  });
-});
-function refreshMasteryList() {
-  fetch(PROXY_URL + '/lesson-configs?tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      populateSelect(mLessonSelect, (d.lessons || []).filter(function (l) { return isMasteryLessonId(l.lesson_id); }));
-      refreshDeliverablesLessonList();
-    })
-    .catch(function () {});
-}
-document.getElementById('mDeleteBtn').addEventListener('click', function () {
-  var id = mLessonSelect.value || document.getElementById('mLessonId').value.trim();
-  if (!id) { mSaveStatus.textContent = 'No lesson selected.'; mSaveStatus.className = 'save-status err'; return; }
-  if (!confirm('Delete Master Coach lesson "' + id + '"? This cannot be undone.')) return;
-  mSaveStatus.textContent = 'Deleting...';
-  mSaveStatus.className = 'save-status';
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=guided&lang=' + encodeURIComponent(ADMIN_LANG), {
-    method: 'DELETE',
-    headers: { 'X-Stratum-Admin-Key': adminKey }
+document.getElementById('gSaveExcavationBtn').addEventListener('click', function () {
+  var payload = collectExcavationPayload();
+  if (!payload.title) { gExcSaveStatus.textContent = 'Title is required.'; gExcSaveStatus.className = 'save-status err'; return; }
+  if (!payload.slug) { gExcSaveStatus.textContent = 'Slug is required.'; gExcSaveStatus.className = 'save-status err'; return; }
+  gExcSaveStatus.textContent = 'Saving...';
+  gExcSaveStatus.className = 'save-status';
+  fetch(PROXY_URL + '/admin/excavations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+    body: JSON.stringify(payload)
   })
     .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
     .then(function (result) {
       if (result.status === 200 && result.data && result.data.ok) {
-        mSaveStatus.textContent = 'Deleted ' + id + '.';
-        mSaveStatus.className = 'save-status ok';
-        clearMasteryForm();
-        refreshMasteryList();
+        gCurrentExcavationSlug = result.data.slug;
+        gExcSaveStatus.textContent = 'Saved ' + result.data.slug + '.';
+        gExcSaveStatus.className = 'save-status ok';
+        renderLayersList();
+        loadExcavationsList();
       } else {
-        mSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
-        mSaveStatus.className = 'save-status err';
+        gExcSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
+        gExcSaveStatus.className = 'save-status err';
       }
     })
     .catch(function (e) {
-      mSaveStatus.textContent = 'Network error: ' + e.message;
-      mSaveStatus.className = 'save-status err';
+      gExcSaveStatus.textContent = 'Network error: ' + e.message;
+      gExcSaveStatus.className = 'save-status err';
     });
 });
-var eLessonSelect = document.getElementById('eLessonSelect');
-var eCoachingIntroFields = document.getElementById('eCoachingIntroFields');
-var eHasCoachingIntroCb = document.getElementById('eHasCoachingIntro');
-var eSaveStatus = document.getElementById('eSaveStatus');
-document.getElementById('eLoadBtn').addEventListener('click', function () {
-  var id = eLessonSelect.value;
-  if (!id) return;
-  loadEssentialsLesson(id);
-});
-document.getElementById('eNewLessonBtn').addEventListener('click', function () {
-  var id = prompt('New Self-Guided lesson ID (e.g. 1.2):');
-  if (!id) return;
-  clearEssentialsForm();
-  document.getElementById('eLessonId').value = id.trim();
-});
-function loadEssentialsLesson(lessonId) {
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(lessonId) + '&tier=essentials&lang=' + encodeURIComponent(ADMIN_LANG))
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      if (!d || !d.known) { alert('No Self-Guided config found for ' + lessonId + ' yet.'); return; }
-      fillEssentialsForm(d.config);
-    })
-    .catch(function () { alert('Could not load that lesson.'); });
-}
-eHasCoachingIntroCb.addEventListener('change', function () {
-  eCoachingIntroFields.className = 'resource-fields' + (eHasCoachingIntroCb.checked ? '' : ' disabled');
-});
-function clearEssentialsForm() {
-  document.getElementById('eLessonId').value = '';
-  document.getElementById('eNextLessonLabel').value = '';
-  document.getElementById('eScopeNote').value = '';
-  document.getElementById('eMediaId').value = '';
-  document.getElementById('eTranscript').value = '';
-  eHasCoachingIntroCb.checked = false;
-  eCoachingIntroFields.className = 'resource-fields disabled';
-  document.getElementById('eCoachingIntroTitle').value = '';
-  document.getElementById('eCoachingIntroText').value = '';
-  document.getElementById('eExerciseFormId').value = '';
-  document.getElementById('eReflectionFormId').value = '';
-  updateEssentialsJsonPreview();
-}
-function fillEssentialsForm(config) {
-  clearEssentialsForm();
-  document.getElementById('eLessonId').value = config.lessonId || '';
-  document.getElementById('eNextLessonLabel').value = config.nextLessonLabel || '';
-  document.getElementById('eScopeNote').value = config.scopeNote || '';
-  document.getElementById('eMediaId').value = (config.video && config.video.mediaId) || '';
-  document.getElementById('eTranscript').value = config.transcript || '';
-  var ci = config.coachingIntro;
-  if (!ci && config.resource && config.resource.title && config.resource.text) {
-    ci = { title: config.resource.title, text: config.resource.text };
-  }
-  if (ci && (ci.title || ci.text)) {
-    eHasCoachingIntroCb.checked = true;
-    eCoachingIntroFields.className = 'resource-fields';
-    document.getElementById('eCoachingIntroTitle').value = ci.title || '';
-    document.getElementById('eCoachingIntroText').value = ci.text || '';
-  } else {
-    eHasCoachingIntroCb.checked = false;
-    eCoachingIntroFields.className = 'resource-fields disabled';
-  }
-  var ess = config.essentials || {};
-  document.getElementById('eExerciseFormId').value = ess.exerciseFormId || '';
-  document.getElementById('eReflectionFormId').value = ess.reflectionFormId || '';
-  updateEssentialsJsonPreview();
-}
-function collectEssentialsConfig() {
-  var coachingIntroObj = null;
-  if (eHasCoachingIntroCb.checked) {
-    var ciTitle = document.getElementById('eCoachingIntroTitle').value.trim();
-    var ciText = document.getElementById('eCoachingIntroText').value.trim();
-    if (ciTitle || ciText) coachingIntroObj = { title: ciTitle, text: ciText };
-  }
-  return {
-    lessonId: document.getElementById('eLessonId').value.trim(),
-    tier: 'essentials',
-    lang: ADMIN_LANG,
-    scopeNote: document.getElementById('eScopeNote').value.trim(),
-    nextLessonLabel: document.getElementById('eNextLessonLabel').value.trim(),
-    video: { mediaId: document.getElementById('eMediaId').value.trim() },
-    transcript: document.getElementById('eTranscript').value.trim(),
-    resource: null, // Resource PDFs retired Sept 2026 — see the new Library section
-    coachingIntro: coachingIntroObj,
-    essentials: {
-      exerciseFormId: document.getElementById('eExerciseFormId').value.trim(),
-      reflectionFormId: document.getElementById('eReflectionFormId').value.trim()
-    },
-    reflectionFramework: { areas: [], coachingApproach: '', calibrationExamples: [] },
-    greeting: { fresh: '', translations: {} }
-  };
-}
-function updateEssentialsJsonPreview() {
-  document.getElementById('eJsonPreview').textContent = JSON.stringify(collectEssentialsConfig(), null, 2);
-}
-var ePreviewTimer = null;
-essentialsView.addEventListener('input', function () {
-  clearTimeout(ePreviewTimer);
-  ePreviewTimer = setTimeout(updateEssentialsJsonPreview, 300);
-});
-essentialsView.addEventListener('change', updateEssentialsJsonPreview);
-document.getElementById('eSaveBtn').addEventListener('click', function () {
-  var config = collectEssentialsConfig();
-  if (!config.lessonId) {
-    eSaveStatus.textContent = 'Lesson ID is required.';
-    eSaveStatus.className = 'save-status err';
-    return;
-  }
-  if (!config.video.mediaId) {
-    eSaveStatus.textContent = 'Video media ID is required.';
-    eSaveStatus.className = 'save-status err';
-    return;
-  }
-  eSaveStatus.textContent = 'Backing up current version...';
-  eSaveStatus.className = 'save-status';
-  backupExistingConfig(config.lessonId, 'essentials', function () {
-    eSaveStatus.textContent = 'Saving...';
-    fetch(PROXY_URL + '/lesson-config', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Stratum-Admin-Key': adminKey
-      },
-      body: JSON.stringify({ lessonId: config.lessonId, tier: 'essentials', lang: ADMIN_LANG, config: config })
-    })
-      .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
-      .then(function (result) {
-        if (result.status === 200 && result.data && result.data.ok) {
-          var eNow = new Date();
-          var eStamp = eNow.toISOString().replace(/[:.]/g, '-');
-          downloadText('stratum-record_' + config.lessonId.replace(/\./g, '-') + '_essentials_' + eStamp + '.txt', configToReadableText(config, eNow));
-          eSaveStatus.textContent = 'Saved ' + result.data.lessonId + ' at ' + eNow.toLocaleTimeString() + '. Backup + record downloaded.';
-          eSaveStatus.className = 'save-status ok';
-          refreshEssentialsList();
-        } else {
-          eSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
-          eSaveStatus.className = 'save-status err';
-        }
-      })
-      .catch(function (e) {
-        eSaveStatus.textContent = 'Network error: ' + e.message;
-        eSaveStatus.className = 'save-status err';
-      });
-  });
-});
-function refreshEssentialsList() {
-  fetch(PROXY_URL + '/lesson-configs?tier=essentials&lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
-    .then(function (r) { return r.json(); })
-    .then(function (d) { populateSelect(eLessonSelect, d.lessons || []); })
-    .catch(function () {});
-}
-document.getElementById('eDeleteBtn').addEventListener('click', function () {
-  var id = eLessonSelect.value || document.getElementById('eLessonId').value.trim();
-  if (!id) { eSaveStatus.textContent = 'No lesson selected.'; eSaveStatus.className = 'save-status err'; return; }
-  if (!confirm('Delete Self-Guided lesson "' + id + '"? This cannot be undone.')) return;
-  eSaveStatus.textContent = 'Deleting...';
-  eSaveStatus.className = 'save-status';
-  fetch(PROXY_URL + '/lesson-config?lessonId=' + encodeURIComponent(id) + '&tier=essentials&lang=' + encodeURIComponent(ADMIN_LANG), {
+document.getElementById('gDeleteExcavationBtn').addEventListener('click', function () {
+  if (!gCurrentExcavationSlug) { gExcSaveStatus.textContent = 'No excavation loaded.'; gExcSaveStatus.className = 'save-status err'; return; }
+  if (!confirm('Delete excavation "' + gCurrentExcavationSlug + '" and ALL its layers? This cannot be undone.')) return;
+  fetch(PROXY_URL + '/admin/excavations?slug=' + encodeURIComponent(gCurrentExcavationSlug) + '&lang=' + encodeURIComponent(ADMIN_LANG), {
     method: 'DELETE',
     headers: { 'X-Stratum-Admin-Key': adminKey }
   })
-    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
-    .then(function (result) {
-      if (result.status === 200 && result.data && result.data.ok) {
-        eSaveStatus.textContent = 'Deleted ' + id + '.';
-        eSaveStatus.className = 'save-status ok';
-        clearEssentialsForm();
-        refreshEssentialsList();
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d && d.ok) {
+        gExcSaveStatus.textContent = 'Deleted.';
+        gExcSaveStatus.className = 'save-status ok';
+        clearExcavationForm();
+        gCurrentExcavationSlug = null;
+        gCurrentLayers = [];
+        renderLayersList();
+        hideLayerEditor();
+        loadExcavationsList();
       } else {
-        eSaveStatus.textContent = 'Error: ' + JSON.stringify(result.data);
-        eSaveStatus.className = 'save-status err';
+        gExcSaveStatus.textContent = 'Delete failed.';
+        gExcSaveStatus.className = 'save-status err';
       }
     })
-    .catch(function (e) {
-      eSaveStatus.textContent = 'Network error: ' + e.message;
-      eSaveStatus.className = 'save-status err';
-    });
+    .catch(function () { gExcSaveStatus.textContent = 'Network error.'; gExcSaveStatus.className = 'save-status err'; });
 });
 // ===== Deliverable Card Preview (Sept 2026) =====
 // Lets Ted open the exact closing card a student will see for the
@@ -5747,10 +4953,7 @@ function openDeliverableCardPreview(cfg, deliverableFieldDefs) {
   document.getElementById('dcPreviewOverlay').style.display = 'flex';
 }
 document.getElementById('gPreviewDeliverableBtn').addEventListener('click', function () {
-  openDeliverableCardPreview(collectGuidedConfig(), gDeliverableEditor.collectFields());
-});
-document.getElementById('mPreviewDeliverableBtn').addEventListener('click', function () {
-  openDeliverableCardPreview(collectMasteryConfig(), mDeliverableEditor.collectFields());
+  openDeliverableCardPreview(collectLayerConfig(), gDeliverableEditor.collectFields());
 });
 document.getElementById('dcPreviewCloseBtn').addEventListener('click', function () {
   document.getElementById('dcPreviewOverlay').style.display = 'none';
@@ -5760,7 +4963,6 @@ document.getElementById('dcPreviewOverlay').addEventListener('click', function (
     document.getElementById('dcPreviewOverlay').style.display = 'none';
   }
 });
-gRefreshAddLangOptions();
 mainNavGroup.style.display = 'none';
 showTopTab('admin');
 if (savedKey) unlock();
