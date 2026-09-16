@@ -842,6 +842,15 @@
         <button class="btn secondary" id="tabCourseAssistantBtn" type="button" style="border-radius:8px;">Course Assistant</button>
       </div>
       <div id="lessonEditorView">
+        <div class="toolbar" style="margin-bottom:8px;">
+          <span style="font-size:12px;font-weight:700;color:#3B2F24;">Track:</span>
+          <select id="gTrackSelect">
+            <option value="excavation">Excavation</option>
+            <option value="general">General Coaching</option>
+            <option value="writing">Writing</option>
+          </select>
+          <span class="hint" id="gTrackHint" style="margin-left:8px;"></span>
+        </div>
         <div class="toolbar">
           <select id="gExcavationSelect"></select>
           <button class="btn secondary" id="gLoadExcavationBtn" type="button">Load</button>
@@ -953,7 +962,7 @@
           <button class="add-btn" id="gAddAreaBtn" type="button">+ Add area</button>
         </div>
         </details>
-        <details class="card" data-group="plain">
+        <details class="card" data-group="plain" id="gDeliverableCard">
           <summary class="card-title">Structured deliverable (optional)</summary>
           <div class="card-body">
           <div class="toggle-row">
@@ -968,7 +977,7 @@
           </div>
         </div>
         </details>
-        <details class="card" data-group="plain">
+        <details class="card" data-group="plain" id="gDeliverableCardCard">
           <summary class="card-title">Deliverable card &mdash; layer &amp; next steps</summary>
           <div class="card-body">
           <span class="hint" style="display:block;margin-bottom:12px;">Feeds the closing card the student sees after this layer's deliverable is captured. All fields here are optional &mdash; leave any of them blank and the card simply skips that section or falls back to the standard default line.</span>
@@ -4304,8 +4313,28 @@ document.getElementById('gAddDeliverableFieldBtn').addEventListener('click', fun
 });
 var gSaveStatus = document.getElementById('gSaveStatus');
 var gExcSaveStatus = document.getElementById('gExcSaveStatus');
+var gTrackSelect = document.getElementById('gTrackSelect');
+var gTrackHint = document.getElementById('gTrackHint');
+var GI_TRACK_HINTS = {
+  excavation: 'One-time, linear: layers run in order, ending in a single synthesized deliverable.',
+  general: 'Recurring: no fixed order or completion. Each layer is a topic a student can revisit any time; all past check-in notes for this session carry forward automatically. Video/Transcript/Deliverable are not used by this track.',
+  writing: 'Recurring: same engine as General Coaching \u2014 no fixed order or completion, all past check-in notes carry forward. Video/Transcript/Deliverable are not used by this track.'
+};
+function gUpdateTrackHint() {
+  gTrackHint.textContent = GI_TRACK_HINTS[gTrackSelect.value] || '';
+}
+gUpdateTrackHint();
+gTrackSelect.addEventListener('change', function () {
+  gUpdateTrackHint();
+  clearExcavationForm();
+  gCurrentExcavationSlug = null;
+  gCurrentLayers = [];
+  renderLayersList();
+  hideLayerEditor();
+  loadExcavationsList();
+});
 function loadExcavationsList() {
-  fetch(PROXY_URL + '/admin/excavations?lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
+  fetch(PROXY_URL + '/admin/excavations?lang=' + encodeURIComponent(ADMIN_LANG) + '&track=' + encodeURIComponent(gTrackSelect.value), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) {
       var excavations = d.excavations || [];
@@ -4316,7 +4345,10 @@ function loadExcavationsList() {
         opt.textContent = ex.title;
         gExcavationSelect.appendChild(opt);
       });
-      refreshDeliverablesLessonList(excavations);
+      // Deliverables tab only makes sense for the Excavation Track's
+      // Linear Layers -> Synthesis engine - General/Writing's Recurring
+      // Check-In engine has no deliverable concept at all.
+      if (gTrackSelect.value === 'excavation') refreshDeliverablesLessonList(excavations);
     })
     .catch(function () {});
 }
@@ -4333,7 +4365,7 @@ document.getElementById('gNewExcavationBtn').addEventListener('click', function 
   hideLayerEditor();
 });
 function loadExcavation(slug) {
-  fetch(PROXY_URL + '/admin/excavations?lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
+  fetch(PROXY_URL + '/admin/excavations?lang=' + encodeURIComponent(ADMIN_LANG) + '&track=' + encodeURIComponent(gTrackSelect.value), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) {
       var ex = (d.excavations || []).find(function (e) { return e.slug === slug; });
@@ -4517,6 +4549,7 @@ function collectExcavationPayload() {
     slug: slug,
     lang: ADMIN_LANG,
     title: title,
+    track: gTrackSelect.value,
     videoMediaId: document.getElementById('gMediaId').value.trim(),
     transcript: document.getElementById('gTranscript').value.trim(),
     coachingIntro: gHasCoachingIntroCb.checked ? {
@@ -4568,12 +4601,18 @@ function renderLayersList() {
     gLayersList.appendChild(row);
   });
 }
+function gUpdateLayerEditorForTrack() {
+  var showDeliverable = gTrackSelect.value === 'excavation';
+  document.getElementById('gDeliverableCard').style.display = showDeliverable ? '' : 'none';
+  document.getElementById('gDeliverableCardCard').style.display = showDeliverable ? '' : 'none';
+}
 document.getElementById('gAddLayerBtn').addEventListener('click', function () {
   if (!gCurrentExcavationSlug) { alert('Save the excavation first.'); return; }
   clearLayerForm();
   gCurrentLayerNumber = null;
   gLayerEditorHeading.textContent = 'New Layer (will become Layer ' + (gCurrentLayers.length + 1) + ')';
   document.getElementById('gDeleteBtn').style.display = 'none';
+  gUpdateLayerEditorForTrack();
   gLayerEditor.style.display = '';
   gLayerEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
@@ -4586,6 +4625,7 @@ function loadLayer(excavationSlug, layerNumber) {
     .then(function (d) {
       if (!d || !d.known) { alert('No layer config found.'); return; }
       fillLayerForm(d.config, layerNumber);
+      gUpdateLayerEditorForTrack();
       gLayerEditor.style.display = '';
       gLayerEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
     })

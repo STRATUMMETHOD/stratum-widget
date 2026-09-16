@@ -1,12 +1,15 @@
 /* ============================================================
    STRATUM COACH — COACHING SESSION PAGE (Sept 2026)
    ------------------------------------------------------------
-   Character Excavation is the first of these; the format is meant
-   to be reused for every future coaching session (Essentials,
-   Mastery) per Ted's spec — see SESSION_DEFINITIONS in
-   stratum-coach.js. Reuses the --sh-* custom properties from
-   stratum-header.css (load that file's CSS on this page too, for
-   the shared palette) rather than redeclaring them.
+   Two engines share this page: Linear Layers -> Synthesis (Excavation
+   Track — video, strata rail, locked sequence, ends in one synthesized
+   deliverable) and Recurring Check-In (General/Writing Tracks — a
+   topic list instead of a rail, no fixed order or completion, every
+   visit is fresh with full past-check-in history injected). See
+   ENGINE_MODE / buildPage() vs buildRecurringPage() in stratum-coach.js.
+   Reuses the --sh-* custom properties from stratum-header.css (load
+   that file's CSS on this page too, for the shared palette) rather
+   than redeclaring them.
    ============================================================ */
 
 .sh-coach-page {
@@ -21,6 +24,61 @@
   font-weight: 600;
   color: var(--sh-paper);
   margin: 22px 0 16px;
+}
+
+.sh-coach-sub {
+  font-size: 14px;
+  color: var(--sh-sub);
+  margin: -10px 0 20px;
+  max-width: 640px;
+}
+
+/* ---- Recurring Check-In engine (General/Writing Tracks) ---- */
+.sh-recurring-topics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 640px;
+  margin-bottom: 20px;
+}
+.sh-recurring-topic-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: var(--sh-panel2);
+  border: 1px solid var(--sh-line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color .15s ease;
+}
+.sh-recurring-topic-row:hover { border-color: var(--sh-warm); }
+.sh-recurring-topic-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sh-paper);
+}
+.sh-recurring-topic-meta {
+  font-size: 12px;
+  color: var(--sh-sub);
+  white-space: nowrap;
+}
+.sh-recurring-back {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--sh-warm);
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+.sh-recurring-back:hover { text-decoration: underline; }
+.sh-recurring-topic-heading {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--sh-paper);
+  margin: 0 0 14px;
 }
 
 /* Video is deliberately NOT full-bleed — full width at a wide aspect
@@ -107,11 +165,13 @@
   top: 0;
   left: 0;
   width: 100%;
+  height: var(--sh-rail-fill-pct, 0%);
   background: var(--sh-warm);
   transition: height .6s cubic-bezier(.4, 0, .2, 1);
 }
 .sh-rail-marker {
   position: absolute;
+  top: var(--sh-rail-fill-pct, 0%);
   left: 50%;
   width: 11px;
   height: 11px;
@@ -337,6 +397,39 @@
 @media (max-width: 780px) {
   .sh-coach-body { grid-template-columns: 1fr; }
   .sh-rail { flex-direction: row; overflow-x: auto; }
-  .sh-rail-layer { min-height: auto; flex-direction: column; text-align: center; gap: 6px; padding: 10px 12px; }
+  .sh-rail-layer { min-height: auto; flex-direction: column; text-align: center; gap: 6px; padding: 14px 12px 10px; }
   .sh-rail-label { font-size: 11px; }
+
+  /* The rail itself just went horizontal above — the progress track
+     needs to follow: a vertical line/marker made no sense laid out
+     sideways in a horizontal scrolling strip. Same --sh-rail-fill-pct
+     value from the JS, just consumed by width/left instead of
+     height/top. */
+  .sh-rail-track {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+  }
+  .sh-rail-track-fill {
+    width: var(--sh-rail-fill-pct, 0%);
+    height: 100%;
+    transition: width .6s cubic-bezier(.4, 0, .2, 1);
+  }
+  .sh-rail-marker {
+    top: 50%;
+    left: var(--sh-rail-fill-pct, 0%);
+    transition: left .6s cubic-bezier(.4, 0, .2, 1);
+  }
+  .sh-rail-layer { padding-top: 18px; } /* room for the horizontal track running along the top edge */
+
+  .sh-coach-page { padding: 0 16px; }
+  .sh-coach-title { font-size: 24px; margin: 16px 0 12px; }
+}
+
+@media (max-width: 420px) {
+  .sh-coach-video-outer { max-width: 100%; }
+  .sh-rail-label { display: none; } /* labels crowd badly at this width; the check/current ring still communicates position */
+  .sh-msg-row.sh-user { max-width: 92%; }
+}
 }

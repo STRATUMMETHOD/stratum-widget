@@ -83,6 +83,9 @@
   var MAX_DELIVERABLE_RETRIES = 2;
   var busy = false;
   var poolExhausted = false;
+  var ENGINE_MODE = 'excavation'; // set from SESSION.track once loaded — 'excavation' = Linear Layers -> Synthesis (unchanged); 'general'/'writing' = Recurring Check-In (see buildRecurringPage() etc below)
+  var ALL_CHECKIN_NOTES = [];     // Recurring engine only — every past check-in across every topic in this session, fetched once and reused for both the topic list and each conversation's injected history
+  var topicListEl = null;         // Recurring engine only
 
   var railEl, messagesEl, formEl, inputEl, sendBtn, contentEl;
 
@@ -202,11 +205,34 @@
   // hardcoded here and are never exposed to admin editing — a bad prose
   // edit to those could silently break every session's ability to
   // capture names/summaries/deliverables with no obvious symptom.
-  function fetchCoachingPhilosophy(callback) {
-    fetch(PROXY_URL + '/coaching-philosophy?track=excavation')
+  function fetchCoachingPhilosophy(track, callback) {
+    fetch(PROXY_URL + '/coaching-philosophy?track=' + encodeURIComponent(track))
       .then(function (r) { return r.json(); })
       .then(function (d) { callback((d && d.known) ? d.content : ''); })
       .catch(function () { callback(''); });
+  }
+  // ---- Recurring Check-In engine (General/Writing tracks) ----
+  // Every past check-in across every topic in this session type, in one
+  // running append-only log — NOT a single deliverable/synthesis, since
+  // this engine has no fixed completion. Fetched once per page load and
+  // reused both for the topic list's "N check-ins so far" display and
+  // for injecting full history into each fresh conversation's system
+  // prompt (per Ted's "access to all information from previous
+  // sessions" requirement).
+  function fetchCheckinNotes(sessionSlug, callback) {
+    fetch(PROXY_URL + '/checkin-notes?studentId=' + encodeURIComponent(STUDENT_ID) + '&sessionSlug=' + encodeURIComponent(sessionSlug))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { callback((d && Array.isArray(d.notes)) ? d.notes : []); })
+      .catch(function () { callback([]); });
+  }
+  function postCheckinNote(sessionSlug, layerNumber, layerLabel, note, callback) {
+    fetch(PROXY_URL + '/checkin-notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: STUDENT_ID, sessionSlug: sessionSlug, layerNumber: layerNumber, layerLabel: layerLabel, note: note })
+    })
+      .then(function () { callback(); })
+      .catch(function () { callback(); });
   }
 
   // Sept 2026: reads the restructured /project record — wipTitle/genre/
@@ -258,9 +284,9 @@
     if (globalInstructions.length) {
       var applicable = globalInstructions.filter(function (item) {
         // Track/Module scoping: null track = applies to every track;
-        // otherwise must match this page's track ('excavation') and,
-        // if a module is set, this specific excavation's slug.
-        if (item.track && item.track !== 'excavation') return false;
+        // otherwise must match this session's own track and, if a
+        // module is set, this specific session type's slug.
+        if (item.track && item.track !== (SESSION.track || 'excavation')) return false;
         if (item.track && item.module && item.module !== SESSION.slug) return false;
         // Existing WIP-field matching, combinable with the above.
         if (!item.matchField || !project) return !item.matchField;
@@ -493,7 +519,7 @@
       fetchIdeaLogEntries(function (ideaLog) {
         fetchTasks(function (tasks) {
           fetchGlobalInstructions(function (globalInstructions) {
-            fetchCoachingPhilosophy(function (coachingPhilosophy) {
+            fetchCoachingPhilosophy(SESSION.track || 'excavation', function (coachingPhilosophy) {
               CONTEXT_BLOCK_CACHE = buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy);
               callback(CONTEXT_BLOCK_CACHE);
             });
@@ -569,6 +595,107 @@
     });
   }
 
+  // ----------------------------------------------------------
+  // RECURRING CHECK-IN ENGINE (General/Writing tracks — Sept 2026)
+  // ----------------------------------------------------------
+  // Parallel to buildSystemPrompt()/sendToClaude() above, deliberately
+  // kept SEPARATE rather than woven into those with conditionals — the
+  // two engines diverge enough (no deliverable, no fixed completion, a
+  // running history instead of a synthesis) that sharing one function
+  // risked destabilizing the working Excavation flow. Reuses the same
+  // NAME/SUMMARY/REFLECTION_COMPLETE tag mechanics (still code-owned,
+  // same reasoning as buildSystemPrompt) and the same extractTags()/
+  // addMessage()/getContextBlock() plumbing.
+  function buildRecurringSystemPrompt(contextBlock, checkinHistoryText) {
+    var layer = SESSION.layers[currentLayerIndex];
+    var areas = (LAYER_CONFIG.reflectionFramework.areas || []).map(function (area, i) {
+      return 'AREA ' + (i + 1) + ' - ' + area.title + '\n' + area.instructions;
+    }).join('\n\n');
+    var calibration = (LAYER_CONFIG.reflectionFramework.calibrationExamples || []).map(function (ex) {
+      if (typeof ex === 'string') return '- ' + ex;
+      var lines = [];
+      if (ex.title) lines.push('- ' + ex.title);
+      if (ex.weak) lines.push('  Weak (stop here): ' + ex.weak);
+      if (ex.strong) lines.push('  Strong (this passes): ' + ex.strong);
+      if (ex.note) lines.push('  Coaching note: ' + ex.note);
+      return lines.join('\n');
+    }).join('\n');
+    var scopeNote = LAYER_CONFIG.scopeNote || layer.label;
+    var parts = [
+      'You are Ted Baker. You are speaking in first person, live, as though this is a real one-on-one coaching conversation about "' + layer.label + '", part of the ongoing ' + SESSION.title + ' coaching relationship on The Stratum Method. You spent thirty-five years as a behavioral consultant working with more than twenty thousand people before turning that same work toward fiction writers. This is who you are in this conversation: warm, direct, genuinely curious about this specific person, unhurried, occasionally willing to admit your own doubt or history if it helps someone open up.',
+      'STAY IN VOICE: Speak only as Ted, first person, for the entire conversation. If the student sincerely and directly asks whether they are talking to a real person or an AI, answer honestly and briefly - you are an AI coach built on Ted\'s method and trained in his voice, not Ted live - then gently continue in that same voice.',
+      'CRITICAL FORMATTING RULE: Never wrap any word in asterisks for emphasis - this chat renders plain text only, so *anything like this* appears to the student as literal asterisks. If a word needs emphasis, use plain phrasing or sentence rhythm instead.',
+      'THIS IS A RECURRING CHECK-IN, NOT A ONE-TIME SESSION: Unlike Stratum\u2019s Excavation coaching, this topic has no fixed completion and no required deliverable. The student may return to it many times over weeks or months. Each visit is a genuinely fresh conversation - you do not remember the literal back-and-forth of past visits, only the summaries below - so treat this as picking up an ongoing relationship, not starting from zero and not pretending to recall exact wording you were never given.',
+      'WHAT THIS TOPIC COVERS (' + scopeNote + ')' + (SESSION.transcript ? ':\n"""\n' + SESSION.transcript + '\n"""' : '.'),
+      'WHAT THIS CONVERSATION IS FOR:\nThis single, continuous, natural conversation is a check-in on ' + layer.label + '. Draw on the areas below - in whatever order the conversation naturally takes - as a guide to what\u2019s worth exploring, not a checklist that must all be covered before you can close:\n\n' + areas
+    ];
+    if (contextBlock) parts.push(contextBlock);
+    if (checkinHistoryText) {
+      parts.push('PREVIOUS CHECK-INS - PRIVATE, NEVER SHOWN TO THE STUDENT, use naturally for continuity ("last time you mentioned...") without reciting this list verbatim or treating it as a script:\n' + checkinHistoryText);
+    }
+    if (LAYER_CONFIG.reflectionFramework.coachingApproach) {
+      parts.push('COACHING APPROACH FOR THIS TOPIC - PRIVATE, NEVER SHOWN TO THE STUDENT:\n' + LAYER_CONFIG.reflectionFramework.coachingApproach);
+    }
+    parts.push(
+      'HOW YOU DRAW THESE OUT - MOTIVATIONAL INTERVIEWING, NOT INTERROGATION:\nUse the spirit of motivational interviewing: ask open questions, reflect back what they say before moving forward, offer genuine affirmation when something costs them something to say, summarize periodically.',
+      'THE DEPTH RULE:\nIf an answer is generic or surface-level, reflect it back gently and ask ONE specific follow-up inviting more. If they are still on the surface after that one gentle nudge, accept where they are and move on. Never let a surface answer pass completely unremarked, but never turn this into an interrogation.',
+      'WHAT YOU NEVER DO:\nNever write their reflection for them. Never diagnose them or their psychology. Stay descriptive and curious, not clinical.',
+      'CALIBRATION ONLY - NEVER SHOW OR QUOTE THESE TO THE STUDENT:\n' + calibration,
+      'GETTING THEIR NAME:\nYou have already greeted the student before this conversation history begins. If you did not already know their name, their reply should contain it. The very first time you learn their name, begin your reply with a hidden tag on its own line, exactly: [NAME: Their Name] - then continue your reply below it. Only include this tag once.',
+      'STYLE:\nWrite the way a real person talks in a warm one-on-one conversation. Keep replies short: two to five sentences. Ask ONE question at a time. Never use markdown formatting of any kind, including asterisks for emphasis.',
+      'WRAPPING UP:\nOnce the check-in feels naturally complete - the student has said what they came to say and gotten what they needed - bring it to a warm, brief close. There is no fixed list that must all be covered first; use judgment. Immediately before your closing sentence, include a hidden tag: [SUMMARY: One plain sentence, third person, under twenty words, capturing what this check-in was about and anything useful to remember next time.] - never shown to the student. End with the exact tag [REFLECTION_COMPLETE] on its own line at the very end.'
+    );
+    return parts.join('\n\n');
+  }
+
+  function sendRecurringMessage() {
+    setBusy(true);
+    showTyping();
+    getContextBlock(function (contextBlock) {
+      var historyText = ALL_CHECKIN_NOTES.map(function (n) {
+        var when = n.createdAt ? new Date(n.createdAt.indexOf('Z') === -1 ? n.createdAt.replace(' ', 'T') + 'Z' : n.createdAt).toLocaleDateString() : '';
+        return '[' + when + (n.layerLabel ? ' \u2014 ' + n.layerLabel : '') + '] ' + n.note;
+      }).join('\n');
+      var body = {
+        model: MODEL,
+        max_tokens: 1000,
+        system: buildRecurringSystemPrompt(contextBlock, historyText),
+        messages: conversationHistory
+      };
+      var layer = SESSION.layers[currentLayerIndex];
+      if (STUDENT_ID) {
+        body.stratum = { studentId: STUDENT_ID, conversationId: conversationId, lesson: lessonKey(layer.layerNumber), email: WP_USER.email || null };
+      }
+      fetch(PROXY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          data = data || {};
+          if (data.stratum_error === 'pool_exhausted') { hideTyping(); setBusy(false); poolExhausted = true; addMessage('assistant', 'You\u2019ve used all your coaching sessions for now. Message Ted and he\u2019ll sort it out.'); return; }
+          if (data.stratum_error === 'account_suspended') { hideTyping(); setBusy(false); addMessage('assistant', 'Something\u2019s wrong with the access on this account. Send a message and it will get sorted out.'); return; }
+          var block = (data.content || []).find(function (b) { return b.type === 'text'; });
+          var raw = block ? block.text : 'I lost my train of thought there for a second. Could you say that again?';
+          var parsed = extractTags(raw);
+          hideTyping();
+          setBusy(false);
+          if (parsed.name) studentName = parsed.name;
+          conversationHistory.push({ role: 'assistant', content: raw });
+          addMessage('assistant', parsed.text);
+          if (parsed.complete) {
+            var note = parsed.summary || 'Check-in completed.';
+            postCheckinNote(SESSION.slug, layer.layerNumber, layer.label, note, function () {
+              ALL_CHECKIN_NOTES.push({ layerNumber: layer.layerNumber, layerLabel: layer.label, note: note, createdAt: new Date().toISOString() });
+              returnToTopicList();
+            });
+          }
+        })
+        .catch(function () {
+          hideTyping();
+          setBusy(false);
+          addMessage('assistant', 'Hang on - I lost the connection for a second. Mind sending that again?');
+        });
+    });
+  }
+
   function handleSend() {
     if (busy || poolExhausted) return;
     var val = inputEl.value.trim();
@@ -577,8 +704,12 @@
     conversationHistory.push({ role: 'user', content: val });
     inputEl.value = '';
     inputEl.style.height = 'auto';
-    saveTranscript();
-    sendToClaude();
+    if (ENGINE_MODE === 'excavation') {
+      saveTranscript();
+      sendToClaude();
+    } else {
+      sendRecurringMessage();
+    }
   }
 
   function buildChatPanel(container) {
@@ -821,6 +952,113 @@
     loadProgressThenStart();
   }
 
+  // ----------------------------------------------------------
+  // RECURRING CHECK-IN PAGE (General/Writing tracks)
+  // ----------------------------------------------------------
+  // No video slot, no strata rail, no locked sequence — every topic
+  // (Layer) is always available, since this engine has no fixed
+  // progression. Instead: a topic list showing each topic's check-in
+  // count and how recently it was visited, and clicking one opens a
+  // fresh conversation with the full history of past check-ins across
+  // every topic in this session type injected as context.
+  function buildRecurringPage(container) {
+    var shell = el('div', 'sh-wrap');
+    if (window.StratumHeader) window.StratumHeader.buildTopbar(shell);
+
+    var page = el('div', 'sh-coach-page');
+    mount(page, el('h1', 'sh-coach-title', SESSION.title || ''));
+    mount(page, el('p', 'sh-coach-sub', 'Pick a topic to start a check-in. Each visit is a fresh conversation \u2014 your coach carries everything forward from before.'));
+
+    if (SESSION.coachingIntro && SESSION.coachingIntro.text) {
+      var introSlot = el('div');
+      mount(page, introSlot);
+      buildCoachingIntro(introSlot, SESSION.coachingIntro);
+    }
+
+    topicListEl = el('div', 'sh-recurring-topics');
+    mount(page, topicListEl);
+
+    var chatOuter = el('div');
+    chatOuter.id = 'shRecurringChatOuter';
+    chatOuter.style.display = 'none';
+    mount(page, chatOuter);
+
+    mount(shell, page);
+    mount(container, shell);
+
+    fetchCheckinNotes(SESSION.slug, function (notes) {
+      ALL_CHECKIN_NOTES = notes;
+      renderTopicList();
+    });
+  }
+
+  function formatRelativeDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso.indexOf('Z') === -1 ? iso.replace(' ', 'T') + 'Z' : iso);
+    if (isNaN(d.getTime())) return '';
+    var days = Math.floor((Date.now() - d.getTime()) / 86400000);
+    if (days <= 0) return 'today';
+    if (days === 1) return 'yesterday';
+    if (days < 7) return days + ' days ago';
+    var weeks = Math.floor(days / 7);
+    if (weeks === 1) return '1 week ago';
+    if (weeks < 5) return weeks + ' weeks ago';
+    return d.toLocaleDateString();
+  }
+
+  function renderTopicList() {
+    topicListEl.innerHTML = '';
+    SESSION.layers.forEach(function (layer, i) {
+      var layerNotes = ALL_CHECKIN_NOTES.filter(function (n) { return n.layerNumber === layer.layerNumber; });
+      var row = el('div', 'sh-recurring-topic-row');
+      row.addEventListener('click', function () { startCheckin(i); });
+      mount(row, el('div', 'sh-recurring-topic-title', layer.label));
+      var meta = layerNotes.length
+        ? (layerNotes.length + ' check-in' + (layerNotes.length === 1 ? '' : 's') + ' \u00b7 last ' + formatRelativeDate(layerNotes[layerNotes.length - 1].createdAt))
+        : 'No check-ins yet';
+      mount(row, el('div', 'sh-recurring-topic-meta', meta));
+      mount(topicListEl, row);
+    });
+  }
+
+  function startCheckin(layerIndex) {
+    currentLayerIndex = layerIndex;
+    var layer = SESSION.layers[layerIndex];
+    loadLayerConfig(layer.layerNumber, function (cfg) {
+      if (!cfg) { alert('This topic isn\u2019t set up yet.'); return; }
+      LAYER_CONFIG = cfg;
+      var chatOuter = document.getElementById('shRecurringChatOuter');
+      chatOuter.innerHTML = '';
+      chatOuter.style.display = '';
+      topicListEl.style.display = 'none';
+      var backLink = document.createElement('a');
+      backLink.href = '#';
+      backLink.className = 'sh-recurring-back';
+      backLink.textContent = '\u2190 Back to topics';
+      backLink.addEventListener('click', function (e) { e.preventDefault(); returnToTopicList(); });
+      mount(chatOuter, backLink);
+      mount(chatOuter, el('h2', 'sh-recurring-topic-heading', layer.label));
+      buildChatPanel(chatOuter);
+      resetSessionState();
+      var knownName = studentName;
+      var primerText = knownName
+        ? "Begin the check-in. The student's name is already known: " + knownName + '. Do not ask for their name again - greet them by name and move straight in.'
+        : 'Begin the check-in.';
+      var greetingText = getGreetingText(knownName);
+      conversationHistory.push({ role: 'user', content: primerText });
+      conversationHistory.push({ role: 'assistant', content: greetingText });
+      addMessage('assistant', greetingText);
+    });
+  }
+
+  function returnToTopicList() {
+    var chatOuter = document.getElementById('shRecurringChatOuter');
+    chatOuter.style.display = 'none';
+    chatOuter.innerHTML = '';
+    topicListEl.style.display = '';
+    renderTopicList();
+  }
+
   // "Before You Begin" — the same admin-authored coaching intro field the
   // old per-lesson engine showed (Coaching Intro Text in the Stratum
   // admin), rendered once above the chat panel using the SESSION's first
@@ -869,7 +1107,12 @@
           return;
         }
         STUDENT_ID = studentId;
-        buildPage(container);
+        ENGINE_MODE = SESSION.track || 'excavation';
+        if (ENGINE_MODE === 'excavation') {
+          buildPage(container);
+        } else {
+          buildRecurringPage(container);
+        }
       });
     });
   }
