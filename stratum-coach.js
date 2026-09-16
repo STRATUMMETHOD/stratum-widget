@@ -960,6 +960,17 @@
   // RESUME-IN-PROGRESS
   // ----------------------------------------------------------
   function loadProgressThenStart() {
+    if (!SESSION.layers.length) {
+      // No layers saved for this excavation yet - without this guard,
+      // the "are all layers complete?" check below is vacuously true
+      // for an empty list (0 of 0), which sent this straight into
+      // synthesizeMasterDeliverable() with nothing to synthesize -
+      // producing a confusing "Couldn't generate your synthesis right
+      // now" error on a session that was simply never set up yet.
+      contentEl.innerHTML = '';
+      mount(contentEl, el('div', 'sh-coach-loading', 'This excavation doesn\u2019t have any layers set up yet. Check back soon.'));
+      return;
+    }
     fetch(PROXY_URL + '/completions?studentId=' + encodeURIComponent(STUDENT_ID))
       .then(function (r) { return r.json(); })
       .then(function (d) {
@@ -1092,6 +1103,10 @@
 
   function renderTopicList() {
     topicListEl.innerHTML = '';
+    if (!SESSION.layers.length) {
+      mount(topicListEl, el('div', 'sh-coach-loading', 'This session doesn\u2019t have any topics set up yet. Check back soon.'));
+      return;
+    }
     SESSION.layers.forEach(function (layer, i) {
       var layerNotes = ALL_CHECKIN_NOTES.filter(function (n) { return n.layerNumber === layer.layerNumber; });
       var row = el('div', 'sh-recurring-topic-row');
