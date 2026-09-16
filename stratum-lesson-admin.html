@@ -2821,6 +2821,33 @@ function addLibraryBlock(entry, isNew) {
   metaRow.appendChild(topicField);
   bodyWrap.appendChild(metaRow);
 
+  // ---- Key Concept + Core Takeaway (required on every resource, Sept 2026) ----
+  var kcField = document.createElement('div');
+  kcField.className = 'field';
+  var kcLabel = document.createElement('label');
+  kcLabel.textContent = 'Key Concept';
+  var kcInput = document.createElement('input');
+  kcInput.type = 'text';
+  kcInput.placeholder = 'e.g. Anchor Behavior';
+  kcInput.value = entry.keyConcept || '';
+  kcInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  kcField.appendChild(kcLabel);
+  kcField.appendChild(kcInput);
+  bodyWrap.appendChild(kcField);
+
+  var ctField = document.createElement('div');
+  ctField.className = 'field';
+  var ctLabel = document.createElement('label');
+  ctLabel.textContent = 'Core Takeaway';
+  var ctInput = document.createElement('textarea');
+  ctInput.rows = 2;
+  ctInput.placeholder = 'One or two sentences on what a student should walk away with';
+  ctInput.value = entry.coreTakeaway || '';
+  ctInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;resize:vertical;';
+  ctField.appendChild(ctLabel);
+  ctField.appendChild(ctInput);
+  bodyWrap.appendChild(ctField);
+
   var activeRow = document.createElement('div');
   activeRow.className = 'toggle-row';
   activeRow.style.marginTop = '4px';
@@ -2868,6 +2895,8 @@ function addLibraryBlock(entry, isNew) {
       wistiaId: typeSelect.value === 'video' ? videoInput.value.trim() : '',
       category: catInput.value.trim(),
       topic: topicInput.value.trim(),
+      keyConcept: kcInput.value.trim(),
+      coreTakeaway: ctInput.value.trim(),
       isActive: activeCb.checked
     };
   }
@@ -2877,6 +2906,8 @@ function addLibraryBlock(entry, isNew) {
     if (!p.category) { saveStatus.textContent = 'Category is required.'; return; }
     if (p.type === 'pdf' && !p.pdfFilename) { saveStatus.textContent = 'PDF filename is required.'; return; }
     if (p.type === 'video' && !p.wistiaId) { saveStatus.textContent = 'Wistia media ID is required.'; return; }
+    if (!p.keyConcept) { saveStatus.textContent = 'Key Concept is required.'; return; }
+    if (!p.coreTakeaway) { saveStatus.textContent = 'Core Takeaway is required.'; return; }
     saveStatus.textContent = 'Saving...';
     fetch(PROXY_URL + '/admin/library', {
       method: 'POST',
