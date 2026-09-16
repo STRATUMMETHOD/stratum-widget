@@ -614,6 +614,21 @@
   </div>
   <div id="panel">
     <div id="globalInstructionsView" style="display:none;">
+      <div class="card" style="padding:16px 18px;margin-bottom:18px;">
+        <div class="card-title" style="margin-bottom:4px;">Global Coaching Philosophy</div>
+        <span class="hint" style="display:block;margin-bottom:12px;">The coach's voice and technique for this Track as a whole &mdash; motivational-interviewing style, how hard to press, tone. This is separate from, and folds in alongside, each Layer's own Coaching Approach. Does NOT cover the tag-capture mechanics the engine relies on to parse names/summaries/deliverables &mdash; those stay fixed in code, never editable here.</span>
+        <div class="toolbar">
+          <span style="font-size:12px;font-weight:700;color:#3B2F24;">Track:</span>
+          <select id="cpTrackSelect">
+            <option value="excavation">Excavation</option>
+            <option value="general">General Coaching</option>
+          </select>
+          <div class="spacer"></div>
+          <span class="save-status" id="cpSaveStatus"></span>
+          <button class="btn" id="cpSaveBtn" type="button">Save Philosophy</button>
+        </div>
+        <textarea id="cpContent" rows="8" style="width:100%;margin-top:10px;" placeholder="e.g. Use the spirit of motivational interviewing: ask open questions, reflect back what they say before moving forward, offer genuine affirmation when something costs them something to say..."></textarea>
+      </div>
       <div class="tst-toolbar">
         <span class="sub" style="margin:0;">Standing coaching direction that applies to every lesson's coach, folded into the system prompt on every message alongside that lesson's own Coaching Approach. Private &mdash; never shown to students. Each entry is capped at 1200 characters; only active entries are sent. Use "Applies when" to scope an instruction to students with a specific Point of View, Genre, Story Style, or Antagonist Type instead of sending it to everyone.</span>
       </div>
@@ -625,6 +640,7 @@
         <span id="giStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
       </div>
       <div id="giList"></div>
+      <datalist id="giModuleDatalist"></datalist>
       <button class="add-btn" id="giAddBtn" type="button">+ Add global instruction</button>
     </div>
     <div id="dashboardView" style="display:none;">
@@ -1002,10 +1018,9 @@
         <details class="card" data-group="auto">
           <summary class="card-title">Calibration examples</summary>
           <div class="card-body">
-          <div class="field">
-            <span class="hint">One per line. Shown to the coach only, never to the student.</span>
-            <textarea id="gCalibration" rows="4"></textarea>
-          </div>
+          <span class="hint" style="display:block;margin-bottom:12px;">Weak/strong pairs anchor the quality bar for the coach. Title is optional (e.g. "Label vs. behavior"). Note explains what separates weak from strong. Shown to the coach only, never to the student.</span>
+          <div id="gCalibrationList"></div>
+          <button class="add-btn" id="gAddCalibrationBtn" type="button">+ Add calibration example</button>
         </div>
         </details>
         <details class="card" data-group="plain">
@@ -1392,6 +1407,7 @@ tabLibraryBtn.addEventListener('click', function () {
 tabGlobalInstructionsBtn.addEventListener('click', function () {
   showTopTab('globalInstructions');
   loadGlobalInstructions();
+  loadCoachingPhilosophy();
 });
 tabExcavationBtn.addEventListener('click', function () {
   showTopTab('excavation');
@@ -3431,6 +3447,44 @@ document.getElementById('giAddBtn').addEventListener('click', function () {
     isActive: true
   }, true);
 });
+var cpTrackSelect = document.getElementById('cpTrackSelect');
+var cpContent = document.getElementById('cpContent');
+var cpSaveStatus = document.getElementById('cpSaveStatus');
+function loadCoachingPhilosophy() {
+  if (!adminKey) return;
+  cpSaveStatus.textContent = 'Loading...';
+  fetch(PROXY_URL + '/coaching-philosophy?track=' + encodeURIComponent(cpTrackSelect.value))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      cpContent.value = (d && d.known) ? d.content : '';
+      cpSaveStatus.textContent = '';
+    })
+    .catch(function () { cpSaveStatus.textContent = 'Could not load.'; });
+}
+cpTrackSelect.addEventListener('change', loadCoachingPhilosophy);
+document.getElementById('cpSaveBtn').addEventListener('click', function () {
+  cpSaveStatus.textContent = 'Saving...';
+  cpSaveStatus.className = 'save-status';
+  fetch(PROXY_URL + '/admin/coaching-philosophy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+    body: JSON.stringify({ track: cpTrackSelect.value, content: cpContent.value.trim() })
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d && d.ok) {
+        cpSaveStatus.textContent = 'Saved.';
+        cpSaveStatus.className = 'save-status ok';
+      } else {
+        cpSaveStatus.textContent = 'Save failed.';
+        cpSaveStatus.className = 'save-status err';
+      }
+    })
+    .catch(function () {
+      cpSaveStatus.textContent = 'Network error.';
+      cpSaveStatus.className = 'save-status err';
+    });
+});
 function loadGlobalInstructions() {
   if (!adminKey) { giStatus.textContent = 'Unlock the panel first.'; return; }
   giStatus.textContent = 'Loading...';
@@ -3448,10 +3502,25 @@ function loadGlobalInstructions() {
       giStatus.textContent = items.length + ' entr' + (items.length === 1 ? 'y' : 'ies') + '.';
       items.forEach(function (item) { addGlobalInstructionBlock(item, false); });
       recomputeGiAggregate();
+      giRefreshModuleDatalist(items);
     })
     .catch(function () {
       giStatus.textContent = 'Could not load global instructions.';
     });
+}
+function giRefreshModuleDatalist(items) {
+  var datalist = document.getElementById('giModuleDatalist');
+  if (!datalist) return;
+  var seen = {};
+  datalist.innerHTML = '';
+  (items || []).forEach(function (item) {
+    var m = (item.module || '').trim();
+    if (!m || seen[m]) return;
+    seen[m] = true;
+    var o = document.createElement('option');
+    o.value = m;
+    datalist.appendChild(o);
+  });
 }
 // Fetches the full saved list fresh from the server and opens a
 // print-friendly window - title, category, short description, and the
@@ -3504,6 +3573,10 @@ function addGlobalInstructionBlock(item, isNew) {
     var base = titleInput.value.trim() || (isNew ? 'New instruction' : '(untitled)');
     if (matchFieldSelect.value && matchValueSelect.value) {
       base += '  \u2014  ' + giMatchFieldLabel(matchFieldSelect.value) + ': ' + matchValueSelect.value;
+    }
+    if (trackSelect.value) {
+      base += '  \u2014  ' + trackSelect.options[trackSelect.selectedIndex].textContent;
+      if (moduleInput.value.trim()) base += ' / ' + moduleInput.value.trim();
     }
     return base;
   }
@@ -3616,6 +3689,53 @@ function addGlobalInstructionBlock(item, isNew) {
   matchValueSelect.addEventListener('change', function () {
     summary.textContent = giSummaryText();
   });
+  // Sept 2026: Track/Module scoping - independent of, and combinable
+  // with, the WIP-field "Applies when" row above (e.g. an instruction
+  // can be scoped to Excavation Track AND POV = First Person at once).
+  // Track is a fixed, code-level list (see the note in worker.js on why
+  // Track isn't an admin-managed table); Module is free text with
+  // on-the-fly suggestions from whatever's already in use across loaded
+  // instructions, same pattern as Library's Category/Topic - not a
+  // managed list.
+  var trackRow = document.createElement('div');
+  trackRow.className = 'tst-meta-row';
+  var trackWrap = document.createElement('div');
+  trackWrap.className = 'field';
+  var trackLabelEl = document.createElement('label');
+  trackLabelEl.textContent = 'Track';
+  var trackSelect = document.createElement('select');
+  trackSelect.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;font-family:\'Inter\', Arial, sans-serif;border:1px solid #E3DCC9;border-radius:8px;background:#fff;';
+  [['', 'All tracks'], ['excavation', 'Excavation'], ['general', 'General Coaching'], ['writing', 'Writing']].forEach(function (pair) {
+    var o = document.createElement('option');
+    o.value = pair[0];
+    o.textContent = pair[1];
+    if (pair[0] === (item.track || '')) o.selected = true;
+    trackSelect.appendChild(o);
+  });
+  trackWrap.appendChild(trackLabelEl);
+  trackWrap.appendChild(trackSelect);
+  trackRow.appendChild(trackWrap);
+  var moduleWrap = document.createElement('div');
+  moduleWrap.className = 'field';
+  var moduleLabelEl = document.createElement('label');
+  moduleLabelEl.textContent = 'Module (optional \u2014 narrows within the track)';
+  var moduleInput = document.createElement('input');
+  moduleInput.type = 'text';
+  moduleInput.setAttribute('list', 'giModuleDatalist');
+  moduleInput.placeholder = 'e.g. character-excavation, motivation-coaching';
+  moduleInput.value = item.module || '';
+  moduleInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;font-family:\'Inter\', Arial, sans-serif;border:1px solid #E3DCC9;border-radius:8px;background:#fff;';
+  moduleWrap.appendChild(moduleLabelEl);
+  moduleWrap.appendChild(moduleInput);
+  trackRow.appendChild(moduleWrap);
+  bodyWrap.appendChild(trackRow);
+  function updateModuleEnabled() {
+    moduleInput.disabled = !trackSelect.value;
+    if (!trackSelect.value) moduleInput.value = '';
+  }
+  updateModuleEnabled();
+  trackSelect.addEventListener('change', function () { updateModuleEnabled(); summary.textContent = giSummaryText(); });
+  moduleInput.addEventListener('input', function () { summary.textContent = giSummaryText(); });
   var contentLabelRow = document.createElement('div');
   contentLabelRow.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;';
   var contentLabel = document.createElement('span');
@@ -3691,7 +3811,9 @@ function addGlobalInstructionBlock(item, isNew) {
       content: contentArea.value.trim(),
       isActive: activeCb.checked,
       matchField: matchFieldSelect.value || null,
-      matchValue: matchFieldSelect.value ? (matchValueSelect.value || null) : null
+      matchValue: matchFieldSelect.value ? (matchValueSelect.value || null) : null,
+      track: trackSelect.value || null,
+      module: trackSelect.value ? (moduleInput.value.trim() || null) : null
     };
   }
   saveBtn.addEventListener('click', function () {
@@ -4265,6 +4387,69 @@ function gRenumberAreas() {
 document.getElementById('gAddAreaBtn').addEventListener('click', function () {
   gAddAreaBlock('', '');
 });
+var gCalibrationList = document.getElementById('gCalibrationList');
+var gCalibrationCounter = 0;
+// Accepts either the new {title,weak,strong,note} shape or a legacy
+// plain string (examples saved before this restructuring) - a legacy
+// string becomes a note-only entry so nothing already written is lost;
+// the admin can split it into weak/strong later if they want to.
+function gAddCalibrationBlock(ex) {
+  if (typeof ex === 'string') ex = { title: '', weak: '', strong: '', note: ex };
+  ex = ex || {};
+  gCalibrationCounter++;
+  var id = 'gcal_' + gCalibrationCounter;
+  var block = document.createElement('div');
+  block.className = 'area-block';
+  block.dataset.id = id;
+  var head = document.createElement('div');
+  head.className = 'area-block-head';
+  var num = document.createElement('span');
+  num.className = 'area-num';
+  head.appendChild(num);
+  var titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.className = 'cal-title';
+  titleInput.placeholder = 'Title (optional) \u2014 e.g. Label vs. behavior';
+  titleInput.value = ex.title || '';
+  head.appendChild(titleInput);
+  var removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'remove-btn';
+  removeBtn.textContent = 'Remove';
+  removeBtn.addEventListener('click', function () { block.remove(); gRenumberCalibration(); });
+  head.appendChild(removeBtn);
+  block.appendChild(head);
+  function fieldRow(labelText, className, placeholder, value) {
+    var wrap = document.createElement('div');
+    wrap.className = 'field';
+    wrap.style.marginTop = '8px';
+    var label = document.createElement('label');
+    label.textContent = labelText;
+    label.style.fontSize = '11px';
+    wrap.appendChild(label);
+    var ta = document.createElement('textarea');
+    ta.className = className;
+    ta.rows = 2;
+    ta.placeholder = placeholder;
+    ta.value = value || '';
+    wrap.appendChild(ta);
+    block.appendChild(wrap);
+    return ta;
+  }
+  fieldRow('Weak (stop here)', 'cal-weak', 'e.g. "My character is guarded."', ex.weak);
+  fieldRow('Strong (this passes)', 'cal-strong', 'e.g. "She changes the subject any time someone asks about her past."', ex.strong);
+  fieldRow('Coaching note', 'cal-note', 'What separates weak from strong \u2014 what should the coach push toward?', ex.note);
+  gCalibrationList.appendChild(block);
+  gRenumberCalibration();
+}
+function gRenumberCalibration() {
+  gCalibrationList.querySelectorAll('.area-block').forEach(function (b, i) {
+    b.querySelector('.area-num').textContent = (i + 1);
+  });
+}
+document.getElementById('gAddCalibrationBtn').addEventListener('click', function () {
+  gAddCalibrationBlock({});
+});
 document.getElementById('gExpandAllBtn').addEventListener('click', function () {
   gLayerEditor.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
 });
@@ -4421,7 +4606,7 @@ function clearLayerForm() {
   document.getElementById('gCourseShapeReminder').value = '';
   document.getElementById('gNextStepTeaser').value = '';
   document.getElementById('gCoachingApproach').value = '';
-  document.getElementById('gCalibration').value = '';
+  gCalibrationList.innerHTML = '';
   document.getElementById('gGreetingFresh').value = '';
   updateGuidedJsonPreview();
 }
@@ -4441,7 +4626,7 @@ function fillLayerForm(config, layerNumber) {
   var rf = config.reflectionFramework || {};
   (rf.areas || []).forEach(function (a) { gAddAreaBlock(a.title, a.instructions); });
   document.getElementById('gCoachingApproach').value = rf.coachingApproach || '';
-  document.getElementById('gCalibration').value = (rf.calibrationExamples || []).join('\n');
+  (rf.calibrationExamples || []).forEach(function (ex) { gAddCalibrationBlock(ex); });
   var dv = normalizeDeliverableConfigForAdmin(rf.deliverable);
   gDeliverableEditor.clear();
   if (dv && dv.required) {
@@ -4464,8 +4649,14 @@ function collectLayerConfig() {
     var instructions = b.querySelector('.area-instructions').value.trim();
     if (title || instructions) areas.push({ title: title, instructions: instructions });
   });
-  var calibrationExamples = document.getElementById('gCalibration').value
-    .split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+  var calibrationExamples = [];
+  gCalibrationList.querySelectorAll('.area-block').forEach(function (b) {
+    var title = b.querySelector('.cal-title').value.trim();
+    var weak = b.querySelector('.cal-weak').value.trim();
+    var strong = b.querySelector('.cal-strong').value.trim();
+    var note = b.querySelector('.cal-note').value.trim();
+    if (title || weak || strong || note) calibrationExamples.push({ title: title, weak: weak, strong: strong, note: note });
+  });
   var deliverableObj = null;
   if (gHasDeliverableCb.checked) {
     var gFields = gDeliverableEditor.collectFields();

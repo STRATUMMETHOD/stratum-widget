@@ -194,6 +194,20 @@
       .then(function (d) { callback((d && Array.isArray(d.instructions)) ? d.instructions : []); })
       .catch(function () { callback([]); });
   }
+  // Sept 2026: Global Coaching Philosophy — the Track-level voice/
+  // technique layer (motivational-interviewing style, how hard to press,
+  // tone), admin-editable in the Global Instructions tab. This is
+  // SEPARATE from the tag-capture mechanics ([NAME:]/[SUMMARY:]/
+  // [REFLECTION_COMPLETE]) below in buildSystemPrompt(), which stay
+  // hardcoded here and are never exposed to admin editing — a bad prose
+  // edit to those could silently break every session's ability to
+  // capture names/summaries/deliverables with no obvious symptom.
+  function fetchCoachingPhilosophy(callback) {
+    fetch(PROXY_URL + '/coaching-philosophy?track=excavation')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { callback((d && d.known) ? d.content : ''); })
+      .catch(function () { callback(''); });
+  }
 
   // Sept 2026: reads the restructured /project record — wipTitle/genre/
   // stage/storyStyle/pov unchanged, theme now holds the MERGED Theme/
@@ -203,8 +217,11 @@
   // antagonistType/mcGoal are replaced by a real characters[] list, each
   // with name/type/roleType/coreConflict, listed out individually so the
   // coach has the full cast, not just one protagonist and one antagonist.
-  function buildProjectContextBlock(project, ideaLog, tasks, globalInstructions) {
+  function buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy) {
     var block = '';
+    if (coachingPhilosophy) {
+      block += '\n\nCOACHING PHILOSOPHY FOR THIS TRACK - PRIVATE, NEVER SHOWN TO THE STUDENT, APPLIES ACROSS EVERY EXCAVATION (this layer\'s own Coaching Approach below, if any, refines or takes precedence where they conflict):\n' + coachingPhilosophy;
+    }
     if (project) {
       var lines = [];
       if (project.wipTitle) lines.push('Working title: ' + project.wipTitle);
@@ -240,6 +257,12 @@
     }
     if (globalInstructions.length) {
       var applicable = globalInstructions.filter(function (item) {
+        // Track/Module scoping: null track = applies to every track;
+        // otherwise must match this page's track ('excavation') and,
+        // if a module is set, this specific excavation's slug.
+        if (item.track && item.track !== 'excavation') return false;
+        if (item.track && item.module && item.module !== SESSION.slug) return false;
+        // Existing WIP-field matching, combinable with the above.
         if (!item.matchField || !project) return !item.matchField;
         var fieldVal = project[item.matchField];
         return !!fieldVal && fieldVal === item.matchValue;
@@ -285,7 +308,15 @@
     var areas = (LAYER_CONFIG.reflectionFramework.areas || []).map(function (area, i) {
       return 'AREA ' + (i + 1) + ' - ' + area.title + '\n' + area.instructions;
     }).join('\n\n');
-    var calibration = (LAYER_CONFIG.reflectionFramework.calibrationExamples || []).map(function (ex) { return '- ' + ex; }).join('\n');
+    var calibration = (LAYER_CONFIG.reflectionFramework.calibrationExamples || []).map(function (ex) {
+      if (typeof ex === 'string') return '- ' + ex; // legacy plain-string example, saved before the Weak/Strong/Note restructuring
+      var lines = [];
+      if (ex.title) lines.push('- ' + ex.title);
+      if (ex.weak) lines.push('  Weak (stop here): ' + ex.weak);
+      if (ex.strong) lines.push('  Strong (this passes): ' + ex.strong);
+      if (ex.note) lines.push('  Coaching note: ' + ex.note);
+      return lines.join('\n');
+    }).join('\n');
     var scopeNote = LAYER_CONFIG.scopeNote || layer.label;
     var parts = [
       'You are Ted Baker. You are speaking in first person, live, as though this is a real one-on-one coaching conversation exploring "' + layer.label + '" as part of the ' + SESSION.title + ' coaching session on The Stratum Method. You spent thirty-five years as a behavioral consultant working with more than twenty thousand people before turning that same work toward fiction writers. This is who you are in this conversation: warm, direct, genuinely curious about this specific person, unhurried, occasionally willing to admit your own doubt or history if it helps someone open up.',
@@ -462,8 +493,10 @@
       fetchIdeaLogEntries(function (ideaLog) {
         fetchTasks(function (tasks) {
           fetchGlobalInstructions(function (globalInstructions) {
-            CONTEXT_BLOCK_CACHE = buildProjectContextBlock(project, ideaLog, tasks, globalInstructions);
-            callback(CONTEXT_BLOCK_CACHE);
+            fetchCoachingPhilosophy(function (coachingPhilosophy) {
+              CONTEXT_BLOCK_CACHE = buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy);
+              callback(CONTEXT_BLOCK_CACHE);
+            });
           });
         });
       });
