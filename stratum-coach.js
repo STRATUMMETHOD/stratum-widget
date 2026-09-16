@@ -286,8 +286,9 @@
         // Track/Module scoping: null track = applies to every track;
         // otherwise must match this session's own track and, if a
         // module is set, this specific session type's slug.
-        if (item.track && item.track !== (SESSION.track || 'excavation')) return false;
-        if (item.track && item.module && item.module !== SESSION.slug) return false;
+        var itemTracks = Array.isArray(item.tracks) ? item.tracks : [];
+        if (itemTracks.length && itemTracks.indexOf(SESSION.track || 'excavation') === -1) return false;
+        if (itemTracks.length === 1 && item.module && item.module !== SESSION.slug) return false;
         // Existing WIP-field matching, combinable with the above.
         if (!item.matchField || !project) return !item.matchField;
         var fieldVal = project[item.matchField];
@@ -331,29 +332,59 @@
   }
   function buildSystemPrompt(contextBlock) {
     var layer = SESSION.layers[currentLayerIndex];
-    var areas = (LAYER_CONFIG.reflectionFramework.areas || []).map(function (area, i) {
-      return 'AREA ' + (i + 1) + ' - ' + area.title + '\n' + area.instructions;
-    }).join('\n\n');
-    var calibration = (LAYER_CONFIG.reflectionFramework.calibrationExamples || []).map(function (ex) {
-      if (typeof ex === 'string') return '- ' + ex; // legacy plain-string example, saved before the Weak/Strong/Note restructuring
+    var rf = LAYER_CONFIG.reflectionFramework;
+    var areasList = rf.areas || [];
+    var isLegacyArea = areasList.length && areasList[0].whatToSurface == null && areasList[0].technique == null && areasList[0].instructions != null;
+    var areas;
+    if (isLegacyArea) {
+      // Legacy area shape (saved before the Sept 2026 per-area
+      // restructuring) - rendered as best-effort so an un-migrated
+      // layer still coaches reasonably rather than going blank.
+      areas = areasList.map(function (area, i) {
+        return 'AREA ' + (i + 1) + ' - ' + area.title + '\n' + area.instructions;
+      }).join('\n\n');
+    } else {
+      areas = areasList.map(function (area, i) {
+        var lines = ['AREA ' + (i + 1) + ' - ' + area.title];
+        if (area.whatToSurface) lines.push('What to surface: ' + area.whatToSurface);
+        if (area.technique) lines.push('Technique: ' + area.technique);
+        if (area.exitSignal) lines.push('Exit signal (do not move past this area until this is genuinely reached): ' + area.exitSignal);
+        var areaCal = Array.isArray(area.calibrationExamples) ? area.calibrationExamples : [];
+        if (areaCal.length) {
+          lines.push('Calibration for this area:');
+          areaCal.forEach(function (ex) {
+            if (ex.title) lines.push('  - ' + ex.title);
+            if (ex.weak) lines.push('    Weak (stop here): ' + ex.weak);
+            if (ex.strong) lines.push('    Strong (this passes): ' + ex.strong);
+            if (ex.note) lines.push('    Coaching note: ' + ex.note);
+          });
+        }
+        return lines.join('\n');
+      }).join('\n\n');
+    }
+    var workedExamples = (Array.isArray(LAYER_CONFIG.workedExamples) ? LAYER_CONFIG.workedExamples : []).map(function (ex) {
       var lines = [];
-      if (ex.title) lines.push('- ' + ex.title);
-      if (ex.weak) lines.push('  Weak (stop here): ' + ex.weak);
-      if (ex.strong) lines.push('  Strong (this passes): ' + ex.strong);
-      if (ex.note) lines.push('  Coaching note: ' + ex.note);
+      if (ex.label) lines.push(ex.label + ':');
+      if (ex.script) lines.push(ex.script);
+      if (ex.note) lines.push('Why this works: ' + ex.note);
       return lines.join('\n');
-    }).join('\n');
+    }).join('\n\n---\n\n');
     var scopeNote = LAYER_CONFIG.scopeNote || layer.label;
     var parts = [
-      'You are Ted Baker. You are speaking in first person, live, as though this is a real one-on-one coaching conversation exploring "' + layer.label + '" as part of the ' + SESSION.title + ' coaching session on The Stratum Method. You spent thirty-five years as a behavioral consultant working with more than twenty thousand people before turning that same work toward fiction writers. This is who you are in this conversation: warm, direct, genuinely curious about this specific person, unhurried, occasionally willing to admit your own doubt or history if it helps someone open up.',
-      'STAY IN VOICE: Speak only as Ted, first person, for the entire conversation. If the student sincerely and directly asks whether they are talking to a real person or an AI, answer honestly and briefly - you are an AI coach built on Ted\'s method and trained in his voice, not Ted live - then gently continue in that same voice.',
-      'CRITICAL FORMATTING RULE: Never wrap any word in asterisks for emphasis - this chat renders plain text only, so *anything like this* appears to the student as literal asterisks. If a word needs emphasis, use plain phrasing or sentence rhythm instead.',
-      'WHAT THIS LAYER COVERS (' + scopeNote + '):\n"""\n' + (SESSION.transcript || '') + '\n"""',
-      'WHAT THIS CONVERSATION IS FOR:\nThis single, continuous, natural conversation IS the exploration of ' + layer.label + '. Your job is to walk the student through the areas below - in whatever order the conversation naturally takes - making sure, by the end, all of them have been genuinely explored:\n\n' + areas
+      'You are a professional writing coach, live, in a real one-on-one coaching conversation exploring "' + layer.label + '" as part of the ' + SESSION.title + ' coaching session on The Stratum Method. You have no name and no personal biography - you are simply an experienced, well-trained coach who works with fiction writers on their own work, using the Socratic method: you draw the person\u2019s own answers out of them, you never supply the answer yourself. This is who you are in this conversation: warm, direct, genuinely curious about this specific person, unhurried.',
+      'STAY IN VOICE: Speak only in first person as this coach, for the entire conversation. If the person sincerely and directly asks whether they are talking to a real person or an AI, answer honestly and briefly - you are an AI coach trained in the Socratic method, not a human live - then gently continue the conversation.',
+      'CRITICAL FORMATTING RULE: Never wrap any word in asterisks for emphasis - this chat renders plain text only, so *anything like this* appears to the person as literal asterisks. If a word needs emphasis, use plain phrasing or sentence rhythm instead.',
+      'WHAT THIS LAYER COVERS (' + scopeNote + ')' + (SESSION.transcript ? ':\n"""\n' + SESSION.transcript + '\n"""' : '.'),
+      'WHAT THIS CONVERSATION IS FOR:\nThis single, continuous, natural conversation IS the exploration of ' + layer.label + '. The areas below run in STRICT ORDER - work through Area 1 first and do not move into real depth on Area 2 until Area 1\u2019s exit signal has been genuinely reached, and so on down the list. If the person tries to jump ahead on their own, that\u2019s fine to acknowledge warmly, but gently bring the conversation back to the current area rather than following them ahead of where the work actually is:\n\n' + areas
     ];
+    if (workedExamples) {
+      parts.push('WORKED EXAMPLES - HOW A WELL-TRAINED COACH HANDLES MOMENTS LIKE THESE - NEVER SHOWN OR QUOTED TO THE PERSON:\n' + workedExamples);
+    }
     if (contextBlock) parts.push(contextBlock);
-    if (LAYER_CONFIG.reflectionFramework.coachingApproach) {
-      parts.push('COACHING APPROACH FOR THIS LAYER - PRIVATE, NEVER SHOWN TO THE STUDENT:\n' + LAYER_CONFIG.reflectionFramework.coachingApproach);
+    if (isLegacyArea === false && rf.coachingApproach) {
+      // Legacy layer-level field (saved before the per-area
+      // restructuring, not yet redistributed into individual areas).
+      parts.push('ADDITIONAL GUIDANCE FOR THIS LAYER (legacy, not yet sorted into individual areas) - PRIVATE, NEVER SHOWN TO THE PERSON:\n' + rf.coachingApproach);
     }
     parts.push(
       'HOW YOU DRAW THESE OUT - MOTIVATIONAL INTERVIEWING, NOT INTERROGATION:\nUse the spirit of motivational interviewing: ask open questions, reflect back what they say before moving forward, offer genuine affirmation when something costs them something to say, summarize periodically.',
@@ -366,13 +397,27 @@
       });
       parts.push('OVERRIDE TO THE DEPTH RULE FOR THIS LAYER - THIS TAKES PRECEDENCE:\nThis layer has non-negotiable deliverables: ' + fieldDescs.join(', and ') + '. Do not move toward closing this layer until every one is genuinely complete, no matter how many follow-up questions it takes.');
     }
+    var legacyCal = (isLegacyArea === false && Array.isArray(rf.calibrationExamples) && rf.calibrationExamples.length) ? rf.calibrationExamples : null;
     parts.push(
-      'WHAT YOU NEVER DO:\nNever write their reflection for them. Never diagnose them or their psychology. Stay descriptive and curious, not clinical.',
-      'CALIBRATION ONLY - NEVER SHOW OR QUOTE THESE TO THE STUDENT:\n' + calibration,
-      'GETTING THEIR NAME:\nYou have already greeted the student before this conversation history begins. If you did not already know their name, their reply should contain it. The very first time you learn their name, begin your reply with a hidden tag on its own line, exactly: [NAME: Their Name] - then continue your reply below it. Only include this tag once.',
+      'WHAT YOU NEVER DO:\nNever write their reflection for them. Never diagnose them or their psychology. Stay descriptive and curious, not clinical.'
+    );
+    if (legacyCal) {
+      var legacyCalText = legacyCal.map(function (ex) {
+        if (typeof ex === 'string') return '- ' + ex;
+        var lines = [];
+        if (ex.title) lines.push('- ' + ex.title);
+        if (ex.weak) lines.push('  Weak (stop here): ' + ex.weak);
+        if (ex.strong) lines.push('  Strong (this passes): ' + ex.strong);
+        if (ex.note) lines.push('  Coaching note: ' + ex.note);
+        return lines.join('\n');
+      }).join('\n');
+      parts.push('ADDITIONAL CALIBRATION (legacy, not yet sorted into individual areas) - NEVER SHOW OR QUOTE THESE TO THE PERSON:\n' + legacyCalText);
+    }
+    parts.push(
+      'GETTING THEIR NAME:\nYou have already greeted the person before this conversation history begins. If you did not already know their name, their reply should contain it. The very first time you learn their name, begin your reply with a hidden tag on its own line, exactly: [NAME: Their Name] - then continue your reply below it. Only include this tag once.',
       'STYLE:\nWrite the way a real person talks in a warm one-on-one conversation. Keep replies short: two to five sentences. Ask ONE question at a time. Never use markdown formatting of any kind, including asterisks for emphasis.'
     );
-    var wrapParts = ['Once all the areas have been genuinely explored - not perfectly, just past a first surface answer - bring this layer to a warm close.'];
+    var wrapParts = ['Once every area has been genuinely explored, in order, each past its exit signal - not perfectly, just genuinely past a first surface answer - bring this layer to a warm close.'];
     if (deliverable) {
       var tagLines = '';
       deliverable.fields.forEach(function (f) {
@@ -388,10 +433,10 @@
       var fieldSummary = deliverable.fields.map(function (f) {
         return f.type === 'list' ? (f.count || 3) + ' ' + (f.label || f.key) + '(s)' : (f.label || f.key);
       }).join(', ');
-      wrapParts.push('CAPTURING THE DELIVERABLE - REQUIRED BEFORE YOU CAN CLOSE:\nBefore your closing message, on their own lines, include hidden tags capturing every finished deliverable field - ' + fieldSummary + ':\n\n' + tagLines + '\nEvery field must contain real, specific content the student actually gave you. Do not emit these tags, and do not close the layer, until you actually have all of this.');
-      wrapParts.push('Immediately after those tags, on its own line, include a hidden tag: [SUMMARY: One plain sentence, third person, under twenty words, capturing the core insight that surfaced.] - never shown to the student. End your closing message with the exact tag [REFLECTION_COMPLETE] on its own line at the very end, after every other tag.');
+      wrapParts.push('CAPTURING THE DELIVERABLE - REQUIRED BEFORE YOU CAN CLOSE:\nBefore your closing message, on their own lines, include hidden tags capturing every finished deliverable field - ' + fieldSummary + ':\n\n' + tagLines + '\nEvery field must contain real, specific content the person actually gave you. Do not emit these tags, and do not close the layer, until you actually have all of this.');
+      wrapParts.push('Immediately after those tags, on its own line, include a hidden tag: [SUMMARY: One plain sentence, third person, under twenty words, capturing the core insight that surfaced.] - never shown to the person. End your closing message with the exact tag [REFLECTION_COMPLETE] on its own line at the very end, after every other tag.');
     } else {
-      wrapParts.push('Immediately before your closing sentence, include a hidden tag: [SUMMARY: One plain sentence, third person, under twenty words.] - never shown to the student. End with [REFLECTION_COMPLETE] on its own line at the very end.');
+      wrapParts.push('Immediately before your closing sentence, include a hidden tag: [SUMMARY: One plain sentence, third person, under twenty words.] - never shown to the person. End with [REFLECTION_COMPLETE] on its own line at the very end.');
     }
     parts.push('WRAPPING UP:\n' + wrapParts.join('\n\n'));
     return parts.join('\n\n');
@@ -608,42 +653,81 @@
   // addMessage()/getContextBlock() plumbing.
   function buildRecurringSystemPrompt(contextBlock, checkinHistoryText) {
     var layer = SESSION.layers[currentLayerIndex];
-    var areas = (LAYER_CONFIG.reflectionFramework.areas || []).map(function (area, i) {
-      return 'AREA ' + (i + 1) + ' - ' + area.title + '\n' + area.instructions;
-    }).join('\n\n');
-    var calibration = (LAYER_CONFIG.reflectionFramework.calibrationExamples || []).map(function (ex) {
-      if (typeof ex === 'string') return '- ' + ex;
+    var rf = LAYER_CONFIG.reflectionFramework;
+    var areasList = rf.areas || [];
+    var isLegacyArea = areasList.length && areasList[0].whatToSurface == null && areasList[0].technique == null && areasList[0].instructions != null;
+    var areas;
+    if (isLegacyArea) {
+      areas = areasList.map(function (area, i) {
+        return 'AREA ' + (i + 1) + ' - ' + area.title + '\n' + area.instructions;
+      }).join('\n\n');
+    } else {
+      areas = areasList.map(function (area, i) {
+        var lines = ['AREA ' + (i + 1) + ' - ' + area.title];
+        if (area.whatToSurface) lines.push('What to surface: ' + area.whatToSurface);
+        if (area.technique) lines.push('Technique: ' + area.technique);
+        if (area.exitSignal) lines.push('What genuinely complete looks like: ' + area.exitSignal);
+        var areaCal = Array.isArray(area.calibrationExamples) ? area.calibrationExamples : [];
+        if (areaCal.length) {
+          lines.push('Calibration for this area:');
+          areaCal.forEach(function (ex) {
+            if (ex.title) lines.push('  - ' + ex.title);
+            if (ex.weak) lines.push('    Weak (stop here): ' + ex.weak);
+            if (ex.strong) lines.push('    Strong (this passes): ' + ex.strong);
+            if (ex.note) lines.push('    Coaching note: ' + ex.note);
+          });
+        }
+        return lines.join('\n');
+      }).join('\n\n');
+    }
+    var workedExamples = (Array.isArray(LAYER_CONFIG.workedExamples) ? LAYER_CONFIG.workedExamples : []).map(function (ex) {
       var lines = [];
-      if (ex.title) lines.push('- ' + ex.title);
-      if (ex.weak) lines.push('  Weak (stop here): ' + ex.weak);
-      if (ex.strong) lines.push('  Strong (this passes): ' + ex.strong);
-      if (ex.note) lines.push('  Coaching note: ' + ex.note);
+      if (ex.label) lines.push(ex.label + ':');
+      if (ex.script) lines.push(ex.script);
+      if (ex.note) lines.push('Why this works: ' + ex.note);
       return lines.join('\n');
-    }).join('\n');
+    }).join('\n\n---\n\n');
     var scopeNote = LAYER_CONFIG.scopeNote || layer.label;
     var parts = [
-      'You are Ted Baker. You are speaking in first person, live, as though this is a real one-on-one coaching conversation about "' + layer.label + '", part of the ongoing ' + SESSION.title + ' coaching relationship on The Stratum Method. You spent thirty-five years as a behavioral consultant working with more than twenty thousand people before turning that same work toward fiction writers. This is who you are in this conversation: warm, direct, genuinely curious about this specific person, unhurried, occasionally willing to admit your own doubt or history if it helps someone open up.',
-      'STAY IN VOICE: Speak only as Ted, first person, for the entire conversation. If the student sincerely and directly asks whether they are talking to a real person or an AI, answer honestly and briefly - you are an AI coach built on Ted\'s method and trained in his voice, not Ted live - then gently continue in that same voice.',
-      'CRITICAL FORMATTING RULE: Never wrap any word in asterisks for emphasis - this chat renders plain text only, so *anything like this* appears to the student as literal asterisks. If a word needs emphasis, use plain phrasing or sentence rhythm instead.',
-      'THIS IS A RECURRING CHECK-IN, NOT A ONE-TIME SESSION: Unlike Stratum\u2019s Excavation coaching, this topic has no fixed completion and no required deliverable. The student may return to it many times over weeks or months. Each visit is a genuinely fresh conversation - you do not remember the literal back-and-forth of past visits, only the summaries below - so treat this as picking up an ongoing relationship, not starting from zero and not pretending to recall exact wording you were never given.',
+      'You are a professional writing coach, live, in a real one-on-one coaching conversation about "' + layer.label + '", part of the ongoing ' + SESSION.title + ' coaching relationship on The Stratum Method. You have no name and no personal biography - you are simply an experienced, well-trained coach who works with fiction writers on their own work, using the Socratic method: you draw the person\u2019s own answers out of them, you never supply the answer yourself. This is who you are in this conversation: warm, direct, genuinely curious about this specific person, unhurried.',
+      'STAY IN VOICE: Speak only in first person as this coach, for the entire conversation. If the person sincerely and directly asks whether they are talking to a real person or an AI, answer honestly and briefly - you are an AI coach trained in the Socratic method, not a human live - then gently continue the conversation.',
+      'CRITICAL FORMATTING RULE: Never wrap any word in asterisks for emphasis - this chat renders plain text only, so *anything like this* appears to the person as literal asterisks. If a word needs emphasis, use plain phrasing or sentence rhythm instead.',
+      'THIS IS A RECURRING CHECK-IN, NOT A ONE-TIME SESSION: Unlike Stratum\u2019s Excavation coaching, this topic has no fixed completion and no required deliverable. The person may return to it many times over weeks or months. Each visit is a genuinely fresh conversation - you do not remember the literal back-and-forth of past visits, only the summaries below - so treat this as picking up an ongoing relationship, not starting from zero and not pretending to recall exact wording you were never given.',
       'WHAT THIS TOPIC COVERS (' + scopeNote + ')' + (SESSION.transcript ? ':\n"""\n' + SESSION.transcript + '\n"""' : '.'),
       'WHAT THIS CONVERSATION IS FOR:\nThis single, continuous, natural conversation is a check-in on ' + layer.label + '. Draw on the areas below - in whatever order the conversation naturally takes - as a guide to what\u2019s worth exploring, not a checklist that must all be covered before you can close:\n\n' + areas
     ];
+    if (workedExamples) {
+      parts.push('WORKED EXAMPLES - HOW A WELL-TRAINED COACH HANDLES MOMENTS LIKE THESE - NEVER SHOWN OR QUOTED TO THE PERSON:\n' + workedExamples);
+    }
     if (contextBlock) parts.push(contextBlock);
     if (checkinHistoryText) {
-      parts.push('PREVIOUS CHECK-INS - PRIVATE, NEVER SHOWN TO THE STUDENT, use naturally for continuity ("last time you mentioned...") without reciting this list verbatim or treating it as a script:\n' + checkinHistoryText);
+      parts.push('PREVIOUS CHECK-INS - PRIVATE, NEVER SHOWN TO THE PERSON, use naturally for continuity ("last time you mentioned...") without reciting this list verbatim or treating it as a script:\n' + checkinHistoryText);
     }
-    if (LAYER_CONFIG.reflectionFramework.coachingApproach) {
-      parts.push('COACHING APPROACH FOR THIS TOPIC - PRIVATE, NEVER SHOWN TO THE STUDENT:\n' + LAYER_CONFIG.reflectionFramework.coachingApproach);
+    if (isLegacyArea === false && rf.coachingApproach) {
+      parts.push('ADDITIONAL GUIDANCE FOR THIS TOPIC (legacy, not yet sorted into individual areas) - PRIVATE, NEVER SHOWN TO THE PERSON:\n' + rf.coachingApproach);
     }
     parts.push(
       'HOW YOU DRAW THESE OUT - MOTIVATIONAL INTERVIEWING, NOT INTERROGATION:\nUse the spirit of motivational interviewing: ask open questions, reflect back what they say before moving forward, offer genuine affirmation when something costs them something to say, summarize periodically.',
       'THE DEPTH RULE:\nIf an answer is generic or surface-level, reflect it back gently and ask ONE specific follow-up inviting more. If they are still on the surface after that one gentle nudge, accept where they are and move on. Never let a surface answer pass completely unremarked, but never turn this into an interrogation.',
-      'WHAT YOU NEVER DO:\nNever write their reflection for them. Never diagnose them or their psychology. Stay descriptive and curious, not clinical.',
-      'CALIBRATION ONLY - NEVER SHOW OR QUOTE THESE TO THE STUDENT:\n' + calibration,
-      'GETTING THEIR NAME:\nYou have already greeted the student before this conversation history begins. If you did not already know their name, their reply should contain it. The very first time you learn their name, begin your reply with a hidden tag on its own line, exactly: [NAME: Their Name] - then continue your reply below it. Only include this tag once.',
+      'WHAT YOU NEVER DO:\nNever write their reflection for them. Never diagnose them or their psychology. Stay descriptive and curious, not clinical.'
+    );
+    var legacyCal = (isLegacyArea === false && Array.isArray(rf.calibrationExamples) && rf.calibrationExamples.length) ? rf.calibrationExamples : null;
+    if (legacyCal) {
+      var legacyCalText = legacyCal.map(function (ex) {
+        if (typeof ex === 'string') return '- ' + ex;
+        var lines = [];
+        if (ex.title) lines.push('- ' + ex.title);
+        if (ex.weak) lines.push('  Weak (stop here): ' + ex.weak);
+        if (ex.strong) lines.push('  Strong (this passes): ' + ex.strong);
+        if (ex.note) lines.push('  Coaching note: ' + ex.note);
+        return lines.join('\n');
+      }).join('\n');
+      parts.push('ADDITIONAL CALIBRATION (legacy, not yet sorted into individual areas) - NEVER SHOW OR QUOTE THESE TO THE PERSON:\n' + legacyCalText);
+    }
+    parts.push(
+      'GETTING THEIR NAME:\nYou have already greeted the person before this conversation history begins. If you did not already know their name, their reply should contain it. The very first time you learn their name, begin your reply with a hidden tag on its own line, exactly: [NAME: Their Name] - then continue your reply below it. Only include this tag once.',
       'STYLE:\nWrite the way a real person talks in a warm one-on-one conversation. Keep replies short: two to five sentences. Ask ONE question at a time. Never use markdown formatting of any kind, including asterisks for emphasis.',
-      'WRAPPING UP:\nOnce the check-in feels naturally complete - the student has said what they came to say and gotten what they needed - bring it to a warm, brief close. There is no fixed list that must all be covered first; use judgment. Immediately before your closing sentence, include a hidden tag: [SUMMARY: One plain sentence, third person, under twenty words, capturing what this check-in was about and anything useful to remember next time.] - never shown to the student. End with the exact tag [REFLECTION_COMPLETE] on its own line at the very end.'
+      'WRAPPING UP:\nOnce the check-in feels naturally complete - the person has said what they came to say and gotten what they needed - bring it to a warm, brief close. There is no fixed list that must all be covered first; use judgment. Immediately before your closing sentence, include a hidden tag: [SUMMARY: One plain sentence, third person, under twenty words, capturing what this check-in was about and anything useful to remember next time.] - never shown to the person. End with the exact tag [REFLECTION_COMPLETE] on its own line at the very end.'
     );
     return parts.join('\n\n');
   }

@@ -958,6 +958,7 @@
         <details class="card" data-group="auto">
           <summary class="card-title">Reflection framework &mdash; areas</summary>
           <div class="card-body">
+          <span class="hint" style="display:block;margin-bottom:12px;">Areas run in strict order &mdash; the coach will not move to the next area until the current one's Exit signal is reached. Each area carries its own technique guidance and calibration examples, not one shared pool for the whole layer.</span>
           <div id="gAreasList"></div>
           <button class="add-btn" id="gAddAreaBtn" type="button">+ Add area</button>
         </div>
@@ -1016,20 +1017,11 @@
         </div>
         </details>
         <details class="card" data-group="auto">
-          <summary class="card-title">Coaching approach</summary>
+          <summary class="card-title">Worked examples</summary>
           <div class="card-body">
-          <div class="field">
-            <span class="hint">Private instructional guidance for the AI on how to conduct THIS layer's session &mdash; techniques to use, how hard to press, what to watch for. Never shown to the student. Optional &mdash; most layers will not need this.</span>
-            <textarea id="gCoachingApproach" rows="5"></textarea>
-          </div>
-        </div>
-        </details>
-        <details class="card" data-group="auto">
-          <summary class="card-title">Calibration examples</summary>
-          <div class="card-body">
-          <span class="hint" style="display:block;margin-bottom:12px;">Weak/strong pairs anchor the quality bar for the coach. Title is optional (e.g. "Label vs. behavior"). Note explains what separates weak from strong. Shown to the coach only, never to the student.</span>
-          <div id="gCalibrationList"></div>
-          <button class="add-btn" id="gAddCalibrationBtn" type="button">+ Add calibration example</button>
+          <span class="hint" style="display:block;margin-bottom:12px;">At least one scripted exchange showing the coach handling a real moment in this layer well &mdash; ideally the hardest or most failure-prone moment (e.g. the first surface-level answer that needs a depth push). Shown to the coach only, never to the student.</span>
+          <div id="gWorkedExamplesList"></div>
+          <button class="add-btn" id="gAddWorkedExampleBtn" type="button">+ Add worked example</button>
         </div>
         </details>
         <details class="card" data-group="plain">
@@ -3578,14 +3570,16 @@ function addGlobalInstructionBlock(item, isNew) {
   block.className = 'tst-block';
   if (item.isActive === false) block.style.opacity = '0.65';
   var summary = document.createElement('summary');
+  var GI_TRACK_LABELS = { excavation: 'Excavation', general: 'General Coaching', writing: 'Writing' };
   function giSummaryText() {
     var base = titleInput.value.trim() || (isNew ? 'New instruction' : '(untitled)');
     if (matchFieldSelect.value && matchValueSelect.value) {
       base += '  \u2014  ' + giMatchFieldLabel(matchFieldSelect.value) + ': ' + matchValueSelect.value;
     }
-    if (trackSelect.value) {
-      base += '  \u2014  ' + trackSelect.options[trackSelect.selectedIndex].textContent;
-      if (moduleInput.value.trim()) base += ' / ' + moduleInput.value.trim();
+    var checkedTracks = getCheckedTracks();
+    if (checkedTracks.length && checkedTracks.length < 3) {
+      base += '  \u2014  ' + checkedTracks.map(function (t) { return GI_TRACK_LABELS[t]; }).join(' + ');
+      if (checkedTracks.length === 1 && moduleInput.value.trim()) base += ' / ' + moduleInput.value.trim();
     }
     return base;
   }
@@ -3711,23 +3705,32 @@ function addGlobalInstructionBlock(item, isNew) {
   var trackWrap = document.createElement('div');
   trackWrap.className = 'field';
   var trackLabelEl = document.createElement('label');
-  trackLabelEl.textContent = 'Track';
-  var trackSelect = document.createElement('select');
-  trackSelect.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;font-family:\'Inter\', Arial, sans-serif;border:1px solid #E3DCC9;border-radius:8px;background:#fff;';
-  [['', 'All tracks'], ['excavation', 'Excavation'], ['general', 'General Coaching'], ['writing', 'Writing']].forEach(function (pair) {
-    var o = document.createElement('option');
-    o.value = pair[0];
-    o.textContent = pair[1];
-    if (pair[0] === (item.track || '')) o.selected = true;
-    trackSelect.appendChild(o);
-  });
+  trackLabelEl.textContent = 'Applies to which Track(s)';
   trackWrap.appendChild(trackLabelEl);
-  trackWrap.appendChild(trackSelect);
+  var trackChecksWrap = document.createElement('div');
+  trackChecksWrap.style.cssText = 'display:flex;gap:16px;flex-wrap:wrap;padding:9px 0;';
+  var trackCheckboxes = {};
+  var itemTracks = Array.isArray(item.tracks) ? item.tracks : [];
+  // An empty tracks array (or all three checked) both mean "applies to
+  // every track" - a brand-new instruction defaults to all three
+  // checked, matching that same unrestricted default.
+  [['excavation', 'Excavation'], ['general', 'General Coaching'], ['writing', 'Writing']].forEach(function (pair) {
+    var wrap = document.createElement('label');
+    wrap.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;';
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = itemTracks.length ? (itemTracks.indexOf(pair[0]) !== -1) : true;
+    trackCheckboxes[pair[0]] = cb;
+    wrap.appendChild(cb);
+    wrap.appendChild(document.createTextNode(pair[1]));
+    trackChecksWrap.appendChild(wrap);
+  });
+  trackWrap.appendChild(trackChecksWrap);
   trackRow.appendChild(trackWrap);
   var moduleWrap = document.createElement('div');
   moduleWrap.className = 'field';
   var moduleLabelEl = document.createElement('label');
-  moduleLabelEl.textContent = 'Module (optional \u2014 narrows within the track)';
+  moduleLabelEl.textContent = 'Module (optional \u2014 only when exactly one Track above is checked)';
   var moduleInput = document.createElement('input');
   moduleInput.type = 'text';
   moduleInput.setAttribute('list', 'giModuleDatalist');
@@ -3738,12 +3741,18 @@ function addGlobalInstructionBlock(item, isNew) {
   moduleWrap.appendChild(moduleInput);
   trackRow.appendChild(moduleWrap);
   bodyWrap.appendChild(trackRow);
+  function getCheckedTracks() {
+    return Object.keys(trackCheckboxes).filter(function (t) { return trackCheckboxes[t].checked; });
+  }
   function updateModuleEnabled() {
-    moduleInput.disabled = !trackSelect.value;
-    if (!trackSelect.value) moduleInput.value = '';
+    var checked = getCheckedTracks();
+    moduleInput.disabled = checked.length !== 1;
+    if (checked.length !== 1) moduleInput.value = '';
   }
   updateModuleEnabled();
-  trackSelect.addEventListener('change', function () { updateModuleEnabled(); summary.textContent = giSummaryText(); });
+  Object.keys(trackCheckboxes).forEach(function (t) {
+    trackCheckboxes[t].addEventListener('change', function () { updateModuleEnabled(); summary.textContent = giSummaryText(); });
+  });
   moduleInput.addEventListener('input', function () { summary.textContent = giSummaryText(); });
   var contentLabelRow = document.createElement('div');
   contentLabelRow.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;';
@@ -3821,8 +3830,8 @@ function addGlobalInstructionBlock(item, isNew) {
       isActive: activeCb.checked,
       matchField: matchFieldSelect.value || null,
       matchValue: matchFieldSelect.value ? (matchValueSelect.value || null) : null,
-      track: trackSelect.value || null,
-      module: trackSelect.value ? (moduleInput.value.trim() || null) : null
+      tracks: getCheckedTracks(),
+      module: getCheckedTracks().length === 1 ? (moduleInput.value.trim() || null) : null
     };
   }
   saveBtn.addEventListener('click', function () {
@@ -4374,65 +4383,21 @@ function loadExcavation(slug) {
     })
     .catch(function () { alert('Could not load that excavation.'); });
 }
-function gAddAreaBlock(title, instructions) {
-  gAreaCounter++;
-  var id = 'garea_' + gAreaCounter;
-  var block = document.createElement('div');
-  block.className = 'area-block';
-  block.dataset.id = id;
-  var head = document.createElement('div');
-  head.className = 'area-block-head';
-  var num = document.createElement('span');
-  num.className = 'area-num';
-  head.appendChild(num);
-  var titleInput = document.createElement('input');
-  titleInput.type = 'text';
-  titleInput.className = 'area-title';
-  titleInput.placeholder = 'AREA TITLE';
-  titleInput.value = title || '';
-  head.appendChild(titleInput);
-  var removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'remove-btn';
-  removeBtn.textContent = 'Remove';
-  removeBtn.addEventListener('click', function () {
-    block.remove();
-    gRenumberAreas();
-  });
-  head.appendChild(removeBtn);
-  block.appendChild(head);
-  var instrTextarea = document.createElement('textarea');
-  instrTextarea.className = 'area-instructions';
-  instrTextarea.rows = 5;
-  instrTextarea.placeholder = 'Instructions for the coach on drawing out this area...';
-  instrTextarea.value = instructions || '';
-  block.appendChild(instrTextarea);
-  gAreasList.appendChild(block);
-  gRenumberAreas();
-}
-function gRenumberAreas() {
-  var blocks = gAreasList.querySelectorAll('.area-block');
-  blocks.forEach(function (b, i) {
-    b.querySelector('.area-num').textContent = (i + 1);
-  });
-}
-document.getElementById('gAddAreaBtn').addEventListener('click', function () {
-  gAddAreaBlock('', '');
-});
-var gCalibrationList = document.getElementById('gCalibrationList');
+// Generic calibration-example block builder — reusable, takes the
+// target list element as a param since calibration now lives nested
+// inside each Area rather than as one shared layer-level list. Accepts
+// either the new {title,weak,strong,note} shape or a legacy plain
+// string (examples saved before this restructuring, when calibration
+// was still layer-level) - a legacy string becomes a note-only entry
+// so nothing already written is lost.
 var gCalibrationCounter = 0;
-// Accepts either the new {title,weak,strong,note} shape or a legacy
-// plain string (examples saved before this restructuring) - a legacy
-// string becomes a note-only entry so nothing already written is lost;
-// the admin can split it into weak/strong later if they want to.
-function gAddCalibrationBlock(ex) {
+function gAddCalibrationBlockInto(listEl, ex) {
   if (typeof ex === 'string') ex = { title: '', weak: '', strong: '', note: ex };
   ex = ex || {};
   gCalibrationCounter++;
-  var id = 'gcal_' + gCalibrationCounter;
   var block = document.createElement('div');
   block.className = 'area-block';
-  block.dataset.id = id;
+  block.dataset.id = 'gcal_' + gCalibrationCounter;
   var head = document.createElement('div');
   head.className = 'area-block-head';
   var num = document.createElement('span');
@@ -4448,7 +4413,7 @@ function gAddCalibrationBlock(ex) {
   removeBtn.type = 'button';
   removeBtn.className = 'remove-btn';
   removeBtn.textContent = 'Remove';
-  removeBtn.addEventListener('click', function () { block.remove(); gRenumberCalibration(); });
+  removeBtn.addEventListener('click', function () { block.remove(); gRenumberBlockList(listEl); });
   head.appendChild(removeBtn);
   block.appendChild(head);
   function fieldRow(labelText, className, placeholder, value) {
@@ -4471,17 +4436,168 @@ function gAddCalibrationBlock(ex) {
   fieldRow('Weak (stop here)', 'cal-weak', 'e.g. "My character is guarded."', ex.weak);
   fieldRow('Strong (this passes)', 'cal-strong', 'e.g. "She changes the subject any time someone asks about her past."', ex.strong);
   fieldRow('Coaching note', 'cal-note', 'What separates weak from strong \u2014 what should the coach push toward?', ex.note);
-  gCalibrationList.appendChild(block);
-  gRenumberCalibration();
+  listEl.appendChild(block);
+  gRenumberBlockList(listEl);
 }
-function gRenumberCalibration() {
-  gCalibrationList.querySelectorAll('.area-block').forEach(function (b, i) {
-    b.querySelector('.area-num').textContent = (i + 1);
+function gRenumberBlockList(listEl) {
+  listEl.querySelectorAll(':scope > .area-block').forEach(function (b, i) {
+    var n = b.querySelector('.area-num');
+    if (n) n.textContent = (i + 1);
   });
 }
-document.getElementById('gAddCalibrationBtn').addEventListener('click', function () {
-  gAddCalibrationBlock({});
+
+// Areas — Sept 2026 restructure: each area is now self-contained
+// (what to surface, technique, exit signal, and its own calibration
+// examples) instead of a bare title+instructions with technique and
+// calibration pooled separately at the layer level. Areas run in
+// strict sequence - the coach will not advance past one until its
+// Exit signal is reached (see buildSystemPrompt()/
+// buildRecurringSystemPrompt() in stratum-coach.js).
+function gAddAreaBlock(area) {
+  area = area || {};
+  gAreaCounter++;
+  var id = 'garea_' + gAreaCounter;
+  var block = document.createElement('div');
+  block.className = 'area-block';
+  block.dataset.id = id;
+  var head = document.createElement('div');
+  head.className = 'area-block-head';
+  var num = document.createElement('span');
+  num.className = 'area-num';
+  head.appendChild(num);
+  var titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.className = 'area-title';
+  titleInput.placeholder = 'AREA TITLE';
+  titleInput.value = area.title || '';
+  head.appendChild(titleInput);
+  var removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'remove-btn';
+  removeBtn.textContent = 'Remove';
+  removeBtn.addEventListener('click', function () {
+    block.remove();
+    gRenumberAreas();
+  });
+  head.appendChild(removeBtn);
+  block.appendChild(head);
+  function fieldRow(labelText, hintText, className, rows, placeholder, value) {
+    var wrap = document.createElement('div');
+    wrap.className = 'field';
+    wrap.style.marginTop = '10px';
+    var label = document.createElement('label');
+    label.textContent = labelText;
+    wrap.appendChild(label);
+    if (hintText) {
+      var hint = document.createElement('span');
+      hint.className = 'hint';
+      hint.textContent = hintText;
+      wrap.appendChild(hint);
+    }
+    var ta = document.createElement('textarea');
+    ta.className = className;
+    ta.rows = rows;
+    ta.placeholder = placeholder;
+    ta.value = value || '';
+    wrap.appendChild(ta);
+    block.appendChild(wrap);
+    return ta;
+  }
+  fieldRow('What to surface', 'The content goal \u2014 what this area genuinely needs to draw out.', 'area-what', 3, 'e.g. Two or three specific, observable, repeated behaviors the character actually does.', area.whatToSurface);
+  fieldRow('Technique for this area', 'How hard to press, specific pitfalls to watch for, pacing \u2014 scoped to this area only.', 'area-technique', 4, 'e.g. If they offer a trait label instead of a behavior, ask what that would look like on camera. Don\u2019t suggest behaviors yourself.', area.technique);
+  fieldRow('Exit signal', 'The specific, concrete thing that tells the coach this area is genuinely complete \u2014 not just touched on.', 'area-exit', 2, 'e.g. The behavior has passed all four criteria and the user has confirmed it.', area.exitSignal);
+
+  var calLabel = document.createElement('div');
+  calLabel.style.cssText = 'font-size:11px;font-weight:700;color:#3B2F24;margin-top:14px;margin-bottom:4px;';
+  calLabel.textContent = 'Calibration examples for this area';
+  block.appendChild(calLabel);
+  var calList = document.createElement('div');
+  calList.className = 'area-cal-list';
+  block.appendChild(calList);
+  var calAddBtn = document.createElement('button');
+  calAddBtn.type = 'button';
+  calAddBtn.className = 'add-btn';
+  calAddBtn.textContent = '+ Add calibration example';
+  calAddBtn.style.marginTop = '8px';
+  calAddBtn.addEventListener('click', function () { gAddCalibrationBlockInto(calList, {}); });
+  block.appendChild(calAddBtn);
+  (Array.isArray(area.calibrationExamples) ? area.calibrationExamples : []).forEach(function (ex) {
+    gAddCalibrationBlockInto(calList, ex);
+  });
+
+  gAreasList.appendChild(block);
+  gRenumberAreas();
+}
+function gRenumberAreas() {
+  gRenumberBlockList(gAreasList);
+}
+document.getElementById('gAddAreaBtn').addEventListener('click', function () {
+  gAddAreaBlock({});
 });
+
+// Worked examples — Sept 2026 addition: a short scripted exchange (a
+// few User:/Coach: turns) demonstrating the coach handling a real
+// moment in this layer well, plus a note on what the move accomplished
+// and why. Layer-level (not nested per area) since a worked example
+// often illustrates a transition or a specific hard moment rather than
+// one area\u2019s content in isolation.
+var gWorkedExamplesList = document.getElementById('gWorkedExamplesList');
+var gWorkedExampleCounter = 0;
+function gAddWorkedExampleBlock(ex) {
+  ex = ex || {};
+  gWorkedExampleCounter++;
+  var block = document.createElement('div');
+  block.className = 'area-block';
+  block.dataset.id = 'gwex_' + gWorkedExampleCounter;
+  var head = document.createElement('div');
+  head.className = 'area-block-head';
+  var num = document.createElement('span');
+  num.className = 'area-num';
+  head.appendChild(num);
+  var labelInput = document.createElement('input');
+  labelInput.type = 'text';
+  labelInput.className = 'wex-label';
+  labelInput.placeholder = 'What moment does this show? (optional) \u2014 e.g. First surface-level answer, needs a depth push';
+  labelInput.value = ex.label || '';
+  head.appendChild(labelInput);
+  var removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'remove-btn';
+  removeBtn.textContent = 'Remove';
+  removeBtn.addEventListener('click', function () { block.remove(); gRenumberBlockList(gWorkedExamplesList); });
+  head.appendChild(removeBtn);
+  block.appendChild(head);
+  function fieldRow(labelText, hintText, className, rows, placeholder, value) {
+    var wrap = document.createElement('div');
+    wrap.className = 'field';
+    wrap.style.marginTop = '10px';
+    var l = document.createElement('label');
+    l.textContent = labelText;
+    wrap.appendChild(l);
+    if (hintText) {
+      var hint = document.createElement('span');
+      hint.className = 'hint';
+      hint.textContent = hintText;
+      wrap.appendChild(hint);
+    }
+    var ta = document.createElement('textarea');
+    ta.className = className;
+    ta.rows = rows;
+    ta.placeholder = placeholder;
+    ta.value = value || '';
+    wrap.appendChild(ta);
+    block.appendChild(wrap);
+    return ta;
+  }
+  fieldRow('Script', 'Labeled turns, e.g. "User: ..." / "Coach: ..." \u2014 as many exchanges as needed.', 'wex-script', 6, 'User: I guess she\u2019s just... guarded, I don\u2019t know.\nCoach: That\u2019s a good starting word \u2014 now help me see it. If a camera followed her into a room full of people she doesn\u2019t know, what would it actually catch her doing?\nUser: She\u2019d probably stand near the door. Check her phone so she doesn\u2019t have to talk to anyone.', ex.script);
+  fieldRow('Coaching note', 'What this move accomplished, and why.', 'wex-note', 2, 'e.g. Reflects the label back without rejecting it, then asks a concrete, visual follow-up instead of a why-question \u2014 keeps momentum while redirecting toward something filmable.', ex.note);
+  gWorkedExamplesList.appendChild(block);
+  gRenumberBlockList(gWorkedExamplesList);
+}
+document.getElementById('gAddWorkedExampleBtn').addEventListener('click', function () {
+  gAddWorkedExampleBlock({});
+});
+
 document.getElementById('gExpandAllBtn').addEventListener('click', function () {
   gLayerEditor.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
 });
@@ -4635,6 +4751,7 @@ function clearLayerForm() {
   document.getElementById('gNextLessonLabel').value = '';
   document.getElementById('gScopeNote').value = '';
   gAreasList.innerHTML = '';
+  gWorkedExamplesList.innerHTML = '';
   gHasDeliverableCb.checked = false;
   gDeliverableFields.className = 'resource-fields disabled';
   gDeliverableEditor.clear();
@@ -4645,8 +4762,6 @@ function clearLayerForm() {
   document.getElementById('gTryThisNow').value = '';
   document.getElementById('gCourseShapeReminder').value = '';
   document.getElementById('gNextStepTeaser').value = '';
-  document.getElementById('gCoachingApproach').value = '';
-  gCalibrationList.innerHTML = '';
   document.getElementById('gGreetingFresh').value = '';
   updateGuidedJsonPreview();
 }
@@ -4664,9 +4779,36 @@ function fillLayerForm(config, layerNumber) {
   document.getElementById('gCourseShapeReminder').value = config.courseShapeReminder || '';
   document.getElementById('gNextStepTeaser').value = config.nextStepTeaser || '';
   var rf = config.reflectionFramework || {};
-  (rf.areas || []).forEach(function (a) { gAddAreaBlock(a.title, a.instructions); });
-  document.getElementById('gCoachingApproach').value = rf.coachingApproach || '';
-  (rf.calibrationExamples || []).forEach(function (ex) { gAddCalibrationBlock(ex); });
+  // Sept 2026 restructure: an area now carries whatToSurface/technique/
+  // exitSignal/calibrationExamples instead of one bare "instructions"
+  // string. A legacy area saved before this restructuring (just
+  // {title, instructions}) loads its old instructions text into
+  // Technique, since that field mixed content-goal and technique
+  // guidance together under the old shape — nothing is lost, and the
+  // admin can split it into What to surface / Technique by hand.
+  (rf.areas || []).forEach(function (a) {
+    if (a.whatToSurface != null || a.technique != null || a.exitSignal != null || a.calibrationExamples != null) {
+      gAddAreaBlock(a);
+    } else {
+      gAddAreaBlock({ title: a.title, technique: a.instructions || '' });
+    }
+  });
+  // Legacy layer-level coachingApproach/calibrationExamples (saved
+  // before this restructuring) have nowhere to go automatically since
+  // they weren't tied to a specific area — surfaced as a single
+  // "General notes" worked-example-list entry instead of silently
+  // dropped, so the admin can see and redistribute them.
+  if (rf.coachingApproach || (Array.isArray(rf.calibrationExamples) && rf.calibrationExamples.length)) {
+    var legacyNote = rf.coachingApproach || '';
+    if (Array.isArray(rf.calibrationExamples) && rf.calibrationExamples.length) {
+      var legacyCal = rf.calibrationExamples.map(function (ex) {
+        return typeof ex === 'string' ? ex : [ex.title, ex.weak, ex.strong, ex.note].filter(Boolean).join(' \u2014 ');
+      }).join('\n');
+      legacyNote = (legacyNote ? legacyNote + '\n\n' : '') + 'LEGACY CALIBRATION EXAMPLES (redistribute into areas above):\n' + legacyCal;
+    }
+    gAddWorkedExampleBlock({ label: '\u26a0 Legacy layer-level notes \u2014 redistribute into areas above, then delete this', script: '', note: legacyNote });
+  }
+  (Array.isArray(config.workedExamples) ? config.workedExamples : []).forEach(function (ex) { gAddWorkedExampleBlock(ex); });
   var dv = normalizeDeliverableConfigForAdmin(rf.deliverable);
   gDeliverableEditor.clear();
   if (dv && dv.required) {
@@ -4684,18 +4826,29 @@ function fillLayerForm(config, layerNumber) {
 }
 function collectLayerConfig() {
   var areas = [];
-  gAreasList.querySelectorAll('.area-block').forEach(function (b) {
+  gAreasList.querySelectorAll(':scope > .area-block').forEach(function (b) {
     var title = b.querySelector('.area-title').value.trim();
-    var instructions = b.querySelector('.area-instructions').value.trim();
-    if (title || instructions) areas.push({ title: title, instructions: instructions });
+    var whatToSurface = b.querySelector('.area-what').value.trim();
+    var technique = b.querySelector('.area-technique').value.trim();
+    var exitSignal = b.querySelector('.area-exit').value.trim();
+    var calibrationExamples = [];
+    b.querySelectorAll('.area-cal-list > .area-block').forEach(function (cb) {
+      var calTitle = cb.querySelector('.cal-title').value.trim();
+      var weak = cb.querySelector('.cal-weak').value.trim();
+      var strong = cb.querySelector('.cal-strong').value.trim();
+      var note = cb.querySelector('.cal-note').value.trim();
+      if (calTitle || weak || strong || note) calibrationExamples.push({ title: calTitle, weak: weak, strong: strong, note: note });
+    });
+    if (title || whatToSurface || technique || exitSignal || calibrationExamples.length) {
+      areas.push({ title: title, whatToSurface: whatToSurface, technique: technique, exitSignal: exitSignal, calibrationExamples: calibrationExamples });
+    }
   });
-  var calibrationExamples = [];
-  gCalibrationList.querySelectorAll('.area-block').forEach(function (b) {
-    var title = b.querySelector('.cal-title').value.trim();
-    var weak = b.querySelector('.cal-weak').value.trim();
-    var strong = b.querySelector('.cal-strong').value.trim();
-    var note = b.querySelector('.cal-note').value.trim();
-    if (title || weak || strong || note) calibrationExamples.push({ title: title, weak: weak, strong: strong, note: note });
+  var workedExamples = [];
+  gWorkedExamplesList.querySelectorAll(':scope > .area-block').forEach(function (b) {
+    var label = b.querySelector('.wex-label').value.trim();
+    var script = b.querySelector('.wex-script').value.trim();
+    var note = b.querySelector('.wex-note').value.trim();
+    if (label || script || note) workedExamples.push({ label: label, script: script, note: note });
   });
   var deliverableObj = null;
   if (gHasDeliverableCb.checked) {
@@ -4711,11 +4864,10 @@ function collectLayerConfig() {
     tryThisNow: document.getElementById('gTryThisNow').value.trim(),
     courseShapeReminder: document.getElementById('gCourseShapeReminder').value.trim(),
     nextStepTeaser: document.getElementById('gNextStepTeaser').value.trim(),
+    workedExamples: workedExamples,
     reflectionFramework: {
       areas: areas,
-      deliverable: deliverableObj,
-      coachingApproach: document.getElementById('gCoachingApproach').value.trim(),
-      calibrationExamples: calibrationExamples
+      deliverable: deliverableObj
     },
     greeting: {
       fresh: document.getElementById('gGreetingFresh').value.trim()
@@ -4803,10 +4955,22 @@ function configToReadableText(config, savedAt) {
   }
   var areas = (config.reflectionFramework && config.reflectionFramework.areas) || [];
   if (areas.length) {
-    section('REFLECTION AREAS (' + areas.length + ')');
+    section('REFLECTION AREAS (' + areas.length + ') \u2014 run in strict order, each gated on the previous one\u2019s exit signal');
     areas.forEach(function (a, i) {
       lines.push((i + 1) + '. ' + (a.title || '(untitled)'));
-      lines.push('   ' + (a.instructions || '(no instructions)'));
+      lines.push('   What to surface: ' + (a.whatToSurface || '(none)'));
+      lines.push('   Technique: ' + (a.technique || '(none)'));
+      lines.push('   Exit signal: ' + (a.exitSignal || '(none)'));
+      var areaCal = Array.isArray(a.calibrationExamples) ? a.calibrationExamples : [];
+      if (areaCal.length) {
+        lines.push('   Calibration examples:');
+        areaCal.forEach(function (c, ci) {
+          lines.push('     ' + (ci + 1) + '. ' + (c.title || '(untitled)'));
+          if (c.weak) lines.push('        Weak: ' + c.weak);
+          if (c.strong) lines.push('        Strong: ' + c.strong);
+          if (c.note) lines.push('        Note: ' + c.note);
+        });
+      }
       lines.push('');
     });
   }
@@ -4821,15 +4985,13 @@ function configToReadableText(config, savedAt) {
       }
     });
   }
-  if (config.reflectionFramework && config.reflectionFramework.coachingApproach) {
-    section('COACHING APPROACH (coach-only, never shown to student)');
-    lines.push(config.reflectionFramework.coachingApproach);
-  }
-  var cal = (config.reflectionFramework && config.reflectionFramework.calibrationExamples) || [];
-  if (cal.length) {
-    section('CALIBRATION EXAMPLES (coach-only)');
-    cal.forEach(function (c, i) {
-      lines.push((i + 1) + '. ' + c);
+  var workedExamples = Array.isArray(config.workedExamples) ? config.workedExamples : [];
+  if (workedExamples.length) {
+    section('WORKED EXAMPLES (coach-only, never shown to the student)');
+    workedExamples.forEach(function (ex, i) {
+      lines.push((i + 1) + '. ' + (ex.label || '(untitled)'));
+      lines.push(ex.script || '(no script)');
+      if (ex.note) lines.push('   Note: ' + ex.note);
       lines.push('');
     });
   }
