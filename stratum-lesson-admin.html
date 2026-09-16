@@ -944,6 +944,11 @@
           <summary class="card-title">Layer identity</summary>
           <div class="card-body">
           <div class="field">
+            <label for="gLayerLabel">Layer title</label>
+            <span class="hint">The on-screen strata label students see, and this layer's name throughout the admin &mdash; e.g. The Anchor Behavior, The Hidden Truth, The Formative Wound. This layer's position number is set automatically by where it sits in the Layers list above, not entered here.</span>
+            <input type="text" id="gLayerLabel" placeholder="The Anchor Behavior" />
+          </div>
+          <div class="field">
             <label for="gNextLessonLabel">Next layer label</label>
             <span class="hint">Used in the coach's closing message when moving to the next layer</span>
             <input type="text" id="gNextLessonLabel" placeholder="Layer 2 - The Hidden Truth" />
@@ -984,11 +989,6 @@
           <span class="hint" style="display:block;margin-bottom:12px;">Feeds the closing card the student sees after this layer's deliverable is captured. All fields here are optional &mdash; leave any of them blank and the card simply skips that section or falls back to the standard default line.</span>
           <button class="btn secondary" id="gPreviewDeliverableBtn" type="button" style="margin-bottom:16px;">Preview Deliverable Card</button>
           <span class="hint" style="display:block;margin:-10px 0 16px;">Opens the closing card exactly as a student would see it, filled in with realistic sample content wherever this layer has a structured deliverable field &mdash; use it to check that everything fits the page correctly. Reads whatever is currently in this form, including unsaved edits.</span>
-          <div class="field">
-            <label for="gLayerLabel">Layer label</label>
-            <span class="hint">The on-screen strata label students see &mdash; e.g. The Anchor Behavior, The Hidden Truth, The Formative Wound. This layer's position number is set automatically by where it sits in the Layers list above, not entered here.</span>
-            <input type="text" id="gLayerLabel" placeholder="The Anchor Behavior" />
-          </div>
           <div class="field">
             <label for="gNiceWorkTitle">Congrats title</label>
             <span class="hint">The closing-card headline once the deliverable is captured. Use the literal token {name} anywhere you want the student's first name inserted &mdash; it's dropped cleanly (with any leading comma) if no name is known yet. Optional &mdash; leave blank to use the standard default ("Nice work, {name}" / "Nice work").</span>
