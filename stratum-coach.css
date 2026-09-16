@@ -73,6 +73,12 @@
   margin-bottom: 10px;
 }
 .sh-recurring-back:hover { text-decoration: underline; }
+.sh-char-switch-link {
+  color: var(--sh-warm);
+  text-decoration: none;
+  font-size: 13px;
+}
+.sh-char-switch-link:hover { text-decoration: underline; }
 .sh-recurring-topic-heading {
   font-family: 'Newsreader', Georgia, serif;
   font-size: 20px;

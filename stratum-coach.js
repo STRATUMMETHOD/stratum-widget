@@ -1032,6 +1032,8 @@
 
     var page = el('div', 'sh-coach-page');
     mount(page, el('h1', 'sh-coach-title', SESSION.title || ''));
+    var charIndicatorSlot = el('div');
+    mount(page, charIndicatorSlot);
     var videoOuter = el('div', 'sh-coach-video-outer');
     var videoSlot = el('div');
     videoSlot.id = 'shCoachVideoSlot';
@@ -1057,7 +1059,7 @@
     if (SESSION.coachingIntro && SESSION.coachingIntro.text) buildCoachingIntro(introSlot, SESSION.coachingIntro);
 
     if (SESSION.requiresCharacter) {
-      buildCharacterPicker(contentEl, function () { startExcavationProper(); });
+      resolveCharacterThenStart(contentEl, charIndicatorSlot);
     } else {
       startExcavationProper();
     }
@@ -1079,11 +1081,52 @@
   // SELECTED_CHARACTER, lessonKey(), and the character context block
   // in buildSystemPrompt()). This gate runs before anything else so
   // every save from this point on threads the right character through.
-  function buildCharacterPicker(container, onPicked) {
+  //
+  // Sept 2026: once picked, the character is LOCKED for this browser
+  // tab via sessionStorage (not localStorage - this is deliberately
+  // per-tab, not a standing preference) so a mid-session reload, back-
+  // button, or any other ordinary navigation resumes the SAME character
+  // silently rather than re-showing the picker and risking an
+  // accidental switch partway through a layer. The only way to change
+  // characters is the explicit "Switch character" link the indicator
+  // shows once one is selected - intentional, never accidental.
+  var CHAR_LOCK_PREFIX = 'stratum_char_';
+  function sessGet(key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } }
+  function sessSet(key, value) { try { sessionStorage.setItem(key, value); } catch (e) {} }
+  function sessRemove(key) { try { sessionStorage.removeItem(key); } catch (e) {} }
+
+  function showCharacterIndicator(slot) {
+    slot.innerHTML = '';
+    var line = el('p', 'sh-coach-sub');
+    line.appendChild(document.createTextNode('Excavating: ' + (SELECTED_CHARACTER.name || 'this character') + '  \u00b7  '));
+    var switchLink = document.createElement('a');
+    switchLink.href = '#';
+    switchLink.className = 'sh-char-switch-link';
+    switchLink.textContent = 'Switch character';
+    switchLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      sessRemove(CHAR_LOCK_PREFIX + SESSION.slug);
+      location.reload();
+    });
+    line.appendChild(switchLink);
+    mount(slot, line);
+  }
+
+  function resolveCharacterThenStart(container, indicatorSlot) {
     container.innerHTML = '';
     mount(container, el('div', 'sh-coach-loading', 'Loading your characters\u2026'));
     fetchProjectData(function (project) {
       var characters = (project && Array.isArray(project.characters)) ? project.characters.filter(function (c) { return c.name; }) : [];
+      var lockedId = sessGet(CHAR_LOCK_PREFIX + SESSION.slug);
+      var locked = lockedId ? characters.filter(function (c) { return c.id === lockedId; })[0] : null;
+      if (locked) {
+        // Resuming this tab's already-locked character - skip the
+        // picker entirely, no prompt, no chance to pick a different one.
+        SELECTED_CHARACTER = locked;
+        showCharacterIndicator(indicatorSlot);
+        startExcavationProper();
+        return;
+      }
       container.innerHTML = '';
       if (!characters.length) {
         var empty = el('div', 'sh-coach-page');
@@ -1097,12 +1140,14 @@
         return;
       }
       var wrap = el('div', 'sh-recurring-topics');
-      mount(container, el('p', 'sh-coach-sub', 'Who is this excavation for?'));
+      mount(container, el('p', 'sh-coach-sub', 'Who is this excavation for? Once you start, this stays locked to that character for this session.'));
       characters.forEach(function (c) {
         var row = el('div', 'sh-recurring-topic-row');
         row.addEventListener('click', function () {
           SELECTED_CHARACTER = c;
-          onPicked();
+          sessSet(CHAR_LOCK_PREFIX + SESSION.slug, c.id);
+          showCharacterIndicator(indicatorSlot);
+          startExcavationProper();
         });
         mount(row, el('div', 'sh-recurring-topic-title', c.name));
         var metaBits = [c.type, c.roleType].filter(Boolean);
