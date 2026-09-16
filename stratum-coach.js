@@ -86,6 +86,7 @@
   var ENGINE_MODE = 'excavation'; // set from SESSION.track once loaded — 'excavation' = Linear Layers -> Synthesis (unchanged); 'general'/'writing' = Recurring Check-In (see buildRecurringPage() etc below)
   var ALL_CHECKIN_NOTES = [];     // Recurring engine only — every past check-in across every topic in this session, fetched once and reused for both the topic list and each conversation's injected history
   var topicListEl = null;         // Recurring engine only
+  var SELECTED_CHARACTER = null;  // {id, name, type, roleType, coreConflict} — set via the character picker for any excavation with requiresCharacter true; null for every other excavation
 
   var railEl, messagesEl, formEl, inputEl, sendBtn, contentEl;
 
@@ -373,10 +374,21 @@
     var parts = [
       'You are a professional writing coach, live, in a real one-on-one coaching conversation exploring "' + layer.label + '" as part of the ' + SESSION.title + ' coaching session on The Stratum Method. You have no name and no personal biography - you are simply an experienced, well-trained coach who works with fiction writers on their own work, using the Socratic method: you draw the person\u2019s own answers out of them, you never supply the answer yourself. This is who you are in this conversation: warm, direct, genuinely curious about this specific person, unhurried.',
       'STAY IN VOICE: Speak only in first person as this coach, for the entire conversation. If the person sincerely and directly asks whether they are talking to a real person or an AI, answer honestly and briefly - you are an AI coach trained in the Socratic method, not a human live - then gently continue the conversation.',
-      'CRITICAL FORMATTING RULE: Never wrap any word in asterisks for emphasis - this chat renders plain text only, so *anything like this* appears to the person as literal asterisks. If a word needs emphasis, use plain phrasing or sentence rhythm instead.',
+      'CRITICAL FORMATTING RULE: Never wrap any word in asterisks for emphasis - this chat renders plain text only, so *anything like this* appears to the person as literal asterisks. If a word needs emphasis, use plain phrasing or sentence rhythm instead.'
+    ];
+    if (SELECTED_CHARACTER) {
+      var charLines = ['THE CHARACTER THIS EXCAVATION IS ABOUT:\nEverything in this conversation is specifically about ' + (SELECTED_CHARACTER.name || 'this character') + ', not the writer themselves and not any other character in their project. Keep every question anchored to this one character.'];
+      var charFacts = [];
+      if (SELECTED_CHARACTER.type) charFacts.push('Type: ' + SELECTED_CHARACTER.type);
+      if (SELECTED_CHARACTER.roleType) charFacts.push('Role: ' + SELECTED_CHARACTER.roleType);
+      if (SELECTED_CHARACTER.coreConflict) charFacts.push('Core conflict: ' + SELECTED_CHARACTER.coreConflict);
+      if (charFacts.length) charLines.push(charFacts.join(' | '));
+      parts.push(charLines.join('\n'));
+    }
+    parts.push(
       'WHAT THIS LAYER COVERS (' + scopeNote + ')' + (SESSION.transcript ? ':\n"""\n' + SESSION.transcript + '\n"""' : '.'),
       'WHAT THIS CONVERSATION IS FOR:\nThis single, continuous, natural conversation IS the exploration of ' + layer.label + '. The areas below run in STRICT ORDER - work through Area 1 first and do not move into real depth on Area 2 until Area 1\u2019s exit signal has been genuinely reached, and so on down the list. If the person tries to jump ahead on their own, that\u2019s fine to acknowledge warmly, but gently bring the conversation back to the current area rather than following them ahead of where the work actually is:\n\n' + areas
-    ];
+    );
     if (workedExamples) {
       parts.push('WORKED EXAMPLES - HOW A WELL-TRAINED COACH HANDLES MOMENTS LIKE THESE - NEVER SHOWN OR QUOTED TO THE PERSON:\n' + workedExamples);
     }
@@ -831,7 +843,7 @@
   // alone isn't unique across excavations, since Character Excavation's
   // Layer 1 and a future Worldbuilding's Layer 1 are different things.
   function lessonKey(layerNumber) {
-    return SESSION.slug + ':' + layerNumber;
+    return SESSION.slug + ':' + layerNumber + (SELECTED_CHARACTER ? ':' + SELECTED_CHARACTER.id : '');
   }
 
   function loadLayerConfig(layerNumber, callback) {
@@ -910,14 +922,17 @@
   function synthesizeMasterDeliverable() {
     contentEl.innerHTML = '';
     mount(contentEl, el('div', 'sh-coach-loading', 'Bringing together everything you\u2019ve excavated\u2026'));
-    fetch(PROXY_URL + '/excavation/master-deliverable?studentId=' + encodeURIComponent(STUDENT_ID) + '&excavationSlug=' + encodeURIComponent(SESSION.slug))
+    var charParam = SELECTED_CHARACTER ? '&characterId=' + encodeURIComponent(SELECTED_CHARACTER.id) : '';
+    fetch(PROXY_URL + '/excavation/master-deliverable?studentId=' + encodeURIComponent(STUDENT_ID) + '&excavationSlug=' + encodeURIComponent(SESSION.slug) + charParam)
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d && d.known && d.text) { renderSynthesisCard(d.text); return; }
+        var body = { studentId: STUDENT_ID, excavationSlug: SESSION.slug, lang: LANG };
+        if (SELECTED_CHARACTER) body.characterId = SELECTED_CHARACTER.id;
         return fetch(PROXY_URL + '/excavation/synthesize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ studentId: STUDENT_ID, excavationSlug: SESSION.slug, lang: LANG })
+          body: JSON.stringify(body)
         })
           .then(function (r2) { return r2.json(); })
           .then(function (d2) {
@@ -1038,13 +1053,64 @@
     mount(container, shell); //     dark card rather than inside it — that's why the page background
                               //     showed white beneath/around the video and rail.
 
-    buildChatPanel(contentEl);
-    renderRail();
-
     if (SESSION.videoMediaId) buildVideo(videoSlot, SESSION.videoMediaId);
     if (SESSION.coachingIntro && SESSION.coachingIntro.text) buildCoachingIntro(introSlot, SESSION.coachingIntro);
 
+    if (SESSION.requiresCharacter) {
+      buildCharacterPicker(contentEl, function () { startExcavationProper(); });
+    } else {
+      startExcavationProper();
+    }
+  }
+
+  function startExcavationProper() {
+    buildChatPanel(contentEl);
+    renderRail();
     loadProgressThenStart();
+  }
+
+  // ----------------------------------------------------------
+  // CHARACTER PICKER — excavations with requiresCharacter true
+  // ----------------------------------------------------------
+  // Some excavations (Character Excavation; not World Building, Plot,
+  // etc.) run once PER CHARACTER, not once per student — a writer can
+  // excavate their protagonist, then separately come back and excavate
+  // their antagonist, with genuinely separate progress (see
+  // SELECTED_CHARACTER, lessonKey(), and the character context block
+  // in buildSystemPrompt()). This gate runs before anything else so
+  // every save from this point on threads the right character through.
+  function buildCharacterPicker(container, onPicked) {
+    container.innerHTML = '';
+    mount(container, el('div', 'sh-coach-loading', 'Loading your characters\u2026'));
+    fetchProjectData(function (project) {
+      var characters = (project && Array.isArray(project.characters)) ? project.characters.filter(function (c) { return c.name; }) : [];
+      container.innerHTML = '';
+      if (!characters.length) {
+        var empty = el('div', 'sh-coach-page');
+        mount(empty, el('p', null, 'This excavation is done one character at a time, and there\u2019s no character in your profile yet to excavate. Add one, then come back here.'));
+        var link = document.createElement('a');
+        link.className = 'sh-save-btn';
+        link.href = '/system/';
+        link.textContent = '\u2190 Add a character';
+        mount(empty, link);
+        mount(container, empty);
+        return;
+      }
+      var wrap = el('div', 'sh-recurring-topics');
+      mount(container, el('p', 'sh-coach-sub', 'Who is this excavation for?'));
+      characters.forEach(function (c) {
+        var row = el('div', 'sh-recurring-topic-row');
+        row.addEventListener('click', function () {
+          SELECTED_CHARACTER = c;
+          onPicked();
+        });
+        mount(row, el('div', 'sh-recurring-topic-title', c.name));
+        var metaBits = [c.type, c.roleType].filter(Boolean);
+        mount(row, el('div', 'sh-recurring-topic-meta', metaBits.join(' \u00b7 ') || '\u00a0'));
+        mount(wrap, row);
+      });
+      mount(container, wrap);
+    });
   }
 
   // ----------------------------------------------------------

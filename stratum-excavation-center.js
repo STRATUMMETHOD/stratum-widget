@@ -19,6 +19,14 @@
    stays predictable even before General/Writing have any session
    types created.
 
+   Sept 2026 addition: an excavation flagged requiresCharacter (see the
+   admin's Track toggle) shows one row PER CHARACTER in the student's
+   WIP profile instead of one row for the whole program, since progress
+   on a character-scoped excavation is tracked separately per character
+   (see SELECTED_CHARACTER / lessonKey() in stratum-coach.js). A
+   student with no characters yet sees a single "Add a character" row
+   instead.
+
    Mounts INTO the same dark card stratum-header.js builds, directly
    below stratum-wip-panel.js's section and above stratum-
    dashboard.js's Idea Log/Reminders cards — see the script load
@@ -64,6 +72,22 @@
       .catch(function () { callback([]); });
   }
 
+  // Sept 2026: some excavations (Character Excavation) run once PER
+  // CHARACTER rather than once per student - see requiresCharacter on
+  // the session and SELECTED_CHARACTER/lessonKey() in stratum-coach.js.
+  // Fetched once per dashboard load and reused for every such session,
+  // not per-session, since it's the same Characters list either way.
+  function fetchCharacters(studentId, callback) {
+    if (!studentId) { callback([]); return; }
+    fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(studentId))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var characters = (d && d.known && Array.isArray(d.characters)) ? d.characters.filter(function (c) { return c.name; }) : [];
+        callback(characters);
+      })
+      .catch(function () { callback([]); });
+  }
+
   function fetchCheckinCount(studentId, sessionSlug, callback) {
     if (!studentId) { callback(0, null); return; }
     fetch(PROXY_URL + '/checkin-notes?studentId=' + encodeURIComponent(studentId) + '&sessionSlug=' + encodeURIComponent(sessionSlug))
@@ -86,17 +110,18 @@
     return d.toLocaleDateString();
   }
 
-  function computeStatus(session, completedLessonKeys) {
+  function computeStatus(session, completedLessonKeys, characterId) {
     var total = session.layers.length;
+    var suffix = characterId ? ':' + characterId : '';
     var done = session.layers.filter(function (l) {
-      return completedLessonKeys.indexOf(session.slug + ':' + l.layerNumber) !== -1;
+      return completedLessonKeys.indexOf(session.slug + ':' + l.layerNumber + suffix) !== -1;
     }).length;
     if (done === 0) return { key: 'not-started', label: 'Not Started' };
     if (done === total) return { key: 'completed', label: 'Completed' };
     return { key: 'in-progress', label: 'In Progress' };
   }
 
-  function buildRow(session, statusLabel, statusKey) {
+  function buildRow(session, statusLabel, statusKey, titleOverride) {
     var row = el('div', 'sh-ec-row');
     var link = document.createElement('a');
     link.className = 'sh-ec-title';
@@ -104,15 +129,17 @@
     // from the slug instead, matching the WordPress page Ted creates
     // manually for each session type (/coach/<slug>/). See the
     // "automatic listing, still-manual page creation" split Ted
-    // confirmed.
+    // confirmed. Every character's row for the same session links to
+    // the same page - the coach page itself asks which character via
+    // its own picker (see stratum-coach.js buildCharacterPicker()).
     link.href = '/coach/' + session.slug + '/';
-    link.textContent = session.title;
+    link.textContent = titleOverride || session.title;
     mount(row, link);
     mount(row, el('span', 'sh-ec-badge sh-ec-badge--' + statusKey, statusLabel));
     return row;
   }
 
-  function buildColumn(columnDef, sessionsForTrack, studentId, completedLessonKeys) {
+  function buildColumn(columnDef, sessionsForTrack, studentId, completedLessonKeys, characters) {
     var col = el('div', 'sh-ec-column');
     mount(col, el('p', 'sh-ec-column-label', columnDef.label));
     var listEl = el('div', 'sh-ec-list');
@@ -122,9 +149,27 @@
       return col;
     }
     sessionsForTrack.forEach(function (session) {
-      if (columnDef.track === 'excavation') {
-        var status = computeStatus(session, completedLessonKeys);
-        mount(listEl, buildRow(session, status.label, status.key));
+      if (columnDef.track === 'excavation' && session.requiresCharacter) {
+        // One row per character, not one row for the whole program -
+        // this program's progress is tracked separately per character.
+        if (!characters.length) {
+          var noCharRow = el('div', 'sh-ec-row');
+          var noCharLink = document.createElement('a');
+          noCharLink.className = 'sh-ec-title';
+          noCharLink.href = '/coach/' + session.slug + '/';
+          noCharLink.textContent = session.title;
+          mount(noCharRow, noCharLink);
+          mount(noCharRow, el('span', 'sh-ec-badge sh-ec-badge--not-started', 'Add a character'));
+          mount(listEl, noCharRow);
+          return;
+        }
+        characters.forEach(function (c) {
+          var status = computeStatus(session, completedLessonKeys, c.id);
+          mount(listEl, buildRow(session, status.label, status.key, session.title + ' \u2014 ' + c.name));
+        });
+      } else if (columnDef.track === 'excavation') {
+        var status2 = computeStatus(session, completedLessonKeys);
+        mount(listEl, buildRow(session, status2.label, status2.key));
       } else {
         // Recurring engine (General/Writing Tracks) - a completion
         // badge doesn't apply, so show a check-in count instead,
@@ -159,18 +204,26 @@
     if (!window.StratumSessions) {
       columnsEl.innerHTML = '';
       TRACK_COLUMNS.forEach(function (columnDef) {
-        mount(columnsEl, buildColumn(columnDef, [], studentId, []));
+        mount(columnsEl, buildColumn(columnDef, [], studentId, [], []));
       });
       return section;
     }
     window.StratumSessions.ready(function (sessions) {
       fetchCompletions(studentId, function (completions) {
         var completedLessonKeys = completions.map(function (c) { return c.lesson; });
-        columnsEl.innerHTML = '';
-        TRACK_COLUMNS.forEach(function (columnDef) {
-          var sessionsForTrack = sessions.filter(function (s) { return (s.track || 'excavation') === columnDef.track; });
-          mount(columnsEl, buildColumn(columnDef, sessionsForTrack, studentId, completedLessonKeys));
-        });
+        var needsCharacters = sessions.some(function (s) { return s.requiresCharacter; });
+        function render(characters) {
+          columnsEl.innerHTML = '';
+          TRACK_COLUMNS.forEach(function (columnDef) {
+            var sessionsForTrack = sessions.filter(function (s) { return (s.track || 'excavation') === columnDef.track; });
+            mount(columnsEl, buildColumn(columnDef, sessionsForTrack, studentId, completedLessonKeys, characters));
+          });
+        }
+        if (needsCharacters) {
+          fetchCharacters(studentId, render);
+        } else {
+          render([]);
+        }
       });
     });
 

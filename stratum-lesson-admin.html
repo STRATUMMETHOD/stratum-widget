@@ -618,7 +618,7 @@
         <div class="card-title" style="margin-bottom:4px;">Global Coaching Philosophy</div>
         <span class="hint" style="display:block;margin-bottom:12px;">The coach's voice and technique for this Track as a whole &mdash; motivational-interviewing style, how hard to press, tone. This is separate from, and folds in alongside, each Layer's own Coaching Approach. Does NOT cover the tag-capture mechanics the engine relies on to parse names/summaries/deliverables &mdash; those stay fixed in code, never editable here.</span>
         <div class="toolbar">
-          <span style="font-size:12px;font-weight:700;color:#3B2F24;">Track:</span>
+          <span style="font-size:12px;font-weight:700;color:#3B2F24;">Type:</span>
           <select id="cpTrackSelect">
             <option value="excavation">Excavation</option>
             <option value="general">General Coaching</option>
@@ -843,7 +843,7 @@
       </div>
       <div id="lessonEditorView">
         <div class="toolbar" style="margin-bottom:8px;">
-          <span style="font-size:12px;font-weight:700;color:#3B2F24;">Track:</span>
+          <span style="font-size:12px;font-weight:700;color:#3B2F24;">Type:</span>
           <select id="gTrackSelect">
             <option value="excavation">Excavation</option>
             <option value="general">General Coaching</option>
@@ -854,14 +854,14 @@
         <div class="toolbar">
           <select id="gExcavationSelect"></select>
           <button class="btn secondary" id="gLoadExcavationBtn" type="button">Load</button>
-          <button class="btn secondary" id="gNewExcavationBtn" type="button">+ New Program</button>
-          <button class="btn danger" id="gDeleteExcavationBtn" type="button">Delete Program</button>
+          <button class="btn secondary" id="gNewExcavationBtn" type="button">+ New Track</button>
+          <button class="btn danger" id="gDeleteExcavationBtn" type="button">Delete Track</button>
           <div class="spacer"></div>
           <span class="save-status" id="gExcSaveStatus"></span>
-          <button class="btn" id="gSaveExcavationBtn" type="button">Save Program</button>
+          <button class="btn" id="gSaveExcavationBtn" type="button">Save Track</button>
         </div>
         <details class="card" data-group="open" open>
-          <summary class="card-title">Program</summary>
+          <summary class="card-title">Track</summary>
           <div class="card-body">
           <div class="row2">
             <div class="field">
@@ -879,12 +879,17 @@
             <input type="checkbox" id="gExcavationActive" checked />
             <label for="gExcavationActive" style="margin:0;">Visible to students (shows in their Excavation Center)</label>
           </div>
+          <div class="toggle-row" style="margin-top:8px;">
+            <input type="checkbox" id="gRequiresCharacter" />
+            <label for="gRequiresCharacter" style="margin:0;">This program is about a specific character (runs once per character, not once per student)</label>
+          </div>
+          <span class="hint" style="display:block;margin-top:4px;">When on, the coaching page asks the student to pick a character from their profile before Layer 1 starts, and tracks progress separately per character &mdash; they can come back later and excavate a different character from scratch. Leave off for programs not about one specific character (World Building, Plot, etc.).</span>
         </div>
         </details>
         <details class="card" data-group="open" open>
           <summary class="card-title">Video</summary>
           <div class="card-body">
-          <span class="hint" style="display:block;margin-bottom:10px;">One video for the entire program &mdash; shown once, above all layers.</span>
+          <span class="hint" style="display:block;margin-bottom:10px;">One video for the entire track &mdash; shown once, above all layers.</span>
           <div class="field">
             <label for="gMediaId">Wistia media ID</label>
             <input type="text" id="gMediaId" placeholder="0owdas4mfp" />
@@ -894,7 +899,7 @@
         <details class="card" data-group="open" open>
           <summary class="card-title">Lecture transcript</summary>
           <div class="card-body">
-          <span class="hint" style="display:block;margin-bottom:10px;">Shared across every layer in this program &mdash; not specific to any one layer.</span>
+          <span class="hint" style="display:block;margin-bottom:10px;">Shared across every layer in this track &mdash; not specific to any one layer.</span>
           <div class="field">
             <textarea id="gTranscript" rows="6" placeholder="Full transcript text the coach references..."></textarea>
           </div>
@@ -903,10 +908,10 @@
         <details class="card" data-group="plain">
           <summary class="card-title">Coaching intro text</summary>
           <div class="card-body">
-          <span class="hint" style="display:block;margin-bottom:10px;">One per program, shown once at the very start &mdash; not repeated per layer.</span>
+          <span class="hint" style="display:block;margin-bottom:10px;">One per track, shown once at the very start &mdash; not repeated per layer.</span>
           <div class="toggle-row">
             <input type="checkbox" id="gHasCoachingIntro" />
-            <label for="gHasCoachingIntro" style="margin:0;">This program shows an intro message at the top of Coaching, default closed</label>
+            <label for="gHasCoachingIntro" style="margin:0;">This track shows an intro message at the top of Coaching, default closed</label>
           </div>
           <div id="gCoachingIntroFields" class="resource-fields disabled">
             <div class="field">
@@ -1005,9 +1010,9 @@
             <textarea id="gTryThisNow" rows="3" placeholder="Before you close this tab &mdash; find one more place in your draft where this behavior shows up. Does the same thing happen?"></textarea>
           </div>
           <div class="field">
-            <label for="gCourseShapeReminder">Program shape reminder</label>
-            <span class="hint">The &quot;this program builds in layers, not conclusions&quot; block on the closing card. Optional &mdash; leave blank to use the standard default line for this layer.</span>
-            <textarea id="gCourseShapeReminder" rows="3" placeholder="This program builds in layers, not conclusions. What you find today becomes the material the next layer digs into. The payoff isn't in any one layer &mdash; it's in what they add up to."></textarea>
+            <label for="gCourseShapeReminder">Track shape reminder</label>
+            <span class="hint">The &quot;this track builds in layers, not conclusions&quot; block on the closing card. Optional &mdash; leave blank to use the standard default line for this layer.</span>
+            <textarea id="gCourseShapeReminder" rows="3" placeholder="This track builds in layers, not conclusions. What you find today becomes the material the next layer digs into. The payoff isn't in any one layer &mdash; it's in what they add up to."></textarea>
           </div>
           <div class="field">
             <label for="gNextStepTeaser">Next step teaser</label>
@@ -1044,7 +1049,7 @@
         <div class="card">
           <div class="chat-window">
             <div class="chat-messages" id="chatMessages">
-              <div class="chat-empty" id="chatEmptyState">Ask about continuity across Programs &mdash; tone, repeated questions, whether a reflection area overlaps one already covered elsewhere. This reads your saved Program/Layer data; it doesn't write to them.</div>
+              <div class="chat-empty" id="chatEmptyState">Ask about continuity across Tracks &mdash; tone, repeated questions, whether a reflection area overlaps one already covered elsewhere. This reads your saved Track/Layer data; it doesn't write to them.</div>
             </div>
             <div class="chat-options-row">
               <input type="checkbox" id="chatIncludeTranscripts" />
@@ -1357,7 +1362,7 @@ var PAGE_HEADERS = {
   library: ['Library', 'Every resource PDF and video, in one place \u2014 replaces the old per-lesson Resource PDFs.'],
   globalInstructions: ['Global Instructions', 'Standing coaching direction that applies to every lesson, every session.'],
   excavation: ['Excavation', 'The 5-Minute Character Excavation \u2014 started / completed / traffic source / surprise rating.'],
-  guided: ['Coaching Tracks', "Manage every coaching Program (Character Excavation, and any future ones) and their Layers. Saves go straight to the database \u2014 the live coaching page picks up changes on next load."]
+  guided: ['Coaching Tracks', "Manage every coaching Track (Character Excavation, and any future ones) and their Layers. Saves go straight to the database \u2014 the live coaching page picks up changes on next load."]
 };
 function showTopTab(which) {
   tabDashboardBtn.className = 'nav-item' + (which === 'dashboard' ? ' active' : '');
@@ -4326,8 +4331,8 @@ var gTrackSelect = document.getElementById('gTrackSelect');
 var gTrackHint = document.getElementById('gTrackHint');
 var GI_TRACK_HINTS = {
   excavation: 'One-time, linear: layers run in order, ending in a single synthesized deliverable.',
-  general: 'Recurring: no fixed order or completion. Each layer is a topic a student can revisit any time; all past check-in notes for this session carry forward automatically. Video/Transcript/Deliverable are not used by this track.',
-  writing: 'Recurring: same engine as General Coaching \u2014 no fixed order or completion, all past check-in notes carry forward. Video/Transcript/Deliverable are not used by this track.'
+  general: 'Recurring: no fixed order or completion. Each layer is a topic a student can revisit any time; all past check-in notes for this session carry forward automatically. Video/Transcript/Deliverable are not used by this type.',
+  writing: 'Recurring: same engine as General Coaching \u2014 no fixed order or completion, all past check-in notes carry forward. Video/Transcript/Deliverable are not used by this type.'
 };
 function gUpdateTrackHint() {
   gTrackHint.textContent = GI_TRACK_HINTS[gTrackSelect.value] || '';
@@ -4378,10 +4383,10 @@ function loadExcavation(slug) {
     .then(function (r) { return r.json(); })
     .then(function (d) {
       var ex = (d.excavations || []).find(function (e) { return e.slug === slug; });
-      if (!ex) { alert('No program found for ' + slug + '.'); return; }
+      if (!ex) { alert('No track found for ' + slug + '.'); return; }
       fillExcavationForm(ex);
     })
-    .catch(function () { alert('Could not load that program.'); });
+    .catch(function () { alert('Could not load that track.'); });
 }
 // Generic calibration-example block builder — reusable, takes the
 // target list element as a param since calibration now lives nested
@@ -4622,6 +4627,7 @@ function clearExcavationForm() {
   document.getElementById('gExcavationTitle').value = '';
   document.getElementById('gExcavationSlug').value = '';
   document.getElementById('gExcavationActive').checked = true;
+  document.getElementById('gRequiresCharacter').checked = false;
   document.getElementById('gMediaId').value = '';
   document.getElementById('gTranscript').value = '';
   gHasCoachingIntroCb.checked = false;
@@ -4643,8 +4649,9 @@ function fillExcavationForm(ex) {
   gCurrentExcavationSlug = ex.slug;
   document.getElementById('gExcavationTitle').value = ex.title || '';
   document.getElementById('gExcavationSlug').value = ex.slug || '';
-  gSlugManuallyEdited = true; // an existing program's slug is never auto-derived again
+  gSlugManuallyEdited = true; // an existing track's slug is never auto-derived again
   document.getElementById('gExcavationActive').checked = !(ex.isActive === 0 || ex.isActive === false);
+  document.getElementById('gRequiresCharacter').checked = !!ex.requiresCharacter;
   document.getElementById('gMediaId').value = ex.videoMediaId || '';
   document.getElementById('gTranscript').value = ex.transcript || '';
   if (ex.coachingIntroTitle || ex.coachingIntroText) {
@@ -4672,14 +4679,15 @@ function collectExcavationPayload() {
       title: document.getElementById('gCoachingIntroTitle').value.trim(),
       text: document.getElementById('gCoachingIntroText').value.trim()
     } : { title: '', text: '' },
-    isActive: document.getElementById('gExcavationActive').checked
+    isActive: document.getElementById('gExcavationActive').checked,
+    requiresCharacter: document.getElementById('gRequiresCharacter').checked
   };
 }
-// ---- Layers list (below the Program's own general fields) ----
+// ---- Layers list (below the Track's own general fields) ----
 function renderLayersList() {
   gLayersList.innerHTML = '';
   if (!gCurrentExcavationSlug) {
-    gLayersList.innerHTML = '<span class="hint">Save the program above first, then add layers.</span>';
+    gLayersList.innerHTML = '<span class="hint">Save the track above first, then add layers.</span>';
     return;
   }
   if (!gCurrentLayers.length) {
@@ -4723,7 +4731,7 @@ function gUpdateLayerEditorForTrack() {
   document.getElementById('gDeliverableCardCard').style.display = showDeliverable ? '' : 'none';
 }
 document.getElementById('gAddLayerBtn').addEventListener('click', function () {
-  if (!gCurrentExcavationSlug) { alert('Save the program first.'); return; }
+  if (!gCurrentExcavationSlug) { alert('Save the track first.'); return; }
   clearLayerForm();
   gCurrentLayerNumber = null;
   gLayerEditorHeading.textContent = 'New Layer (will become Layer ' + (gCurrentLayers.length + 1) + ')';
@@ -5164,8 +5172,8 @@ document.getElementById('gSaveExcavationBtn').addEventListener('click', function
     });
 });
 document.getElementById('gDeleteExcavationBtn').addEventListener('click', function () {
-  if (!gCurrentExcavationSlug) { gExcSaveStatus.textContent = 'No program loaded.'; gExcSaveStatus.className = 'save-status err'; return; }
-  if (!confirm('Delete program "' + gCurrentExcavationSlug + '" and ALL its layers? This cannot be undone.')) return;
+  if (!gCurrentExcavationSlug) { gExcSaveStatus.textContent = 'No track loaded.'; gExcSaveStatus.className = 'save-status err'; return; }
+  if (!confirm('Delete track "' + gCurrentExcavationSlug + '" and ALL its layers? This cannot be undone.')) return;
   fetch(PROXY_URL + '/admin/excavations?slug=' + encodeURIComponent(gCurrentExcavationSlug) + '&lang=' + encodeURIComponent(ADMIN_LANG), {
     method: 'DELETE',
     headers: { 'X-Stratum-Admin-Key': adminKey }

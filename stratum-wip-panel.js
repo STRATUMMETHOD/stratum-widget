@@ -143,6 +143,17 @@
     if (conflictOptions.indexOf(prevConflict) !== -1) row.coreConflictSelect.value = prevConflict;
   }
 
+  // Sept 2026: stable per-character id, required so character-scoped
+  // excavation progress (a writer excavating their protagonist
+  // separately from their antagonist) survives a rename or reorder of
+  // this list - the array position or name alone isn't a safe key.
+  // Reused from saved data when loading an existing character; freshly
+  // generated, once, only for a row that's genuinely new.
+  function makeCharacterId() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'char-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+  }
+
   function buildCharacterRow(data, listEl, addBtn) {
     rowCounter++;
     var rowEl = el('div', 'sh-char-row');
@@ -172,7 +183,8 @@
     mount(rowEl, removeBtn);
 
     mount(listEl, rowEl);
-    var row = { id: 'row-' + rowCounter, nameInput: nameInput, typeSelect: typeSelect, roleTypeSelect: roleTypeSelect, coreConflictSelect: coreConflictSelect, rowEl: rowEl };
+    var characterId = (data && data.id) || makeCharacterId();
+    var row = { id: 'row-' + rowCounter, characterId: characterId, nameInput: nameInput, typeSelect: typeSelect, roleTypeSelect: roleTypeSelect, coreConflictSelect: coreConflictSelect, rowEl: rowEl };
     characterRows.push(row);
 
     repopulateCascadingSelects(row);
@@ -204,6 +216,7 @@
     return characterRows
       .map(function (row) {
         return {
+          id: row.characterId,
           name: row.nameInput.value.trim(),
           type: row.typeSelect.value,
           roleType: row.roleTypeSelect.value,
