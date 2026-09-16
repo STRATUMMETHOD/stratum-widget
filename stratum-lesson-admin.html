@@ -784,13 +784,15 @@
         <button class="btn secondary" id="libReloadBtn" type="button">Reload</button>
         <span class="vcb-filter-label">Filter by Category:</span>
         <select id="libCategoryFilter" class="vcb-filter-select"></select>
-        <span class="vcb-filter-label">Filter by Excavation Topic:</span>
-        <select id="libTopicFilter" class="vcb-filter-select"></select>
         <div class="spacer"></div>
         <span id="libStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
       </div>
-      <datalist id="libCategoryDatalist"></datalist>
-      <datalist id="libTopicDatalist"></datalist>
+      <div class="tst-toolbar" style="flex-wrap:wrap;gap:8px;">
+        <strong style="font-size:13px;">Categories:</strong>
+        <div id="libCategoriesList" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        <input type="text" id="libNewCategoryInput" placeholder="New category name" style="padding:6px 9px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;">
+        <button class="btn secondary" id="libAddCategoryBtn" type="button">Add category</button>
+      </div>
       <div id="libList"></div>
       <button class="add-btn" id="libAddBtn" type="button">+ Add resource</button>
     </div>
@@ -2581,107 +2583,165 @@ function addVocabularyBlock(term, isNew) {
 // page builds the actual embed from that, same pattern already used
 // for lesson videos elsewhere in this admin.
 //
-// Category and Excavation Topic are BOTH simple free-text fields with
-// on-the-fly suggestions (an HTML5 <datalist> populated from whatever
-// distinct values already exist across loaded resources) rather than a
-// separately-managed list - typing a new one and saving is all "adding"
-// a category/topic means. Excavation Topic is optional (a resource
-// doesn't have to belong to a specific coaching session); Category is
-// required, seeded with "Character" as the first real value once
-// you've saved at least one resource under it.
+// Category is now a managed list (Add/Delete via /admin/library-categories),
+// not free text - a resource's category is picked from a <select> populated
+// from libCategoriesCache. Deleting a category cascades: every resource
+// using it has its category cleared server-side (not deleted), so a
+// resource never points at a category that no longer exists.
+//
+// Excavation Topic (Sept 2026) - removed per Ted's request. The
+// library_resources.topic column is left in the schema unused rather
+// than dropped, same safer-route pattern used everywhere else in this
+// rebuild; this admin simply no longer reads, writes, or displays it.
 var LIB_PDF_BASE_URL = 'https://stratummethod.github.io/stratum-widget/';
 var libList = document.getElementById('libList');
 var libStatus = document.getElementById('libStatus');
 var libCategoryFilter = document.getElementById('libCategoryFilter');
-var libTopicFilter = document.getElementById('libTopicFilter');
+var libCategoriesList = document.getElementById('libCategoriesList');
+var libNewCategoryInput = document.getElementById('libNewCategoryInput');
+var libAddCategoryBtn = document.getElementById('libAddCategoryBtn');
 var libAllItemsCache = [];
+var libCategoriesCache = [];
 
 function libLoadedTitle(entry) {
   return (entry && entry.title) ? entry.title : 'New resource';
 }
 
-function libUniqueSorted(values) {
-  var seen = {};
-  var out = [];
-  values.forEach(function (v) {
-    v = (v || '').trim();
-    if (!v || seen[v]) return;
-    seen[v] = true;
-    out.push(v);
+// Fills a resource block's own Category <select> from libCategoriesCache,
+// preserving/selecting whichever value is currently correct for that block.
+function libBuildCategorySelectOptions(select, selectedValue) {
+  select.innerHTML = '';
+  var placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = libCategoriesCache.length ? 'Select a category\u2026' : 'No categories yet \u2014 add one above';
+  placeholder.disabled = true;
+  select.appendChild(placeholder);
+  libCategoriesCache.forEach(function (name) {
+    var o = document.createElement('option');
+    o.value = name;
+    o.textContent = name;
+    select.appendChild(o);
   });
-  out.sort(function (a, b) { return a.localeCompare(b); });
-  return out;
+  select.value = libCategoriesCache.indexOf(selectedValue) !== -1 ? selectedValue : '';
 }
 
-// Refreshes both filter <select> dropdowns AND every open block's own
-// Category/Topic <datalist> suggestions, from whatever's currently in
-// libAllItemsCache - called after load and after every save, so a
-// brand-new category/topic typed on one block becomes an offered
-// suggestion for every other block (including the "+ Add resource" one)
-// without needing a full Reload.
-function libRefreshFacets() {
-  var categories = libUniqueSorted(libAllItemsCache.map(function (e) { return e.category; }).concat(['Character']));
-  var topics = libUniqueSorted(libAllItemsCache.map(function (e) { return e.topic; }));
+function libRenderCategoryFilter() {
+  var current = libCategoryFilter.value;
+  libCategoryFilter.innerHTML = '';
+  var allOpt = document.createElement('option');
+  allOpt.value = '';
+  allOpt.textContent = 'All categories';
+  libCategoryFilter.appendChild(allOpt);
+  libCategoriesCache.forEach(function (name) {
+    var o = document.createElement('option');
+    o.value = name;
+    o.textContent = name;
+    libCategoryFilter.appendChild(o);
+  });
+  if (libCategoriesCache.indexOf(current) !== -1) libCategoryFilter.value = current;
+}
 
-  function fillFilterSelect(select, values, allLabel) {
-    var current = select.value;
-    select.innerHTML = '';
-    var allOpt = document.createElement('option');
-    allOpt.value = '';
-    allOpt.textContent = allLabel;
-    select.appendChild(allOpt);
-    values.forEach(function (v) {
-      var o = document.createElement('option');
-      o.value = v;
-      o.textContent = v;
-      select.appendChild(o);
-    });
-    if (values.indexOf(current) !== -1) select.value = current;
+function libRenderCategoriesList() {
+  libCategoriesList.innerHTML = '';
+  if (!libCategoriesCache.length) {
+    var empty = document.createElement('span');
+    empty.style.cssText = 'font-size:12px;color:#9A927E;font-style:italic;';
+    empty.textContent = 'No categories yet.';
+    libCategoriesList.appendChild(empty);
+    return;
   }
-  fillFilterSelect(libCategoryFilter, categories, 'All categories');
-  fillFilterSelect(libTopicFilter, topics, 'All topics');
+  libCategoriesCache.forEach(function (name) {
+    var chip = document.createElement('span');
+    chip.style.cssText = 'display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid #E3DCC9;border-radius:14px;background:#FCFAF5;font-size:12px;';
+    var label = document.createElement('span');
+    label.textContent = name;
+    chip.appendChild(label);
+    var delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.textContent = '\u00D7';
+    delBtn.title = 'Delete category';
+    delBtn.style.cssText = 'border:none;background:none;cursor:pointer;color:#9A927E;font-size:14px;line-height:1;padding:0;';
+    delBtn.addEventListener('click', function () { libDeleteCategory(name); });
+    chip.appendChild(delBtn);
+    libCategoriesList.appendChild(chip);
+  });
+}
 
-  var catDatalist = document.getElementById('libCategoryDatalist');
-  if (catDatalist) {
-    catDatalist.innerHTML = '';
-    categories.forEach(function (v) {
-      var o = document.createElement('option');
-      o.value = v;
-      catDatalist.appendChild(o);
-    });
-  }
-  var topicDatalist = document.getElementById('libTopicDatalist');
-  if (topicDatalist) {
-    topicDatalist.innerHTML = '';
-    topics.forEach(function (v) {
-      var o = document.createElement('option');
-      o.value = v;
-      topicDatalist.appendChild(o);
-    });
-  }
+// Called after categories load/change - refreshes the filter dropdown, the
+// chip list, and every currently-open resource block's own Category
+// <select> (so a category added or deleted from one place is reflected
+// everywhere immediately, no Reload needed).
+function libRefreshAllCategorySelects() {
+  libRenderCategoryFilter();
+  libRenderCategoriesList();
+  document.querySelectorAll('.lib-category-select').forEach(function (sel) {
+    libBuildCategorySelectOptions(sel, sel.dataset.currentCategory || sel.value);
+  });
+}
+
+function loadLibraryCategories() {
+  if (!adminKey) return Promise.resolve();
+  return fetch(PROXY_URL + '/admin/library-categories', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      libCategoriesCache = (d && Array.isArray(d.categories)) ? d.categories : [];
+      libRefreshAllCategorySelects();
+    })
+    .catch(function () { /* non-fatal - filter/selects just stay as they were */ });
+}
+
+libAddCategoryBtn.addEventListener('click', function () {
+  var name = libNewCategoryInput.value.trim();
+  if (!name) return;
+  libAddCategoryBtn.disabled = true;
+  fetch(PROXY_URL + '/admin/library-categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+    body: JSON.stringify({ name: name })
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      libAddCategoryBtn.disabled = false;
+      if (!d || !d.ok) { libStatus.textContent = 'Could not add category.'; return; }
+      libNewCategoryInput.value = '';
+      return loadLibraryCategories();
+    })
+    .catch(function () { libAddCategoryBtn.disabled = false; libStatus.textContent = 'Could not add category.'; });
+});
+
+function libDeleteCategory(name) {
+  if (!confirm('Delete category "' + name + '"? Any resources using it will become uncategorized. This cannot be undone.')) return;
+  fetch(PROXY_URL + '/admin/library-categories?name=' + encodeURIComponent(name), {
+    method: 'DELETE',
+    headers: { 'X-Stratum-Admin-Key': adminKey }
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.ok) { libStatus.textContent = 'Could not delete category.'; return; }
+      loadLibrary(); // full reload - any affected resources now show as uncategorized
+    })
+    .catch(function () { libStatus.textContent = 'Could not delete category.'; });
 }
 
 function libApplyFilter() {
   var cat = libCategoryFilter.value;
-  var topic = libTopicFilter.value;
   libList.querySelectorAll('.tst-block').forEach(function (block) {
     var matchesCat = !cat || block.dataset.category === cat;
-    var matchesTopic = !topic || block.dataset.topic === topic;
-    block.style.display = (matchesCat && matchesTopic) ? '' : 'none';
+    block.style.display = matchesCat ? '' : 'none';
   });
 }
 libCategoryFilter.addEventListener('change', libApplyFilter);
-libTopicFilter.addEventListener('change', libApplyFilter);
 
 function loadLibrary() {
   if (!adminKey) { libStatus.textContent = 'Unlock the panel first.'; return; }
   libStatus.textContent = 'Loading...';
-  fetch(PROXY_URL + '/admin/library', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+  loadLibraryCategories().then(function () {
+    return fetch(PROXY_URL + '/admin/library', { headers: { 'X-Stratum-Admin-Key': adminKey } });
+  })
     .then(function (r) { return r.json(); })
     .then(function (d) {
       libList.innerHTML = '';
       libAllItemsCache = (d && Array.isArray(d.resources)) ? d.resources : [];
-      libRefreshFacets();
       libAllItemsCache.forEach(function (entry) { addLibraryBlock(entry, false); });
       libStatus.textContent = '';
       libApplyFilter();
@@ -2698,7 +2758,6 @@ function addLibraryBlock(entry, isNew) {
   block.className = 'tst-block';
   if (entry.isActive === false) block.style.opacity = '0.65';
   block.dataset.category = entry.category || '';
-  block.dataset.topic = entry.topic || '';
   var summary = document.createElement('summary');
   summary.textContent = libLoadedTitle(entry);
   block.appendChild(summary);
@@ -2789,36 +2848,22 @@ function addLibraryBlock(entry, isNew) {
   typeSelect.addEventListener('change', updateTypeVisibility);
   updateTypeVisibility();
 
-  // ---- Category (required) + Excavation Topic (optional) ----
+  // ---- Category (required, managed list via /admin/library-categories) ----
   var metaRow = document.createElement('div');
   metaRow.className = 'tst-meta-row';
   var catField = document.createElement('div');
   catField.className = 'field';
   var catLabel = document.createElement('label');
   catLabel.textContent = 'Category';
-  var catInput = document.createElement('input');
-  catInput.type = 'text';
-  catInput.setAttribute('list', 'libCategoryDatalist');
-  catInput.placeholder = 'e.g. Character';
-  catInput.value = entry.category || '';
+  var catInput = document.createElement('select');
+  catInput.className = 'lib-category-select';
   catInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  catInput.addEventListener('change', function () { catInput.dataset.currentCategory = catInput.value; });
+  libBuildCategorySelectOptions(catInput, entry.category || '');
+  catInput.dataset.currentCategory = entry.category || '';
   catField.appendChild(catLabel);
   catField.appendChild(catInput);
   metaRow.appendChild(catField);
-
-  var topicField = document.createElement('div');
-  topicField.className = 'field';
-  var topicLabel = document.createElement('label');
-  topicLabel.textContent = 'Excavation Topic (optional)';
-  var topicInput = document.createElement('input');
-  topicInput.type = 'text';
-  topicInput.setAttribute('list', 'libTopicDatalist');
-  topicInput.placeholder = 'e.g. Character Excavation';
-  topicInput.value = entry.topic || '';
-  topicInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
-  topicField.appendChild(topicLabel);
-  topicField.appendChild(topicInput);
-  metaRow.appendChild(topicField);
   bodyWrap.appendChild(metaRow);
 
   // ---- Key Concept + Core Takeaway (required on every resource, Sept 2026) ----
@@ -2894,7 +2939,6 @@ function addLibraryBlock(entry, isNew) {
       pdfFilename: typeSelect.value === 'pdf' ? pdfInput.value.trim() : '',
       wistiaId: typeSelect.value === 'video' ? videoInput.value.trim() : '',
       category: catInput.value.trim(),
-      topic: topicInput.value.trim(),
       keyConcept: kcInput.value.trim(),
       coreTakeaway: ctInput.value.trim(),
       isActive: activeCb.checked
@@ -2924,15 +2968,12 @@ function addLibraryBlock(entry, isNew) {
         saveStatus.textContent = 'Saved.';
         setTimeout(function () { saveStatus.textContent = ''; }, 2000);
         block.dataset.category = p.category;
-        block.dataset.topic = p.topic;
         var cacheEntry = libAllItemsCache.find(function (e) { return String(e.id) === String(currentId); });
         if (cacheEntry) {
           cacheEntry.category = p.category;
-          cacheEntry.topic = p.topic;
         } else {
-          libAllItemsCache.push({ id: currentId, category: p.category, topic: p.topic });
+          libAllItemsCache.push({ id: currentId, category: p.category });
         }
-        libRefreshFacets();
       })
       .catch(function () { saveStatus.textContent = 'Save failed.'; });
   });
@@ -2948,7 +2989,6 @@ function addLibraryBlock(entry, isNew) {
         if (d && d.ok) {
           block.remove();
           libAllItemsCache = libAllItemsCache.filter(function (e) { return String(e.id) !== String(currentId); });
-          libRefreshFacets();
         } else {
           saveStatus.textContent = 'Delete failed.';
         }
