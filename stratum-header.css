@@ -72,8 +72,8 @@
 .sh-wrap .sh-for-writers {
   font-family: var(--sh-font-sans);
   font-weight: 700;
-  color: var(--sh-warm); /* reverted from the gold-bar-contrast ink back to gold, now that the bar is dark/translucent again */
-  font-size: 20px; /* 25% larger than the ~16px it was inheriting with no explicit rule, per Ted's earlier request */
+  color: var(--sh-paper); /* was set inline in JS as var(--sh-warm) — moved here and changed to a distinct color per Ted's request, since --sh-warm is already used for the brand mark and the border accent */
+  font-size: 22.5px; /* the real prior size, found in stratum-header.js's inline style, was 18px — this is 25% larger, not a guess against an unknown base like last pass */
 }
 
 /* ---- Top row: logo mark + primary nav ----

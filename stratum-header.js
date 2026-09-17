@@ -40,11 +40,10 @@
      - Tutorial dropdown renders with its open/close interaction
        working now, but an empty state (no dummy Wistia entries)
        until real video IDs are supplied — see TUTORIAL_VIDEOS below.
-     - "User Profile" links to PMPro's own account page
-       (/membership-account/, matching the page PMPro's setup wizard
-       already generated) rather than a custom-built duplicate — PMPro
-       already owns password/email changes correctly; no reason to
-       rebuild that.
+     - "User Profile" opens an in-page modal (name/email, read-only)
+       rather than navigating to PMPro's account page (Sept 2026) — see
+       openProfileModal(). A "Manage full account" link inside it still
+       points at PMPro's page for anything beyond name/email.
      - WIP Profile is no longer a separate page/nav item as of Sept
        2026 — it moved into an editable section embedded directly in
        this header (see stratum-wip-panel.js). The old /wip-profile/
@@ -207,13 +206,20 @@
     });
   }
 
-  // Avatar dropdown — "User Profile" links to PMPro's own account page
-  // (name/email/password, already handled correctly there — no reason to
-  // rebuild it). "WIP Profile" was a separate menu item/page here until
-  // Sept 2026; it's retired now that the WIP profile is an editable
-  // section embedded directly in the header (see stratum-wip-panel.js) —
-  // there's no separate page left to link to. Logged-out visitors get a
-  // single "Log in" item instead.
+  // Avatar dropdown — "User Profile" now opens an in-page modal showing
+  // just name/email (Sept 2026, per Ted's "just their name, email
+  // address for now" scope) instead of navigating away to PMPro's
+  // account page — keeps the person inside the System Page rather than
+  // bouncing them out for a quick look. Read-only for now: no editing,
+  // no write-back to PMPro. A "Manage full account" link inside the
+  // modal still points at PMPro's own page for anything beyond this
+  // (password, billing, plan changes) — this modal isn't replacing
+  // that, just avoiding a full navigation for the common case. "WIP
+  // Profile" was a separate menu item/page here until Sept 2026; it's
+  // retired now that the WIP profile is an editable section embedded
+  // directly in the header (see stratum-wip-panel.js) — there's no
+  // separate page left to link to. Logged-out visitors get a single
+  // "Log in" item instead.
   function buildAvatarDropdown() {
     var avatarInitial = WP_USER.loggedIn && WP_USER.firstName ? WP_USER.firstName.charAt(0).toUpperCase() : '?';
     var wrap = el('div', 'sh-nav-dropdown');
@@ -224,11 +230,12 @@
     mount(wrap, btn);
     var panel = el('div', 'sh-dropdown-panel');
     if (WP_USER.loggedIn) {
-      var profileLink = document.createElement('a');
-      profileLink.className = 'sh-dropdown-item';
-      profileLink.href = NAV_LINKS.userProfile;
-      profileLink.textContent = 'User Profile';
-      mount(panel, profileLink);
+      var profileBtn = document.createElement('button');
+      profileBtn.type = 'button';
+      profileBtn.className = 'sh-dropdown-item';
+      profileBtn.textContent = 'User Profile';
+      profileBtn.addEventListener('click', function () { closeAllDropdowns(); openProfileModal(); });
+      mount(panel, profileBtn);
     } else {
       var loginLink = document.createElement('a');
       loginLink.className = 'sh-dropdown-item';
@@ -246,7 +253,54 @@
     return wrap;
   }
 
-  // Abstract geological strata cross-section, echoing the excavation
+  // In-page profile modal (Sept 2026) — see the comment above
+  // buildAvatarDropdown() for scope. Styled inline with hardcoded
+  // hex values, same technique openTutorialPopup() above already uses
+  // and for the same reason: this overlay mounts on document.body, a
+  // sibling of .sh-wrap rather than a descendant of it, so the --sh-*
+  // custom properties (scoped to .sh-wrap) aren't visible here — the
+  // values below are copied from stratum-header.css's --sh-card-*
+  // parchment tokens to match, not independently invented.
+  function openProfileModal() {
+    var overlay = el('div', 'sh-profile-overlay');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(8,8,8,.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;';
+    var box = el('div');
+    box.style.cssText = 'width:100%;max-width:340px;background:linear-gradient(165deg,#F2E6C6 0%,#E7D6AA 100%);border:1px solid rgba(160,124,62,0.28);border-radius:14px;padding:26px 24px 22px;position:relative;box-shadow:0 20px 50px rgba(0,0,0,.45);font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;';
+
+    var closeBtn = el('button', null, '\u2715');
+    closeBtn.type = 'button';
+    closeBtn.style.cssText = 'position:absolute;top:12px;right:12px;background:none;border:none;color:#74582B;font-size:15px;cursor:pointer;line-height:1;';
+    closeBtn.addEventListener('click', function () { overlay.remove(); });
+    mount(box, closeBtn);
+
+    var title = el('p', null, 'Profile');
+    title.style.cssText = 'font-size:11.5px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:#A07C3E;margin:0 0 18px;';
+    mount(box, title);
+
+    function field(label, value) {
+      var wrap = el('div');
+      wrap.style.cssText = 'margin-bottom:14px;';
+      var l = el('div', null, label);
+      l.style.cssText = 'font-size:11px;font-weight:700;color:#74582B;margin-bottom:4px;';
+      var v = el('div', null, value || '\u2014');
+      v.style.cssText = 'font-size:14px;color:#16130F;word-break:break-word;';
+      mount(wrap, l);
+      mount(wrap, v);
+      return wrap;
+    }
+    mount(box, field('Name', WP_USER.firstName));
+    mount(box, field('Email', WP_USER.email));
+
+    var manageLink = document.createElement('a');
+    manageLink.href = NAV_LINKS.userProfile;
+    manageLink.textContent = 'Manage full account \u2192';
+    manageLink.style.cssText = 'display:inline-block;margin-top:4px;font-size:12.5px;font-weight:700;color:#A07C3E;text-decoration:none;';
+    mount(box, manageLink);
+
+    mount(overlay, box);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+  }
   // concept, rendered as a background accent along the header's right
   // edge. Static decoration — inserted as raw markup, not built via el().
   //
@@ -301,8 +355,6 @@
     mount(brand, el('div', 'sh-brand-mark'));
     mount(brand, el('span', 'sh-brand-name', 'The Stratum Method'));
     var tagline = el('span', 'sh-for-writers', 'For writers');
-    tagline.style.fontSize = '18px';
-    tagline.style.color = 'var(--sh-warm)';
     mount(brand, tagline);
     mount(topbar, brand);
 
@@ -310,7 +362,7 @@
     var homeLink = document.createElement('a');
     homeLink.className = 'sh-nav-link';
     homeLink.href = '/system/';
-    homeLink.textContent = 'Home';
+    homeLink.textContent = 'Dashboard';
     mount(nav, homeLink);
     [['Practice Lab', NAV_LINKS.practice], ['Library', NAV_LINKS.library]].forEach(function (pair) {
       var a = document.createElement('a');
