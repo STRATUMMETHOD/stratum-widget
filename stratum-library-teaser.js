@@ -21,6 +21,16 @@
    teaser/section on this page.
 
    Requires stratum-identity.js loaded first on this page.
+
+   ---- Database-backed translation (Sept 2026) ----
+   t() checks DB overrides fetched from GET /ui-strings?lang= FIRST, then
+   falls back to the STRINGS.en/es defaults below. This means adding a
+   NEW language (anything beyond English/Spanish) needs zero code changes
+   here - fill in translations for the "library.*" keys under Manage UI
+   Strings in the admin panel and this card picks them up on next load.
+   The fetch is awaited before building (see init()) so a language with
+   no local en/es block still renders correctly on first paint, not just
+   after a later patch.
    ============================================================ */
 (function () {
   'use strict';
@@ -34,7 +44,32 @@
     en: { title: 'Library', view: 'View', noResourcesYet: 'No resources yet.', label: 'Today\u2019s Featured Resource', video: 'Video', pdf: 'PDF' },
     es: { title: 'Biblioteca', view: 'Ver', noResourcesYet: 'Aún no hay recursos.', label: 'Recurso destacado de hoy', video: 'Video', pdf: 'PDF' }
   };
-  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
+  // 'view' is shared across several cards - stored under the DB's
+  // "common.*" namespace, not "library.*", so a translation entered once
+  // (from any of those cards' perspective in admin) covers all of them.
+  var DB_COMMON_KEYS = { view: 'view' };
+  var DB_STRINGS = null;
+  var uiStringsCallbacks = [];
+  function loadUiStrings(callback) {
+    if (DB_STRINGS) { callback(); return; }
+    uiStringsCallbacks.push(callback);
+    if (uiStringsCallbacks.length > 1) return; // a fetch is already in flight
+    fetch(PROXY_URL + '/ui-strings?lang=' + encodeURIComponent(LANG))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { DB_STRINGS = (d && d.strings) || {}; })
+      .catch(function () { DB_STRINGS = {}; })
+      .then(function () {
+        var cbs = uiStringsCallbacks; uiStringsCallbacks = [];
+        cbs.forEach(function (cb) { cb(); });
+      });
+  }
+  function t(key) {
+    if (DB_STRINGS) {
+      var dbKey = DB_COMMON_KEYS[key] ? ('common.' + DB_COMMON_KEYS[key]) : ('library.' + key);
+      if (DB_STRINGS[dbKey] != null) return DB_STRINGS[dbKey];
+    }
+    return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key];
+  }
 
   function el(tag, className, text) {
     var node = document.createElement(tag);
@@ -112,7 +147,9 @@
   }
 
   function proceed() {
-    mountInto(window.STRATUM_HEADER_WRAP);
+    loadUiStrings(function () {
+      mountInto(window.STRATUM_HEADER_WRAP);
+    });
   }
 
   function init() {

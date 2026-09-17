@@ -78,10 +78,11 @@
       completed: 'Completed',
       inProgress: 'In Progress',
       noCheckinsYet: 'No check-ins yet',
-      checkinCount: function (n) { return n + ' check-in' + (n === 1 ? '' : 's'); },
+      checkinCountSingular: '{n} check-in',
+      checkinCountPlural: '{n} check-ins',
       today: 'today',
       yesterday: 'yesterday',
-      daysAgo: function (n) { return n + ' days ago'; }
+      daysAgo: '{n} days ago'
     },
     es: {
       colExcavation: 'Coaching de excavación',
@@ -96,13 +97,45 @@
       completed: 'Completado',
       inProgress: 'En progreso',
       noCheckinsYet: 'Aún no hay registros',
-      checkinCount: function (n) { return n + ' registro' + (n === 1 ? '' : 's'); },
+      checkinCountSingular: '{n} registro',
+      checkinCountPlural: '{n} registros',
       today: 'hoy',
       yesterday: 'ayer',
-      daysAgo: function (n) { return 'hace ' + n + ' días'; }
+      daysAgo: 'hace {n} días'
     }
   };
-  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
+  var DB_KEY_MAP = {
+    untitledWip: 'common.untitledWip',
+    workInProgress: 'ec.workInProgressColon',
+    today: 'ec.todayLower',
+    yesterday: 'ec.yesterdayLower',
+    daysAgo: 'ec.daysAgoLower'
+  };
+  var DB_STRINGS = null;
+  var uiStringsCallbacks = [];
+  function loadUiStrings(callback) {
+    if (DB_STRINGS) { callback(); return; }
+    uiStringsCallbacks.push(callback);
+    if (uiStringsCallbacks.length > 1) return;
+    fetch(PROXY_URL + '/ui-strings?lang=' + encodeURIComponent(LANG))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { DB_STRINGS = (d && d.strings) || {}; })
+      .catch(function () { DB_STRINGS = {}; })
+      .then(function () {
+        var cbs = uiStringsCallbacks; uiStringsCallbacks = [];
+        cbs.forEach(function (cb) { cb(); });
+      });
+  }
+  function format(str, vars) {
+    return str.replace(/\{(\w+)\}/g, function (_, k) { return (vars && vars[k] != null) ? vars[k] : ''; });
+  }
+  function t(key) {
+    if (DB_STRINGS) {
+      var dbKey = DB_KEY_MAP[key] || ('ec.' + key);
+      if (DB_STRINGS[dbKey] != null) return DB_STRINGS[dbKey];
+    }
+    return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key];
+  }
 
   var TRACK_COLUMNS = [
     { track: 'excavation', labelKey: 'colExcavation' },
@@ -195,7 +228,7 @@
     var days = Math.floor((Date.now() - d.getTime()) / 86400000);
     if (days <= 0) return t('today');
     if (days === 1) return t('yesterday');
-    if (days < 7) return t('daysAgo')(days);
+    if (days < 7) return format(t('daysAgo'), { n: days });
     return d.toLocaleDateString(LANG === 'es' ? 'es-ES' : undefined);
   }
 
@@ -272,7 +305,7 @@
           var badge = row.querySelector('.sh-ec-badge');
           if (!badge) return;
           badge.textContent = count
-            ? (t('checkinCount')(count) + (lastAt ? ' \u00b7 ' + formatRelativeDate(lastAt) : ''))
+            ? (format(t(count === 1 ? 'checkinCountSingular' : 'checkinCountPlural'), { n: count }) + (lastAt ? ' \u00b7 ' + formatRelativeDate(lastAt) : ''))
             : t('noCheckinsYet');
         });
         mount(listEl, row);
@@ -348,7 +381,9 @@
   }
 
   function proceed(studentId) {
-    mountInto(window.STRATUM_HEADER_WRAP, studentId || null);
+    loadUiStrings(function () {
+      mountInto(window.STRATUM_HEADER_WRAP, studentId || null);
+    });
   }
 
   function init() {

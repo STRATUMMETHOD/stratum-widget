@@ -556,6 +556,7 @@
         <span id="adminLangHint" style="font-size:12px;color:#8a7a5e;margin-left:10px;"></span>
       </span>
       <button class="btn secondary" id="manageLanguagesBtn" type="button" style="margin-left:8px;">Manage Languages</button>
+      <button class="btn secondary" id="manageUiStringsBtn" type="button" style="margin-left:8px;">Manage UI Strings</button>
     </div>
     <div id="manageLanguagesPanel" style="display:none;margin-top:12px;">
       <div class="card" style="padding:18px 20px;">
@@ -599,6 +600,23 @@
           </div>
           <div id="languagesStatus" style="margin-top:8px;font-size:13px;"></div>
         </div>
+      </div>
+    </div>
+    <div id="manageUiStringsPanel" style="display:none;margin-top:12px;">
+      <div class="card" style="padding:18px 20px;">
+        <div class="card-title" style="margin-bottom:6px;">UI Strings</div>
+        <span class="sub" style="margin:0 0 14px;display:block;">
+          Dashboard chrome (nav labels, buttons, empty states, form labels) for whichever language is selected in
+          "Editing content in:" above. English text is the built-in default and never needs an entry here \u2014 add a
+          translation for any OTHER language and the dashboard picks it up automatically, no deploy needed. Leave a
+          field blank to fall back to the English default shown beside it. Saves automatically when you click out of
+          a field you've changed.
+        </span>
+        <div id="uiStringsEnNotice" style="display:none;font-size:13px;color:#8a7a5e;margin-bottom:10px;">
+          You're editing English \u2014 this is the built-in default already used everywhere, so there's nothing to
+          translate here. Switch "Editing content in:" to another language to add translations.
+        </div>
+        <div id="uiStringsGroups"></div>
       </div>
     </div>
   </div>
@@ -1360,7 +1378,132 @@ document.getElementById('adminLangSelect').addEventListener('change', function (
   // the next time the admin clicks into it, via the tab's own click
   // handler - no need to force it here.)
   if (vocabularyView.style.display !== 'none') loadVocabulary();
+  // Same treatment for the UI Strings panel, if it's currently open.
+  if (document.getElementById('manageUiStringsPanel').style.display !== 'none') loadUiStrings();
 });
+// ===== UI Strings (Sept 2026) =====
+// Same "Editing content in:" ADMIN_LANG the rest of this panel already
+// uses - switching it (see the change handler just above) refreshes this
+// panel too, if it's open. Grouped by module (header/dashboard/wip/ec/
+// practice/library/common) with a readable label per key, not the raw
+// key itself - see UI_STRING_KEYS in worker.js for where these labels
+// come from. Autosaves on blur (debounced-by-blur, not by timer) rather
+// than a Save button per row - with ~140 rows, a button each would be
+// far noisier than the rest of this panel's UX.
+var UI_STRINGS_MODULE_LABELS = {
+  common: 'Shared (used in more than one place)',
+  header: 'Header / Navigation',
+  dashboard: 'Idea Log & Reminders',
+  wip: 'Profile (WIP panel)',
+  ec: 'Coaching cards (Excavation Center)',
+  practice: 'Practice Lab card',
+  library: 'Library card'
+};
+document.getElementById('manageUiStringsBtn').addEventListener('click', function () {
+  var panelEl = document.getElementById('manageUiStringsPanel');
+  var opening = panelEl.style.display === 'none';
+  panelEl.style.display = opening ? '' : 'none';
+  if (opening) loadUiStrings();
+});
+function loadUiStrings() {
+  if (!adminKey) return;
+  var groupsEl = document.getElementById('uiStringsGroups');
+  var enNotice = document.getElementById('uiStringsEnNotice');
+  enNotice.style.display = ADMIN_LANG === 'en' ? '' : 'none';
+  groupsEl.innerHTML = '<div class="sub">Loading\u2026</div>';
+  fetch(PROXY_URL + '/admin/ui-strings?lang=' + encodeURIComponent(ADMIN_LANG), {
+    headers: { 'X-Stratum-Admin-Key': adminKey }
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { renderUiStringsGroups((d && Array.isArray(d.items)) ? d.items : []); })
+    .catch(function () { groupsEl.innerHTML = '<div class="sub" style="color:#a33;">Network error - could not reach the Worker.</div>'; });
+}
+function renderUiStringsGroups(items) {
+  var groupsEl = document.getElementById('uiStringsGroups');
+  groupsEl.innerHTML = '';
+  var byModule = {};
+  items.forEach(function (item) {
+    (byModule[item.module] = byModule[item.module] || []).push(item);
+  });
+  Object.keys(UI_STRINGS_MODULE_LABELS).forEach(function (moduleKey) {
+    var rows = byModule[moduleKey];
+    if (!rows || !rows.length) return;
+    var section = document.createElement('div');
+    section.style.marginTop = '18px';
+    var heading = document.createElement('div');
+    heading.textContent = UI_STRINGS_MODULE_LABELS[moduleKey];
+    heading.style.cssText = 'font-size:13px;font-weight:700;color:#3a2f1c;margin-bottom:8px;border-bottom:1px solid #ECE7DC;padding-bottom:6px;';
+    section.appendChild(heading);
+    var table = document.createElement('table');
+    table.style.cssText = 'width:100%;border-collapse:collapse;background:#fff;text-align:left;';
+    var tbody = document.createElement('tbody');
+    rows.forEach(function (item) {
+      var tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid #F1EBDD';
+      var labelTd = document.createElement('td');
+      labelTd.style.cssText = 'padding:7px 8px;width:22%;vertical-align:top;font-size:12.5px;color:#3a2f1c;';
+      labelTd.textContent = item.label;
+      tr.appendChild(labelTd);
+      var enTd = document.createElement('td');
+      enTd.style.cssText = 'padding:7px 8px;width:34%;vertical-align:top;font-size:12.5px;color:#8a7a5e;font-style:italic;';
+      enTd.textContent = item.en;
+      tr.appendChild(enTd);
+      var valTd = document.createElement('td');
+      valTd.style.cssText = 'padding:7px 8px;width:44%;vertical-align:top;';
+      if (ADMIN_LANG === 'en') {
+        // English IS the default already baked into the frontend -
+        // showing an editable field here would look like translation
+        // work is needed when it isn't. Read-only, greyed.
+        var lockedNote = document.createElement('span');
+        lockedNote.textContent = '(built-in default)';
+        lockedNote.style.cssText = 'font-size:12px;color:#b5aa8f;';
+        valTd.appendChild(lockedNote);
+      } else {
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.value = item.value != null ? item.value : '';
+        input.placeholder = item.en;
+        input.style.width = '100%';
+        var statusSpan = document.createElement('span');
+        statusSpan.style.cssText = 'font-size:11px;margin-left:8px;';
+        var lastSaved = item.value != null ? item.value : '';
+        input.addEventListener('blur', function () {
+          var newVal = input.value;
+          if (newVal === lastSaved) return; // nothing changed - skip the request
+          statusSpan.textContent = 'Saving\u2026';
+          statusSpan.style.color = '#8a7a5e';
+          fetch(PROXY_URL + '/admin/ui-strings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+            body: JSON.stringify({ key: item.key, lang: ADMIN_LANG, value: newVal })
+          })
+            .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+            .then(function (result) {
+              if (result.status === 200 && result.data && result.data.ok) {
+                lastSaved = newVal;
+                statusSpan.textContent = result.data.cleared ? 'Cleared (using English default)' : 'Saved';
+                statusSpan.style.color = '#3f7a4a';
+              } else {
+                statusSpan.textContent = 'Could not save';
+                statusSpan.style.color = '#a33';
+              }
+            })
+            .catch(function () {
+              statusSpan.textContent = 'Network error';
+              statusSpan.style.color = '#a33';
+            });
+        });
+        valTd.appendChild(input);
+        valTd.appendChild(statusSpan);
+      }
+      tr.appendChild(valTd);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    section.appendChild(table);
+    groupsEl.appendChild(section);
+  });
+}
 var tabDashboardBtn = document.getElementById('tabDashboardBtn');
 var tabDeliverablesBtn = document.getElementById('tabDeliverablesBtn');
 var tabTestimonialsBtn = document.getElementById('tabTestimonialsBtn');

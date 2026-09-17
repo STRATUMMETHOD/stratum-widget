@@ -34,10 +34,35 @@
   var LANG = lsGet(LANG_STORE_KEY) || 'en';
 
   var STRINGS = {
-    en: { title: 'Practice Lab', view: 'View', noTermsYet: 'No practice terms yet.', label: 'Today\u2019s Practice Term', practicedOf: function (done, total) { return done + ' of ' + total + ' terms practiced'; } },
-    es: { title: 'Laboratorio de Práctica', view: 'Ver', noTermsYet: 'Aún no hay términos de práctica.', label: 'Término de práctica de hoy', practicedOf: function (done, total) { return done + ' de ' + total + ' términos practicados'; } }
+    en: { title: 'Practice Lab', view: 'View', noTermsYet: 'No practice terms yet.', label: 'Today\u2019s Practice Term', practicedOf: '{done} of {total} terms practiced' },
+    es: { title: 'Laboratorio de Práctica', view: 'Ver', noTermsYet: 'Aún no hay términos de práctica.', label: 'Término de práctica de hoy', practicedOf: '{done} de {total} términos practicados' }
   };
-  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
+  var DB_COMMON_KEYS = { view: 'view' };
+  var DB_STRINGS = null;
+  var uiStringsCallbacks = [];
+  function loadUiStrings(callback) {
+    if (DB_STRINGS) { callback(); return; }
+    uiStringsCallbacks.push(callback);
+    if (uiStringsCallbacks.length > 1) return;
+    fetch(PROXY_URL + '/ui-strings?lang=' + encodeURIComponent(LANG))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { DB_STRINGS = (d && d.strings) || {}; })
+      .catch(function () { DB_STRINGS = {}; })
+      .then(function () {
+        var cbs = uiStringsCallbacks; uiStringsCallbacks = [];
+        cbs.forEach(function (cb) { cb(); });
+      });
+  }
+  function t(key) {
+    if (DB_STRINGS) {
+      var dbKey = DB_COMMON_KEYS[key] ? ('common.' + DB_COMMON_KEYS[key]) : ('practice.' + key);
+      if (DB_STRINGS[dbKey] != null) return DB_STRINGS[dbKey];
+    }
+    return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key];
+  }
+  function format(str, vars) {
+    return str.replace(/\{(\w+)\}/g, function (_, k) { return (vars && vars[k] != null) ? vars[k] : ''; });
+  }
 
   function el(tag, className, text) {
     var node = document.createElement(tag);
@@ -104,7 +129,7 @@
       }
       fetchPracticedCount(studentId, terms, function (done) {
         if (done == null) return;
-        mount(body, el('div', 'sh-pt-progress', t('practicedOf')(done, terms.length)));
+        mount(body, el('div', 'sh-pt-progress', format(t('practicedOf'), { done: done, total: terms.length })));
       });
     });
 
@@ -137,7 +162,9 @@
   }
 
   function proceed(studentId) {
-    mountInto(window.STRATUM_HEADER_WRAP, studentId || null);
+    loadUiStrings(function () {
+      mountInto(window.STRATUM_HEADER_WRAP, studentId || null);
+    });
   }
 
   function init() {

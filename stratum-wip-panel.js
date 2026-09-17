@@ -84,7 +84,7 @@
       couldNotCreateWip: 'Could not create a new WIP',
       networkErrorCreateWip: 'Network error \u2014 could not create a new WIP',
       networkErrorDeleteWip: 'Network error \u2014 could not delete',
-      confirmDeleteWip: function (name) { return 'Delete \u201c' + name + '\u201d and its character list? This can\u2019t be undone. (Any excavation progress already recorded for its characters stays in the system but becomes unreachable.)'; },
+      confirmDeleteWip: 'Delete \u201c{name}\u201d and its character list? This can\u2019t be undone. (Any excavation progress already recorded for its characters stays in the system but becomes unreachable.)',
       projectDescription: 'Project Description',
       workingTitle: 'Working Title',
       workingTitlePlaceholder: 'e.g. What the River Kept',
@@ -105,9 +105,10 @@
       coreConflictPlaceholder: 'Core conflict\u2026',
       removeCharacter: 'Remove character',
       addCharacter: '+ Add Character',
-      maxCharacters: function (n) { return 'Maximum ' + n + ' characters'; },
-      wipsCount: function (n) { return n + ' WIPs'; },
-      charactersCount: function (n) { return n + ' character' + (n === 1 ? '' : 's'); },
+      maxCharacters: 'Maximum {n} characters',
+      wipsCount: '{n} WIPs',
+      charactersCountSingular: '{n} character',
+      charactersCountPlural: '{n} characters',
       chooseGenre: 'Choose a genre\u2026',
       chooseOne: 'Choose one\u2026',
       genreOptions: {
@@ -149,7 +150,7 @@
       couldNotCreateWip: 'No se pudo crear la nueva obra',
       networkErrorCreateWip: 'Error de red \u2014 no se pudo crear la nueva obra',
       networkErrorDeleteWip: 'Error de red \u2014 no se pudo eliminar',
-      confirmDeleteWip: function (name) { return '\u00bfEliminar \u201c' + name + '\u201d y su lista de personajes? Esta acción no se puede deshacer. (El progreso de excavación ya registrado para sus personajes permanece en el sistema pero deja de ser accesible.)'; },
+      confirmDeleteWip: '\u00bfEliminar \u201c{name}\u201d y su lista de personajes? Esta acción no se puede deshacer. (El progreso de excavación ya registrado para sus personajes permanece en el sistema pero deja de ser accesible.)',
       projectDescription: 'Descripción del proyecto',
       workingTitle: 'Título de trabajo',
       workingTitlePlaceholder: 'p. ej. Lo que dejó el río',
@@ -170,9 +171,10 @@
       coreConflictPlaceholder: 'Conflicto central\u2026',
       removeCharacter: 'Eliminar personaje',
       addCharacter: '+ Agregar personaje',
-      maxCharacters: function (n) { return 'Máximo ' + n + ' personajes'; },
-      wipsCount: function (n) { return n + ' obras'; },
-      charactersCount: function (n) { return n + ' personaje' + (n === 1 ? '' : 's'); },
+      maxCharacters: 'Máximo {n} personajes',
+      wipsCount: '{n} obras',
+      charactersCountSingular: '{n} personaje',
+      charactersCountPlural: '{n} personajes',
       chooseGenre: 'Elige un género\u2026',
       chooseOne: 'Elige uno\u2026',
       genreOptions: {
@@ -193,8 +195,57 @@
       characterTypeOptions: { Protagonist: 'Protagonista', Antagonist: 'Antagonista', 'Supporting Character': 'Personaje secundario' }
     }
   };
-  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
+  var DB_COMMON_KEYS = { viewBtn: 'view', closeBtn: 'close', untitledWip: 'untitledWip' };
+  var GENRE_SLUGS = {
+    'Thriller/Suspense': 'thrillerSuspense', 'Literary Fiction': 'literaryFiction',
+    'Historical Fiction': 'historicalFiction', 'Romance/Domestic Fiction': 'romanceDomestic',
+    'Fantasy/Science Fiction': 'fantasySciFi', 'Other': 'other'
+  };
+  var STAGE_SLUGS = { Outlining: 'outlining', Drafting: 'drafting', Revising: 'revising', Polishing: 'polishing' };
+  var STYLE_SLUGS = { 'Plot Driven': 'plotDriven', 'Character Driven': 'characterDriven' };
+  var POV_SLUGS = {
+    'First Person': 'first', 'Second Person': 'second', 'Third Person Limited': 'thirdLimited',
+    'Third Person Omniscient': 'thirdOmniscient', 'Third Person Objective': 'thirdObjective'
+  };
+  var CHARTYPE_SLUGS = { Protagonist: 'protagonist', Antagonist: 'antagonist', 'Supporting Character': 'supporting' };
+  var GROUP_DB_INFO = {
+    genreOptions: { prefix: 'wip.genre.', slugs: GENRE_SLUGS },
+    stageOptions: { prefix: 'wip.stage.', slugs: STAGE_SLUGS },
+    styleOptions: { prefix: 'wip.style.', slugs: STYLE_SLUGS },
+    povOptions: { prefix: 'wip.pov.', slugs: POV_SLUGS },
+    characterTypeOptions: { prefix: 'wip.charType.', slugs: CHARTYPE_SLUGS }
+  };
+  var DB_STRINGS = null;
+  var uiStringsCallbacks = [];
+  function loadUiStrings(callback) {
+    if (DB_STRINGS) { callback(); return; }
+    uiStringsCallbacks.push(callback);
+    if (uiStringsCallbacks.length > 1) return;
+    fetch(PROXY_URL + '/ui-strings?lang=' + encodeURIComponent(LANG))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { DB_STRINGS = (d && d.strings) || {}; })
+      .catch(function () { DB_STRINGS = {}; })
+      .then(function () {
+        var cbs = uiStringsCallbacks; uiStringsCallbacks = [];
+        cbs.forEach(function (cb) { cb(); });
+      });
+  }
+  function format(str, vars) {
+    return str.replace(/\{(\w+)\}/g, function (_, k) { return (vars && vars[k] != null) ? vars[k] : ''; });
+  }
+  function t(key) {
+    if (DB_STRINGS) {
+      var dbKey = DB_COMMON_KEYS[key] ? ('common.' + DB_COMMON_KEYS[key]) : ('wip.' + key);
+      if (DB_STRINGS[dbKey] != null) return DB_STRINGS[dbKey];
+    }
+    return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key];
+  }
   function optLabel(groupKey, value) {
+    if (DB_STRINGS) {
+      var info = GROUP_DB_INFO[groupKey];
+      var slug = info && info.slugs[value];
+      if (slug && DB_STRINGS[info.prefix + slug] != null) return DB_STRINGS[info.prefix + slug];
+    }
     var group = (STRINGS[LANG] && STRINGS[LANG][groupKey]) || STRINGS.en[groupKey];
     return (group && group[value]) || value;
   }
@@ -367,7 +418,7 @@
   function updateAddButtonState(addBtn, listEl) {
     var atMax = characterRows.length >= MAX_CHARACTERS;
     addBtn.disabled = atMax;
-    addBtn.textContent = atMax ? t('maxCharacters')(MAX_CHARACTERS) : t('addCharacter');
+    addBtn.textContent = atMax ? format(t('maxCharacters'), { n: MAX_CHARACTERS }) : t('addCharacter');
   }
 
   function collectCharacters() {
@@ -533,11 +584,11 @@
       return;
     }
     var bits = [];
-    if (WIPS.length > 1) bits.push(t('wipsCount')(WIPS.length));
+    if (WIPS.length > 1) bits.push(format(t('wipsCount'), { n: WIPS.length }));
     if (profile.wipTitle) bits.push(profile.wipTitle);
     if (profile.genre) bits.push(optLabel('genreOptions', profile.genre));
     var charCount = (profile.characters || []).filter(function (c) { return c && c.name; }).length;
-    if (charCount) bits.push(t('charactersCount')(charCount));
+    if (charCount) bits.push(format(t(charCount === 1 ? 'charactersCountSingular' : 'charactersCountPlural'), { n: charCount }));
     mount(summaryEl, el('div', 'sh-wip-summary-line', bits.join(' \u00b7 ') || t('untitledWip')));
   }
 
@@ -761,7 +812,7 @@
     if (!ACTIVE_WIP_ID) return;
     var wip = WIPS.filter(function (w) { return w.id === ACTIVE_WIP_ID; })[0];
     var name = (wip && wip.title) || t('untitledWip');
-    if (!window.confirm(t('confirmDeleteWip')(name))) return;
+    if (!window.confirm(format(t('confirmDeleteWip'), { name: name }))) return;
     fetch(PROXY_URL + '/wips?studentId=' + encodeURIComponent(STUDENT_ID) + '&wipId=' + encodeURIComponent(ACTIVE_WIP_ID), { method: 'DELETE' })
       .then(function (r) { return r.json(); })
       .then(function () { loadWipListThenSelect(null); })
@@ -828,8 +879,10 @@
   function proceed(studentId) {
     if (!studentId) return; // logged-out / no-membership pages never reach here — see header's own gating
     STUDENT_ID = studentId;
-    mountInto(window.STRATUM_HEADER_WRAP);
-    loadWipListThenSelect(null);
+    loadUiStrings(function () {
+      mountInto(window.STRATUM_HEADER_WRAP);
+      loadWipListThenSelect(null);
+    });
   }
 
   function init() {

@@ -85,11 +85,11 @@
       noRemindersToDownload: 'No reminders to download.',
       today: 'Today',
       yesterday: 'Yesterday',
-      daysAgo: function (n) { return n + ' days ago'; },
+      daysAgo: '{n} days ago',
       exportHeaderReminders: 'THE STRATUM METHOD \u2014 MY REMINDERS',
       exportHeaderIdeaLog: 'THE STRATUM METHOD \u2014 MY IDEA LOG',
       exported: 'Exported: ',
-      remainingOf: function (remaining, total) { return remaining + ' of ' + total + ' remaining.'; },
+      remainingOf: '{remaining} of {total} remaining.',
       categories: {
         Character: 'Character', Plot: 'Plot', Theme: 'Theme', Revision: 'Revision',
         Research: 'Research', Deadlines: 'Deadlines', Inspiration: 'Inspiration', General: 'General'
@@ -141,11 +141,11 @@
       noRemindersToDownload: 'No hay recordatorios para descargar.',
       today: 'Hoy',
       yesterday: 'Ayer',
-      daysAgo: function (n) { return 'Hace ' + n + ' días'; },
+      daysAgo: 'Hace {n} días',
       exportHeaderReminders: 'THE STRATUM METHOD \u2014 MIS RECORDATORIOS',
       exportHeaderIdeaLog: 'THE STRATUM METHOD \u2014 MI REGISTRO DE IDEAS',
       exported: 'Exportado: ',
-      remainingOf: function (remaining, total) { return remaining + ' de ' + total + ' pendientes.'; },
+      remainingOf: '{remaining} de {total} pendientes.',
       categories: {
         Character: 'Personaje', Plot: 'Trama', Theme: 'Tema', Revision: 'Revisión',
         Research: 'Investigación', Deadlines: 'Plazos', Inspiration: 'Inspiración', General: 'General'
@@ -166,9 +166,55 @@
       }
     }
   };
-  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
-  function catLabel(cat) { return ((STRINGS[LANG] && STRINGS[LANG].categories) || STRINGS.en.categories)[cat] || cat; }
-  function presetLabel(p) { return ((STRINGS[LANG] && STRINGS[LANG].presets) || STRINGS.en.presets)[p] || p; }
+  var DB_COMMON_KEYS = { viewBtn: 'view', closeBtn: 'close', today: 'today', yesterday: 'yesterday', daysAgo: 'daysAgo' };
+  var PRESET_SLUGS = {
+    'Finish a chapter draft': 'finishChapter',
+    'Revise a scene': 'reviseScene',
+    'Outline next section': 'outlineSection',
+    'Character deep dive': 'characterDeepDive',
+    'Check continuity': 'checkContinuity',
+    'Polish opening paragraph': 'polishOpening',
+    'Deadline for manuscript changes': 'deadlineChanges',
+    'Submit to beta reader': 'submitBeta',
+    'Research setting details': 'researchSetting',
+    'Track word count goal': 'trackWordCount',
+    'Prepare query letter': 'prepareQuery',
+    'Finalize antagonist arc': 'finalizeAntagonist'
+  };
+  var DB_STRINGS = null;
+  var uiStringsCallbacks = [];
+  function loadUiStrings(callback) {
+    if (DB_STRINGS) { callback(); return; }
+    uiStringsCallbacks.push(callback);
+    if (uiStringsCallbacks.length > 1) return;
+    fetch(PROXY_URL + '/ui-strings?lang=' + encodeURIComponent(LANG))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { DB_STRINGS = (d && d.strings) || {}; })
+      .catch(function () { DB_STRINGS = {}; })
+      .then(function () {
+        var cbs = uiStringsCallbacks; uiStringsCallbacks = [];
+        cbs.forEach(function (cb) { cb(); });
+      });
+  }
+  function format(str, vars) {
+    return str.replace(/\{(\w+)\}/g, function (_, k) { return (vars && vars[k] != null) ? vars[k] : ''; });
+  }
+  function t(key) {
+    if (DB_STRINGS) {
+      var dbKey = DB_COMMON_KEYS[key] ? ('common.' + DB_COMMON_KEYS[key]) : ('dashboard.' + key);
+      if (DB_STRINGS[dbKey] != null) return DB_STRINGS[dbKey];
+    }
+    return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key];
+  }
+  function catLabel(cat) {
+    if (DB_STRINGS && DB_STRINGS['dashboard.cat.' + cat] != null) return DB_STRINGS['dashboard.cat.' + cat];
+    return ((STRINGS[LANG] && STRINGS[LANG].categories) || STRINGS.en.categories)[cat] || cat;
+  }
+  function presetLabel(p) {
+    var slug = PRESET_SLUGS[p];
+    if (DB_STRINGS && slug && DB_STRINGS['dashboard.preset.' + slug] != null) return DB_STRINGS['dashboard.preset.' + slug];
+    return ((STRINGS[LANG] && STRINGS[LANG].presets) || STRINGS.en.presets)[p] || p;
+  }
 
   // Canonical (English) values — these are what's actually STORED and
   // matched against (entry.category, filterSelect comparisons, option
@@ -199,7 +245,7 @@
     var days = Math.round((new Date().setHours(0, 0, 0, 0) - d.setHours(0, 0, 0, 0)) / 86400000);
     if (days <= 0) return t('today');
     if (days === 1) return t('yesterday');
-    if (days < 14) return t('daysAgo')(days);
+    if (days < 14) return format(t('daysAgo'), { n: days });
     return d.toLocaleDateString(DATE_LOCALE, { month: 'short', day: 'numeric' });
   }
   function formatFullDate(isoDate) {
@@ -628,7 +674,7 @@
       txt += '\n';
     });
     var remaining = tasks.filter(function (task) { return !task.done; }).length;
-    txt += '\n==========================================\n' + t('remainingOf')(remaining, tasks.length) + '\n';
+    txt += '\n==========================================\n' + format(t('remainingOf'), { remaining: remaining, total: tasks.length }) + '\n';
     var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
     var link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -681,7 +727,9 @@
 
   function proceed(studentId) {
     STUDENT_ID = studentId || null;
-    mountInto(window.STRATUM_HEADER_WRAP);
+    loadUiStrings(function () {
+      mountInto(window.STRATUM_HEADER_WRAP);
+    });
   }
 
   function init() {

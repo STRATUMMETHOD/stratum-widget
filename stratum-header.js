@@ -75,7 +75,7 @@
       couldNotLoadLanguages: 'Could not load languages',
       userProfile: 'User Profile',
       logIn: 'Log in',
-      welcomeWithName: function (name) { return 'Welcome, ' + name; },
+      welcomeWithName: 'Welcome, {name}',
       welcomeNoName: 'Welcome, there',
       welcomeLoggedOut: 'Welcome to The Stratum Method',
       membersOnly: 'Members only \u2014 log in to continue',
@@ -99,7 +99,7 @@
       couldNotLoadLanguages: 'No se pudieron cargar los idiomas',
       userProfile: 'Perfil de usuario',
       logIn: 'Iniciar sesión',
-      welcomeWithName: function (name) { return 'Bienvenido, ' + name; },
+      welcomeWithName: 'Bienvenido, {name}',
       welcomeNoName: 'Bienvenido',
       welcomeLoggedOut: 'Bienvenido a The Stratum Method',
       membersOnly: 'Solo para miembros \u2014 inicia sesión para continuar',
@@ -112,7 +112,30 @@
       manageFullAccount: 'Gestionar cuenta completa \u2192'
     }
   };
-  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
+  function format(str, vars) {
+    return str.replace(/\{(\w+)\}/g, function (_, k) { return (vars && vars[k] != null) ? vars[k] : ''; });
+  }
+  // ---- Database-backed translation overrides (Sept 2026) ----
+  // t() checks DB overrides fetched from GET /ui-strings?lang= FIRST,
+  // then falls back to the STRINGS.en/es defaults above. Adding a new
+  // language (anything beyond the built-in English/Spanish) needs zero
+  // code changes: fill in "header.*" keys under Manage UI Strings in
+  // admin and this file picks them up on next load. buildHeader() is
+  // gated on this fetch (see init()) so the header still renders
+  // correctly on first paint for a language with no local en/es block
+  // above, not just after a later patch.
+  var DB_STRINGS = null;
+  function loadUiStrings(callback) {
+    fetch(PROXY_URL + '/ui-strings?lang=' + encodeURIComponent(LANG))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { DB_STRINGS = (d && d.strings) || {}; })
+      .catch(function () { DB_STRINGS = {}; })
+      .then(callback);
+  }
+  function t(key) {
+    if (DB_STRINGS && DB_STRINGS['header.' + key] != null) return DB_STRINGS['header.' + key];
+    return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key];
+  }
 
   // Server-authoritative login/membership state — see stratum-identity.js.
   var WP_USER = window.StratumIdentity ? window.StratumIdentity.getWpUser() : { loggedIn: false, hasMembership: false, firstName: '', email: '', loginUrl: '#' };
@@ -444,7 +467,7 @@
     // ---- Welcome ----
     var welcomeRow = el('div', 'sh-welcome-row');
     var welcomeText = WP_USER.loggedIn
-      ? (WP_USER.firstName ? t('welcomeWithName')(WP_USER.firstName) : t('welcomeNoName'))
+      ? (WP_USER.firstName ? format(t('welcomeWithName'), { name: WP_USER.firstName }) : t('welcomeNoName'))
       : t('welcomeLoggedOut');
     mount(welcomeRow, el('h2', 'sh-welcome', welcomeText));
     mount(wrap, welcomeRow);
@@ -503,13 +526,20 @@
   function init() {
     var container = document.getElementById('stratum-header');
     if (!container) return; // normal on pages that only use window.StratumHeader.buildTopbar() — not an error
-    buildHeader(container);
+    loadUiStrings(function () { buildHeader(container); });
   }
 
   // Public API for other pages (WIP Profile, future Coach session pages)
   // that want the SAME persistent top nav bar as the System Page, without
   // the dashboard-specific welcome/WIP-hero/Focus-Tracking content below
   // it. One shared implementation — see buildTopbar() above.
+  // KNOWN LIMITATION: buildTopbar() here is synchronous (other pages -
+  // the coach session pages - call it directly and don't expect an
+  // async result), so it always uses the LOCAL en/es defaults, never
+  // DB_STRINGS - only the System Page itself (via init() above) waits
+  // for the DB fetch. A language added only via admin (no local en/es
+  // block) will show English nav text on coach pages until that's
+  // retrofitted too - flagged, not silently accepted as correct.
   window.StratumHeader = {
     buildTopbar: function (container) {
       if (!container) return;
