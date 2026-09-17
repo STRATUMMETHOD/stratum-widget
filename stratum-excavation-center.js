@@ -82,7 +82,9 @@
       checkinCountPlural: '{n} check-ins',
       today: 'today',
       yesterday: 'yesterday',
-      daysAgo: '{n} days ago'
+      daysAgo: '{n} days ago',
+      viewAll: 'View All',
+      showLess: 'Show Less'
     },
     es: {
       colExcavation: 'Coaching de excavación',
@@ -101,7 +103,9 @@
       checkinCountPlural: '{n} registros',
       today: 'hoy',
       yesterday: 'ayer',
-      daysAgo: 'hace {n} días'
+      daysAgo: 'hace {n} días',
+      viewAll: 'Ver todo',
+      showLess: 'Ver menos'
     }
   };
   var DB_KEY_MAP = {
@@ -265,6 +269,18 @@
     var col = el('div', 'sh-dash-card sh-ec-column');
     var head = el('div', 'sh-dash-card-head');
     mount(head, el('p', 'sh-dash-card-title', t(columnDef.labelKey)));
+    // Sept 2026: each card now caps at 2 rows by default, with a View
+    // All / Show Less toggle - same collapsed/expanded pattern the
+    // other dashboard cards already use, but per-card here rather than
+    // for the whole section, since each of the three tracks can have
+    // a different number of rows. Button only shown once there's
+    // actually something to expand.
+    var viewAllBtn = document.createElement('button');
+    viewAllBtn.type = 'button';
+    viewAllBtn.className = 'sh-dash-open-btn';
+    viewAllBtn.textContent = t('viewAll');
+    viewAllBtn.style.display = 'none';
+    mount(head, viewAllBtn);
     mount(col, head);
     var body = el('div', 'sh-dash-card-body');
     var listEl = el('div', 'sh-ec-list');
@@ -274,6 +290,7 @@
       mount(listEl, el('div', 'sh-ec-empty', t('noSessionsYet')));
       return col;
     }
+    var rowEls = [];
     sessionsForTrack.forEach(function (session) {
       if (columnDef.track === 'excavation' && session.requiresCharacter) {
         // One row per character, not one row for the whole program -
@@ -287,15 +304,20 @@
           mount(noCharRow, noCharLink);
           mount(noCharRow, el('span', 'sh-ec-badge sh-ec-badge--not-started', t('addACharacter')));
           mount(listEl, noCharRow);
+          rowEls.push(noCharRow);
           return;
         }
         characters.forEach(function (c) {
           var status = computeStatus(session, completedLessonKeys, c.id);
-          mount(listEl, buildRow(session, status.label, status.key, session.title + ' \u2014 ' + c.name));
+          var row = buildRow(session, status.label, status.key, session.title + ' \u2014 ' + c.name);
+          mount(listEl, row);
+          rowEls.push(row);
         });
       } else if (columnDef.track === 'excavation') {
         var status2 = computeStatus(session, completedLessonKeys);
-        mount(listEl, buildRow(session, status2.label, status2.key));
+        var row2 = buildRow(session, status2.label, status2.key);
+        mount(listEl, row2);
+        rowEls.push(row2);
       } else {
         // Recurring engine (General/Writing Tracks) - a completion
         // badge doesn't apply, so show a check-in count instead,
@@ -309,8 +331,30 @@
             : t('noCheckinsYet');
         });
         mount(listEl, row);
+        rowEls.push(row);
       }
     });
+    // Cap display to the first 2 rows - note this is list order (as
+    // returned by the session registry / character list), not a true
+    // "most recently active" sort: there's no reliable recency signal
+    // across every row type (a character-scoped Excavation row has no
+    // timestamp at all; only the Recurring rows' check-in dates would
+    // support real recency, and those arrive asynchronously after the
+    // row already exists). Flagging this rather than quietly claiming
+    // true recency sorting that isn't actually there.
+    var expanded = false;
+    function updateVisibility() {
+      rowEls.forEach(function (r, i) { r.style.display = (expanded || i < 2) ? '' : 'none'; });
+    }
+    updateVisibility();
+    if (rowEls.length > 2) {
+      viewAllBtn.style.display = '';
+      viewAllBtn.addEventListener('click', function () {
+        expanded = !expanded;
+        viewAllBtn.textContent = expanded ? t('showLess') : t('viewAll');
+        updateVisibility();
+      });
+    }
     return col;
   }
 

@@ -101,10 +101,10 @@
 }
 .sh-wrap .sh-for-writers {
   font-family: var(--sh-font-sans);
-  font-weight: 900; /* matched to .sh-brand-name, per Ted's "same font as The Stratum Method" */
+  font-weight: 400; /* was 900 — "nothing bolded", per Ted's latest request, overrides the earlier bold match */
   letter-spacing: 0.5px; /* matched to .sh-brand-name */
-  color: #A07C3E; /* same value as var(--sh-warm) — hardcoded per Ted's explicit hex request */
-  font-size: 22.5px; /* still 25% larger than the real prior 18px, per the earlier request — size wasn't part of "same font" */
+  color: #ffffff; /* explicit hex per Ted's request, distinct from the brand mark/border gold */
+  font-size: 16px; /* now matches .sh-brand-name exactly — supersedes the earlier "25% larger" request */
 }
 
 /* ---- Top row: logo mark + primary nav ----
@@ -146,7 +146,7 @@
 }
 .sh-brand-name {
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 400; /* was 900 — "nothing bolded" now covers the whole brand lockup */
   letter-spacing: 0.5px;
   color: var(--sh-paper);
   white-space: nowrap;
@@ -347,7 +347,7 @@ body:has(.sh-topbar--standalone) {
   .sh-nav { gap: 10px; }
   .sh-nav-link { font-size: 12px; }
   .sh-brand-name { font-size: 14px; }
-  .sh-for-writers { font-size: 15px !important; }
+  .sh-for-writers { font-size: 14px !important; }
   .sh-welcome { font-size: 22px; }
   .sh-welcome-row, .sh-hero-row--notice { padding-left: 12px; padding-right: 12px; }
   /* A 200px-min dropdown panel anchored right:0 can overflow the left

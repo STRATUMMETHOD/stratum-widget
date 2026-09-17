@@ -80,7 +80,7 @@
 }
 .sh-dash-open-btn {
   background: var(--sh-warm);
-  color: var(--sh-ink);
+  color: #ffffff; /* was var(--sh-ink) — Ted wants white text on every View button */
   border: none;
   border-radius: 999px;
   padding: 6px 14px;

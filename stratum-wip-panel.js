@@ -107,6 +107,7 @@
       addCharacter: '+ Add Character',
       maxCharacters: 'Maximum {n} characters',
       wipsCount: '{n} WIPs',
+      wipsCountSingular: '{n} WIP',
       charactersCountSingular: '{n} character',
       charactersCountPlural: '{n} characters',
       chooseGenre: 'Choose a genre\u2026',
@@ -173,6 +174,7 @@
       addCharacter: '+ Agregar personaje',
       maxCharacters: 'Máximo {n} personajes',
       wipsCount: '{n} obras',
+      wipsCountSingular: '{n} obra',
       charactersCountSingular: '{n} personaje',
       charactersCountPlural: '{n} personajes',
       chooseGenre: 'Elige un género\u2026',
@@ -579,17 +581,13 @@
       mount(summaryEl, el('div', 'sh-dash-empty', t('noWipYet')));
       return;
     }
-    if (!profile || (!profile.wipTitle && !(profile.characters || []).length)) {
-      mount(summaryEl, el('div', 'sh-dash-empty', t('noWipProfileYet')));
-      return;
-    }
-    var bits = [];
-    if (WIPS.length > 1) bits.push(format(t('wipsCount'), { n: WIPS.length }));
-    if (profile.wipTitle) bits.push(profile.wipTitle);
-    if (profile.genre) bits.push(optLabel('genreOptions', profile.genre));
-    var charCount = (profile.characters || []).filter(function (c) { return c && c.name; }).length;
-    if (charCount) bits.push(format(t(charCount === 1 ? 'charactersCountSingular' : 'charactersCountPlural'), { n: charCount }));
-    mount(summaryEl, el('div', 'sh-wip-summary-line', bits.join(' \u00b7 ') || t('untitledWip')));
+    // Sept 2026: collapsed summary now shows ONLY the WIP count - no
+    // title, genre, or character count - per Ted's request. Always
+    // shown once a WIP exists (previously only appeared once there
+    // were 2+), with a singular form for exactly one.
+    var n = WIPS.length || 1;
+    var countText = format(t(n === 1 ? 'wipsCountSingular' : 'wipsCount'), { n: n });
+    mount(summaryEl, el('div', 'sh-wip-summary-line', countText));
   }
 
   function toggleExpanded() {
