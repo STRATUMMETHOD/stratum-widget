@@ -956,6 +956,15 @@
           <button class="btn secondary" id="gExpandAllBtn" type="button">Expand all</button>
           <button class="btn secondary" id="gCollapseAllBtn" type="button">Collapse all</button>
         </div>
+        <details class="card" data-group="plain">
+          <summary class="card-title">Import from document</summary>
+          <div class="card-body">
+          <span class="hint" style="display:block;margin-bottom:10px;">Paste a full coaching-content document (the format Claude generates when researching a layer) and this fills in every field below automatically &mdash; areas, calibration, worked examples, deliverable, and greeting. Nothing saves until you review and click Save Layer yourself. Importing replaces the current Areas, Worked Examples, and Deliverable fields below with what's in the document &mdash; anything you'd already typed into those sections is overwritten, so import first, then adjust by hand afterward if needed.</span>
+          <textarea id="gImportText" rows="8" placeholder="Paste the full document here, starting from the # title line..."></textarea>
+          <button class="btn secondary" id="gImportParseBtn" type="button" style="margin-top:10px;">Parse &amp; Fill Form</button>
+          <div id="gImportStatus" style="margin-top:10px;font-size:12.5px;"></div>
+        </div>
+        </details>
         <details class="card" data-group="open" open>
           <summary class="card-title">Layer identity</summary>
           <div class="card-body">
@@ -1044,9 +1053,14 @@
           <summary class="card-title">Greeting</summary>
           <div class="card-body">
           <div class="field">
-            <label for="gGreetingFresh">Greeting</label>
-            <span class="hint">Shown instantly when the student opens Coaching, before the session begins</span>
+            <label for="gGreetingFresh">Fresh (name not yet known)</label>
+            <span class="hint">Shown the first time someone opens this layer, before the coach knows their name</span>
             <textarea id="gGreetingFresh" rows="3"></textarea>
+          </div>
+          <div class="field">
+            <label for="gGreetingKnown">Known name</label>
+            <span class="hint">Shown once the coach already knows the student's name (e.g. returning from a prior layer in the same sitting). Use the literal token {name} where it should be inserted &mdash; dropped cleanly if somehow not known. Optional &mdash; leave blank to reuse the Fresh greeting above with no name inserted.</span>
+            <textarea id="gGreetingKnown" rows="3" placeholder="Good, {name} - let's pick up where we left off."></textarea>
           </div>
         </div>
         </details>
@@ -4785,6 +4799,7 @@ function clearLayerForm() {
   document.getElementById('gCourseShapeReminder').value = '';
   document.getElementById('gNextStepTeaser').value = '';
   document.getElementById('gGreetingFresh').value = '';
+  document.getElementById('gGreetingKnown').value = '';
   updateGuidedJsonPreview();
 }
 function fillLayerForm(config, layerNumber) {
@@ -4844,6 +4859,7 @@ function fillLayerForm(config, layerNumber) {
   gLoadedHadDeliverable = !!(dv && dv.required);
   var g = config.greeting || {};
   document.getElementById('gGreetingFresh').value = g.fresh || '';
+  document.getElementById('gGreetingKnown').value = g.knownTemplate || '';
   updateGuidedJsonPreview();
 }
 function collectLayerConfig() {
@@ -4892,10 +4908,185 @@ function collectLayerConfig() {
       deliverable: deliverableObj
     },
     greeting: {
-      fresh: document.getElementById('gGreetingFresh').value.trim()
+      fresh: document.getElementById('gGreetingFresh').value.trim(),
+      knownTemplate: document.getElementById('gGreetingKnown').value.trim()
     }
   };
 }
+// ===== Import from document (Sept 2026) =====
+// Parses the exact markdown format Claude generates when researching a
+// layer's coaching content (see the Stratum Coaching Content Researcher
+// custom instructions) and fills in every form field below automatically,
+// so a researched layer no longer has to be retyped field-by-field by
+// hand. Deliberately does NOT auto-save - it only populates the form, the
+// same review-before-commit step every other save on this page already
+// goes through. Tested against real generated documents before being
+// wired in here; splitByHeading() parses structurally (by ## / ###
+// heading boundaries) rather than trying to match "everything up to the
+// next thing", which is what makes this robust against minor prose
+// variation between documents.
+function splitByHeading(text, level) {
+  var marker = new RegExp('^#{' + level + '}\\s+(.+)$', 'gm');
+  var indices = [];
+  var match;
+  while ((match = marker.exec(text)) !== null) {
+    indices.push({ title: match[1].trim(), start: match.index, contentStart: match.index + match[0].length });
+  }
+  var sections = [];
+  for (var i = 0; i < indices.length; i++) {
+    var end = (i + 1 < indices.length) ? indices[i + 1].start : text.length;
+    sections.push({ title: indices[i].title, body: text.slice(indices[i].contentStart, end) });
+  }
+  return sections;
+}
+function giStripQuotes(s) {
+  return String(s || '').trim().replace(/^"|"$/g, '').trim();
+}
+function parseCoachingDocument(rawText) {
+  var warnings = [];
+  var out = {
+    label: '', scopeNote: '', nextLessonLabel: '',
+    areas: [], workedExamples: [], deliverable: null,
+    greetingFresh: '', greetingKnown: ''
+  };
+  var h1 = rawText.match(/^#\s+([^\n]+)/m);
+  if (h1) {
+    var dashSplit = h1[1].split(/\s+[\u2014-]\s+Coaching Content/i);
+    if (dashSplit.length) out.label = dashSplit[0].trim();
+  }
+  var top = splitByHeading(rawText, 2);
+  if (!top.length) warnings.push('No "## " section headings found at all - this may not be a recognized document format.');
+  top.forEach(function (sec) {
+    var heading = sec.title.toLowerCase();
+    if (heading.indexOf('layer identity') !== -1) {
+      var titleM = sec.body.match(/\*\*Layer title:\*\*\s*([^\n]+)/i);
+      if (titleM) out.label = titleM[1].trim();
+      var scopeM = sec.body.match(/\*\*Scope note:\*\*\s*([^\n]+)/i);
+      if (scopeM) out.scopeNote = scopeM[1].trim();
+      var nextM = sec.body.match(/\*\*Next layer label:\*\*\s*([^\n]+)/i);
+      if (nextM) out.nextLessonLabel = nextM[1].trim();
+    } else if (heading.indexOf('area') !== -1) {
+      var areaSecs = splitByHeading(sec.body, 3);
+      if (!areaSecs.length) warnings.push('An "Areas" section was found but no "### Area N" subsections inside it.');
+      areaSecs.forEach(function (areaSec) {
+        var areaTitle = areaSec.title.replace(/^Area\s*\d+\s*[\u2014-]\s*/i, '').trim();
+        var body = areaSec.body;
+        var area = { title: areaTitle, whatToSurface: '', technique: '', exitSignal: '', calibrationExamples: [] };
+        var whatM = body.match(/\*\*What to surface:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*\*\*|\n\s*\n---|$)/i);
+        if (whatM) area.whatToSurface = whatM[1].trim();
+        else warnings.push('Area "' + areaTitle + '": no "What to surface" found.');
+        var techM = body.match(/\*\*Technique for this area:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*\*\*Exit signal|\n\s*\n\s*\*\*Calibration|$)/i);
+        if (techM) area.technique = techM[1].trim();
+        else warnings.push('Area "' + areaTitle + '": no "Technique for this area" found.');
+        var exitM = body.match(/\*\*Exit signal:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*\*\*Calibration|\n\s*\n---|$)/i);
+        if (exitM) area.exitSignal = exitM[1].trim();
+        else warnings.push('Area "' + areaTitle + '": no "Exit signal" found.');
+        var calM = body.match(/\*\*Calibration examples:\*\*([\s\S]*)/i);
+        if (calM) {
+          var calBody = calM[1];
+          var bulletRe = /-\s*\*\*Title:\*\*\s*([^\n]+)\n\s*\*\*Weak \(stop here\):\*\*\s*([^\n]+)\n\s*\*\*Strong \(this passes\):\*\*\s*([^\n]+)\n\s*\*\*Coaching note:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*-\s*\*\*Title:|\n\s*\n---|$)/gi;
+          var bm;
+          while ((bm = bulletRe.exec(calBody)) !== null) {
+            area.calibrationExamples.push({
+              title: bm[1].trim(),
+              weak: giStripQuotes(bm[2]),
+              strong: giStripQuotes(bm[3]),
+              note: bm[4].trim()
+            });
+          }
+          if (!area.calibrationExamples.length) warnings.push('Area "' + areaTitle + '": a Calibration section was found but no examples could be parsed from it - check formatting.');
+        } else {
+          warnings.push('Area "' + areaTitle + '": no "Calibration examples" section found.');
+        }
+        out.areas.push(area);
+      });
+    } else if (heading.indexOf('worked example') !== -1) {
+      var moment = '', script = '', note = '';
+      var momentM = sec.body.match(/\*\*What moment does this show:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*\*\*Script|$)/i);
+      if (momentM) moment = momentM[1].trim();
+      var scriptM = sec.body.match(/\*\*Script:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*\*\*Note:|$)/i);
+      if (scriptM) {
+        script = scriptM[1].split('\n')
+          .map(function (l) { return l.replace(/^>\s?/, ''); })
+          .join('\n')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+      }
+      var noteM = sec.body.match(/\*\*Note:\*\*\s*([\s\S]*)/i);
+      if (noteM) note = noteM[1].trim();
+      if (!moment && !script && !note) warnings.push('A "Worked example" section was found but nothing could be parsed from it.');
+      out.workedExamples.push({ label: moment, script: script, note: note });
+    } else if (heading.indexOf('structured deliverable') !== -1) {
+      var rows = sec.body.split('\n').filter(function (l) { return /^\s*\|/.test(l); });
+      var fields = [];
+      for (var i = 2; i < rows.length; i++) {
+        var cells = rows[i].split('|').map(function (c) { return c.trim(); });
+        cells = cells.filter(function (c, idx) { return !(idx === 0 && c === '') && !(idx === cells.length - 1 && c === ''); });
+        if (cells.length < 4) continue;
+        var key = cells[0].replace(/`/g, '').trim();
+        if (!key) continue;
+        var label = cells[1].trim();
+        var type = /list/i.test(cells[2]) ? 'list' : 'single';
+        var field = { key: key, label: label, type: type };
+        if (type === 'list') {
+          field.count = parseInt(cells[3], 10) || 3;
+          var partsClean = (cells[4] || '').replace(/`/g, '').trim();
+          if (partsClean && partsClean !== '\u2014' && partsClean !== '-') {
+            field.parts = partsClean.split(',').map(function (p) { return p.trim(); }).filter(Boolean);
+          }
+        }
+        fields.push(field);
+      }
+      if (fields.length) out.deliverable = { required: true, fields: fields };
+      else warnings.push('A "Structured deliverable" section was found but no field rows could be parsed from its table.');
+    } else if (heading.indexOf('greeting') !== -1) {
+      var freshM = sec.body.match(/\*\*Fresh[^:]*:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*\*\*Known name|$)/i);
+      if (freshM) out.greetingFresh = giStripQuotes(freshM[1]);
+      var knownM = sec.body.match(/\*\*Known name:\*\*\s*([\s\S]*)/i);
+      if (knownM) out.greetingKnown = giStripQuotes(knownM[1]);
+      if (!out.greetingFresh && !out.greetingKnown) warnings.push('A "Greeting" section was found but neither Fresh nor Known name could be parsed.');
+    }
+  });
+  if (!out.label) warnings.push('Could not determine a Layer title from the document at all - fill it in by hand.');
+  if (!out.areas.length) warnings.push('No areas were parsed - the Areas list below has been left empty.');
+  return { config: out, warnings: warnings };
+}
+function applyParsedConfig(parsed) {
+  if (parsed.label) document.getElementById('gLayerLabel').value = parsed.label;
+  if (parsed.scopeNote) document.getElementById('gScopeNote').value = parsed.scopeNote;
+  if (parsed.nextLessonLabel) document.getElementById('gNextLessonLabel').value = parsed.nextLessonLabel;
+  gAreasList.innerHTML = '';
+  parsed.areas.forEach(function (a) { gAddAreaBlock(a); });
+  gWorkedExamplesList.innerHTML = '';
+  parsed.workedExamples.forEach(function (w) { gAddWorkedExampleBlock(w); });
+  gDeliverableEditor.clear();
+  if (parsed.deliverable && parsed.deliverable.required) {
+    gHasDeliverableCb.checked = true;
+    gDeliverableFields.className = 'resource-fields';
+    parsed.deliverable.fields.forEach(function (f) { gDeliverableEditor.addFieldBlock(f); });
+  }
+  if (parsed.greetingFresh) document.getElementById('gGreetingFresh').value = parsed.greetingFresh;
+  if (parsed.greetingKnown) document.getElementById('gGreetingKnown').value = parsed.greetingKnown;
+  updateGuidedJsonPreview();
+}
+document.getElementById('gImportParseBtn').addEventListener('click', function () {
+  var text = document.getElementById('gImportText').value;
+  var statusEl = document.getElementById('gImportStatus');
+  if (!text.trim()) { statusEl.textContent = 'Paste a document first.'; statusEl.style.color = '#b3261e'; return; }
+  var result = parseCoachingDocument(text);
+  applyParsedConfig(result.config);
+  var summary = 'Filled in: ' + result.config.areas.length + ' area' + (result.config.areas.length === 1 ? '' : 's') +
+    ', ' + result.config.workedExamples.length + ' worked example' + (result.config.workedExamples.length === 1 ? '' : 's') +
+    (result.config.deliverable ? ', a ' + result.config.deliverable.fields.length + '-field deliverable' : ', no deliverable') +
+    ', greeting.';
+  if (result.warnings.length) {
+    statusEl.innerHTML = summary + '<br><strong style="color:#b3261e;">' + result.warnings.length + ' warning' + (result.warnings.length === 1 ? '' : 's') + ':</strong><br>' + result.warnings.map(function (w) { return '\u2022 ' + w.replace(/</g, '&lt;'); }).join('<br>');
+    statusEl.style.color = '#3B2F24';
+  } else {
+    statusEl.textContent = summary + ' Review below, then Save Layer when ready.';
+    statusEl.style.color = '#2e7d32';
+  }
+});
 function updateGuidedJsonPreview() {
   document.getElementById('gJsonPreview').textContent = JSON.stringify(collectLayerConfig(), null, 2);
 }
