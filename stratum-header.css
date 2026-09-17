@@ -8,15 +8,32 @@
    stylesheet — nothing here is loaded by, or affects, any old
    lesson page still in use during the transition.
 
-   Fonts: Arial/Helvetica (forced sans stack, no serif fallback
-   risk) for all UI chrome and the "Welcome back" line; Newsreader
-   (serif) reserved as the one deliberate accent on the WIP title;
-   Dancing Script (cursive) reserved for the "For writers" tagline
-   only. Accent color is warm terracotta (#C97C4A), replacing the
-   earlier teal direction per Ted's Sept 2026 design review.
+   Fonts (Sept 2026 revision — sitewide sans-serif, per Ted's
+   direction): every font on the system is now plain sans-serif
+   (Arial/Helvetica) with exactly one exception — the "Welcome,
+   {name}" headline, which uses Quicksand, a rounded sans-serif, as
+   its one deliberate accent. Newsreader (serif) and Dancing Script
+   (cursive) — both previously reserved accents (the WIP title and
+   the "For writers" tagline respectively) — are retired; "For
+   writers" is now the same sans stack as everything else. The
+   Newsreader import is left in place only because other, not-yet-
+   audited stylesheets (stratum-coach.css in particular) may still
+   reference it — remove once those are confirmed clear.
+
+   Accent color is warm terracotta/gold (--sh-warm, #A07C3E).
+
+   ---- Parchment card tokens (Sept 2026) ----
+   --sh-card-* below are the light-parchment-card palette every
+   dashboard file (stratum-dashboard.css, stratum-wip-panel.css,
+   stratum-excavation-center.css, stratum-practice-teaser.css,
+   stratum-library-teaser.css) draws from for content rendered
+   INSIDE a card. They live here, not in a bare :root in one of
+   those files, specifically so they can reference --sh-warm/
+   --sh-ink below — those are scoped to .sh-wrap, not :root, so a
+   :root-level custom property can't see them.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Montserrat:wght@700;800&family=Newsreader:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:wght@600&family=Quicksand:wght@600;700&display=swap');
 
 .sh-wrap, .sh-wrap * {
   box-sizing: border-box;
@@ -28,7 +45,22 @@
   --sh-paper: #EAE0C9;
   --sh-warm: #A07C3E;
   --sh-sub: #9C8F72;
-  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+
+  /* Parchment card tokens — see file header note above */
+  --sh-card-bg: linear-gradient(165deg, #F2E6C6 0%, #E7D6AA 100%);
+  --sh-card-border: rgba(160, 124, 62, 0.28);
+  --sh-card-ink: var(--sh-ink);
+  --sh-card-sub: #74582B;
+  --sh-card-title: var(--sh-warm);
+  --sh-card-row-bg: rgba(255, 252, 242, 0.5);
+  --sh-card-input-bg: #FBF5E4;
+  --sh-font-sans: Arial, "Helvetica Neue", Helvetica, sans-serif;
+
+  /* Navbar gold tokens (Sept 2026) */
+  --sh-nav-gold-1: #D9B24C;
+  --sh-nav-gold-2: #A07C3E;
+
+  font-family: var(--sh-font-sans);
   background: var(--sh-ink);
   border-radius: 16px;
   color: var(--sh-paper);
@@ -36,8 +68,10 @@
   position: relative;
 }
 .sh-wrap .sh-for-writers {
-  font-family: 'Dancing Script', cursive;
-  font-weight: 600;
+  font-family: var(--sh-font-sans);
+  font-weight: 700;
+  color: var(--sh-ink);
+  font-size: 20px; /* was an inherited ~16px default with no explicit rule — 25% larger, per Ted's request */
 }
 
 /* ---- Top row: logo mark + primary nav ---- */
@@ -46,7 +80,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 28px;
-  border-bottom: 0.5px solid var(--sh-line);
+  background: linear-gradient(135deg, var(--sh-nav-gold-1) 0%, var(--sh-nav-gold-2) 100%);
+  border-bottom: 0.5px solid rgba(22, 19, 15, 0.25);
   flex-wrap: wrap;
   row-gap: 10px;
   position: relative;
@@ -61,7 +96,7 @@
   width: 20px;
   height: 20px;
   border-radius: 4px;
-  background: var(--sh-warm);
+  background: var(--sh-ink); /* was var(--sh-warm) — invisible against the new gold bar; dark tile reads as a monogram chip instead */
   align-self: center;
   flex-shrink: 0;
 }
@@ -69,7 +104,7 @@
   font-size: 16px;
   font-weight: 900;
   letter-spacing: 0.5px;
-  color: var(--sh-paper);
+  color: var(--sh-ink); /* was var(--sh-paper) (cream) — too little contrast against gold */
   white-space: nowrap;
 }
 
@@ -87,12 +122,12 @@
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  color: var(--sh-sub);
+  color: rgba(22, 19, 15, 0.72); /* dark ink at reduced opacity, not --sh-sub — that tan-gray was tuned for dark backgrounds and reads too faint on gold */
   cursor: pointer;
   text-decoration: none;
   transition: color .15s ease;
 }
-.sh-nav-link:hover, .sh-nav-link:focus-visible { color: var(--sh-paper); }
+.sh-nav-link:hover, .sh-nav-link:focus-visible { color: var(--sh-ink); }
 
 .sh-nav-dropdown { position: relative; }
 .sh-nav-dropdown > .sh-nav-link {
@@ -162,7 +197,7 @@
   align-items: center;
 }
 .sh-topbar--standalone {
-  background: var(--sh-ink);
+  background: linear-gradient(135deg, var(--sh-nav-gold-1) 0%, var(--sh-nav-gold-2) 100%);
   border-radius: 16px 16px 0 0;
 }
 
@@ -183,11 +218,11 @@ body:has(.sh-topbar--standalone) {
   z-index: 1;
 }
 .sh-welcome {
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Quicksand', var(--sh-font-sans);
   font-size: 34px;
   line-height: 1;
-  font-weight: 800;
-  letter-spacing: -0.5px;
+  font-weight: 700; /* Quicksand tops out at 700 — the old 800 from Montserrat doesn't exist in this family */
+  letter-spacing: 0;
   margin: 0;
 }
 
