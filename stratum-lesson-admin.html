@@ -607,15 +607,12 @@
         <div class="card-title" style="margin-bottom:6px;">UI Strings</div>
         <span class="sub" style="margin:0 0 14px;display:block;">
           Dashboard chrome (nav labels, buttons, empty states, form labels) for whichever language is selected in
-          "Editing content in:" above. English text is the built-in default and never needs an entry here \u2014 add a
-          translation for any OTHER language and the dashboard picks it up automatically, no deploy needed. Leave a
-          field blank to fall back to the English default shown beside it. Saves automatically when you click out of
-          a field you've changed.
+          "Editing content in:" above. Adding a NEW language auto-translates everything into it automatically \u2014
+          nothing needs to be typed in here first. This screen is for spot-fixing a machine translation that reads
+          wrong, or for correcting the English wording itself (editing English here re-translates every other active
+          language's copy of that key to match, automatically, in the background). Leave a field blank to fall back
+          to the default shown beside it. Saves automatically when you click out of a field you've changed.
         </span>
-        <div id="uiStringsEnNotice" style="display:none;font-size:13px;color:#8a7a5e;margin-bottom:10px;">
-          You're editing English \u2014 this is the built-in default already used everywhere, so there's nothing to
-          translate here. Switch "Editing content in:" to another language to add translations.
-        </div>
         <div id="uiStringsGroups"></div>
       </div>
     </div>
@@ -796,7 +793,7 @@
     </div>
     <div id="libraryView" style="display:none;">
       <div class="tst-toolbar">
-        <span class="sub" style="margin:0;">One common place for every resource document and video, replacing the old per-lesson Resource PDFs. PDFs are hosted on GitHub Pages &mdash; enter only the filename (e.g. The_Science_Of_Anchor_Behavior.pdf), not the full URL. Videos are hosted on Wistia &mdash; enter only the Wistia media ID.</span>
+        <span class="sub" style="margin:0;">One common place for every resource document and video. New text documents are entered directly here (with basic formatting) and translate automatically when a new language is added or edited &mdash; existing PDFs stay hosted on GitHub Pages as before (enter only the filename, e.g. The_Science_Of_Anchor_Behavior.pdf, not the full URL) and keep working exactly as they do now, they just don't auto-translate their file content. Videos are hosted on Wistia &mdash; enter only the Wistia media ID.</span>
       </div>
       <div class="tst-toolbar">
         <button class="btn secondary" id="libReloadBtn" type="button">Reload</button>
@@ -1378,7 +1375,8 @@ document.getElementById('adminLangSelect').addEventListener('change', function (
   // the next time the admin clicks into it, via the tab's own click
   // handler - no need to force it here.)
   if (vocabularyView.style.display !== 'none') loadVocabulary();
-  // Same treatment for the UI Strings panel, if it's currently open.
+  // Same treatment for the Library and UI Strings panels, if open.
+  if (libraryView.style.display !== 'none') loadLibrary();
   if (document.getElementById('manageUiStringsPanel').style.display !== 'none') loadUiStrings();
 });
 // ===== UI Strings (Sept 2026) =====
@@ -1408,8 +1406,6 @@ document.getElementById('manageUiStringsBtn').addEventListener('click', function
 function loadUiStrings() {
   if (!adminKey) return;
   var groupsEl = document.getElementById('uiStringsGroups');
-  var enNotice = document.getElementById('uiStringsEnNotice');
-  enNotice.style.display = ADMIN_LANG === 'en' ? '' : 'none';
   groupsEl.innerHTML = '<div class="sub">Loading\u2026</div>';
   fetch(PROXY_URL + '/admin/ui-strings?lang=' + encodeURIComponent(ADMIN_LANG), {
     headers: { 'X-Stratum-Admin-Key': adminKey }
@@ -1450,52 +1446,53 @@ function renderUiStringsGroups(items) {
       tr.appendChild(enTd);
       var valTd = document.createElement('td');
       valTd.style.cssText = 'padding:7px 8px;width:44%;vertical-align:top;';
-      if (ADMIN_LANG === 'en') {
-        // English IS the default already baked into the frontend -
-        // showing an editable field here would look like translation
-        // work is needed when it isn't. Read-only, greyed.
-        var lockedNote = document.createElement('span');
-        lockedNote.textContent = '(built-in default)';
-        lockedNote.style.cssText = 'font-size:12px;color:#b5aa8f;';
-        valTd.appendChild(lockedNote);
-      } else {
-        var input = document.createElement('input');
-        input.type = 'text';
-        input.value = item.value != null ? item.value : '';
-        input.placeholder = item.en;
-        input.style.width = '100%';
-        var statusSpan = document.createElement('span');
-        statusSpan.style.cssText = 'font-size:11px;margin-left:8px;';
-        var lastSaved = item.value != null ? item.value : '';
-        input.addEventListener('blur', function () {
-          var newVal = input.value;
-          if (newVal === lastSaved) return; // nothing changed - skip the request
-          statusSpan.textContent = 'Saving\u2026';
-          statusSpan.style.color = '#8a7a5e';
-          fetch(PROXY_URL + '/admin/ui-strings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
-            body: JSON.stringify({ key: item.key, lang: ADMIN_LANG, value: newVal })
-          })
-            .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
-            .then(function (result) {
-              if (result.status === 200 && result.data && result.data.ok) {
-                lastSaved = newVal;
-                statusSpan.textContent = result.data.cleared ? 'Cleared (using English default)' : 'Saved';
-                statusSpan.style.color = '#3f7a4a';
-              } else {
-                statusSpan.textContent = 'Could not save';
-                statusSpan.style.color = '#a33';
-              }
-            })
-            .catch(function () {
-              statusSpan.textContent = 'Network error';
+      // Sept 2026: English is now editable here too, same as every
+      // other language - no more special-cased read-only branch.
+      // Editing English is treated as changing the SOURCE text: saving
+      // a change here triggers the Worker to auto-retranslate every
+      // other active language's copy of this key in the background
+      // (see cascadeUiStringTranslation in worker.js) - so a fix typed
+      // here doesn't just fix English, it ripples outward. The en
+      // reference column still shows the hard-coded frontend default
+      // (what's used if this override is ever cleared).
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.value = item.value != null ? item.value : '';
+      input.placeholder = item.en;
+      input.style.width = '100%';
+      var statusSpan = document.createElement('span');
+      statusSpan.style.cssText = 'font-size:11px;margin-left:8px;';
+      var lastSaved = item.value != null ? item.value : '';
+      input.addEventListener('blur', function () {
+        var newVal = input.value;
+        if (newVal === lastSaved) return; // nothing changed - skip the request
+        statusSpan.textContent = 'Saving\u2026';
+        statusSpan.style.color = '#8a7a5e';
+        fetch(PROXY_URL + '/admin/ui-strings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+          body: JSON.stringify({ key: item.key, lang: ADMIN_LANG, value: newVal })
+        })
+          .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+          .then(function (result) {
+            if (result.status === 200 && result.data && result.data.ok) {
+              lastSaved = newVal;
+              statusSpan.textContent = result.data.cleared
+                ? 'Cleared (using default)'
+                : (ADMIN_LANG === 'en' ? 'Saved \u2014 retranslating other languages\u2026' : 'Saved');
+              statusSpan.style.color = '#3f7a4a';
+            } else {
+              statusSpan.textContent = 'Could not save';
               statusSpan.style.color = '#a33';
-            });
-        });
-        valTd.appendChild(input);
-        valTd.appendChild(statusSpan);
-      }
+            }
+          })
+          .catch(function () {
+            statusSpan.textContent = 'Network error';
+            statusSpan.style.color = '#a33';
+          });
+      });
+      valTd.appendChild(input);
+      valTd.appendChild(statusSpan);
       tr.appendChild(valTd);
       tbody.appendChild(tr);
     });
@@ -2844,7 +2841,7 @@ libTopicFilter.addEventListener('change', libApplyFilter);
 function loadLibrary() {
   if (!adminKey) { libStatus.textContent = 'Unlock the panel first.'; return; }
   libStatus.textContent = 'Loading...';
-  fetch(PROXY_URL + '/admin/library', { headers: { 'X-Stratum-Admin-Key': adminKey } })
+  fetch(PROXY_URL + '/admin/library?lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) {
       libList.innerHTML = '';
@@ -2901,13 +2898,13 @@ function addLibraryBlock(entry, isNew) {
   typeLabel.textContent = 'Type';
   var typeSelect = document.createElement('select');
   typeSelect.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
-  [['pdf', 'PDF'], ['video', 'Video (Wistia)']].forEach(function (pair) {
+  [['doc', 'Document (rich text, translates automatically)'], ['pdf', 'PDF (legacy, GitHub-hosted)'], ['video', 'Video (Wistia)']].forEach(function (pair) {
     var o = document.createElement('option');
     o.value = pair[0];
     o.textContent = pair[1];
     typeSelect.appendChild(o);
   });
-  typeSelect.value = entry.type === 'video' ? 'video' : 'pdf';
+  typeSelect.value = entry.type === 'video' ? 'video' : (entry.type === 'pdf' ? 'pdf' : 'doc');
   typeField.appendChild(typeLabel);
   typeField.appendChild(typeSelect);
   typeRow.appendChild(typeField);
@@ -2949,13 +2946,92 @@ function addLibraryBlock(entry, isNew) {
   videoField.appendChild(videoInput);
   bodyWrap.appendChild(videoField);
 
+  // ---- Document body (Sept 2026, type 'doc') ----
+  // Lightweight contenteditable + document.execCommand toolbar - no
+  // external editor library. execCommand is deprecated but still
+  // universally supported for this small a feature set (bold/italic/
+  // headings/lists/links); revisit if it's ever actually removed from
+  // browsers rather than pre-emptively avoiding it.
+  var docField = document.createElement('div');
+  docField.className = 'field';
+  var docLabel = document.createElement('label');
+  docLabel.textContent = 'Document text';
+  docField.appendChild(docLabel);
+  var docToolbar = document.createElement('div');
+  docToolbar.style.cssText = 'display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap;';
+  var docEditor = document.createElement('div');
+  docEditor.contentEditable = 'true';
+  docEditor.style.cssText = 'width:100%;min-height:220px;max-height:500px;overflow-y:auto;padding:12px 14px;font-size:13.5px;line-height:1.6;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;color:#3B2F24;';
+  docEditor.innerHTML = entry.body || '';
+  [
+    ['Bold', 'bold', '<b>B</b>'],
+    ['Italic', 'italic', '<i>I</i>'],
+    ['Heading', 'formatBlock', 'H2', 'H2'],
+    ['Subheading', 'formatBlock', 'H3', 'H3'],
+    ['Paragraph', 'formatBlock', 'P', '\u00b6'],
+    ['Bullet list', 'insertUnorderedList', null, '\u2022 List'],
+    ['Numbered list', 'insertOrderedList', null, '1. List'],
+    ['Link', 'createLink', null, 'Link']
+  ].forEach(function (spec) {
+    var label = spec[0], cmd = spec[1], arg = spec[2], display = spec[3] || spec[0];
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.title = label;
+    btn.innerHTML = display;
+    btn.style.cssText = 'padding:5px 9px;font-size:12px;border:1px solid #E3DCC9;border-radius:6px;background:#fff;cursor:pointer;';
+    btn.addEventListener('mousedown', function (e) { e.preventDefault(); }); // keep focus/selection in the editor, not the button
+    btn.addEventListener('click', function () {
+      docEditor.focus();
+      if (cmd === 'createLink') {
+        var url = window.prompt('Link URL:');
+        if (url) document.execCommand(cmd, false, url);
+      } else {
+        document.execCommand(cmd, false, arg || undefined);
+      }
+    });
+    docToolbar.appendChild(btn);
+  });
+  docField.appendChild(docToolbar);
+  docField.appendChild(docEditor);
+  bodyWrap.appendChild(docField);
+
   function updateTypeVisibility() {
-    var isVideo = typeSelect.value === 'video';
-    pdfField.style.display = isVideo ? 'none' : '';
-    videoField.style.display = isVideo ? '' : 'none';
+    pdfField.style.display = typeSelect.value === 'pdf' ? '' : 'none';
+    videoField.style.display = typeSelect.value === 'video' ? '' : 'none';
+    docField.style.display = typeSelect.value === 'doc' ? '' : 'none';
   }
   typeSelect.addEventListener('change', updateTypeVisibility);
   updateTypeVisibility();
+
+  // ---- Key Concept / Core Takeaway (Sept 2026, all types) ----
+  var conceptRow = document.createElement('div');
+  conceptRow.className = 'tst-meta-row';
+  var keyConceptField = document.createElement('div');
+  keyConceptField.className = 'field';
+  var keyConceptLabel = document.createElement('label');
+  keyConceptLabel.textContent = 'Key Concept';
+  var keyConceptInput = document.createElement('input');
+  keyConceptInput.type = 'text';
+  keyConceptInput.placeholder = 'The single idea this resource teaches';
+  keyConceptInput.value = entry.keyConcept || '';
+  keyConceptInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  keyConceptField.appendChild(keyConceptLabel);
+  keyConceptField.appendChild(keyConceptInput);
+  conceptRow.appendChild(keyConceptField);
+
+  var coreTakeawayField = document.createElement('div');
+  coreTakeawayField.className = 'field';
+  var coreTakeawayLabel = document.createElement('label');
+  coreTakeawayLabel.textContent = 'Core Takeaway';
+  var coreTakeawayInput = document.createElement('textarea');
+  coreTakeawayInput.rows = 2;
+  coreTakeawayInput.placeholder = 'What a writer should walk away able to do';
+  coreTakeawayInput.value = entry.coreTakeaway || '';
+  coreTakeawayInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;resize:vertical;';
+  coreTakeawayField.appendChild(coreTakeawayLabel);
+  coreTakeawayField.appendChild(coreTakeawayInput);
+  conceptRow.appendChild(coreTakeawayField);
+  bodyWrap.appendChild(conceptRow);
 
   // ---- Category (required) + Excavation Topic (optional) ----
   var metaRow = document.createElement('div');
@@ -3032,11 +3108,15 @@ function addLibraryBlock(entry, isNew) {
       id: currentId,
       title: titleInput.value.trim(),
       type: typeSelect.value,
+      body: typeSelect.value === 'doc' ? docEditor.innerHTML : '',
       pdfFilename: typeSelect.value === 'pdf' ? pdfInput.value.trim() : '',
       wistiaId: typeSelect.value === 'video' ? videoInput.value.trim() : '',
       category: catInput.value.trim(),
       topic: topicInput.value.trim(),
-      isActive: activeCb.checked
+      keyConcept: keyConceptInput.value.trim(),
+      coreTakeaway: coreTakeawayInput.value.trim(),
+      isActive: activeCb.checked,
+      lang: ADMIN_LANG
     };
   }
   saveBtn.addEventListener('click', function () {
@@ -3045,6 +3125,7 @@ function addLibraryBlock(entry, isNew) {
     if (!p.category) { saveStatus.textContent = 'Category is required.'; return; }
     if (p.type === 'pdf' && !p.pdfFilename) { saveStatus.textContent = 'PDF filename is required.'; return; }
     if (p.type === 'video' && !p.wistiaId) { saveStatus.textContent = 'Wistia media ID is required.'; return; }
+    if (p.type === 'doc' && !p.body) { saveStatus.textContent = 'Document text is required.'; return; }
     saveStatus.textContent = 'Saving...';
     fetch(PROXY_URL + '/admin/library', {
       method: 'POST',
@@ -3058,8 +3139,8 @@ function addLibraryBlock(entry, isNew) {
         isNew = false;
         saveBtn.textContent = 'Save';
         deleteBtn.style.display = '';
-        saveStatus.textContent = 'Saved.';
-        setTimeout(function () { saveStatus.textContent = ''; }, 2000);
+        saveStatus.textContent = (ADMIN_LANG === 'en') ? 'Saved \u2014 retranslating other languages\u2026' : 'Saved.';
+        setTimeout(function () { saveStatus.textContent = ''; }, 2600);
         block.dataset.category = p.category;
         block.dataset.topic = p.topic;
         var cacheEntry = libAllItemsCache.find(function (e) { return String(e.id) === String(currentId); });
