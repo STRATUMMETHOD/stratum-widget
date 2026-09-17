@@ -279,7 +279,6 @@
     viewAllBtn.type = 'button';
     viewAllBtn.className = 'sh-dash-open-btn';
     viewAllBtn.textContent = t('viewAll');
-    viewAllBtn.style.display = 'none';
     mount(head, viewAllBtn);
     mount(col, head);
     var body = el('div', 'sh-dash-card-body');
@@ -347,13 +346,22 @@
       rowEls.forEach(function (r, i) { r.style.display = (expanded || i < 2) ? '' : 'none'; });
     }
     updateVisibility();
+    // Sept 2026 fix: was only shown when rowEls.length > 2, so a card
+    // with 0-2 rows never got a button at all - looked like the button
+    // was simply missing from that card. Ted asked for it on all three
+    // cards, always, so it's now always rendered; it's just inert
+    // (disabled, no-op) when there's nothing to expand.
+    viewAllBtn.style.display = '';
     if (rowEls.length > 2) {
-      viewAllBtn.style.display = '';
       viewAllBtn.addEventListener('click', function () {
         expanded = !expanded;
         viewAllBtn.textContent = expanded ? t('showLess') : t('viewAll');
         updateVisibility();
       });
+    } else {
+      viewAllBtn.disabled = true;
+      viewAllBtn.style.opacity = '0.45';
+      viewAllBtn.style.cursor = 'default';
     }
     return col;
   }
