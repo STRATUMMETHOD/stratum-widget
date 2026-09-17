@@ -70,6 +70,7 @@
       newWip: '+ New WIP',
       deleteThisWip: 'Delete this WIP',
       untitledWip: 'Untitled WIP',
+      selectWipOption: 'Select WIP',
       noWipYet: 'No WIP yet \u2014 open to add your first one.',
       noWipProfileYet: 'No WIP profile yet \u2014 open to add yours.',
       noWipAtAllMsg: 'You don\u2019t have a work-in-progress yet \u2014 click + New WIP above to add one.',
@@ -134,6 +135,7 @@
       newWip: '+ Nueva obra',
       deleteThisWip: 'Eliminar esta obra',
       untitledWip: 'Obra sin título',
+      selectWipOption: 'Selecciona una obra',
       noWipYet: 'Aún no hay una obra \u2014 abre para agregar la primera.',
       noWipProfileYet: 'Aún no hay perfil de obra \u2014 abre para agregar el tuyo.',
       noWipAtAllMsg: 'Aún no tienes una obra en progreso \u2014 haz clic en + Nueva obra arriba para agregar una.',
@@ -444,6 +446,19 @@
         if (d && d.ok) {
           currentProfile = Object.assign({}, currentProfile, d);
           renderSummary(currentProfile);
+          // Sept 2026 fix: the dropdown's option label for this WIP was
+          // never refreshed after a save, so retitling a WIP (e.g. from
+          // blank/"Select WIP" to a real title) left the old label
+          // showing in the selector until a full page reload. WIPS is
+          // the same array populateWipSelect() reads from, so updating
+          // the matching entry in place and re-populating fixes it.
+          var wipEntry = WIPS.filter(function (w) { return w.id === ACTIVE_WIP_ID; })[0];
+          if (wipEntry) {
+            wipEntry.title = d.wipTitle || '';
+            wipEntry.genre = d.genre || '';
+            wipEntry.stage = d.stage || '';
+            populateWipSelect(WIPS, ACTIVE_WIP_ID);
+          }
           setStatus(t('saved'), 'sh-ok');
           fadeStatusSoon();
         } else {
@@ -562,6 +577,7 @@
     statusEl = el('span', 'sh-wip-status');
     mount(topActions, statusEl);
     mount(formWrapEl, topActions);
+    topActionsEl = topActions;
 
     var grid = el('div', 'sh-wip-grid');
     gridEl = grid;
@@ -662,6 +678,7 @@
   var fields = null;
   var gridEl = null;       // the two-column Project Description/Characters grid - hidden entirely when there's no active WIP
   var noWipMsgEl = null;   // shown in its place when the student has zero WIPs
+  var topActionsEl = null; // the autosave-label row - Sept 2026: now hidden alongside the grid, not just the grid, so nothing but the selector shows until a WIP is chosen
 
   // ----------------------------------------------------------
   // WIP LIST / SELECTOR (Sept 2026, multiple WIPs)
@@ -679,7 +696,7 @@
     wips.forEach(function (w) {
       var o = document.createElement('option');
       o.value = w.id;
-      o.textContent = w.title || t('untitledWip');
+      o.textContent = w.title || t('selectWipOption');
       if (w.id === activeId) o.selected = true;
       wipSelectEl.appendChild(o);
     });
@@ -715,6 +732,7 @@
   function showNoWipState() {
     currentProfile = null;
     if (gridEl) gridEl.style.display = 'none';
+    if (topActionsEl) topActionsEl.style.display = 'none';
     if (noWipMsgEl) noWipMsgEl.style.display = '';
     renderSummary(null);
   }
@@ -794,6 +812,7 @@
         if (!d || !d.known) { renderSummary(null); return; }
         currentProfile = d;
         if (gridEl) gridEl.style.display = '';
+        if (topActionsEl) topActionsEl.style.display = '';
         if (noWipMsgEl) noWipMsgEl.style.display = 'none';
         fillForm(d); // filling from a fresh load never itself schedules an autosave — only real user input does
         renderSummary(d);

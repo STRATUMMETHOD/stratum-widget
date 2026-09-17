@@ -46,8 +46,17 @@
   --sh-warm: #A07C3E;
   --sh-sub: #9C8F72;
 
-  /* Parchment card tokens — see file header note above */
-  --sh-card-bg: linear-gradient(165deg, #F2E6C6 0%, #E7D6AA 100%);
+  /* Parchment card tokens — see file header note above. Sept 2026: the
+     background gained mottled radial layers on top of the base
+     gradient — a flat two-stop gradient was reading as plain tan, not
+     "parchment," per Ted's feedback. The radial layers simulate
+     uneven aging/light without adding an actual noise image asset. */
+  --sh-card-bg:
+    radial-gradient(ellipse 60% 50% at 18% 22%, rgba(255, 252, 240, 0.35), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 85% 15%, rgba(120, 90, 40, 0.10), transparent 55%),
+    radial-gradient(ellipse 70% 55% at 78% 85%, rgba(120, 90, 40, 0.14), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 10% 90%, rgba(255, 252, 240, 0.18), transparent 55%),
+    linear-gradient(165deg, #F2E6C6 0%, #E7D6AA 100%);
   --sh-card-border: rgba(160, 124, 62, 0.28);
   --sh-card-ink: var(--sh-ink);
   --sh-card-sub: #74582B;
@@ -63,7 +72,28 @@
   --sh-nav-link: #EADBB0;
 
   font-family: var(--sh-font-sans);
-  background: var(--sh-ink);
+  /* Very subtle full-page strata texture (Sept 2026): faint horizontal
+     bands echoing the header's .sh-strata-art accent, but low-contrast
+     enough (2-4% opacity) to read as quiet texture behind the parchment
+     cards rather than a competing graphic. Runs the full height of
+     .sh-wrap, not just behind the header, so the dashboard cards below
+     sit on the same subtly-layered ground. */
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(160, 124, 62, 0.05) 0px,
+      rgba(160, 124, 62, 0.05) 2px,
+      transparent 2px,
+      transparent 46px
+    ),
+    repeating-linear-gradient(
+      180deg,
+      rgba(234, 224, 201, 0.025) 0px,
+      rgba(234, 224, 201, 0.025) 22px,
+      transparent 22px,
+      transparent 46px
+    ),
+    var(--sh-ink);
   border-radius: 16px;
   color: var(--sh-paper);
   overflow: hidden;
@@ -71,9 +101,10 @@
 }
 .sh-wrap .sh-for-writers {
   font-family: var(--sh-font-sans);
-  font-weight: 700;
-  color: var(--sh-paper); /* was set inline in JS as var(--sh-warm) — moved here and changed to a distinct color per Ted's request, since --sh-warm is already used for the brand mark and the border accent */
-  font-size: 22.5px; /* the real prior size, found in stratum-header.js's inline style, was 18px — this is 25% larger, not a guess against an unknown base like last pass */
+  font-weight: 900; /* matched to .sh-brand-name, per Ted's "same font as The Stratum Method" */
+  letter-spacing: 0.5px; /* matched to .sh-brand-name */
+  color: #A07C3E; /* same value as var(--sh-warm) — hardcoded per Ted's explicit hex request */
+  font-size: 22.5px; /* still 25% larger than the real prior 18px, per the earlier request — size wasn't part of "same font" */
 }
 
 /* ---- Top row: logo mark + primary nav ----

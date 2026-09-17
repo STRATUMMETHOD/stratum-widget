@@ -323,7 +323,7 @@
     var overlay = el('div', 'sh-profile-overlay');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(8,8,8,.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;';
     var box = el('div');
-    box.style.cssText = 'width:100%;max-width:340px;background:linear-gradient(165deg,#F2E6C6 0%,#E7D6AA 100%);border:1px solid rgba(160,124,62,0.28);border-radius:14px;padding:26px 24px 22px;position:relative;box-shadow:0 20px 50px rgba(0,0,0,.45);font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;';
+    box.style.cssText = 'width:100%;max-width:340px;background:radial-gradient(ellipse 60% 50% at 18% 22%, rgba(255,252,240,0.35), transparent 60%), radial-gradient(ellipse 55% 45% at 85% 15%, rgba(120,90,40,0.10), transparent 55%), radial-gradient(ellipse 70% 55% at 78% 85%, rgba(120,90,40,0.14), transparent 60%), radial-gradient(ellipse 50% 40% at 10% 90%, rgba(255,252,240,0.18), transparent 55%), linear-gradient(165deg,#F2E6C6 0%,#E7D6AA 100%);border:1px solid rgba(160,124,62,0.28);border-radius:14px;padding:26px 24px 22px;position:relative;box-shadow:0 20px 50px rgba(0,0,0,.45);font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;';
 
     var closeBtn = el('button', null, '\u2715');
     closeBtn.type = 'button';
