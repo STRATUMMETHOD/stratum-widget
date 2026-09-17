@@ -944,19 +944,52 @@
         contentEl.innerHTML = '<div class="sh-coach-loading">Couldn\u2019t load your synthesis right now. Refresh to try again.</div>';
       });
   }
+  function applyClosingTokens(template, name, character) {
+    var out = template;
+    out = name ? out.replace(/\{name\}/g, name) : out.replace(/,?\s*\{name\}/g, '');
+    out = character ? out.replace(/\{character\}/g, character) : out.replace(/\s*for \{character\}/g, '').replace(/\{character\}/g, '');
+    return out.replace(/\s{2,}/g, ' ').trim();
+  }
+
   function renderSynthesisCard(text) {
     contentEl.innerHTML = '';
+    // A genuine closing message from the coach, not just card copy -
+    // styled as a chat bubble since that's the last thing the person
+    // hears before the finished profile appears. Deterministic, not
+    // model-generated - the excavation is already complete at this
+    // point, there's nothing left to draw out with a live model call.
+    // Admin-authored via the Closing Message field at Track level (see
+    // the Track editor's Coaching Intro / Closing Message cards) - not
+    // per-layer, since it's about finishing the whole excavation, not
+    // any one layer. Falls back to a sensible built-in default when
+    // left blank.
+    var closingWrap = el('div', 'sh-msg-row sh-assistant');
+    var closingBubble = el('div', 'sh-msg-bubble');
+    var whoText = SELECTED_CHARACTER ? SELECTED_CHARACTER.name : null;
+    if (SESSION.closingMessage) {
+      closingBubble.textContent = applyClosingTokens(SESSION.closingMessage, studentName, whoText);
+    } else {
+      var namePrefix = studentName ? ('Congratulations, ' + studentName + ' \u2014 ') : 'Congratulations \u2014 ';
+      closingBubble.textContent = namePrefix + 'you\u2019ve built a complete, usable profile' + (whoText ? ' for ' + whoText : '') + '. Everything we found across all six layers is pulled together below. You can download it or print it now to keep working from as you draft.';
+    }
+    mount(closingWrap, closingBubble);
+    mount(contentEl, closingWrap);
+
     var card = el('div', 'sh-synthesis-card');
-    mount(card, el('div', 'sh-synthesis-title', SESSION.title + ' \u2014 Complete'));
-    var layerCount = SESSION.layers.length;
-    mount(card, el('p', 'sh-synthesis-sub', studentName ? ('Nice work, ' + studentName + '. All ' + layerCount + ' layers are excavated.') : ('All ' + layerCount + ' layers are excavated.')));
+    mount(card, el('div', 'sh-synthesis-title', SESSION.title + ' \u2014 Complete' + (whoText ? ': ' + whoText : '')));
     var body = el('div', 'sh-synthesis-text');
     body.innerHTML = textToParagraphs(text);
     mount(card, body);
+    var actions = el('div', 'sh-synthesis-actions');
     var dlBtn = el('button', 'sh-synthesis-download', 'Download');
     dlBtn.type = 'button';
     dlBtn.addEventListener('click', function () { downloadSynthesis(text); });
-    mount(card, dlBtn);
+    mount(actions, dlBtn);
+    var printBtn = el('button', 'sh-synthesis-download', 'Print');
+    printBtn.type = 'button';
+    printBtn.addEventListener('click', function () { window.print(); });
+    mount(actions, printBtn);
+    mount(card, actions);
     mount(contentEl, card);
   }
   function downloadSynthesis(text) {

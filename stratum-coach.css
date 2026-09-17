@@ -380,8 +380,12 @@
   color: var(--sh-paper);
 }
 .sh-synthesis-text p { margin: 0 0 16px; }
-.sh-synthesis-download {
+.sh-synthesis-actions {
+  display: flex;
+  gap: 10px;
   margin-top: 20px;
+}
+.sh-synthesis-download {
   background: var(--sh-warm);
   color: var(--sh-ink);
   border: none;
@@ -391,6 +395,26 @@
   font-weight: 900;
   cursor: pointer;
   font-family: Arial, sans-serif;
+}
+
+/* Printing the finished profile - isolate the synthesis card so the
+   header, rail, and buttons never end up on the printed page. */
+@media print {
+  body * { visibility: hidden; }
+  .sh-synthesis-card, .sh-synthesis-card * { visibility: visible; }
+  .sh-synthesis-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: none;
+    border: none;
+    box-shadow: none;
+    background: #fff;
+    color: #000;
+  }
+  .sh-synthesis-title, .sh-synthesis-text { color: #000; }
+  .sh-synthesis-actions { display: none; }
 }
 
 .sh-coach-loading {
