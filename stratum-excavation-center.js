@@ -45,15 +45,69 @@
    StratumHeader — not directly used here, but this section nests
    inside the wrap that function's topbar helper built), AND
    stratum-sessions.js loaded first on this page.
+
+   ---- Spanish translation (Sept 2026) ----
+   Chrome strings (column titles, status badges, empty states) go
+   through STRINGS/t(), keyed off the same 'wlfc_preferred_lang' the
+   header sets. Session titles themselves (session.title) are NOT
+   translated here — they already come from the admin-managed,
+   already-lang-aware /excavations?lang= endpoint (stratum-sessions.js
+   requests the right language directly), so they arrive pre-
+   translated whenever Ted has authored Spanish content for them.
    ============================================================ */
 (function () {
   'use strict';
 
   var PROXY_URL = window.StratumIdentity ? window.StratumIdentity.PROXY_URL : 'https://stratum-proxy.tedbaker0207.workers.dev';
+
+  var LANG_STORE_KEY = 'wlfc_preferred_lang'; // same key the header's Language dropdown sets
+  function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  var LANG = lsGet(LANG_STORE_KEY) || 'en';
+
+  var STRINGS = {
+    en: {
+      colExcavation: 'Excavation Coaching',
+      colGeneral: 'General Coaching',
+      colWriting: 'Writer\u2019s Coaching',
+      workInProgress: 'Work in progress:',
+      untitledWip: 'Untitled WIP',
+      loading: 'Loading\u2026',
+      noSessionsYet: 'No sessions yet.',
+      addACharacter: 'Add a character',
+      notStarted: 'Not Started',
+      completed: 'Completed',
+      inProgress: 'In Progress',
+      noCheckinsYet: 'No check-ins yet',
+      checkinCount: function (n) { return n + ' check-in' + (n === 1 ? '' : 's'); },
+      today: 'today',
+      yesterday: 'yesterday',
+      daysAgo: function (n) { return n + ' days ago'; }
+    },
+    es: {
+      colExcavation: 'Coaching de excavación',
+      colGeneral: 'Coaching general',
+      colWriting: 'Coaching de escritura',
+      workInProgress: 'Obra en progreso:',
+      untitledWip: 'Obra sin título',
+      loading: 'Cargando\u2026',
+      noSessionsYet: 'Aún no hay sesiones.',
+      addACharacter: 'Agregar un personaje',
+      notStarted: 'Sin comenzar',
+      completed: 'Completado',
+      inProgress: 'En progreso',
+      noCheckinsYet: 'Aún no hay registros',
+      checkinCount: function (n) { return n + ' registro' + (n === 1 ? '' : 's'); },
+      today: 'hoy',
+      yesterday: 'ayer',
+      daysAgo: function (n) { return 'hace ' + n + ' días'; }
+    }
+  };
+  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
+
   var TRACK_COLUMNS = [
-    { track: 'excavation', label: 'Excavation Coaching' },
-    { track: 'general', label: 'General Coaching' },
-    { track: 'writing', label: 'Writer\u2019s Coaching' }
+    { track: 'excavation', labelKey: 'colExcavation' },
+    { track: 'general', labelKey: 'colGeneral' },
+    { track: 'writing', labelKey: 'colWriting' }
   ];
 
   function el(tag, className, text) {
@@ -108,13 +162,13 @@
 
   function buildWipSelector(wips, activeId, onChange) {
     var wrap = el('div', 'sh-ec-wip-select-wrap');
-    mount(wrap, el('label', 'sh-ec-wip-select-label', 'Work in progress:'));
+    mount(wrap, el('label', 'sh-ec-wip-select-label', t('workInProgress')));
     var select = document.createElement('select');
     select.className = 'sh-ec-wip-select';
     wips.forEach(function (w) {
       var o = document.createElement('option');
       o.value = w.id;
-      o.textContent = w.title || 'Untitled WIP';
+      o.textContent = w.title || t('untitledWip');
       if (w.id === activeId) o.selected = true;
       select.appendChild(o);
     });
@@ -139,10 +193,10 @@
     var d = new Date(iso.indexOf('Z') === -1 ? iso.replace(' ', 'T') + 'Z' : iso);
     if (isNaN(d.getTime())) return '';
     var days = Math.floor((Date.now() - d.getTime()) / 86400000);
-    if (days <= 0) return 'today';
-    if (days === 1) return 'yesterday';
-    if (days < 7) return days + ' days ago';
-    return d.toLocaleDateString();
+    if (days <= 0) return t('today');
+    if (days === 1) return t('yesterday');
+    if (days < 7) return t('daysAgo')(days);
+    return d.toLocaleDateString(LANG === 'es' ? 'es-ES' : undefined);
   }
 
   function computeStatus(session, completedLessonKeys, characterId) {
@@ -151,9 +205,9 @@
     var done = session.layers.filter(function (l) {
       return completedLessonKeys.indexOf(session.slug + ':' + l.layerNumber + suffix) !== -1;
     }).length;
-    if (done === 0) return { key: 'not-started', label: 'Not Started' };
-    if (done === total) return { key: 'completed', label: 'Completed' };
-    return { key: 'in-progress', label: 'In Progress' };
+    if (done === 0) return { key: 'not-started', label: t('notStarted') };
+    if (done === total) return { key: 'completed', label: t('completed') };
+    return { key: 'in-progress', label: t('inProgress') };
   }
 
   function buildRow(session, statusLabel, statusKey, titleOverride) {
@@ -177,14 +231,14 @@
   function buildColumn(columnDef, sessionsForTrack, studentId, completedLessonKeys, characters) {
     var col = el('div', 'sh-dash-card sh-ec-column');
     var head = el('div', 'sh-dash-card-head');
-    mount(head, el('p', 'sh-dash-card-title', columnDef.label));
+    mount(head, el('p', 'sh-dash-card-title', t(columnDef.labelKey)));
     mount(col, head);
     var body = el('div', 'sh-dash-card-body');
     var listEl = el('div', 'sh-ec-list');
     mount(body, listEl);
     mount(col, body);
     if (!sessionsForTrack.length) {
-      mount(listEl, el('div', 'sh-ec-empty', 'No sessions yet.'));
+      mount(listEl, el('div', 'sh-ec-empty', t('noSessionsYet')));
       return col;
     }
     sessionsForTrack.forEach(function (session) {
@@ -198,7 +252,7 @@
           noCharLink.href = '/coach/' + session.slug + '/';
           noCharLink.textContent = session.title;
           mount(noCharRow, noCharLink);
-          mount(noCharRow, el('span', 'sh-ec-badge sh-ec-badge--not-started', 'Add a character'));
+          mount(noCharRow, el('span', 'sh-ec-badge sh-ec-badge--not-started', t('addACharacter')));
           mount(listEl, noCharRow);
           return;
         }
@@ -218,8 +272,8 @@
           var badge = row.querySelector('.sh-ec-badge');
           if (!badge) return;
           badge.textContent = count
-            ? (count + ' check-in' + (count === 1 ? '' : 's') + (lastAt ? ' \u00b7 ' + formatRelativeDate(lastAt) : ''))
-            : 'No check-ins yet';
+            ? (t('checkinCount')(count) + (lastAt ? ' \u00b7 ' + formatRelativeDate(lastAt) : ''))
+            : t('noCheckinsYet');
         });
         mount(listEl, row);
       }
@@ -235,10 +289,10 @@
     TRACK_COLUMNS.forEach(function (columnDef) {
       var col = el('div', 'sh-dash-card sh-ec-column');
       var head = el('div', 'sh-dash-card-head');
-      mount(head, el('p', 'sh-dash-card-title', columnDef.label));
+      mount(head, el('p', 'sh-dash-card-title', t(columnDef.labelKey)));
       mount(col, head);
       var body = el('div', 'sh-dash-card-body');
-      mount(body, el('div', 'sh-ec-empty', 'Loading\u2026'));
+      mount(body, el('div', 'sh-ec-empty', t('loading')));
       mount(col, body);
       mount(columnsEl, col);
     });

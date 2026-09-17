@@ -5,7 +5,7 @@
    filter, full list, delete, and (for Reminders) toggle/clear-
    completed/reset — collapsed by default (showing the same compact
    recent-entries summary as before) and expanding in place when
-   "Open" is clicked, rather than navigating to a separate page. Per
+   "View" is clicked, rather than navigating to a separate page. Per
    Ted's decision, the standalone /idea-log/ and /reminders/ pages
    are retired; this file is now the only place either of these is
    editable. (stratum-idea-log.js/.css and stratum-reminders.js/.css,
@@ -25,6 +25,20 @@
    event/global (see stratum-identity.js) rather than reading the
    stratum_sid cookie directly — resolution is async and this file
    would otherwise race it.
+
+   ---- Spanish translation (Sept 2026) ----
+   Every visible string in this file now goes through STRINGS/t(),
+   keyed off the SAME 'wlfc_preferred_lang' value the header's
+   Language dropdown already sets (stratum-header.js's
+   switchLanguage()) and reloads the page on change, so a fresh read
+   here on load is enough — no live-update logic needed. Category
+   names and reminder presets keep their ENGLISH value as the stored/
+   matched value (option.value, entry.category, filter comparisons)
+   and only their DISPLAYED label changes — so switching languages
+   never breaks matching against data saved under the other language.
+   Date formatting also switches locale (DATE_LOCALE) so "Today" /
+   relative dates / the exported .txt files' dates read naturally in
+   either language.
    ============================================================ */
 (function () {
   'use strict';
@@ -33,6 +47,132 @@
   var IDEA_LOG_LIMIT = 1;    // shown in the collapsed summary view — only the latest entry
   var REMINDERS_LIMIT = 1;   // shown in the collapsed summary view — only the latest reminder
 
+  var LANG_STORE_KEY = 'wlfc_preferred_lang'; // same key the header's Language dropdown sets
+  function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  var LANG = lsGet(LANG_STORE_KEY) || 'en';
+  var DATE_LOCALE = LANG === 'es' ? 'es-ES' : 'en-US';
+
+  var STRINGS = {
+    en: {
+      ideaLogTitle: 'Idea Log',
+      remindersTitle: 'Reminders',
+      viewBtn: 'View',
+      closeBtn: 'Close',
+      noIdeaEntries: 'No idea log entries yet.',
+      chooseCategory: 'Choose a category\u2026',
+      writeNote: 'Write your note\u2026',
+      addEntry: 'Add Entry',
+      chooseCategoryAndWrite: 'Choose a category and write something first.',
+      filterLabel: 'Filter',
+      all: 'All',
+      download: 'Download',
+      noEntriesInCategory: 'No entries in this category yet.',
+      noEntriesAddOne: 'No entries yet. Add one above.',
+      deleteEntry: 'Delete entry',
+      noEntriesToDownload: 'No entries to download.',
+      noRemindersYet: 'No reminders yet.',
+      chooseType: 'Choose a type\u2026',
+      writeYourOwn: 'Write your own\u2026',
+      addReminderPlaceholder: 'Add a reminder\u2026',
+      add: 'Add',
+      noRemindersAddOne: 'No reminders yet. Add one above.',
+      clearCompleted: 'Clear Completed',
+      resetAll: 'Reset All',
+      confirmDeleteAllReminders: 'Delete all reminders? This cannot be undone.',
+      overdue: 'Overdue \u2014 ',
+      due: 'Due ',
+      deleteReminder: 'Delete reminder',
+      noRemindersToDownload: 'No reminders to download.',
+      today: 'Today',
+      yesterday: 'Yesterday',
+      daysAgo: function (n) { return n + ' days ago'; },
+      exportHeaderReminders: 'THE STRATUM METHOD \u2014 MY REMINDERS',
+      exportHeaderIdeaLog: 'THE STRATUM METHOD \u2014 MY IDEA LOG',
+      exported: 'Exported: ',
+      remainingOf: function (remaining, total) { return remaining + ' of ' + total + ' remaining.'; },
+      categories: {
+        Character: 'Character', Plot: 'Plot', Theme: 'Theme', Revision: 'Revision',
+        Research: 'Research', Deadlines: 'Deadlines', Inspiration: 'Inspiration', General: 'General'
+      },
+      presets: {
+        'Finish a chapter draft': 'Finish a chapter draft',
+        'Revise a scene': 'Revise a scene',
+        'Outline next section': 'Outline next section',
+        'Character deep dive': 'Character deep dive',
+        'Check continuity': 'Check continuity',
+        'Polish opening paragraph': 'Polish opening paragraph',
+        'Deadline for manuscript changes': 'Deadline for manuscript changes',
+        'Submit to beta reader': 'Submit to beta reader',
+        'Research setting details': 'Research setting details',
+        'Track word count goal': 'Track word count goal',
+        'Prepare query letter': 'Prepare query letter',
+        'Finalize antagonist arc': 'Finalize antagonist arc'
+      }
+    },
+    es: {
+      ideaLogTitle: 'Registro de ideas',
+      remindersTitle: 'Recordatorios',
+      viewBtn: 'Ver',
+      closeBtn: 'Cerrar',
+      noIdeaEntries: 'Aún no hay entradas en el registro de ideas.',
+      chooseCategory: 'Elige una categoría\u2026',
+      writeNote: 'Escribe tu nota\u2026',
+      addEntry: 'Agregar entrada',
+      chooseCategoryAndWrite: 'Elige una categoría y escribe algo primero.',
+      filterLabel: 'Filtrar',
+      all: 'Todas',
+      download: 'Descargar',
+      noEntriesInCategory: 'Aún no hay entradas en esta categoría.',
+      noEntriesAddOne: 'Aún no hay entradas. Agrega una arriba.',
+      deleteEntry: 'Eliminar entrada',
+      noEntriesToDownload: 'No hay entradas para descargar.',
+      noRemindersYet: 'Aún no hay recordatorios.',
+      chooseType: 'Elige un tipo\u2026',
+      writeYourOwn: 'Escribe el tuyo\u2026',
+      addReminderPlaceholder: 'Agrega un recordatorio\u2026',
+      add: 'Agregar',
+      noRemindersAddOne: 'Aún no hay recordatorios. Agrega uno arriba.',
+      clearCompleted: 'Borrar completados',
+      resetAll: 'Restablecer todo',
+      confirmDeleteAllReminders: '\u00bfEliminar todos los recordatorios? Esta acción no se puede deshacer.',
+      overdue: 'Atrasado \u2014 ',
+      due: 'Vence ',
+      deleteReminder: 'Eliminar recordatorio',
+      noRemindersToDownload: 'No hay recordatorios para descargar.',
+      today: 'Hoy',
+      yesterday: 'Ayer',
+      daysAgo: function (n) { return 'Hace ' + n + ' días'; },
+      exportHeaderReminders: 'THE STRATUM METHOD \u2014 MIS RECORDATORIOS',
+      exportHeaderIdeaLog: 'THE STRATUM METHOD \u2014 MI REGISTRO DE IDEAS',
+      exported: 'Exportado: ',
+      remainingOf: function (remaining, total) { return remaining + ' de ' + total + ' pendientes.'; },
+      categories: {
+        Character: 'Personaje', Plot: 'Trama', Theme: 'Tema', Revision: 'Revisión',
+        Research: 'Investigación', Deadlines: 'Plazos', Inspiration: 'Inspiración', General: 'General'
+      },
+      presets: {
+        'Finish a chapter draft': 'Terminar el borrador de un capítulo',
+        'Revise a scene': 'Revisar una escena',
+        'Outline next section': 'Esquematizar la próxima sección',
+        'Character deep dive': 'Profundizar en un personaje',
+        'Check continuity': 'Revisar la continuidad',
+        'Polish opening paragraph': 'Pulir el párrafo inicial',
+        'Deadline for manuscript changes': 'Plazo para cambios al manuscrito',
+        'Submit to beta reader': 'Enviar a un lector beta',
+        'Research setting details': 'Investigar detalles del entorno',
+        'Track word count goal': 'Seguir la meta de conteo de palabras',
+        'Prepare query letter': 'Preparar la carta de presentación',
+        'Finalize antagonist arc': 'Finalizar el arco del antagonista'
+      }
+    }
+  };
+  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
+  function catLabel(cat) { return ((STRINGS[LANG] && STRINGS[LANG].categories) || STRINGS.en.categories)[cat] || cat; }
+  function presetLabel(p) { return ((STRINGS[LANG] && STRINGS[LANG].presets) || STRINGS.en.presets)[p] || p; }
+
+  // Canonical (English) values — these are what's actually STORED and
+  // matched against (entry.category, filterSelect comparisons, option
+  // .value); catLabel()/presetLabel() above supply the displayed text.
   var IDEA_LOG_CATEGORIES = ['Character', 'Plot', 'Theme', 'Revision', 'Research', 'Deadlines', 'Inspiration'];
   var GENERAL_CATEGORY = 'General'; // tag used for migrated legacy single-blob notes
   var REMINDER_PRESETS = [
@@ -57,20 +197,20 @@
     var d = typeof isoDateOrMs === 'number' ? new Date(isoDateOrMs) : new Date(isoDateOrMs + 'T00:00:00');
     if (isNaN(d.getTime())) return '';
     var days = Math.round((new Date().setHours(0, 0, 0, 0) - d.setHours(0, 0, 0, 0)) / 86400000);
-    if (days <= 0) return 'Today';
-    if (days === 1) return 'Yesterday';
-    if (days < 14) return days + ' days ago';
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (days <= 0) return t('today');
+    if (days === 1) return t('yesterday');
+    if (days < 14) return t('daysAgo')(days);
+    return d.toLocaleDateString(DATE_LOCALE, { month: 'short', day: 'numeric' });
   }
   function formatFullDate(isoDate) {
     var d = new Date(isoDate + 'T00:00:00');
     if (isNaN(d.getTime())) return isoDate;
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return d.toLocaleDateString(DATE_LOCALE, { month: 'short', day: 'numeric', year: 'numeric' });
   }
   function formatShortDate(isoDate) {
     var d = new Date(isoDate + 'T00:00:00');
     if (isNaN(d.getTime())) return '';
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return d.toLocaleDateString(DATE_LOCALE, { month: 'short', day: 'numeric' });
   }
 
   // ============================================================
@@ -151,7 +291,7 @@
     var sorted = ideaLogEntries.slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
     var recent = sorted.slice(0, IDEA_LOG_LIMIT);
     if (!recent.length) {
-      mount(ideaLogBodyEl, el('div', 'sh-dash-empty', 'No idea log entries yet.'));
+      mount(ideaLogBodyEl, el('div', 'sh-dash-empty', t('noIdeaEntries')));
       return;
     }
     recent.forEach(function (entry) {
@@ -159,7 +299,7 @@
       mount(item, el('div', 'sh-idea-icon', '\u{1F4AC}'));
       var text = document.createElement('div');
       var top = el('div', 'sh-idea-top');
-      mount(top, el('span', 'sh-idea-tag', entry.category || 'General'));
+      mount(top, el('span', 'sh-idea-tag', catLabel(entry.category || 'General')));
       mount(top, el('span', null, formatRelativeDate(entry.createdAt || entry.date)));
       mount(text, top);
       mount(text, el('div', 'sh-idea-text', entry.text || ''));
@@ -178,30 +318,30 @@
     categorySelect.className = 'sh-dash-select';
     var placeholder = document.createElement('option');
     placeholder.value = '';
-    placeholder.textContent = 'Choose a category\u2026';
+    placeholder.textContent = t('chooseCategory');
     categorySelect.appendChild(placeholder);
     IDEA_LOG_CATEGORIES.forEach(function (cat) {
       var o = document.createElement('option');
       o.value = cat;
-      o.textContent = cat;
+      o.textContent = catLabel(cat);
       categorySelect.appendChild(o);
     });
     mount(formRow, categorySelect);
     var textInput = document.createElement('textarea');
     textInput.className = 'sh-dash-textarea';
-    textInput.placeholder = 'Write your note\u2026';
+    textInput.placeholder = t('writeNote');
     textInput.maxLength = 2000;
     mount(formRow, textInput);
     mount(form, formRow);
     var formFoot = el('div', 'sh-dash-form-foot');
     var addStatus = el('span', 'sh-dash-add-status');
     mount(formFoot, addStatus);
-    var addBtn = el('button', 'sh-dash-add-btn', 'Add Entry');
+    var addBtn = el('button', 'sh-dash-add-btn', t('addEntry'));
     addBtn.type = 'button';
     addBtn.addEventListener('click', function () {
       var category = categorySelect.value;
       var text = textInput.value.trim();
-      if (!category || !text) { addStatus.textContent = 'Choose a category and write something first.'; return; }
+      if (!category || !text) { addStatus.textContent = t('chooseCategoryAndWrite'); return; }
       ideaLogEntries.unshift({
         id: Date.now().toString(),
         category: category,
@@ -220,23 +360,23 @@
     mount(ideaLogBodyEl, form);
 
     var toolbar = el('div', 'sh-dash-toolbar');
-    mount(toolbar, el('span', 'sh-dash-filter-label', 'Filter'));
+    mount(toolbar, el('span', 'sh-dash-filter-label', t('filterLabel')));
     var filterSelect = document.createElement('select');
     filterSelect.className = 'sh-dash-select';
     var allOpt = document.createElement('option');
     allOpt.value = '';
-    allOpt.textContent = 'All';
+    allOpt.textContent = t('all');
     filterSelect.appendChild(allOpt);
     IDEA_LOG_CATEGORIES.concat([GENERAL_CATEGORY]).forEach(function (cat) {
       var o = document.createElement('option');
       o.value = cat;
-      o.textContent = cat;
+      o.textContent = catLabel(cat);
       filterSelect.appendChild(o);
     });
     filterSelect.value = ideaLogFilterVal;
     filterSelect.addEventListener('change', function () { ideaLogFilterVal = filterSelect.value; renderIdeaLogFullList(); });
     mount(toolbar, filterSelect);
-    var dlBtn = el('button', 'sh-dash-download-btn', 'Download');
+    var dlBtn = el('button', 'sh-dash-download-btn', t('download'));
     dlBtn.type = 'button';
     dlBtn.addEventListener('click', downloadIdeaLog);
     mount(toolbar, dlBtn);
@@ -255,20 +395,20 @@
     var filtered = ideaLogFilterVal ? sorted.filter(function (e) { return e.category === ideaLogFilterVal; }) : sorted;
     listEl.innerHTML = '';
     if (!filtered.length) {
-      mount(listEl, el('div', 'sh-dash-empty', ideaLogFilterVal ? 'No entries in this category yet.' : 'No entries yet. Add one above.'));
+      mount(listEl, el('div', 'sh-dash-empty', ideaLogFilterVal ? t('noEntriesInCategory') : t('noEntriesAddOne')));
       return;
     }
     filtered.forEach(function (entry) {
       var isLegacy = entry.category === GENERAL_CATEGORY;
       var row = el('div', 'sh-dash-list-entry' + (isLegacy ? ' sh-dash-legacy' : ''));
       var head = el('div', 'sh-dash-list-entry-head');
-      mount(head, el('span', 'sh-idea-tag', entry.category));
+      mount(head, el('span', 'sh-idea-tag', catLabel(entry.category)));
       mount(head, el('span', 'sh-dash-list-entry-date', formatFullDate(entry.date)));
       mount(row, head);
       mount(row, el('div', 'sh-dash-list-entry-text', entry.text));
       var del = el('button', 'sh-dash-list-delete', '\u00d7');
       del.type = 'button';
-      del.title = 'Delete entry';
+      del.title = t('deleteEntry');
       del.addEventListener('click', function () {
         ideaLogEntries = ideaLogEntries.filter(function (e) { return e.id !== entry.id; });
         saveIdeaLogEntries();
@@ -281,10 +421,10 @@
 
   function downloadIdeaLog() {
     var sorted = ideaLogEntries.slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
-    if (!sorted.length) { alert('No entries to download.'); return; }
-    var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    var txt = 'THE STRATUM METHOD \u2014 MY IDEA LOG\nExported: ' + dateStr + '\n==========================================\n\n';
-    sorted.forEach(function (e) { txt += '[' + e.category + '] ' + formatFullDate(e.date) + '\n' + e.text + '\n\n'; });
+    if (!sorted.length) { alert(t('noEntriesToDownload')); return; }
+    var dateStr = new Date().toLocaleDateString(DATE_LOCALE, { year: 'numeric', month: 'long', day: 'numeric' });
+    var txt = t('exportHeaderIdeaLog') + '\n' + t('exported') + dateStr + '\n==========================================\n\n';
+    sorted.forEach(function (e) { txt += '[' + catLabel(e.category) + '] ' + formatFullDate(e.date) + '\n' + e.text + '\n\n'; });
     var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
     var link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -294,7 +434,7 @@
 
   function toggleIdeaLog() {
     ideaLogExpanded = !ideaLogExpanded;
-    ideaLogOpenBtn.textContent = ideaLogExpanded ? 'Close' : 'View';
+    ideaLogOpenBtn.textContent = ideaLogExpanded ? t('closeBtn') : t('viewBtn');
     if (ideaLogExpanded) renderIdeaLogExpanded();
     else renderIdeaLogCollapsed();
   }
@@ -302,11 +442,11 @@
   function buildIdeaLogCard() {
     var card = el('div', 'sh-dash-card');
     var head = el('div', 'sh-dash-card-head');
-    mount(head, el('p', 'sh-dash-card-title', 'Idea Log'));
+    mount(head, el('p', 'sh-dash-card-title', t('ideaLogTitle')));
     ideaLogOpenBtn = document.createElement('button');
     ideaLogOpenBtn.type = 'button';
     ideaLogOpenBtn.className = 'sh-dash-open-btn';
-    ideaLogOpenBtn.textContent = 'View';
+    ideaLogOpenBtn.textContent = t('viewBtn');
     ideaLogOpenBtn.addEventListener('click', toggleIdeaLog);
     mount(head, ideaLogOpenBtn);
     mount(card, head);
@@ -334,7 +474,7 @@
     var sorted = tasks.slice().sort(function (a, b) { return Number(b.id) - Number(a.id); });
     var visible = sorted.slice(0, REMINDERS_LIMIT);
     if (!visible.length) {
-      mount(remindersBodyEl, el('div', 'sh-dash-empty', 'No reminders yet.'));
+      mount(remindersBodyEl, el('div', 'sh-dash-empty', t('noRemindersYet')));
       return;
     }
     visible.forEach(function (task) {
@@ -343,7 +483,7 @@
       mount(row, check);
       var textWrap = el('div', 'sh-reminder-text');
       mount(textWrap, el('div', 'sh-reminder-title', task.text || ''));
-      if (!task.done && task.dueDate) mount(textWrap, el('div', 'sh-reminder-meta', 'Due ' + formatShortDate(task.dueDate)));
+      if (!task.done && task.dueDate) mount(textWrap, el('div', 'sh-reminder-meta', t('due') + formatShortDate(task.dueDate)));
       mount(row, textWrap);
       if (task.dueDate) mount(row, el('div', 'sh-reminder-date', formatShortDate(task.dueDate)));
       mount(remindersBodyEl, row);
@@ -358,17 +498,17 @@
     presetSelect.className = 'sh-dash-select sh-dash-select--full';
     var placeholder = document.createElement('option');
     placeholder.value = '';
-    placeholder.textContent = 'Choose a type\u2026';
+    placeholder.textContent = t('chooseType');
     presetSelect.appendChild(placeholder);
     REMINDER_PRESETS.forEach(function (p) {
       var o = document.createElement('option');
       o.value = p;
-      o.textContent = p;
+      o.textContent = presetLabel(p);
       presetSelect.appendChild(o);
     });
     var customOpt = document.createElement('option');
     customOpt.value = '__custom__';
-    customOpt.textContent = 'Write your own\u2026';
+    customOpt.textContent = t('writeYourOwn');
     presetSelect.appendChild(customOpt);
     mount(form, presetSelect);
 
@@ -376,13 +516,13 @@
     var textInput = document.createElement('input');
     textInput.type = 'text';
     textInput.className = 'sh-dash-input';
-    textInput.placeholder = "Add a reminder\u2026";
+    textInput.placeholder = t('addReminderPlaceholder');
     textInput.maxLength = 200;
     mount(inputRow, textInput);
     presetSelect.addEventListener('change', function () {
       var val = presetSelect.value;
       if (!val) return;
-      textInput.value = (val === '__custom__') ? '' : val;
+      textInput.value = (val === '__custom__') ? '' : presetLabel(val);
       textInput.focus();
       presetSelect.value = '';
     });
@@ -395,7 +535,7 @@
     var formFoot = el('div', 'sh-dash-form-foot');
     var countEl = el('span', 'sh-dash-add-status');
     mount(formFoot, countEl);
-    var addBtn = el('button', 'sh-dash-add-btn', 'Add');
+    var addBtn = el('button', 'sh-dash-add-btn', t('add'));
     addBtn.type = 'button';
     function addTask() {
       var text = textInput.value.trim();
@@ -417,11 +557,11 @@
     mount(remindersBodyEl, listEl);
 
     var actions = el('div', 'sh-dash-toolbar');
-    var dlBtn = el('button', 'sh-dash-download-btn', 'Download');
+    var dlBtn = el('button', 'sh-dash-download-btn', t('download'));
     dlBtn.type = 'button';
     dlBtn.addEventListener('click', downloadReminders);
     mount(actions, dlBtn);
-    var clearBtn = el('button', 'sh-dash-download-btn', 'Clear Completed');
+    var clearBtn = el('button', 'sh-dash-download-btn', t('clearCompleted'));
     clearBtn.type = 'button';
     clearBtn.addEventListener('click', function () {
       tasks = tasks.filter(function (t) { return !t.done; });
@@ -429,10 +569,10 @@
       renderRemindersFullList();
     });
     mount(actions, clearBtn);
-    var resetBtn = el('button', 'sh-dash-download-btn sh-dash-download-btn--danger', 'Reset All');
+    var resetBtn = el('button', 'sh-dash-download-btn sh-dash-download-btn--danger', t('resetAll'));
     resetBtn.type = 'button';
     resetBtn.addEventListener('click', function () {
-      if (!confirm('Delete all reminders? This cannot be undone.')) return;
+      if (!confirm(t('confirmDeleteAllReminders'))) return;
       tasks = [];
       saveTasks();
       renderRemindersFullList();
@@ -448,7 +588,7 @@
     if (!listEl) return;
     listEl.innerHTML = '';
     if (!tasks.length) {
-      mount(listEl, el('div', 'sh-dash-empty', 'No reminders yet. Add one above.'));
+      mount(listEl, el('div', 'sh-dash-empty', t('noRemindersAddOne')));
       return;
     }
     var todayStr = new Date().toISOString().slice(0, 10);
@@ -463,11 +603,11 @@
       mount(row, textWrap);
       if (task.dueDate) {
         var overdue = !task.done && task.dueDate < todayStr;
-        mount(row, el('span', 'sh-dash-list-entry-date' + (overdue ? ' sh-dash-overdue' : ''), (overdue ? 'Overdue \u2014 ' : 'Due ') + formatShortDate(task.dueDate)));
+        mount(row, el('span', 'sh-dash-list-entry-date' + (overdue ? ' sh-dash-overdue' : ''), (overdue ? t('overdue') : t('due')) + formatShortDate(task.dueDate)));
       }
       var del = el('button', 'sh-dash-list-delete', '\u00d7');
       del.type = 'button';
-      del.title = 'Delete reminder';
+      del.title = t('deleteReminder');
       del.addEventListener('click', function () {
         tasks = tasks.filter(function (t) { return t.id !== task.id; });
         saveTasks();
@@ -479,16 +619,16 @@
   }
 
   function downloadReminders() {
-    if (!tasks.length) { alert('No reminders to download.'); return; }
-    var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    var txt = 'THE STRATUM METHOD \u2014 MY REMINDERS\nExported: ' + dateStr + '\n==========================================\n\n';
-    tasks.forEach(function (t) {
-      txt += (t.done ? '[x] ' : '[ ] ') + t.text;
-      if (t.dueDate) txt += '  (due ' + formatShortDate(t.dueDate) + ')';
+    if (!tasks.length) { alert(t('noRemindersToDownload')); return; }
+    var dateStr = new Date().toLocaleDateString(DATE_LOCALE, { year: 'numeric', month: 'long', day: 'numeric' });
+    var txt = t('exportHeaderReminders') + '\n' + t('exported') + dateStr + '\n==========================================\n\n';
+    tasks.forEach(function (task) {
+      txt += (task.done ? '[x] ' : '[ ] ') + task.text;
+      if (task.dueDate) txt += '  (' + t('due').toLowerCase() + formatShortDate(task.dueDate) + ')';
       txt += '\n';
     });
-    var remaining = tasks.filter(function (t) { return !t.done; }).length;
-    txt += '\n==========================================\n' + remaining + ' of ' + tasks.length + ' remaining.\n';
+    var remaining = tasks.filter(function (task) { return !task.done; }).length;
+    txt += '\n==========================================\n' + t('remainingOf')(remaining, tasks.length) + '\n';
     var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
     var link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -498,7 +638,7 @@
 
   function toggleReminders() {
     remindersExpanded = !remindersExpanded;
-    remindersOpenBtn.textContent = remindersExpanded ? 'Close' : 'View';
+    remindersOpenBtn.textContent = remindersExpanded ? t('closeBtn') : t('viewBtn');
     if (remindersExpanded) renderRemindersExpanded();
     else renderRemindersCollapsed();
   }
@@ -506,11 +646,11 @@
   function buildRemindersCard() {
     var card = el('div', 'sh-dash-card');
     var head = el('div', 'sh-dash-card-head');
-    mount(head, el('p', 'sh-dash-card-title', 'Reminders'));
+    mount(head, el('p', 'sh-dash-card-title', t('remindersTitle')));
     remindersOpenBtn = document.createElement('button');
     remindersOpenBtn.type = 'button';
     remindersOpenBtn.className = 'sh-dash-open-btn';
-    remindersOpenBtn.textContent = 'View';
+    remindersOpenBtn.textContent = t('viewBtn');
     remindersOpenBtn.addEventListener('click', toggleReminders);
     mount(head, remindersOpenBtn);
     mount(card, head);

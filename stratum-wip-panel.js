@@ -31,6 +31,20 @@
 
    Requires stratum-identity.js AND stratum-header.js (for
    window.StratumHeader / the identity-ready signal) loaded first.
+
+   ---- Spanish translation (Sept 2026) ----
+   Card chrome, field labels, placeholders, status messages, and the
+   top-level Genre/Stage/Story Style/POV/Character-Type option labels
+   all translate via STRINGS/t(), keyed off the same 'wlfc_preferred_
+   lang' the header sets. Every dropdown's stored VALUE stays the
+   canonical English string (option.value, what actually gets saved
+   to /project) — only the displayed label changes — so a WIP saved
+   in one language still reads back correctly after switching to the
+   other. DEFERRED, deliberately: the ~50 Role Type / Core Conflict
+   options nested under ROLE_TYPE_BY_TYPE/CORE_CONFLICT_BY_TYPE are
+   specialized craft vocabulary and stay English-only for now rather
+   than getting a rushed translation — flag if you want those done
+   too and I'll take a proper pass.
    ============================================================ */
 (function () {
   'use strict';
@@ -42,6 +56,146 @@
   var currentProfile = null; // last-loaded server record, used to preserve studentName/language on save
   var characterRows = [];    // [{ id, nameInput, typeSelect, roleTypeSelect, coreConflictSelect, rowEl }]
   var rowCounter = 0;
+
+  var LANG_STORE_KEY = 'wlfc_preferred_lang'; // same key the header's Language dropdown sets
+  function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  var LANG = lsGet(LANG_STORE_KEY) || 'en';
+
+  var STRINGS = {
+    en: {
+      profileTitle: 'Profile',
+      viewBtn: 'View',
+      closeBtn: 'Close',
+      workInProgress: 'Work in Progress',
+      newWip: '+ New WIP',
+      deleteThisWip: 'Delete this WIP',
+      untitledWip: 'Untitled WIP',
+      noWipYet: 'No WIP yet \u2014 open to add your first one.',
+      noWipProfileYet: 'No WIP profile yet \u2014 open to add yours.',
+      noWipAtAllMsg: 'You don\u2019t have a work-in-progress yet \u2014 click + New WIP above to add one.',
+      autosaveLabel: 'Your changes save automatically',
+      saving: 'Saving\u2026',
+      saved: 'Saved',
+      editing: 'Editing\u2026',
+      creating: 'Creating\u2026',
+      couldNotSave: 'Could not save \u2014 will retry on your next change',
+      networkErrorSave: 'Network error \u2014 will retry on your next change',
+      couldNotCreateWip: 'Could not create a new WIP',
+      networkErrorCreateWip: 'Network error \u2014 could not create a new WIP',
+      networkErrorDeleteWip: 'Network error \u2014 could not delete',
+      confirmDeleteWip: function (name) { return 'Delete \u201c' + name + '\u201d and its character list? This can\u2019t be undone. (Any excavation progress already recorded for its characters stays in the system but becomes unreachable.)'; },
+      projectDescription: 'Project Description',
+      workingTitle: 'Working Title',
+      workingTitlePlaceholder: 'e.g. What the River Kept',
+      genre: 'Genre',
+      stageOfProgress: 'Stage of Progress',
+      storyStyle: 'Story Style',
+      pov: 'POV',
+      themeFocus: 'Theme/Focus',
+      themeFocusPlaceholder: 'What big idea are you exploring, and what do you most want your coach to focus on?',
+      charactersLabel: 'Characters',
+      colName: 'Name',
+      colType: 'Type',
+      colRoleType: 'Role Type',
+      colCoreConflict: 'Core Conflict',
+      characterNamePlaceholder: 'Character name',
+      typePlaceholder: 'Type\u2026',
+      roleTypePlaceholder: 'Role type\u2026',
+      coreConflictPlaceholder: 'Core conflict\u2026',
+      removeCharacter: 'Remove character',
+      addCharacter: '+ Add Character',
+      maxCharacters: function (n) { return 'Maximum ' + n + ' characters'; },
+      wipsCount: function (n) { return n + ' WIPs'; },
+      charactersCount: function (n) { return n + ' character' + (n === 1 ? '' : 's'); },
+      chooseGenre: 'Choose a genre\u2026',
+      chooseOne: 'Choose one\u2026',
+      genreOptions: {
+        'Thriller/Suspense': 'Thriller / Suspense',
+        'Literary Fiction': 'Literary Fiction',
+        'Historical Fiction': 'Historical Fiction',
+        'Romance/Domestic Fiction': 'Romance / Domestic Fiction',
+        'Fantasy/Science Fiction': 'Fantasy / Science Fiction',
+        'Other': 'Other / Not sure yet'
+      },
+      stageOptions: { Outlining: 'Outlining', Drafting: 'Drafting', Revising: 'Revising', Polishing: 'Polishing' },
+      styleOptions: { 'Plot Driven': 'Plot Driven', 'Character Driven': 'Character Driven' },
+      povOptions: {
+        'First Person': 'First Person', 'Second Person': 'Second Person',
+        'Third Person Limited': 'Third Person Limited', 'Third Person Omniscient': 'Third Person Omniscient',
+        'Third Person Objective': 'Third Person Objective'
+      },
+      characterTypeOptions: { Protagonist: 'Protagonist', Antagonist: 'Antagonist', 'Supporting Character': 'Supporting Character' }
+    },
+    es: {
+      profileTitle: 'Perfil',
+      viewBtn: 'Ver',
+      closeBtn: 'Cerrar',
+      workInProgress: 'Obra en progreso',
+      newWip: '+ Nueva obra',
+      deleteThisWip: 'Eliminar esta obra',
+      untitledWip: 'Obra sin título',
+      noWipYet: 'Aún no hay una obra \u2014 abre para agregar la primera.',
+      noWipProfileYet: 'Aún no hay perfil de obra \u2014 abre para agregar el tuyo.',
+      noWipAtAllMsg: 'Aún no tienes una obra en progreso \u2014 haz clic en + Nueva obra arriba para agregar una.',
+      autosaveLabel: 'Tus cambios se guardan automáticamente',
+      saving: 'Guardando\u2026',
+      saved: 'Guardado',
+      editing: 'Editando\u2026',
+      creating: 'Creando\u2026',
+      couldNotSave: 'No se pudo guardar \u2014 se reintentará con tu próximo cambio',
+      networkErrorSave: 'Error de red \u2014 se reintentará con tu próximo cambio',
+      couldNotCreateWip: 'No se pudo crear la nueva obra',
+      networkErrorCreateWip: 'Error de red \u2014 no se pudo crear la nueva obra',
+      networkErrorDeleteWip: 'Error de red \u2014 no se pudo eliminar',
+      confirmDeleteWip: function (name) { return '\u00bfEliminar \u201c' + name + '\u201d y su lista de personajes? Esta acción no se puede deshacer. (El progreso de excavación ya registrado para sus personajes permanece en el sistema pero deja de ser accesible.)'; },
+      projectDescription: 'Descripción del proyecto',
+      workingTitle: 'Título de trabajo',
+      workingTitlePlaceholder: 'p. ej. Lo que dejó el río',
+      genre: 'Género',
+      stageOfProgress: 'Etapa de progreso',
+      storyStyle: 'Estilo narrativo',
+      pov: 'Punto de vista',
+      themeFocus: 'Tema/Enfoque',
+      themeFocusPlaceholder: '\u00bfQué gran idea estás explorando y en qué quieres que se enfoque tu coach?',
+      charactersLabel: 'Personajes',
+      colName: 'Nombre',
+      colType: 'Tipo',
+      colRoleType: 'Tipo de rol',
+      colCoreConflict: 'Conflicto central',
+      characterNamePlaceholder: 'Nombre del personaje',
+      typePlaceholder: 'Tipo\u2026',
+      roleTypePlaceholder: 'Tipo de rol\u2026',
+      coreConflictPlaceholder: 'Conflicto central\u2026',
+      removeCharacter: 'Eliminar personaje',
+      addCharacter: '+ Agregar personaje',
+      maxCharacters: function (n) { return 'Máximo ' + n + ' personajes'; },
+      wipsCount: function (n) { return n + ' obras'; },
+      charactersCount: function (n) { return n + ' personaje' + (n === 1 ? '' : 's'); },
+      chooseGenre: 'Elige un género\u2026',
+      chooseOne: 'Elige uno\u2026',
+      genreOptions: {
+        'Thriller/Suspense': 'Suspenso / Thriller',
+        'Literary Fiction': 'Ficción literaria',
+        'Historical Fiction': 'Ficción histórica',
+        'Romance/Domestic Fiction': 'Romance / Ficción doméstica',
+        'Fantasy/Science Fiction': 'Fantasía / Ciencia ficción',
+        'Other': 'Otro / Aún no lo sé'
+      },
+      stageOptions: { Outlining: 'Esquematizando', Drafting: 'Redactando', Revising: 'Revisando', Polishing: 'Puliendo' },
+      styleOptions: { 'Plot Driven': 'Impulsada por la trama', 'Character Driven': 'Impulsada por el personaje' },
+      povOptions: {
+        'First Person': 'Primera persona', 'Second Person': 'Segunda persona',
+        'Third Person Limited': 'Tercera persona limitada', 'Third Person Omniscient': 'Tercera persona omnisciente',
+        'Third Person Objective': 'Tercera persona objetiva'
+      },
+      characterTypeOptions: { Protagonist: 'Protagonista', Antagonist: 'Antagonista', 'Supporting Character': 'Personaje secundario' }
+    }
+  };
+  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
+  function optLabel(groupKey, value) {
+    var group = (STRINGS[LANG] && STRINGS[LANG][groupKey]) || STRINGS.en[groupKey];
+    return (group && group[value]) || value;
+  }
 
   // Sept 2026 (multiple WIPs): a student can now have more than one
   // work-in-progress, each with its own Characters list (characters are
@@ -59,35 +213,18 @@
   function sessSet(key, value) { try { sessionStorage.setItem(key, value); } catch (e) {} }
 
   // ----------------------------------------------------------
-  // OPTION LISTS
+  // OPTION LISTS — canonical (English) values, used as option.value
+  // and as what's actually stored/matched; optLabel() above supplies
+  // the displayed, language-appropriate text.
   // ----------------------------------------------------------
-  var GENRE_OPTIONS = [
-    ['', 'Choose a genre\u2026'],
-    ['Thriller/Suspense', 'Thriller / Suspense'],
-    ['Literary Fiction', 'Literary Fiction'],
-    ['Historical Fiction', 'Historical Fiction'],
-    ['Romance/Domestic Fiction', 'Romance / Domestic Fiction'],
-    ['Fantasy/Science Fiction', 'Fantasy / Science Fiction'],
-    ['Other', 'Other / Not sure yet']
-  ];
-  var STAGE_OPTIONS = [
-    ['', 'Choose one\u2026'], ['Outlining', 'Outlining'], ['Drafting', 'Drafting'],
-    ['Revising', 'Revising'], ['Polishing', 'Polishing']
-  ];
-  var STORY_STYLE_OPTIONS = [
-    ['', 'Choose one\u2026'], ['Plot Driven', 'Plot Driven'], ['Character Driven', 'Character Driven']
-  ];
-  var POV_OPTIONS = [
-    ['', 'Choose one\u2026'],
-    ['First Person', 'First Person'],
-    ['Second Person', 'Second Person'],
-    ['Third Person Limited', 'Third Person Limited'],
-    ['Third Person Omniscient', 'Third Person Omniscient'],
-    ['Third Person Objective', 'Third Person Objective']
-  ];
+  var GENRE_VALUES = ['Thriller/Suspense', 'Literary Fiction', 'Historical Fiction', 'Romance/Domestic Fiction', 'Fantasy/Science Fiction', 'Other'];
+  var STAGE_VALUES = ['Outlining', 'Drafting', 'Revising', 'Polishing'];
+  var STORY_STYLE_VALUES = ['Plot Driven', 'Character Driven'];
+  var POV_VALUES = ['First Person', 'Second Person', 'Third Person Limited', 'Third Person Omniscient', 'Third Person Objective'];
 
   var CHARACTER_TYPES = ['Protagonist', 'Antagonist', 'Supporting Character'];
 
+  // DEFERRED from translation for now — see file header note.
   var ROLE_TYPE_BY_TYPE = {
     'Protagonist': ['Hero protagonist', 'Antihero protagonist', 'Tragic protagonist', 'Everyman protagonist', 'Dynamic protagonist', 'Static protagonist', 'Reluctant protagonist', 'Multiple protagonist'],
     'Antagonist': ['Villain', 'Ideological', 'Societal', 'Nature or Circumstance', 'Internal', 'Moral Foil', 'Ally', 'Inanimate'],
@@ -106,13 +243,17 @@
     return node;
   }
   function mount(parent, child) { parent.appendChild(child); return child; }
-  function buildSelect(className, options) {
+  function buildSelect(className, values, groupKey, placeholderText) {
     var select = document.createElement('select');
     select.className = className;
-    options.forEach(function (opt) {
+    var ph = document.createElement('option');
+    ph.value = '';
+    ph.textContent = placeholderText;
+    select.appendChild(ph);
+    values.forEach(function (v) {
       var o = document.createElement('option');
-      o.value = opt[0];
-      o.textContent = opt[1];
+      o.value = v;
+      o.textContent = optLabel(groupKey, v);
       select.appendChild(o);
     });
     return select;
@@ -127,7 +268,7 @@
     values.forEach(function (v) {
       var o = document.createElement('option');
       o.value = v;
-      o.textContent = v;
+      o.textContent = optLabel('characterTypeOptions', v);
       select.appendChild(o);
     });
     return select;
@@ -143,10 +284,10 @@
     var prevRole = row.roleTypeSelect.value;
     var prevConflict = row.coreConflictSelect.value;
     row.roleTypeSelect.innerHTML = '';
-    row.roleTypeSelect.appendChild(new Option('Role type\u2026', ''));
+    row.roleTypeSelect.appendChild(new Option(t('roleTypePlaceholder'), ''));
     roleOptions.forEach(function (v) { row.roleTypeSelect.appendChild(new Option(v, v)); });
     row.coreConflictSelect.innerHTML = '';
-    row.coreConflictSelect.appendChild(new Option('Core conflict\u2026', ''));
+    row.coreConflictSelect.appendChild(new Option(t('coreConflictPlaceholder'), ''));
     conflictOptions.forEach(function (v) { row.coreConflictSelect.appendChild(new Option(v, v)); });
     row.roleTypeSelect.disabled = !type;
     row.coreConflictSelect.disabled = !type;
@@ -175,12 +316,12 @@
     var nameInput = document.createElement('input');
     nameInput.type = 'text';
     nameInput.className = 'sh-char-name';
-    nameInput.placeholder = 'Character name';
+    nameInput.placeholder = t('characterNamePlaceholder');
     nameInput.maxLength = 80;
     nameInput.value = (data && data.name) || '';
     mount(rowEl, nameInput);
 
-    var typeSelect = buildPlainSelect('sh-char-type', CHARACTER_TYPES, 'Type\u2026');
+    var typeSelect = buildPlainSelect('sh-char-type', CHARACTER_TYPES, t('typePlaceholder'));
     if (data && data.type) typeSelect.value = data.type;
     mount(rowEl, typeSelect);
 
@@ -194,7 +335,7 @@
 
     var removeBtn = el('button', 'sh-char-remove', '\u00d7');
     removeBtn.type = 'button';
-    removeBtn.title = 'Remove character';
+    removeBtn.title = t('removeCharacter');
     mount(rowEl, removeBtn);
 
     mount(listEl, rowEl);
@@ -224,7 +365,7 @@
   function updateAddButtonState(addBtn, listEl) {
     var atMax = characterRows.length >= MAX_CHARACTERS;
     addBtn.disabled = atMax;
-    addBtn.textContent = atMax ? 'Maximum ' + MAX_CHARACTERS + ' characters' : '+ Add Character';
+    addBtn.textContent = atMax ? t('maxCharacters')(MAX_CHARACTERS) : t('addCharacter');
   }
 
   function collectCharacters() {
@@ -292,7 +433,7 @@
   function doSave() {
     if (!ACTIVE_WIP_ID) return; // shouldn't be reachable (fields are hidden with no active WIP), but defensive
     var payload = collectProfilePayload();
-    setStatus('Saving\u2026');
+    setStatus(t('saving'));
     fetch(PROXY_URL + '/project', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -303,21 +444,21 @@
         if (d && d.ok) {
           currentProfile = Object.assign({}, currentProfile, d);
           renderSummary(currentProfile);
-          setStatus('Saved', 'sh-ok');
+          setStatus(t('saved'), 'sh-ok');
           fadeStatusSoon();
         } else {
-          setStatus('Could not save \u2014 will retry on your next change', 'sh-err');
+          setStatus(t('couldNotSave'), 'sh-err');
         }
       })
       .catch(function () {
-        setStatus('Network error \u2014 will retry on your next change', 'sh-err');
+        setStatus(t('networkErrorSave'), 'sh-err');
       });
   }
 
   function scheduleAutosave() {
     if (!ACTIVE_WIP_ID) return; // no WIP selected yet - nothing to save into
     if (autosaveTimer) clearTimeout(autosaveTimer);
-    setStatus('Editing\u2026');
+    setStatus(t('editing'));
     autosaveTimer = setTimeout(function () {
       autosaveTimer = null;
       doSave();
@@ -352,7 +493,7 @@
   // BUILD
   // ----------------------------------------------------------
   // Sept 2026: wrapped in the same sh-dash-card container + collapsed/
-  // Open pattern as Idea Log, Reminders, and Excavation Center, per
+  // View pattern as Idea Log, Reminders, and Excavation Center, per
   // Ted's request. Deliberately reuses stratum-dashboard.css's sh-dash-*
   // classes rather than defining new ones — that file is already loaded
   // on this page, and reusing its classes is what guarantees this looks
@@ -369,25 +510,25 @@
     if (!summaryEl) return;
     summaryEl.innerHTML = '';
     if (!ACTIVE_WIP_ID) {
-      mount(summaryEl, el('div', 'sh-dash-empty', 'No WIP yet \u2014 open to add your first one.'));
+      mount(summaryEl, el('div', 'sh-dash-empty', t('noWipYet')));
       return;
     }
     if (!profile || (!profile.wipTitle && !(profile.characters || []).length)) {
-      mount(summaryEl, el('div', 'sh-dash-empty', 'No WIP profile yet \u2014 open to add yours.'));
+      mount(summaryEl, el('div', 'sh-dash-empty', t('noWipProfileYet')));
       return;
     }
     var bits = [];
-    if (WIPS.length > 1) bits.push(WIPS.length + ' WIPs');
+    if (WIPS.length > 1) bits.push(t('wipsCount')(WIPS.length));
     if (profile.wipTitle) bits.push(profile.wipTitle);
-    if (profile.genre) bits.push(profile.genre);
+    if (profile.genre) bits.push(optLabel('genreOptions', profile.genre));
     var charCount = (profile.characters || []).filter(function (c) { return c && c.name; }).length;
-    if (charCount) bits.push(charCount + ' character' + (charCount === 1 ? '' : 's'));
-    mount(summaryEl, el('div', 'sh-wip-summary-line', bits.join(' \u00b7 ') || 'Untitled WIP'));
+    if (charCount) bits.push(t('charactersCount')(charCount));
+    mount(summaryEl, el('div', 'sh-wip-summary-line', bits.join(' \u00b7 ') || t('untitledWip')));
   }
 
   function toggleExpanded() {
     expanded = !expanded;
-    openBtn.textContent = expanded ? 'Close' : 'View';
+    openBtn.textContent = expanded ? t('closeBtn') : t('viewBtn');
     summaryEl.style.display = expanded ? 'none' : '';
     formWrapEl.style.display = expanded ? '' : 'none';
   }
@@ -395,11 +536,11 @@
   function buildPanel(wrapEl) {
     var card = el('div', 'sh-dash-card');
     var head = el('div', 'sh-dash-card-head');
-    mount(head, el('p', 'sh-dash-card-title', 'Profile'));
+    mount(head, el('p', 'sh-dash-card-title', t('profileTitle')));
     openBtn = document.createElement('button');
     openBtn.type = 'button';
     openBtn.className = 'sh-dash-open-btn';
-    openBtn.textContent = 'View';
+    openBtn.textContent = t('viewBtn');
     openBtn.addEventListener('click', toggleExpanded);
     mount(head, openBtn);
     mount(card, head);
@@ -412,12 +553,12 @@
     formWrapEl.style.display = 'none';
 
     mount(formWrapEl, buildWipSelectRow());
-    noWipMsgEl = el('div', 'sh-dash-empty', 'You don\u2019t have a work-in-progress yet \u2014 click + New WIP above to add one.');
+    noWipMsgEl = el('div', 'sh-dash-empty', t('noWipAtAllMsg'));
     noWipMsgEl.style.display = 'none';
     mount(formWrapEl, noWipMsgEl);
 
     var topActions = el('div', 'sh-wip-top-actions');
-    mount(topActions, el('p', 'sh-wip-col-label sh-wip-autosave-label', 'Your changes save automatically'));
+    mount(topActions, el('p', 'sh-wip-col-label sh-wip-autosave-label', t('autosaveLabel')));
     statusEl = el('span', 'sh-wip-status');
     mount(topActions, statusEl);
     mount(formWrapEl, topActions);
@@ -427,53 +568,53 @@
 
     // ---- Column 1: Project Description ----
     var col1 = el('div', 'sh-wip-col');
-    mount(col1, el('p', 'sh-wip-col-label', 'Project Description'));
+    mount(col1, el('p', 'sh-wip-col-label', t('projectDescription')));
 
     var titleField = el('div', 'sh-wip-field');
-    mount(titleField, el('label', null, 'Working Title'));
+    mount(titleField, el('label', null, t('workingTitle')));
     var titleInput = document.createElement('input');
     titleInput.type = 'text';
     titleInput.className = 'sh-wip-input';
     titleInput.maxLength = 150;
-    titleInput.placeholder = 'e.g. What the River Kept';
+    titleInput.placeholder = t('workingTitlePlaceholder');
     titleInput.addEventListener('input', scheduleAutosave);
     mount(titleField, titleInput);
     mount(col1, titleField);
 
     var genreField = el('div', 'sh-wip-field');
-    mount(genreField, el('label', null, 'Genre'));
-    var genreSelect = buildSelect('sh-wip-select', GENRE_OPTIONS);
+    mount(genreField, el('label', null, t('genre')));
+    var genreSelect = buildSelect('sh-wip-select', GENRE_VALUES, 'genreOptions', t('chooseGenre'));
     genreSelect.addEventListener('change', scheduleAutosave);
     mount(genreField, genreSelect);
     mount(col1, genreField);
 
     var stageField = el('div', 'sh-wip-field');
-    mount(stageField, el('label', null, 'Stage of Progress'));
-    var stageSelect = buildSelect('sh-wip-select', STAGE_OPTIONS);
+    mount(stageField, el('label', null, t('stageOfProgress')));
+    var stageSelect = buildSelect('sh-wip-select', STAGE_VALUES, 'stageOptions', t('chooseOne'));
     stageSelect.addEventListener('change', scheduleAutosave);
     mount(stageField, stageSelect);
     mount(col1, stageField);
 
     var styleField = el('div', 'sh-wip-field');
-    mount(styleField, el('label', null, 'Story Style'));
-    var styleSelect = buildSelect('sh-wip-select', STORY_STYLE_OPTIONS);
+    mount(styleField, el('label', null, t('storyStyle')));
+    var styleSelect = buildSelect('sh-wip-select', STORY_STYLE_VALUES, 'styleOptions', t('chooseOne'));
     styleSelect.addEventListener('change', scheduleAutosave);
     mount(styleField, styleSelect);
     mount(col1, styleField);
 
     var povField = el('div', 'sh-wip-field');
-    mount(povField, el('label', null, 'POV'));
-    var povSelect = buildSelect('sh-wip-select', POV_OPTIONS);
+    mount(povField, el('label', null, t('pov')));
+    var povSelect = buildSelect('sh-wip-select', POV_VALUES, 'povOptions', t('chooseOne'));
     povSelect.addEventListener('change', scheduleAutosave);
     mount(povField, povSelect);
     mount(col1, povField);
 
     var themeField = el('div', 'sh-wip-field');
-    mount(themeField, el('label', null, 'Theme/Focus'));
+    mount(themeField, el('label', null, t('themeFocus')));
     var themeInput = document.createElement('textarea');
     themeInput.className = 'sh-wip-textarea';
     themeInput.maxLength = 600;
-    themeInput.placeholder = 'What big idea are you exploring, and what do you most want your coach to focus on?';
+    themeInput.placeholder = t('themeFocusPlaceholder');
     themeInput.addEventListener('input', scheduleAutosave);
     mount(themeField, themeInput);
     mount(col1, themeField);
@@ -482,20 +623,20 @@
 
     // ---- Column 2: Characters ----
     var col2 = el('div', 'sh-wip-col');
-    mount(col2, el('p', 'sh-wip-col-label', 'Characters'));
+    mount(col2, el('p', 'sh-wip-col-label', t('charactersLabel')));
 
     var charHead = el('div', 'sh-char-head');
-    mount(charHead, el('span', null, 'Name'));
-    mount(charHead, el('span', null, 'Type'));
-    mount(charHead, el('span', null, 'Role Type'));
-    mount(charHead, el('span', null, 'Core Conflict'));
+    mount(charHead, el('span', null, t('colName')));
+    mount(charHead, el('span', null, t('colType')));
+    mount(charHead, el('span', null, t('colRoleType')));
+    mount(charHead, el('span', null, t('colCoreConflict')));
     mount(charHead, el('span', null, ''));
     mount(col2, charHead);
 
     var charList = el('div', 'sh-char-list');
     mount(col2, charList);
 
-    var addBtn = el('button', 'sh-char-add', '+ Add Character');
+    var addBtn = el('button', 'sh-char-add', t('addCharacter'));
     addBtn.type = 'button';
     addBtn.addEventListener('click', function () {
       buildCharacterRow(null, charList, addBtn);
@@ -538,7 +679,7 @@
     wips.forEach(function (w) {
       var o = document.createElement('option');
       o.value = w.id;
-      o.textContent = w.title || 'Untitled WIP';
+      o.textContent = w.title || t('untitledWip');
       if (w.id === activeId) o.selected = true;
       wipSelectEl.appendChild(o);
     });
@@ -584,7 +725,7 @@
   // routed through the debounced autosave, so "+ New WIP" always creates
   // exactly one WIP per click regardless of the autosave timer's state.
   function createNewWip() {
-    setStatus('Creating\u2026');
+    setStatus(t('creating'));
     fetch(PROXY_URL + '/project', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -592,21 +733,21 @@
     })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (!d || !d.ok || !d.wipId) { setStatus('Could not create a new WIP', 'sh-err'); return; }
+        if (!d || !d.ok || !d.wipId) { setStatus(t('couldNotCreateWip'), 'sh-err'); return; }
         loadWipListThenSelect(d.wipId);
       })
-      .catch(function () { setStatus('Network error \u2014 could not create a new WIP', 'sh-err'); });
+      .catch(function () { setStatus(t('networkErrorCreateWip'), 'sh-err'); });
   }
 
   function deleteCurrentWip() {
     if (!ACTIVE_WIP_ID) return;
     var wip = WIPS.filter(function (w) { return w.id === ACTIVE_WIP_ID; })[0];
-    var name = (wip && wip.title) || 'this WIP';
-    if (!window.confirm('Delete \u201c' + name + '\u201d and its character list? This can\u2019t be undone. (Any excavation progress already recorded for its characters stays in the system but becomes unreachable.)')) return;
+    var name = (wip && wip.title) || t('untitledWip');
+    if (!window.confirm(t('confirmDeleteWip')(name))) return;
     fetch(PROXY_URL + '/wips?studentId=' + encodeURIComponent(STUDENT_ID) + '&wipId=' + encodeURIComponent(ACTIVE_WIP_ID), { method: 'DELETE' })
       .then(function (r) { return r.json(); })
       .then(function () { loadWipListThenSelect(null); })
-      .catch(function () { setStatus('Network error \u2014 could not delete', 'sh-err'); });
+      .catch(function () { setStatus(t('networkErrorDeleteWip'), 'sh-err'); });
   }
 
   var wipSelectEl = null;
@@ -615,16 +756,16 @@
 
   function buildWipSelectRow() {
     var row = el('div', 'sh-wip-select-row');
-    mount(row, el('label', 'sh-wip-select-label', 'Work in Progress'));
+    mount(row, el('label', 'sh-wip-select-label', t('workInProgress')));
     wipSelectEl = document.createElement('select');
     wipSelectEl.className = 'sh-wip-select-main';
     wipSelectEl.addEventListener('change', function () { selectWip(wipSelectEl.value); });
     mount(row, wipSelectEl);
-    newWipBtn = el('button', 'sh-wip-new-btn', '+ New WIP');
+    newWipBtn = el('button', 'sh-wip-new-btn', t('newWip'));
     newWipBtn.type = 'button';
     newWipBtn.addEventListener('click', createNewWip);
     mount(row, newWipBtn);
-    deleteWipBtn = el('button', 'sh-wip-delete-btn', 'Delete this WIP');
+    deleteWipBtn = el('button', 'sh-wip-delete-btn', t('deleteThisWip'));
     deleteWipBtn.type = 'button';
     deleteWipBtn.addEventListener('click', deleteCurrentWip);
     mount(row, deleteWipBtn);

@@ -26,6 +26,15 @@
   'use strict';
 
   var PROXY_URL = window.StratumIdentity ? window.StratumIdentity.PROXY_URL : 'https://stratum-proxy.tedbaker0207.workers.dev';
+  var LANG_STORE_KEY = 'wlfc_preferred_lang'; // same key the header's Language dropdown sets
+  function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  var LANG = lsGet(LANG_STORE_KEY) || 'en';
+
+  var STRINGS = {
+    en: { title: 'Library', view: 'View', noResourcesYet: 'No resources yet.', label: 'Today\u2019s Featured Resource', video: 'Video', pdf: 'PDF' },
+    es: { title: 'Biblioteca', view: 'Ver', noResourcesYet: 'Aún no hay recursos.', label: 'Recurso destacado de hoy', video: 'Video', pdf: 'PDF' }
+  };
+  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
 
   function el(tag, className, text) {
     var node = document.createElement(tag);
@@ -54,11 +63,11 @@
   function buildCard() {
     var card = el('div', 'sh-dash-card');
     var head = el('div', 'sh-dash-card-head');
-    mount(head, el('p', 'sh-dash-card-title', 'Library'));
+    mount(head, el('p', 'sh-dash-card-title', t('title')));
     var openLink = document.createElement('a');
     openLink.className = 'sh-dash-open-btn';
     openLink.href = '/library/';
-    openLink.textContent = 'View';
+    openLink.textContent = t('view');
     mount(head, openLink);
     mount(card, head);
 
@@ -67,15 +76,15 @@
 
     fetchResources(function (resources) {
       if (!resources.length) {
-        mount(body, el('div', 'sh-dash-empty', 'No resources yet.'));
+        mount(body, el('div', 'sh-dash-empty', t('noResourcesYet')));
         return;
       }
       var resource = resources[dayOfYear() % resources.length];
-      mount(body, el('p', 'sh-pt-label', "Today's Featured Resource"));
+      mount(body, el('p', 'sh-pt-label', t('label')));
       mount(body, el('div', 'sh-pt-word', resource.title));
       var meta = el('div', 'sh-lt-meta');
       mount(meta, el('span', 'sh-lt-tag', resource.category));
-      mount(meta, el('span', 'sh-lt-tag sh-lt-tag--type', resource.type === 'video' ? 'Video' : 'PDF'));
+      mount(meta, el('span', 'sh-lt-tag sh-lt-tag--type', resource.type === 'video' ? t('video') : t('pdf')));
       mount(body, meta);
     });
 

@@ -33,6 +33,12 @@
   function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
   var LANG = lsGet(LANG_STORE_KEY) || 'en';
 
+  var STRINGS = {
+    en: { title: 'Practice Lab', view: 'View', noTermsYet: 'No practice terms yet.', label: 'Today\u2019s Practice Term', practicedOf: function (done, total) { return done + ' of ' + total + ' terms practiced'; } },
+    es: { title: 'Laboratorio de Práctica', view: 'Ver', noTermsYet: 'Aún no hay términos de práctica.', label: 'Término de práctica de hoy', practicedOf: function (done, total) { return done + ' de ' + total + ' términos practicados'; } }
+  };
+  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
+
   function el(tag, className, text) {
     var node = document.createElement(tag);
     if (className) node.className = className;
@@ -73,11 +79,11 @@
   function buildCard(studentId) {
     var card = el('div', 'sh-dash-card');
     var head = el('div', 'sh-dash-card-head');
-    mount(head, el('p', 'sh-dash-card-title', 'Practice Lab'));
+    mount(head, el('p', 'sh-dash-card-title', t('title')));
     var openLink = document.createElement('a');
     openLink.className = 'sh-dash-open-btn';
     openLink.href = '/practice/';
-    openLink.textContent = 'View';
+    openLink.textContent = t('view');
     mount(head, openLink);
     mount(card, head);
 
@@ -86,11 +92,11 @@
 
     fetchTerms(function (terms) {
       if (!terms.length) {
-        mount(body, el('div', 'sh-dash-empty', 'No practice terms yet.'));
+        mount(body, el('div', 'sh-dash-empty', t('noTermsYet')));
         return;
       }
       var term = terms[dayOfYear() % terms.length];
-      mount(body, el('p', 'sh-pt-label', "Today's Practice Term"));
+      mount(body, el('p', 'sh-pt-label', t('label')));
       mount(body, el('div', 'sh-pt-word', term.word));
       if (term.definition) {
         var snippet = term.definition.length > 120 ? term.definition.slice(0, 117) + '\u2026' : term.definition;
@@ -98,7 +104,7 @@
       }
       fetchPracticedCount(studentId, terms, function (done) {
         if (done == null) return;
-        mount(body, el('div', 'sh-pt-progress', done + ' of ' + terms.length + ' terms practiced'));
+        mount(body, el('div', 'sh-pt-progress', t('practicedOf')(done, terms.length)));
       });
     });
 

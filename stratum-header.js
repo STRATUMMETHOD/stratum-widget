@@ -55,6 +55,64 @@
 
   var PROXY_URL = window.StratumIdentity ? window.StratumIdentity.PROXY_URL : 'https://stratum-proxy.tedbaker0207.workers.dev';
   var LANG_STORE_KEY = 'wlfc_preferred_lang'; // same key the old engine already uses — keep in sync
+  var LANG = (function () { try { return localStorage.getItem('wlfc_preferred_lang'); } catch (e) { return null; } })() || 'en';
+
+  // ---- Spanish translation (Sept 2026) ----
+  // Every chrome string in this file goes through STRINGS/t(). Language
+  // NAMES coming back from GET /languages (English, Español, etc.) are
+  // already in their own language server-side and are shown as-is, not
+  // translated again here.
+  var STRINGS = {
+    en: {
+      forWriters: 'For writers',
+      dashboard: 'Dashboard',
+      practiceLab: 'Practice Lab',
+      library: 'Library',
+      tutorial: 'Tutorial',
+      tutorialsComingSoon: 'Tutorials coming soon',
+      language: 'Language',
+      loading: 'Loading\u2026',
+      couldNotLoadLanguages: 'Could not load languages',
+      userProfile: 'User Profile',
+      logIn: 'Log in',
+      welcomeWithName: function (name) { return 'Welcome, ' + name; },
+      welcomeNoName: 'Welcome, there',
+      welcomeLoggedOut: 'Welcome to The Stratum Method',
+      membersOnly: 'Members only \u2014 log in to continue',
+      logInArrow: 'Log in \u2192',
+      accountFound: 'Account found \u2014 no active membership yet',
+      goToMyAccount: 'Go to My Account \u2192',
+      profileModalTitle: 'Profile',
+      name: 'Name',
+      email: 'Email',
+      manageFullAccount: 'Manage full account \u2192'
+    },
+    es: {
+      forWriters: 'Para escritores',
+      dashboard: 'Panel',
+      practiceLab: 'Laboratorio de Práctica',
+      library: 'Biblioteca',
+      tutorial: 'Tutorial',
+      tutorialsComingSoon: 'Tutoriales próximamente',
+      language: 'Idioma',
+      loading: 'Cargando\u2026',
+      couldNotLoadLanguages: 'No se pudieron cargar los idiomas',
+      userProfile: 'Perfil de usuario',
+      logIn: 'Iniciar sesión',
+      welcomeWithName: function (name) { return 'Bienvenido, ' + name; },
+      welcomeNoName: 'Bienvenido',
+      welcomeLoggedOut: 'Bienvenido a The Stratum Method',
+      membersOnly: 'Solo para miembros \u2014 inicia sesión para continuar',
+      logInArrow: 'Iniciar sesión \u2192',
+      accountFound: 'Cuenta encontrada \u2014 aún no tienes una membresía activa',
+      goToMyAccount: 'Ir a mi cuenta \u2192',
+      profileModalTitle: 'Perfil',
+      name: 'Nombre',
+      email: 'Correo electrónico',
+      manageFullAccount: 'Gestionar cuenta completa \u2192'
+    }
+  };
+  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
 
   // Server-authoritative login/membership state — see stratum-identity.js.
   var WP_USER = window.StratumIdentity ? window.StratumIdentity.getWpUser() : { loggedIn: false, hasMembership: false, firstName: '', email: '', loginUrl: '#' };
@@ -110,9 +168,9 @@
   }
 
   function buildTutorialDropdown() {
-    return buildDropdown('Tutorial', function (panel) {
+    return buildDropdown(t('tutorial'), function (panel) {
       if (!TUTORIAL_VIDEOS.length) {
-        mount(panel, el('div', 'sh-dropdown-empty', 'Tutorials coming soon'));
+        mount(panel, el('div', 'sh-dropdown-empty', t('tutorialsComingSoon')));
         return;
       }
       TUTORIAL_VIDEOS.forEach(function (v) {
@@ -160,8 +218,8 @@
   }
 
   function buildLanguageDropdown() {
-    var wrap = buildDropdown('Language', function (panel) {
-      mount(panel, el('div', 'sh-dropdown-empty', 'Loading\u2026'));
+    var wrap = buildDropdown(t('language'), function (panel) {
+      mount(panel, el('div', 'sh-dropdown-empty', t('loading')));
     });
     var panel = wrap.querySelector('.sh-dropdown-panel');
     fetch(PROXY_URL + '/languages')
@@ -184,7 +242,7 @@
       })
       .catch(function () {
         panel.innerHTML = '';
-        mount(panel, el('div', 'sh-dropdown-empty', 'Could not load languages'));
+        mount(panel, el('div', 'sh-dropdown-empty', t('couldNotLoadLanguages')));
       });
     return wrap;
   }
@@ -233,14 +291,14 @@
       var profileBtn = document.createElement('button');
       profileBtn.type = 'button';
       profileBtn.className = 'sh-dropdown-item';
-      profileBtn.textContent = 'User Profile';
+      profileBtn.textContent = t('userProfile');
       profileBtn.addEventListener('click', function () { closeAllDropdowns(); openProfileModal(); });
       mount(panel, profileBtn);
     } else {
       var loginLink = document.createElement('a');
       loginLink.className = 'sh-dropdown-item';
       loginLink.href = WP_USER.loginUrl;
-      loginLink.textContent = 'Log in';
+      loginLink.textContent = t('logIn');
       mount(panel, loginLink);
     }
     mount(wrap, panel);
@@ -273,7 +331,7 @@
     closeBtn.addEventListener('click', function () { overlay.remove(); });
     mount(box, closeBtn);
 
-    var title = el('p', null, 'Profile');
+    var title = el('p', null, t('profileModalTitle'));
     title.style.cssText = 'font-size:11.5px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:#A07C3E;margin:0 0 18px;';
     mount(box, title);
 
@@ -288,12 +346,12 @@
       mount(wrap, v);
       return wrap;
     }
-    mount(box, field('Name', WP_USER.firstName));
-    mount(box, field('Email', WP_USER.email));
+    mount(box, field(t('name'), WP_USER.firstName));
+    mount(box, field(t('email'), WP_USER.email));
 
     var manageLink = document.createElement('a');
     manageLink.href = NAV_LINKS.userProfile;
-    manageLink.textContent = 'Manage full account \u2192';
+    manageLink.textContent = t('manageFullAccount');
     manageLink.style.cssText = 'display:inline-block;margin-top:4px;font-size:12.5px;font-weight:700;color:#A07C3E;text-decoration:none;';
     mount(box, manageLink);
 
@@ -354,7 +412,7 @@
     var brand = el('div', 'sh-brand');
     mount(brand, el('div', 'sh-brand-mark'));
     mount(brand, el('span', 'sh-brand-name', 'The Stratum Method'));
-    var tagline = el('span', 'sh-for-writers', 'For writers');
+    var tagline = el('span', 'sh-for-writers', t('forWriters'));
     mount(brand, tagline);
     mount(topbar, brand);
 
@@ -362,9 +420,9 @@
     var homeLink = document.createElement('a');
     homeLink.className = 'sh-nav-link';
     homeLink.href = '/system/';
-    homeLink.textContent = 'Dashboard';
+    homeLink.textContent = t('dashboard');
     mount(nav, homeLink);
-    [['Practice Lab', NAV_LINKS.practice], ['Library', NAV_LINKS.library]].forEach(function (pair) {
+    [[t('practiceLab'), NAV_LINKS.practice], [t('library'), NAV_LINKS.library]].forEach(function (pair) {
       var a = document.createElement('a');
       a.className = 'sh-nav-link';
       a.href = pair[1];
@@ -386,8 +444,8 @@
     // ---- Welcome ----
     var welcomeRow = el('div', 'sh-welcome-row');
     var welcomeText = WP_USER.loggedIn
-      ? 'Welcome, ' + (WP_USER.firstName || 'there')
-      : 'Welcome to The Stratum Method';
+      ? (WP_USER.firstName ? t('welcomeWithName')(WP_USER.firstName) : t('welcomeNoName'))
+      : t('welcomeLoggedOut');
     mount(welcomeRow, el('h2', 'sh-welcome', welcomeText));
     mount(wrap, welcomeRow);
 
@@ -402,20 +460,20 @@
     // that restriction isn't configured, not a normal-path UI element.
     if (!WP_USER.loggedIn) {
       var loggedOutRow = el('div', 'sh-hero-row sh-hero-row--notice');
-      mount(loggedOutRow, el('p', 'sh-eyebrow', 'Members only \u2014 log in to continue'));
+      mount(loggedOutRow, el('p', 'sh-eyebrow', t('membersOnly')));
       var loginLink = document.createElement('a');
       loginLink.className = 'sh-resume-btn sh-resume-btn--inline';
       loginLink.href = WP_USER.loginUrl;
-      loginLink.textContent = 'Log in \u2192';
+      loginLink.textContent = t('logInArrow');
       mount(loggedOutRow, loginLink);
       mount(wrap, loggedOutRow);
     } else if (!WP_USER.hasMembership) {
       var noMembershipRow = el('div', 'sh-hero-row sh-hero-row--notice');
-      mount(noMembershipRow, el('p', 'sh-eyebrow', 'Account found \u2014 no active membership yet'));
+      mount(noMembershipRow, el('p', 'sh-eyebrow', t('accountFound')));
       var acctLink = document.createElement('a');
       acctLink.className = 'sh-resume-btn sh-resume-btn--inline';
       acctLink.href = '/membership-account/';
-      acctLink.textContent = 'Go to My Account \u2192';
+      acctLink.textContent = t('goToMyAccount');
       mount(noMembershipRow, acctLink);
       mount(wrap, noMembershipRow);
     }
