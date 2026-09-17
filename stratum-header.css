@@ -56,9 +56,11 @@
   --sh-card-input-bg: #FBF5E4;
   --sh-font-sans: Arial, "Helvetica Neue", Helvetica, sans-serif;
 
-  /* Navbar gold tokens (Sept 2026) */
-  --sh-nav-gold-1: #D9B24C;
-  --sh-nav-gold-2: #A07C3E;
+  /* Navbar tokens (Sept 2026 — sticky blur-glass treatment, replacing
+     the earlier solid-gold bar) */
+  --sh-nav-bg: rgba(22, 17, 10, 0.75);
+  --sh-nav-border: rgba(221, 186, 118, 0.25);
+  --sh-nav-link: #EADBB0;
 
   font-family: var(--sh-font-sans);
   background: var(--sh-ink);
@@ -70,22 +72,33 @@
 .sh-wrap .sh-for-writers {
   font-family: var(--sh-font-sans);
   font-weight: 700;
-  color: var(--sh-ink);
-  font-size: 20px; /* was an inherited ~16px default with no explicit rule — 25% larger, per Ted's request */
+  color: var(--sh-warm); /* reverted from the gold-bar-contrast ink back to gold, now that the bar is dark/translucent again */
+  font-size: 20px; /* 25% larger than the ~16px it was inheriting with no explicit rule, per Ted's earlier request */
 }
 
-/* ---- Top row: logo mark + primary nav ---- */
+/* ---- Top row: logo mark + primary nav ----
+   Sept 2026 (blur-glass revision): the solid gold bar is replaced with
+   a semi-transparent dark base plus backdrop-filter, so card content
+   scrolling up behind the header softens/blurs through rather than
+   being fully hidden by an opaque block. position: sticky is set here
+   as requested, but note the caveat in the reply about .sh-wrap's own
+   overflow: hidden likely preventing it from actually pinning to the
+   viewport as written — flagged, not silently "fixed" by guessing at
+   a restructure that risks breaking the card's rounded corners. */
 .sh-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 28px;
-  background: linear-gradient(135deg, var(--sh-nav-gold-1) 0%, var(--sh-nav-gold-2) 100%);
-  border-bottom: 0.5px solid rgba(22, 19, 15, 0.25);
+  position: sticky;
+  top: 0;
+  background: var(--sh-nav-bg);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid var(--sh-nav-border);
   flex-wrap: wrap;
   row-gap: 10px;
-  position: relative;
-  z-index: 2;
+  z-index: 5;
 }
 .sh-brand {
   display: flex;
@@ -96,7 +109,7 @@
   width: 20px;
   height: 20px;
   border-radius: 4px;
-  background: var(--sh-ink); /* was var(--sh-warm) — invisible against the new gold bar; dark tile reads as a monogram chip instead */
+  background: var(--sh-warm);
   align-self: center;
   flex-shrink: 0;
 }
@@ -104,7 +117,7 @@
   font-size: 16px;
   font-weight: 900;
   letter-spacing: 0.5px;
-  color: var(--sh-ink); /* was var(--sh-paper) (cream) — too little contrast against gold */
+  color: var(--sh-paper);
   white-space: nowrap;
 }
 
@@ -122,12 +135,15 @@
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  color: rgba(22, 19, 15, 0.72); /* dark ink at reduced opacity, not --sh-sub — that tan-gray was tuned for dark backgrounds and reads too faint on gold */
+  color: var(--sh-nav-link);
   cursor: pointer;
   text-decoration: none;
-  transition: color .15s ease;
+  transition: color .15s ease, text-shadow .15s ease;
 }
-.sh-nav-link:hover, .sh-nav-link:focus-visible { color: var(--sh-ink); }
+.sh-nav-link:hover, .sh-nav-link:focus-visible {
+  color: #F7E9C4;
+  text-shadow: 0 0 10px rgba(234, 219, 176, 0.55);
+}
 
 .sh-nav-dropdown { position: relative; }
 .sh-nav-dropdown > .sh-nav-link {
@@ -197,7 +213,9 @@
   align-items: center;
 }
 .sh-topbar--standalone {
-  background: linear-gradient(135deg, var(--sh-nav-gold-1) 0%, var(--sh-nav-gold-2) 100%);
+  background: var(--sh-nav-bg);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-radius: 16px 16px 0 0;
 }
 
