@@ -87,6 +87,7 @@
   var ALL_CHECKIN_NOTES = [];     // Recurring engine only — every past check-in across every topic in this session, fetched once and reused for both the topic list and each conversation's injected history
   var topicListEl = null;         // Recurring engine only
   var SELECTED_CHARACTER = null;  // {id, name, type, roleType, coreConflict} — set via the character picker for any excavation with requiresCharacter true; null for every other excavation
+  var ACTIVE_WIP_ID = null;       // Sept 2026 (multiple WIPs): every Excavation-Track session's coaching context (and, for requiresCharacter sessions, its character list) is scoped to one WIP — resolved by resolveWipThenStart() before anything else runs
 
   var railEl, messagesEl, formEl, inputEl, sendBtn, contentEl;
 
@@ -170,10 +171,17 @@
   // ----------------------------------------------------------
 
   function fetchProjectData(callback) {
-    fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(STUDENT_ID))
+    if (!ACTIVE_WIP_ID) { callback(null); return; } // no WIP resolved yet - resolveWipThenStart() always runs first, see buildPage()
+    fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(STUDENT_ID) + '&wipId=' + encodeURIComponent(ACTIVE_WIP_ID))
       .then(function (r) { return r.json(); })
       .then(function (d) { callback((d && d.known) ? d : null); })
       .catch(function () { callback(null); });
+  }
+  function fetchWips(callback) {
+    fetch(PROXY_URL + '/wips?studentId=' + encodeURIComponent(STUDENT_ID))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { callback((d && Array.isArray(d.wips)) ? d.wips : []); })
+      .catch(function () { callback([]); });
   }
   function fetchIdeaLogEntries(callback) {
     fetch(PROXY_URL + '/notes?studentId=' + encodeURIComponent(STUDENT_ID))
@@ -1091,17 +1099,110 @@
     if (SESSION.videoMediaId) buildVideo(videoSlot, SESSION.videoMediaId);
     if (SESSION.coachingIntro && SESSION.coachingIntro.text) buildCoachingIntro(introSlot, SESSION.coachingIntro);
 
-    if (SESSION.requiresCharacter) {
-      resolveCharacterThenStart(contentEl, charIndicatorSlot);
-    } else {
-      startExcavationProper();
-    }
+    resolveWipThenStart(contentEl, charIndicatorSlot);
   }
 
   function startExcavationProper() {
     buildChatPanel(contentEl);
     renderRail();
     loadProgressThenStart();
+  }
+
+  // ----------------------------------------------------------
+  // WIP PICKER — every Excavation-Track session is scoped to one WIP
+  // ----------------------------------------------------------
+  // Sept 2026 (multiple WIPs per student): a writer's profile can now
+  // hold more than one work-in-progress, each with its own characters.
+  // EVERY Excavation-Track session - not just ones with requiresCharacter
+  // - needs to know which WIP its coaching context (buildProjectContextBlock,
+  // via fetchProjectData) comes from, and a requiresCharacter session also
+  // needs that WIP's character list. This gate runs BEFORE the character
+  // picker (or before starting directly, for sessions that don't require
+  // one), using the same locked-per-tab sessionStorage pattern the
+  // character picker below uses - but keyed once per TAB rather than per
+  // excavation slug (WIP_LOCK_KEY, shared with stratum-wip-panel.js and
+  // stratum-excavation-center.js), since which WIP a writer is working in
+  // is a broader choice than any one session: picking it once should
+  // carry across every excavation opened in the same tab, and stay in
+  // sync with whatever was last chosen in the profile panel or the
+  // Excavation Center.
+  var WIP_LOCK_KEY = 'stratum_wip_active';
+
+  function showWipIndicator(slot, wip) {
+    var line = el('p', 'sh-coach-sub');
+    line.appendChild(document.createTextNode('Working in: ' + (wip.title || 'Untitled WIP') + '  \u00b7  '));
+    var switchLink = document.createElement('a');
+    switchLink.href = '#';
+    switchLink.className = 'sh-char-switch-link';
+    switchLink.textContent = 'Switch WIP';
+    switchLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      sessRemove(WIP_LOCK_KEY);
+      sessRemove(CHAR_LOCK_PREFIX + SESSION.slug);
+      location.reload();
+    });
+    line.appendChild(switchLink);
+    mount(slot, line);
+  }
+
+  function afterWipResolved(container, indicatorSlot) {
+    if (SESSION.requiresCharacter) {
+      resolveCharacterThenStart(container, indicatorSlot);
+    } else {
+      startExcavationProper();
+    }
+  }
+
+  function resolveWipThenStart(container, indicatorSlot) {
+    container.innerHTML = '';
+    mount(container, el('div', 'sh-coach-loading', 'Loading your projects\u2026'));
+    fetchWips(function (wips) {
+      var lockedId = sessGet(WIP_LOCK_KEY);
+      var locked = lockedId ? wips.filter(function (w) { return w.id === lockedId; })[0] : null;
+      if (locked) {
+        ACTIVE_WIP_ID = locked.id;
+        showWipIndicator(indicatorSlot, locked);
+        afterWipResolved(container, indicatorSlot);
+        return;
+      }
+      container.innerHTML = '';
+      if (!wips.length) {
+        var empty = el('div', 'sh-coach-page');
+        mount(empty, el('p', null, 'You don\u2019t have a work-in-progress in your profile yet. Add one, then come back here.'));
+        var link = document.createElement('a');
+        link.className = 'sh-save-btn';
+        link.href = '/system/';
+        link.textContent = '\u2190 Add a WIP';
+        mount(empty, link);
+        mount(container, empty);
+        return;
+      }
+      if (wips.length === 1) {
+        // Only one WIP - nothing to actually choose. Lock it silently
+        // (so a reload doesn't re-show this) and go straight through.
+        ACTIVE_WIP_ID = wips[0].id;
+        sessSet(WIP_LOCK_KEY, wips[0].id);
+        showWipIndicator(indicatorSlot, wips[0]);
+        afterWipResolved(container, indicatorSlot);
+        return;
+      }
+      var wrap = el('div', 'sh-recurring-topics');
+      mount(container, el('p', 'sh-coach-sub', 'Which work-in-progress is this session for?'));
+      wips.forEach(function (w) {
+        var row = el('div', 'sh-recurring-topic-row');
+        row.addEventListener('click', function () {
+          ACTIVE_WIP_ID = w.id;
+          sessSet(WIP_LOCK_KEY, w.id);
+          showWipIndicator(indicatorSlot, w);
+          afterWipResolved(container, indicatorSlot);
+        });
+        mount(row, el('div', 'sh-recurring-topic-title', w.title || 'Untitled WIP'));
+        var metaBits = [w.genre, w.characterCount ? (w.characterCount + ' character' + (w.characterCount === 1 ? '' : 's')) : null].filter(Boolean);
+        mount(row, el('div', 'sh-recurring-topic-meta', metaBits.join(' \u00b7 ') || '\u00a0'));
+        mount(wrap, row);
+      });
+      mount(container, wrap);
+    });
   }
 
   // ----------------------------------------------------------
@@ -1129,7 +1230,12 @@
   function sessRemove(key) { try { sessionStorage.removeItem(key); } catch (e) {} }
 
   function showCharacterIndicator(slot) {
-    slot.innerHTML = '';
+    // Sept 2026: no longer clears the slot first - showWipIndicator()
+    // already put its own line in there (WIP is resolved before the
+    // character picker runs, see resolveWipThenStart()/afterWipResolved()
+    // above), and both indicators need to stay visible together. Either
+    // "Switch" link does a full location.reload() anyway, so there's no
+    // stale-DOM risk from appending rather than replacing.
     var line = el('p', 'sh-coach-sub');
     line.appendChild(document.createTextNode('Excavating: ' + (SELECTED_CHARACTER.name || 'this character') + '  \u00b7  '));
     var switchLink = document.createElement('a');
@@ -1163,7 +1269,7 @@
       container.innerHTML = '';
       if (!characters.length) {
         var empty = el('div', 'sh-coach-page');
-        mount(empty, el('p', null, 'This excavation is done one character at a time, and there\u2019s no character in your profile yet to excavate. Add one, then come back here.'));
+        mount(empty, el('p', null, 'This excavation is done one character at a time, and there\u2019s no character in this WIP yet to excavate. Add one, then come back here.'));
         var link = document.createElement('a');
         link.className = 'sh-save-btn';
         link.href = '/system/';

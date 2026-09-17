@@ -43,6 +43,21 @@
   var characterRows = [];    // [{ id, nameInput, typeSelect, roleTypeSelect, coreConflictSelect, rowEl }]
   var rowCounter = 0;
 
+  // Sept 2026 (multiple WIPs): a student can now have more than one
+  // work-in-progress, each with its own Characters list (characters are
+  // never shared across WIPs). WIPS is the lightweight list ({id, title,
+  // genre, stage, characterCount, updatedAt}) used to populate the
+  // selector; ACTIVE_WIP_ID is whichever one the form is currently
+  // showing/saving. WIP_LOCK_KEY is the SAME sessionStorage key stratum-
+  // coach.js and stratum-excavation-center.js use, so all three surfaces
+  // agree on "current WIP" within one browser tab without another
+  // server round-trip just to sync that choice.
+  var WIPS = [];
+  var ACTIVE_WIP_ID = null;
+  var WIP_LOCK_KEY = 'stratum_wip_active';
+  function sessGet(key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } }
+  function sessSet(key, value) { try { sessionStorage.setItem(key, value); } catch (e) {} }
+
   // ----------------------------------------------------------
   // OPTION LISTS
   // ----------------------------------------------------------
@@ -260,6 +275,7 @@
   function collectProfilePayload() {
     return {
       studentId: STUDENT_ID,
+      wipId: ACTIVE_WIP_ID,
       email: (currentProfile && currentProfile.email) || undefined,
       studentName: (currentProfile && currentProfile.studentName) || '', // preserved, not edited here — see WordPress account
       language: (currentProfile && currentProfile.language) || '',       // preserved, not edited here — see header Language dropdown
@@ -274,6 +290,7 @@
   }
 
   function doSave() {
+    if (!ACTIVE_WIP_ID) return; // shouldn't be reachable (fields are hidden with no active WIP), but defensive
     var payload = collectProfilePayload();
     setStatus('Saving\u2026');
     fetch(PROXY_URL + '/project', {
@@ -298,6 +315,7 @@
   }
 
   function scheduleAutosave() {
+    if (!ACTIVE_WIP_ID) return; // no WIP selected yet - nothing to save into
     if (autosaveTimer) clearTimeout(autosaveTimer);
     setStatus('Editing\u2026');
     autosaveTimer = setTimeout(function () {
@@ -350,11 +368,16 @@
   function renderSummary(profile) {
     if (!summaryEl) return;
     summaryEl.innerHTML = '';
+    if (!ACTIVE_WIP_ID) {
+      mount(summaryEl, el('div', 'sh-dash-empty', 'No WIP yet \u2014 open to add your first one.'));
+      return;
+    }
     if (!profile || (!profile.wipTitle && !(profile.characters || []).length)) {
       mount(summaryEl, el('div', 'sh-dash-empty', 'No WIP profile yet \u2014 open to add yours.'));
       return;
     }
     var bits = [];
+    if (WIPS.length > 1) bits.push(WIPS.length + ' WIPs');
     if (profile.wipTitle) bits.push(profile.wipTitle);
     if (profile.genre) bits.push(profile.genre);
     var charCount = (profile.characters || []).filter(function (c) { return c && c.name; }).length;
@@ -388,6 +411,11 @@
     formWrapEl = el('div', 'sh-wip-section');
     formWrapEl.style.display = 'none';
 
+    mount(formWrapEl, buildWipSelectRow());
+    noWipMsgEl = el('div', 'sh-dash-empty', 'You don\u2019t have a work-in-progress yet \u2014 click + New WIP above to add one.');
+    noWipMsgEl.style.display = 'none';
+    mount(formWrapEl, noWipMsgEl);
+
     var topActions = el('div', 'sh-wip-top-actions');
     mount(topActions, el('p', 'sh-wip-col-label sh-wip-autosave-label', 'Your changes save automatically'));
     statusEl = el('span', 'sh-wip-status');
@@ -395,6 +423,7 @@
     mount(formWrapEl, topActions);
 
     var grid = el('div', 'sh-wip-grid');
+    gridEl = grid;
 
     // ---- Column 1: Project Description ----
     var col1 = el('div', 'sh-wip-col');
@@ -490,6 +519,117 @@
   }
 
   var fields = null;
+  var gridEl = null;       // the two-column Project Description/Characters grid - hidden entirely when there's no active WIP
+  var noWipMsgEl = null;   // shown in its place when the student has zero WIPs
+
+  // ----------------------------------------------------------
+  // WIP LIST / SELECTOR (Sept 2026, multiple WIPs)
+  // ----------------------------------------------------------
+  function fetchWips(callback) {
+    fetch(PROXY_URL + '/wips?studentId=' + encodeURIComponent(STUDENT_ID))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { callback((d && Array.isArray(d.wips)) ? d.wips : []); })
+      .catch(function () { callback([]); });
+  }
+
+  function populateWipSelect(wips, activeId) {
+    if (!wipSelectEl) return;
+    wipSelectEl.innerHTML = '';
+    wips.forEach(function (w) {
+      var o = document.createElement('option');
+      o.value = w.id;
+      o.textContent = w.title || 'Untitled WIP';
+      if (w.id === activeId) o.selected = true;
+      wipSelectEl.appendChild(o);
+    });
+    deleteWipBtn.disabled = !wips.length;
+  }
+
+  // Loads (or re-loads) the WIP list from the server, then selects
+  // preferredId if it's still present, else whatever's locked for this
+  // tab, else the first WIP, else shows the empty state. Used on initial
+  // page load and after creating/deleting a WIP.
+  function loadWipListThenSelect(preferredId) {
+    fetchWips(function (wips) {
+      WIPS = wips;
+      if (!wips.length) {
+        populateWipSelect([], null);
+        selectWip(null);
+        return;
+      }
+      var lockedId = preferredId || sessGet(WIP_LOCK_KEY);
+      var active = (lockedId && wips.filter(function (w) { return w.id === lockedId; })[0]) || wips[0];
+      populateWipSelect(wips, active.id);
+      selectWip(active.id);
+    });
+  }
+
+  function selectWip(wipId) {
+    ACTIVE_WIP_ID = wipId || null;
+    sessSet(WIP_LOCK_KEY, ACTIVE_WIP_ID || '');
+    if (!ACTIVE_WIP_ID) { showNoWipState(); return; }
+    loadProfile();
+  }
+
+  function showNoWipState() {
+    currentProfile = null;
+    if (gridEl) gridEl.style.display = 'none';
+    if (noWipMsgEl) noWipMsgEl.style.display = '';
+    renderSummary(null);
+  }
+
+  // Creates a blank WIP immediately (title/fields empty, no confirmation
+  // needed - it's just an empty row until the student fills it in), then
+  // switches the panel to editing it. Deliberately a direct request, not
+  // routed through the debounced autosave, so "+ New WIP" always creates
+  // exactly one WIP per click regardless of the autosave timer's state.
+  function createNewWip() {
+    setStatus('Creating\u2026');
+    fetch(PROXY_URL + '/project', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: STUDENT_ID, wipTitle: '', genre: '', stage: '', storyStyle: '', pov: '', theme: '', characters: [] })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok || !d.wipId) { setStatus('Could not create a new WIP', 'sh-err'); return; }
+        loadWipListThenSelect(d.wipId);
+      })
+      .catch(function () { setStatus('Network error \u2014 could not create a new WIP', 'sh-err'); });
+  }
+
+  function deleteCurrentWip() {
+    if (!ACTIVE_WIP_ID) return;
+    var wip = WIPS.filter(function (w) { return w.id === ACTIVE_WIP_ID; })[0];
+    var name = (wip && wip.title) || 'this WIP';
+    if (!window.confirm('Delete \u201c' + name + '\u201d and its character list? This can\u2019t be undone. (Any excavation progress already recorded for its characters stays in the system but becomes unreachable.)')) return;
+    fetch(PROXY_URL + '/wips?studentId=' + encodeURIComponent(STUDENT_ID) + '&wipId=' + encodeURIComponent(ACTIVE_WIP_ID), { method: 'DELETE' })
+      .then(function (r) { return r.json(); })
+      .then(function () { loadWipListThenSelect(null); })
+      .catch(function () { setStatus('Network error \u2014 could not delete', 'sh-err'); });
+  }
+
+  var wipSelectEl = null;
+  var newWipBtn = null;
+  var deleteWipBtn = null;
+
+  function buildWipSelectRow() {
+    var row = el('div', 'sh-wip-select-row');
+    mount(row, el('label', 'sh-wip-select-label', 'Work in Progress'));
+    wipSelectEl = document.createElement('select');
+    wipSelectEl.className = 'sh-wip-select-main';
+    wipSelectEl.addEventListener('change', function () { selectWip(wipSelectEl.value); });
+    mount(row, wipSelectEl);
+    newWipBtn = el('button', 'sh-wip-new-btn', '+ New WIP');
+    newWipBtn.type = 'button';
+    newWipBtn.addEventListener('click', createNewWip);
+    mount(row, newWipBtn);
+    deleteWipBtn = el('button', 'sh-wip-delete-btn', 'Delete this WIP');
+    deleteWipBtn.type = 'button';
+    deleteWipBtn.addEventListener('click', deleteCurrentWip);
+    mount(row, deleteWipBtn);
+    return row;
+  }
 
   function fillForm(profile) {
     fields.titleInput.value = profile.wipTitle || '';
@@ -506,11 +646,14 @@
   }
 
   function loadProfile() {
-    fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(STUDENT_ID))
+    if (!ACTIVE_WIP_ID) { renderSummary(null); return; }
+    fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(STUDENT_ID) + '&wipId=' + encodeURIComponent(ACTIVE_WIP_ID))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || !d.known) { renderSummary(null); return; }
         currentProfile = d;
+        if (gridEl) gridEl.style.display = '';
+        if (noWipMsgEl) noWipMsgEl.style.display = 'none';
         fillForm(d); // filling from a fresh load never itself schedules an autosave — only real user input does
         renderSummary(d);
       })
@@ -526,7 +669,7 @@
     if (!studentId) return; // logged-out / no-membership pages never reach here — see header's own gating
     STUDENT_ID = studentId;
     mountInto(window.STRATUM_HEADER_WRAP);
-    loadProfile();
+    loadWipListThenSelect(null);
   }
 
   function init() {

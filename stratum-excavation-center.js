@@ -72,20 +72,55 @@
       .catch(function () { callback([]); });
   }
 
-  // Sept 2026: some excavations (Character Excavation) run once PER
-  // CHARACTER rather than once per student - see requiresCharacter on
-  // the session and SELECTED_CHARACTER/lessonKey() in stratum-coach.js.
-  // Fetched once per dashboard load and reused for every such session,
-  // not per-session, since it's the same Characters list either way.
-  function fetchCharacters(studentId, callback) {
+  // Sept 2026 (multiple WIPs): characters are now scoped to one WIP
+  // (never shared across WIPs), so listing them for the requiresCharacter
+  // columns needs to know which WIP is active. WIP_LOCK_KEY is the SAME
+  // sessionStorage key stratum-wip-panel.js and stratum-coach.js use, so
+  // picking a WIP here also carries into whichever coaching session gets
+  // opened next in this tab, and vice versa - all three surfaces agree
+  // on "current WIP" without another round-trip just to sync it.
+  var WIP_LOCK_KEY = 'stratum_wip_active';
+  function sessGet(key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } }
+  function sessSet(key, value) { try { sessionStorage.setItem(key, value); } catch (e) {} }
+
+  function fetchWips(studentId, callback) {
     if (!studentId) { callback([]); return; }
-    fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(studentId))
+    fetch(PROXY_URL + '/wips?studentId=' + encodeURIComponent(studentId))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { callback((d && Array.isArray(d.wips)) ? d.wips : []); })
+      .catch(function () { callback([]); });
+  }
+
+  // Fetched fresh whenever the active WIP changes (initial load or the
+  // selector), not once per dashboard load - the same Characters list is
+  // reused across every requiresCharacter session in the Excavation
+  // column for that one WIP, but a WIP switch means a different list.
+  function fetchCharactersForWip(studentId, wipId, callback) {
+    if (!studentId || !wipId) { callback([]); return; }
+    fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(studentId) + '&wipId=' + encodeURIComponent(wipId))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         var characters = (d && d.known && Array.isArray(d.characters)) ? d.characters.filter(function (c) { return c.name; }) : [];
         callback(characters);
       })
       .catch(function () { callback([]); });
+  }
+
+  function buildWipSelector(wips, activeId, onChange) {
+    var wrap = el('div', 'sh-ec-wip-select-wrap');
+    mount(wrap, el('label', 'sh-ec-wip-select-label', 'Work in progress:'));
+    var select = document.createElement('select');
+    select.className = 'sh-ec-wip-select';
+    wips.forEach(function (w) {
+      var o = document.createElement('option');
+      o.value = w.id;
+      o.textContent = w.title || 'Untitled WIP';
+      if (w.id === activeId) o.selected = true;
+      select.appendChild(o);
+    });
+    select.addEventListener('change', function () { onChange(select.value); });
+    mount(wrap, select);
+    return wrap;
   }
 
   function fetchCheckinCount(studentId, sessionSlug, callback) {
@@ -219,11 +254,27 @@
             mount(columnsEl, buildColumn(columnDef, sessionsForTrack, studentId, completedLessonKeys, characters));
           });
         }
-        if (needsCharacters) {
-          fetchCharacters(studentId, render);
-        } else {
-          render([]);
-        }
+        if (!needsCharacters) { render([]); return; }
+        // Sept 2026 (multiple WIPs): a requiresCharacter session's
+        // row-per-character listing needs to know which WIP to pull
+        // characters from - same WIP-first flow as the profile panel
+        // and the coach page.
+        fetchWips(studentId, function (wips) {
+          if (!wips.length) { render([]); return; }
+          var lockedId = sessGet(WIP_LOCK_KEY);
+          var active = (lockedId && wips.filter(function (w) { return w.id === lockedId; })[0]) || wips[0];
+          if (!lockedId) sessSet(WIP_LOCK_KEY, active.id);
+          if (wips.length > 1) {
+            section.insertBefore(
+              buildWipSelector(wips, active.id, function (wipId) {
+                sessSet(WIP_LOCK_KEY, wipId);
+                fetchCharactersForWip(studentId, wipId, render);
+              }),
+              columnsEl
+            );
+          }
+          fetchCharactersForWip(studentId, active.id, render);
+        });
       });
     });
 
