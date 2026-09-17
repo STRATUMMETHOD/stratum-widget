@@ -41,6 +41,144 @@
   color: var(--sh-warm);
 }
 .sh-lib-icon--video { color: var(--sh-paper); background: #3A2E1A; }
+.sh-lib-icon--doc { color: var(--sh-paper); background: #22331F; }
+
+/* ---- The Librarian search bar (Sept 2026) ---- */
+.sh-lib-search-bar {
+  display: flex;
+  gap: 10px;
+  margin: 4px 0 6px;
+}
+.sh-lib-search-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--sh-panel2);
+  border: 1px solid var(--sh-line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--sh-paper);
+}
+.sh-lib-search-input::placeholder { color: var(--sh-sub); }
+.sh-lib-search-input:focus { outline: none; border-color: var(--sh-warm); }
+.sh-lib-search-btn {
+  flex-shrink: 0;
+  background: var(--sh-warm);
+  color: #1a1408;
+  border: none;
+  border-radius: 10px;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sh-lib-search-btn:hover { filter: brightness(1.08); }
+.sh-lib-search-btn:disabled { opacity: 0.6; cursor: default; }
+
+.sh-lib-librarian-results { margin-bottom: 6px; }
+.sh-lib-librarian-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.sh-lib-librarian-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 15px;
+  font-style: italic;
+  color: var(--sh-sub);
+  margin: 0;
+}
+.sh-lib-librarian-clear {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--sh-sub);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sh-lib-librarian-clear:hover { color: var(--sh-warm); }
+.sh-lib-librarian-reason {
+  font-size: 12.5px;
+  color: var(--sh-sub);
+  font-style: italic;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* ---- Document popup (Sept 2026) — rendered rich text, replacing
+   the GitHub-PDF viewer iframe for this resource type ---- */
+.sh-lib-popup-box--doc {
+  background: var(--sh-panel2, #14110B);
+  max-width: 760px;
+  max-height: 88vh;
+}
+.sh-lib-doc-scroller {
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 36px 40px 40px;
+}
+.sh-lib-doc-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--sh-paper);
+  margin: 0 0 16px;
+  padding-right: 30px;
+}
+.sh-lib-doc-meta {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--sh-line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+}
+.sh-lib-doc-meta-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--sh-warm);
+  margin-top: 10px;
+}
+.sh-lib-doc-meta-label:first-child { margin-top: 0; }
+.sh-lib-doc-meta-value {
+  font-size: 13.5px;
+  color: var(--sh-paper);
+  line-height: 1.5;
+  margin-top: 3px;
+}
+.sh-lib-doc-body {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--sh-paper);
+}
+.sh-lib-doc-body h2 {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 19px;
+  color: var(--sh-paper);
+  margin: 28px 0 10px;
+}
+.sh-lib-doc-body h3 {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 16px;
+  color: var(--sh-paper);
+  margin: 22px 0 8px;
+}
+.sh-lib-doc-body p { margin: 0 0 14px; }
+.sh-lib-doc-body ul, .sh-lib-doc-body ol { margin: 0 0 14px; padding-left: 22px; }
+.sh-lib-doc-body li { margin-bottom: 6px; }
+.sh-lib-doc-body a { color: var(--sh-warm); }
+.sh-lib-highlight {
+  background: var(--sh-warm);
+  color: #1a1408;
+  border-radius: 3px;
+  padding: 0 2px;
+}
 
 .sh-lib-text { flex: 1; min-width: 0; }
 .sh-lib-title {
@@ -126,4 +264,8 @@
   .sh-lib-row { flex-wrap: wrap; }
   .sh-lib-open-label { margin-left: 50px; }
   .sh-lib-popup-box--pdf { height: 82vh; }
+  .sh-lib-search-bar { flex-direction: column; }
+  .sh-lib-search-btn { padding: 12px; }
+  .sh-lib-doc-scroller { padding: 26px 20px 30px; }
+  .sh-lib-doc-title { font-size: 20px; padding-right: 26px; }
 }
