@@ -1,10 +1,13 @@
 /* ============================================================
    STRATUM EXCAVATION CENTER — DASHBOARD SECTION STYLES (Sept 2026)
    ------------------------------------------------------------
-   Reuses --sh-* variables from stratum-header.css — no new palette
-   introduced. Same "quiet section label, compact rows" language
-   already used by the WIP panel's column labels, so this reads as
-   part of the same dashboard rather than a bolted-on new widget.
+   Sept 2026: the three Coaching lists are now full .sh-dash-card
+   parchment cards (see stratum-dashboard.css for the shared shell
+   and the --sh-card-* tokens), not plain columns under one shared
+   "Coaching" label — that overarching label is gone; each card
+   carries its own title (Excavation Coaching / General Coaching /
+   Writer's Coaching) in the same uppercase treatment every other
+   dashboard card title uses.
    ============================================================ */
 
 .sh-ec-section {
@@ -12,26 +15,40 @@
   position: relative;
   z-index: 1;
 }
-.sh-ec-label {
+
+/* ---- WIP selector (Sept 2026, multiple WIPs) ---- */
+/* Sits above the three Coaching cards, same look as the profile
+   panel's own WIP selector for consistency. */
+.sh-ec-wip-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.sh-ec-wip-select-label {
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--sh-warm);
-  margin: 0 0 12px;
+  color: var(--sh-sub);
 }
+.sh-ec-wip-select {
+  padding: 7px 28px 7px 11px;
+  font-size: 12.5px;
+  font-family: var(--sh-font-sans);
+  background: var(--sh-card-input-bg);
+  color: var(--sh-card-ink);
+  border: 1px solid var(--sh-card-border);
+  border-radius: 8px;
+}
+.sh-ec-wip-select:focus { outline: none; border-color: var(--sh-warm); }
 
 .sh-ec-columns {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
 }
-.sh-ec-column-label {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--sh-paper);
-  margin: 0 0 8px;
-}
+.sh-ec-column { height: 100%; }
 
 .sh-ec-list {
   display: flex;
@@ -41,7 +58,7 @@
 .sh-ec-empty {
   font-size: 12.5px;
   font-style: italic;
-  color: var(--sh-sub);
+  color: var(--sh-card-sub);
   padding: 10px 0;
 }
 
@@ -50,19 +67,19 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  background: var(--sh-panel2);
-  border: 1px solid var(--sh-line);
+  background: var(--sh-card-row-bg);
+  border: 1px solid var(--sh-card-border);
   border-radius: 10px;
   padding: 13px 16px;
 }
 .sh-ec-title {
-  font-family: 'Newsreader', Georgia, serif;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--sh-paper);
+  font-family: var(--sh-font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sh-card-ink);
   text-decoration: none;
 }
-.sh-ec-title:hover { color: var(--sh-warm); }
+.sh-ec-title:hover { color: var(--sh-card-title); }
 
 .sh-ec-badge {
   flex-shrink: 0;
@@ -75,13 +92,13 @@
   white-space: nowrap;
 }
 .sh-ec-badge--not-started {
-  color: var(--sh-sub);
-  border: 1px solid var(--sh-line);
+  color: var(--sh-card-sub);
+  border: 1px solid var(--sh-card-border);
 }
 .sh-ec-badge--in-progress {
-  color: var(--sh-warm);
-  border: 1px solid var(--sh-warm);
-  background: rgba(160, 124, 62, 0.1);
+  color: var(--sh-card-title);
+  border: 1px solid var(--sh-card-title);
+  background: rgba(138, 109, 59, 0.12);
 }
 .sh-ec-badge--completed {
   color: var(--sh-ink);
@@ -89,8 +106,8 @@
   border: 1px solid var(--sh-warm);
 }
 .sh-ec-badge--checkin {
-  color: var(--sh-sub);
-  border: 1px solid var(--sh-line);
+  color: var(--sh-card-sub);
+  border: 1px solid var(--sh-card-border);
   text-transform: none;
   letter-spacing: normal;
   font-weight: 600;

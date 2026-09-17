@@ -19,9 +19,9 @@
   font-weight: 800;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-  color: var(--sh-warm);
-  border: 1px solid var(--sh-warm);
+  color: var(--sh-card-title);
+  border: 1px solid var(--sh-card-title);
   border-radius: 999px;
   padding: 2px 9px;
 }
-.sh-lt-tag--type { color: var(--sh-sub); border-color: var(--sh-line); }
+.sh-lt-tag--type { color: var(--sh-card-sub); border-color: var(--sh-card-border); }

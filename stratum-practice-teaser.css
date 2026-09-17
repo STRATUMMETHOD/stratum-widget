@@ -34,26 +34,26 @@
   font-weight: 800;
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  color: var(--sh-warm);
+  color: var(--sh-card-title);
   margin: 0 0 6px;
 }
 .sh-pt-word {
-  font-family: 'Newsreader', Georgia, serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--sh-paper);
+  font-family: var(--sh-font-sans);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--sh-card-ink);
   margin-bottom: 6px;
 }
 .sh-pt-snippet {
   font-size: 13px;
   line-height: 1.5;
-  color: var(--sh-sub);
+  color: var(--sh-card-sub);
   margin-bottom: 10px;
 }
 .sh-pt-progress {
   font-size: 11.5px;
   font-weight: 700;
-  color: var(--sh-warm);
+  color: var(--sh-card-title);
 }
 
 @media (max-width: 640px) {

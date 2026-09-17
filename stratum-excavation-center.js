@@ -51,9 +51,9 @@
 
   var PROXY_URL = window.StratumIdentity ? window.StratumIdentity.PROXY_URL : 'https://stratum-proxy.tedbaker0207.workers.dev';
   var TRACK_COLUMNS = [
-    { track: 'excavation', label: 'Excavation' },
+    { track: 'excavation', label: 'Excavation Coaching' },
     { track: 'general', label: 'General Coaching' },
-    { track: 'writing', label: 'Writing' }
+    { track: 'writing', label: 'Writer\u2019s Coaching' }
   ];
 
   function el(tag, className, text) {
@@ -175,10 +175,14 @@
   }
 
   function buildColumn(columnDef, sessionsForTrack, studentId, completedLessonKeys, characters) {
-    var col = el('div', 'sh-ec-column');
-    mount(col, el('p', 'sh-ec-column-label', columnDef.label));
+    var col = el('div', 'sh-dash-card sh-ec-column');
+    var head = el('div', 'sh-dash-card-head');
+    mount(head, el('p', 'sh-dash-card-title', columnDef.label));
+    mount(col, head);
+    var body = el('div', 'sh-dash-card-body');
     var listEl = el('div', 'sh-ec-list');
-    mount(col, listEl);
+    mount(body, listEl);
+    mount(col, body);
     if (!sessionsForTrack.length) {
       mount(listEl, el('div', 'sh-ec-empty', 'No sessions yet.'));
       return col;
@@ -225,14 +229,17 @@
 
   function buildSection(studentId) {
     var section = el('div', 'sh-ec-section');
-    mount(section, el('p', 'sh-ec-label', 'Coaching'));
 
     var columnsEl = el('div', 'sh-ec-columns');
     mount(section, columnsEl);
     TRACK_COLUMNS.forEach(function (columnDef) {
-      var col = el('div', 'sh-ec-column');
-      mount(col, el('p', 'sh-ec-column-label', columnDef.label));
-      mount(col, el('div', 'sh-ec-empty', 'Loading\u2026'));
+      var col = el('div', 'sh-dash-card sh-ec-column');
+      var head = el('div', 'sh-dash-card-head');
+      mount(head, el('p', 'sh-dash-card-title', columnDef.label));
+      mount(col, head);
+      var body = el('div', 'sh-dash-card-body');
+      mount(body, el('div', 'sh-ec-empty', 'Loading\u2026'));
+      mount(col, body);
       mount(columnsEl, col);
     });
 

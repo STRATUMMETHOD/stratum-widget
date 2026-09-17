@@ -387,7 +387,7 @@
 
   function toggleExpanded() {
     expanded = !expanded;
-    openBtn.textContent = expanded ? 'Close' : 'Open';
+    openBtn.textContent = expanded ? 'Close' : 'View';
     summaryEl.style.display = expanded ? 'none' : '';
     formWrapEl.style.display = expanded ? '' : 'none';
   }
@@ -399,7 +399,7 @@
     openBtn = document.createElement('button');
     openBtn.type = 'button';
     openBtn.className = 'sh-dash-open-btn';
-    openBtn.textContent = 'Open';
+    openBtn.textContent = 'View';
     openBtn.addEventListener('click', toggleExpanded);
     mount(head, openBtn);
     mount(card, head);

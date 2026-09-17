@@ -13,8 +13,10 @@
      - One Save action for the whole section, not per-field autosave —
        a clear, single decision point rather than the constant
        low-grade advice of "did this save?" during a lot of typing.
-     - Reuses --sh-* variables from stratum-header.css — no new
-       palette introduced.
+     - Reuses the --sh-card-* parchment tokens defined in stratum-
+       dashboard.css (that file loads first) rather than the old
+       dark-theme --sh-paper/--sh-sub/--sh-line — see the Sept 2026
+       parchment re-theme note there for why.
    ============================================================ */
 
 .sh-wip-panel-section {
@@ -36,7 +38,7 @@
 }
 .sh-wip-summary-line {
   font-size: 13px;
-  color: var(--sh-paper);
+  color: var(--sh-card-ink);
 }
 
 .sh-wip-top-actions {
@@ -51,12 +53,12 @@
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--sh-sub);
+  color: var(--sh-card-sub);
 }
 .sh-wip-status {
   font-size: 12.5px;
   font-style: italic;
-  color: var(--sh-sub);
+  color: var(--sh-card-sub);
   min-height: 1em;
 }
 .sh-wip-status.sh-ok { color: #8FAE7E; font-style: normal; }
@@ -68,13 +70,65 @@
   gap: 40px;
 }
 .sh-wip-col-label {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--sh-card-title);
+  margin: 0 0 16px;
+}
+
+/* ---- WIP selector (Sept 2026, multiple WIPs) ---- */
+/* Was a single crowded inline row (label + select + two buttons all
+   jammed together, autosave status line touching it with no
+   breathing room). Now: a labeled block of its own, select and
+   buttons wrap cleanly with real gaps, and a visible margin separates
+   it from the autosave status row below. */
+.sh-wip-select-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--sh-card-border);
+}
+.sh-wip-select-label {
+  flex: 0 0 100%;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--sh-warm);
-  margin: 0 0 16px;
+  color: var(--sh-card-sub);
+  margin-bottom: 2px;
 }
+.sh-wip-select-main {
+  padding: 8px 32px 8px 12px;
+  font-size: 13px;
+  font-family: var(--sh-font-sans);
+  background: var(--sh-card-input-bg);
+  color: var(--sh-card-ink);
+  border: 1px solid var(--sh-card-border);
+  border-radius: 8px;
+  min-width: 180px;
+}
+.sh-wip-select-main:focus { outline: none; border-color: var(--sh-warm); }
+.sh-wip-new-btn,
+.sh-wip-delete-btn {
+  background: none;
+  border: 1px solid var(--sh-card-border);
+  color: var(--sh-card-sub);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--sh-font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sh-wip-new-btn:hover { border-color: var(--sh-warm); color: var(--sh-card-title); }
+.sh-wip-delete-btn:hover:not(:disabled) { border-color: #A6472D; color: #A6472D; }
+.sh-wip-delete-btn:disabled { opacity: 0.45; cursor: default; }
 
 /* ---- Column 1 fields ---- */
 .sh-wip-field { margin-bottom: 16px; }
@@ -83,7 +137,7 @@
   display: block;
   font-size: 11.5px;
   font-weight: 700;
-  color: var(--sh-sub);
+  color: var(--sh-card-sub);
   margin-bottom: 5px;
 }
 .sh-wip-input,
@@ -92,16 +146,16 @@
   width: 100%;
   padding: 9px 11px;
   font-size: 13.5px;
-  font-family: Arial, sans-serif;
-  background: #1E1A13;
-  color: var(--sh-paper);
-  border: 1px solid var(--sh-line);
+  font-family: var(--sh-font-sans);
+  background: var(--sh-card-input-bg);
+  color: var(--sh-card-ink);
+  border: 1px solid var(--sh-card-border);
   border-radius: 8px;
 }
 .sh-wip-textarea {
   min-height: 70px;
   resize: vertical;
-  font-family: 'Newsreader', Georgia, serif;
+  font-family: var(--sh-font-sans);
   font-size: 14.5px;
 }
 .sh-wip-input:focus, .sh-wip-select:focus, .sh-wip-textarea:focus {
@@ -119,7 +173,7 @@
   font-weight: 800;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--sh-sub);
+  color: var(--sh-card-sub);
 }
 .sh-char-list {
   display: flex;
@@ -140,10 +194,10 @@
   width: 100%;
   padding: 7px 8px;
   font-size: 12.5px;
-  font-family: Arial, sans-serif;
-  background: #1E1A13;
-  color: var(--sh-paper);
-  border: 1px solid var(--sh-line);
+  font-family: var(--sh-font-sans);
+  background: var(--sh-card-input-bg);
+  color: var(--sh-card-ink);
+  border: 1px solid var(--sh-card-border);
   border-radius: 6px;
 }
 .sh-char-role:disabled, .sh-char-conflict:disabled { opacity: 0.5; }
@@ -154,7 +208,7 @@
 .sh-char-remove {
   background: none;
   border: none;
-  color: var(--sh-sub);
+  color: var(--sh-card-sub);
   font-size: 17px;
   cursor: pointer;
   line-height: 1;
@@ -164,8 +218,8 @@
 .sh-char-remove:hover { color: #C46B4E; }
 .sh-char-add {
   background: none;
-  border: 1px dashed var(--sh-line);
-  color: var(--sh-sub);
+  border: 1px dashed var(--sh-card-border);
+  color: var(--sh-card-sub);
   border-radius: 8px;
   padding: 9px;
   width: 100%;
@@ -173,7 +227,7 @@
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: var(--sh-font-sans);
 }
 .sh-char-add:hover:not(:disabled) { border-color: var(--sh-warm); color: var(--sh-warm); }
 .sh-char-add:disabled { opacity: 0.5; cursor: default; }
@@ -187,8 +241,8 @@
     grid-template-columns: 1fr;
     gap: 6px;
     padding: 10px;
-    background: #1E1A13;
-    border: 1px solid var(--sh-line);
+    background: var(--sh-card-input-bg);
+    border: 1px solid var(--sh-card-border);
     border-radius: 8px;
     margin-bottom: 4px;
   }

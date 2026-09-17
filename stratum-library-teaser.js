@@ -58,7 +58,7 @@
     var openLink = document.createElement('a');
     openLink.className = 'sh-dash-open-btn';
     openLink.href = '/library/';
-    openLink.textContent = 'Open';
+    openLink.textContent = 'View';
     mount(head, openLink);
     mount(card, head);
 

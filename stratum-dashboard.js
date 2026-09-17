@@ -294,7 +294,7 @@
 
   function toggleIdeaLog() {
     ideaLogExpanded = !ideaLogExpanded;
-    ideaLogOpenBtn.textContent = ideaLogExpanded ? 'Close' : 'Open';
+    ideaLogOpenBtn.textContent = ideaLogExpanded ? 'Close' : 'View';
     if (ideaLogExpanded) renderIdeaLogExpanded();
     else renderIdeaLogCollapsed();
   }
@@ -306,7 +306,7 @@
     ideaLogOpenBtn = document.createElement('button');
     ideaLogOpenBtn.type = 'button';
     ideaLogOpenBtn.className = 'sh-dash-open-btn';
-    ideaLogOpenBtn.textContent = 'Open';
+    ideaLogOpenBtn.textContent = 'View';
     ideaLogOpenBtn.addEventListener('click', toggleIdeaLog);
     mount(head, ideaLogOpenBtn);
     mount(card, head);
@@ -498,7 +498,7 @@
 
   function toggleReminders() {
     remindersExpanded = !remindersExpanded;
-    remindersOpenBtn.textContent = remindersExpanded ? 'Close' : 'Open';
+    remindersOpenBtn.textContent = remindersExpanded ? 'Close' : 'View';
     if (remindersExpanded) renderRemindersExpanded();
     else renderRemindersCollapsed();
   }
@@ -510,7 +510,7 @@
     remindersOpenBtn = document.createElement('button');
     remindersOpenBtn.type = 'button';
     remindersOpenBtn.className = 'sh-dash-open-btn';
-    remindersOpenBtn.textContent = 'Open';
+    remindersOpenBtn.textContent = 'View';
     remindersOpenBtn.addEventListener('click', toggleReminders);
     mount(head, remindersOpenBtn);
     mount(card, head);
