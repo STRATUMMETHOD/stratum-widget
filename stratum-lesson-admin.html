@@ -797,6 +797,7 @@
       </div>
       <div class="tst-toolbar">
         <button class="btn secondary" id="libReloadBtn" type="button">Reload</button>
+        <button class="btn secondary" id="manageLibCategoriesBtn" type="button">Manage Categories</button>
         <span class="vcb-filter-label">Filter by Category:</span>
         <select id="libCategoryFilter" class="vcb-filter-select"></select>
         <span class="vcb-filter-label">Filter by Excavation Topic:</span>
@@ -804,7 +805,13 @@
         <div class="spacer"></div>
         <span id="libStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
       </div>
-      <datalist id="libCategoryDatalist"></datalist>
+      <div id="manageLibCategoriesPanel" style="display:none;border:1px solid #E3DCC9;border-radius:10px;padding:14px;margin-bottom:14px;background:#FCFAF5;">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input type="text" id="newLibCategoryInput" placeholder="New category name" style="flex:1;padding:8px 10px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;">
+          <button class="btn secondary" id="addLibCategoryBtn" type="button">Add</button>
+        </div>
+        <div id="libCategoriesList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
       <datalist id="libTopicDatalist"></datalist>
       <div id="libList"></div>
       <button class="add-btn" id="libAddBtn" type="button">+ Add resource</button>
@@ -2778,6 +2785,103 @@ function libUniqueSorted(values) {
   return out;
 }
 
+// ===== Library Categories management (Sept 2026) =====
+// A real managed list now (see /admin/library-categories in worker.js),
+// not free text derived from whatever's already been typed. Loaded once
+// on Library tab entry into libManagedCategories; every resource
+// editor's Category <select> is populated from this same array via
+// populateLibCategorySelect(), called both when a block is first built
+// and again after any add/delete here so already-open blocks stay in
+// sync without needing a Reload.
+var libManagedCategories = [];
+function loadLibCategories() {
+  if (!adminKey) return Promise.resolve();
+  // GET is the public /library-categories route (no admin key needed
+  // to read it) - only POST/DELETE are admin-protected, so this needs
+  // no auth header, unlike every other call in this function's family.
+  return fetch(PROXY_URL + '/library-categories')
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      libManagedCategories = (d && Array.isArray(d.categories)) ? d.categories : [];
+      renderLibCategoriesPanel();
+      document.querySelectorAll('.lib-category-select').forEach(function (sel) {
+        populateLibCategorySelect(sel, sel.value);
+      });
+    })
+    .catch(function () { libManagedCategories = []; });
+}
+function populateLibCategorySelect(select, currentValue) {
+  select.innerHTML = '';
+  var placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = 'Choose a category\u2026';
+  select.appendChild(placeholder);
+  var values = libManagedCategories.slice();
+  // A legacy resource's Category might not be in the managed list yet
+  // (entered before this feature existed) - keep it selectable and
+  // visible rather than silently blanking the field out from under it.
+  if (currentValue && values.indexOf(currentValue) === -1) values.push(currentValue);
+  values.forEach(function (v) {
+    var o = document.createElement('option');
+    o.value = v;
+    o.textContent = v;
+    select.appendChild(o);
+  });
+  select.value = currentValue || '';
+}
+function renderLibCategoriesPanel() {
+  var listEl = document.getElementById('libCategoriesList');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  if (!libManagedCategories.length) {
+    var empty = document.createElement('span');
+    empty.className = 'sub';
+    empty.textContent = 'No categories yet - add one above.';
+    listEl.appendChild(empty);
+    return;
+  }
+  libManagedCategories.forEach(function (name) {
+    var chip = document.createElement('span');
+    chip.style.cssText = 'display:inline-flex;align-items:center;gap:6px;padding:5px 6px 5px 12px;font-size:12.5px;border:1px solid #E3DCC9;border-radius:999px;background:#fff;';
+    var label = document.createElement('span');
+    label.textContent = name;
+    chip.appendChild(label);
+    var delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.textContent = '\u2715';
+    delBtn.title = 'Remove category (existing resources keep this value; it just stops appearing as an option)';
+    delBtn.style.cssText = 'background:none;border:none;color:#a33;cursor:pointer;font-size:12px;padding:2px 4px;';
+    delBtn.addEventListener('click', function () {
+      if (!confirm('Remove "' + name + '" from the category list? Resources already using it keep it - it just stops being offered as an option.')) return;
+      fetch(PROXY_URL + '/admin/library-categories?name=' + encodeURIComponent(name), {
+        method: 'DELETE',
+        headers: { 'X-Stratum-Admin-Key': adminKey }
+      }).then(function () { loadLibCategories(); });
+    });
+    chip.appendChild(delBtn);
+    listEl.appendChild(chip);
+  });
+}
+document.getElementById('manageLibCategoriesBtn').addEventListener('click', function () {
+  var panel = document.getElementById('manageLibCategoriesPanel');
+  var opening = panel.style.display === 'none';
+  panel.style.display = opening ? '' : 'none';
+  if (opening) loadLibCategories();
+});
+document.getElementById('addLibCategoryBtn').addEventListener('click', function () {
+  var input = document.getElementById('newLibCategoryInput');
+  var name = input.value.trim();
+  if (!name) return;
+  fetch(PROXY_URL + '/admin/library-categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+    body: JSON.stringify({ name: name })
+  }).then(function () {
+    input.value = '';
+    loadLibCategories();
+  });
+});
+
 // Refreshes both filter <select> dropdowns AND every open block's own
 // Category/Topic <datalist> suggestions, from whatever's currently in
 // libAllItemsCache - called after load and after every save, so a
@@ -2806,15 +2910,6 @@ function libRefreshFacets() {
   fillFilterSelect(libCategoryFilter, categories, 'All categories');
   fillFilterSelect(libTopicFilter, topics, 'All topics');
 
-  var catDatalist = document.getElementById('libCategoryDatalist');
-  if (catDatalist) {
-    catDatalist.innerHTML = '';
-    categories.forEach(function (v) {
-      var o = document.createElement('option');
-      o.value = v;
-      catDatalist.appendChild(o);
-    });
-  }
   var topicDatalist = document.getElementById('libTopicDatalist');
   if (topicDatalist) {
     topicDatalist.innerHTML = '';
@@ -2841,6 +2936,7 @@ libTopicFilter.addEventListener('change', libApplyFilter);
 function loadLibrary() {
   if (!adminKey) { libStatus.textContent = 'Unlock the panel first.'; return; }
   libStatus.textContent = 'Loading...';
+  loadLibCategories();
   fetch(PROXY_URL + '/admin/library?lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
     .then(function (r) { return r.json(); })
     .then(function (d) {
@@ -3040,12 +3136,10 @@ function addLibraryBlock(entry, isNew) {
   catField.className = 'field';
   var catLabel = document.createElement('label');
   catLabel.textContent = 'Category';
-  var catInput = document.createElement('input');
-  catInput.type = 'text';
-  catInput.setAttribute('list', 'libCategoryDatalist');
-  catInput.placeholder = 'e.g. Character';
-  catInput.value = entry.category || '';
+  var catInput = document.createElement('select');
+  catInput.className = 'lib-category-select';
   catInput.style.cssText = 'width:100%;padding:9px 11px;font-size:13px;border:1px solid #E3DCC9;border-radius:8px;background:#FCFAF5;';
+  populateLibCategorySelect(catInput, entry.category || '');
   catField.appendChild(catLabel);
   catField.appendChild(catInput);
   metaRow.appendChild(catField);

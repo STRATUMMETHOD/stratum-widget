@@ -49,18 +49,39 @@
   gap: 10px;
   margin: 4px 0 6px;
 }
-.sh-lib-search-input {
+.sh-lib-search-input-wrap {
   flex: 1;
   min-width: 0;
+  position: relative;
+}
+.sh-lib-search-input {
+  width: 100%;
+  box-sizing: border-box;
   background: var(--sh-panel2);
   border: 1px solid var(--sh-line);
   border-radius: 10px;
-  padding: 12px 14px;
+  padding: 12px 40px 12px 14px;
   font-size: 14px;
   color: var(--sh-paper);
 }
 .sh-lib-search-input::placeholder { color: var(--sh-sub); }
 .sh-lib-search-input:focus { outline: none; border-color: var(--sh-warm); }
+.sh-lib-search-input-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--sh-sub);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  display: none;
+}
+.sh-lib-search-input-clear:hover { color: var(--sh-warm); }
+.sh-lib-search-input-clear.sh-lib-visible { display: block; }
 .sh-lib-search-btn {
   flex-shrink: 0;
   background: var(--sh-warm);
@@ -86,7 +107,7 @@
   margin-bottom: 10px;
 }
 .sh-lib-librarian-title {
-  font-family: 'Newsreader', Georgia, serif;
+  font-family: var(--sh-font-sans, inherit);
   font-size: 15px;
   font-style: italic;
   color: var(--sh-sub);
@@ -111,12 +132,19 @@
 }
 
 /* ---- Document popup (Sept 2026) — rendered rich text, replacing
-   the GitHub-PDF viewer iframe for this resource type. Selectors are
-   chained (.sh-lib-popup-box.sh-lib-popup-box--doc) rather than a
-   single class, so this always wins over the plain black video/PDF
-   box rule below regardless of which one appears later in the file
-   - a single-class selector was losing that fight before, which is
-   why this popup was rendering as an unreadable plain black box. ---- */
+   the GitHub-PDF viewer iframe for this resource type. Everything in
+   here gets an explicit fallback color, not just the box background -
+   this popup (like the PDF/video ones) is appended to document.body,
+   OUTSIDE .sh-wrap, and this codebase's --sh-* variables are scoped to
+   .sh-wrap rather than :root, so var(--sh-paper) etc. compute to
+   nothing out here without one - that's what made the first pass at
+   this popup unreadable (the background had a fallback, the text
+   colors didn't). Fallback hex values below are a close match to the
+   live --sh-warm/--sh-paper/--sh-sub tones, not a guaranteed exact
+   match - worth a visual compare against the rest of the page once
+   this deploys. Selectors are chained
+   (.sh-lib-popup-box.sh-lib-popup-box--doc) so this always wins over
+   the plain black video/PDF box rule regardless of source order. ---- */
 .sh-lib-popup-box.sh-lib-popup-box--doc {
   background: var(--sh-panel2, #1c170f);
   max-width: 760px;
@@ -132,16 +160,16 @@
   box-sizing: border-box;
 }
 .sh-lib-doc-title {
-  font-family: 'Newsreader', Georgia, serif;
+  font-family: var(--sh-font-sans, inherit);
   font-size: 24px;
   font-weight: 600;
-  color: var(--sh-paper);
+  color: var(--sh-paper, #F0E6D2);
   margin: 0 0 16px;
   padding-right: 30px;
 }
 .sh-lib-doc-meta {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--sh-line);
+  border: 1px solid var(--sh-line, rgba(255, 255, 255, 0.14));
   border-radius: 10px;
   padding: 14px 16px;
   margin-bottom: 24px;
@@ -151,39 +179,41 @@
   font-weight: 800;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--sh-warm);
+  color: var(--sh-warm, #D6A857);
   margin-top: 10px;
 }
 .sh-lib-doc-meta-label:first-child { margin-top: 0; }
 .sh-lib-doc-meta-value {
   font-size: 13.5px;
-  color: var(--sh-paper);
+  color: var(--sh-paper, #F0E6D2);
   line-height: 1.5;
   margin-top: 3px;
 }
 .sh-lib-doc-body {
   font-size: 15px;
   line-height: 1.75;
-  color: var(--sh-paper);
+  color: var(--sh-paper, #F0E6D2);
 }
 .sh-lib-doc-body h2 {
-  font-family: 'Newsreader', Georgia, serif;
+  font-family: var(--sh-font-sans, inherit);
   font-size: 19px;
-  color: var(--sh-paper);
+  font-weight: 600;
+  color: var(--sh-paper, #F0E6D2);
   margin: 28px 0 10px;
 }
 .sh-lib-doc-body h3 {
-  font-family: 'Newsreader', Georgia, serif;
+  font-family: var(--sh-font-sans, inherit);
   font-size: 16px;
-  color: var(--sh-paper);
+  font-weight: 600;
+  color: var(--sh-paper, #F0E6D2);
   margin: 22px 0 8px;
 }
 .sh-lib-doc-body p { margin: 0 0 14px; }
 .sh-lib-doc-body ul, .sh-lib-doc-body ol { margin: 0 0 14px; padding-left: 22px; }
 .sh-lib-doc-body li { margin-bottom: 6px; }
-.sh-lib-doc-body a { color: var(--sh-warm); }
+.sh-lib-doc-body a { color: var(--sh-warm, #D6A857); }
 .sh-lib-highlight {
-  background: var(--sh-warm);
+  background: var(--sh-warm, #D6A857);
   color: #1a1408;
   border-radius: 3px;
   padding: 0 2px;
@@ -191,7 +221,7 @@
 
 .sh-lib-text { flex: 1; min-width: 0; }
 .sh-lib-title {
-  font-family: 'Newsreader', Georgia, serif;
+  font-family: var(--sh-font-sans, inherit);
   font-size: 16px;
   font-weight: 600;
   color: var(--sh-paper);
@@ -260,7 +290,7 @@
   right: 10px;
   z-index: 2;
   background: rgba(0, 0, 0, 0.6);
-  color: var(--sh-paper);
+  color: var(--sh-paper, #F0E6D2);
   border: none;
   border-radius: 50%;
   width: 32px;

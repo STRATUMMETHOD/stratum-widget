@@ -98,7 +98,7 @@
   var categoryFilterVal = '';
   var topicFilterVal = '';
   var listEl, categorySelect, topicSelect, countEl;
-  var searchInput, searchBtn, searchStatusEl, librarianResultsEl;
+  var searchInput, searchBtn, searchStatusEl, librarianResultsEl, searchClearBtnEl;
 
   function el(tag, className, text) {
     var node = document.createElement(tag);
@@ -324,6 +324,12 @@
   // ----------------------------------------------------------
   // THE LIBRARIAN — AI search (Sept 2026)
   // ----------------------------------------------------------
+  function updateSearchClearVisibility() {
+    if (!searchClearBtnEl) return;
+    if (searchInput.value.trim()) searchClearBtnEl.classList.add('sh-lib-visible');
+    else searchClearBtnEl.classList.remove('sh-lib-visible');
+  }
+
   function runLibrarianSearch() {
     var query = searchInput.value.trim();
     if (!query) return;
@@ -353,6 +359,7 @@
 
   function clearLibrarianSearch() {
     searchInput.value = '';
+    updateSearchClearVisibility();
     librarianResultsEl.innerHTML = '';
     librarianResultsEl.style.display = 'none';
     listEl.style.display = '';
@@ -409,26 +416,27 @@
     var wrap = el('div', 'sh-wrap');
     if (window.StratumHeader) window.StratumHeader.buildTopbar(wrap);
 
-    var crumb = el('div', 'sh-page-topbar');
-    var back = document.createElement('a');
-    back.className = 'sh-page-back';
-    back.href = '/system/';
-    back.textContent = t('backToDashboard');
-    mount(crumb, back);
-    mount(wrap, crumb);
-
     var body = el('div', 'sh-form-body');
     mount(body, el('h1', 'sh-form-title', t('title')));
     mount(body, el('p', 'sh-form-sub', t('sub')));
 
     // ---- The Librarian search bar ----
     var searchBar = el('div', 'sh-lib-search-bar');
+    var searchInputWrap = el('div', 'sh-lib-search-input-wrap');
     searchInput = document.createElement('input');
     searchInput.type = 'text';
     searchInput.className = 'sh-lib-search-input';
     searchInput.placeholder = t('searchPlaceholder');
     searchInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') runLibrarianSearch(); });
-    mount(searchBar, searchInput);
+    searchInput.addEventListener('input', updateSearchClearVisibility);
+    mount(searchInputWrap, searchInput);
+    var searchClearBtn = el('button', 'sh-lib-search-input-clear', '\u2715');
+    searchClearBtnEl = searchClearBtn;
+    searchClearBtn.type = 'button';
+    searchClearBtn.setAttribute('aria-label', t('clearSearch'));
+    searchClearBtn.addEventListener('click', function () { clearLibrarianSearch(); searchInput.focus(); });
+    mount(searchInputWrap, searchClearBtn);
+    mount(searchBar, searchInputWrap);
     searchBtn = el('button', 'sh-lib-search-btn', t('askLibrarian'));
     searchBtn.type = 'button';
     searchBtn.addEventListener('click', runLibrarianSearch);
