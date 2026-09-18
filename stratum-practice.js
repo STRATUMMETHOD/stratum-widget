@@ -26,7 +26,7 @@
         derive the same day-index pick from the same full term list).
      5. APPLIED TO THEIR OWN WORK. Where the student has an active
         Protagonist in their WIP Characters list (see stratum-wip-
-        panel.js's /project data), a short "Try it with: <name>" hint
+        panel.js's /project data), a short "Try it with: <n>" hint
         appears under the exercise — using data they already entered,
         not a generic prompt. This is a light touch, not per-exercise
         text substitution (that would need new Stratum-admin authoring
@@ -38,6 +38,22 @@
 
    Language: reads the same 'wlfc_preferred_lang' localStorage key the
    header's Language dropdown already writes.
+
+   ---- Database-backed translation (Sept 2026) ----
+   This page's own chrome (labels, buttons, filter text, empty states —
+   not the term DATA, which the Worker already lazy-fills per language)
+   now checks the same DB-backed ui_strings table every other dashboard
+   and page file uses, under the practicePage.* keys — a language
+   override there wins; otherwise falls back to the hardcoded en/es
+   tables below. Same t()/DB_STRINGS/loadUiStrings() pattern as
+   stratum-library.js, and loadUiStrings() resolves before buildPage()/
+   buildGate() runs so the very first paint is already in the right
+   language, not a flash of English. Craft Category and Complexity
+   Level option VALUES stay canonical English (they're matched directly
+   against term.craftCategory/term.complexityLevel from server data,
+   which is not translated) — only the displayed option TEXT changes,
+   same technique stratum-wip-panel.js already uses for its Genre/
+   Stage/Story Style dropdowns.
 
    Requires stratum-identity.js AND stratum-header.js (for
    window.StratumHeader.buildTopbar) loaded first on this page.
@@ -57,6 +73,90 @@
   function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
 
   var LANG = lsGet(LANG_STORE_KEY) || 'en';
+
+  var STRINGS = {
+    en: {
+      title: 'Practice Lab',
+      sub: 'Work through craft skills, one exercise at a time \u2014 not just definitions to look up.',
+      todaysTerm: 'Today\u2019s Practice Term',
+      practicedOf: '{done} of {total} terms practiced',
+      searchPlaceholder: 'Search terms and definitions\u2026',
+      search: 'Search',
+      craftCategory: 'Craft Category',
+      complexityLevel: 'Complexity Level',
+      show: 'Show',
+      clear: 'Clear',
+      all: 'All',
+      previous: 'Previous',
+      next: 'Next',
+      pageOf: 'Page {page} of {total}',
+      tryIt: 'Try it',
+      markAsPracticed: 'Mark as Practiced',
+      practicedBadge: '\u2713 Practiced',
+      seeAlso: 'See also',
+      tryItWith: 'Try it with: {name}',
+      noTermsMatch: 'No terms match these filters.',
+      noTermsYet: 'No terms yet.',
+      loginToView: 'Please log in to view the Practice Lab.',
+      logIn: 'Log in',
+      noMembership: 'Your account doesn\u2019t have an active Stratum Method membership yet.',
+      goToMyAccount: 'Go to My Account',
+      craftCategoryOptions: { Character: 'Character', Plot: 'Plot', Dialogue: 'Dialogue', Setting: 'Setting', Theme: 'Theme', Structure: 'Structure', Pacing: 'Pacing', 'Point of View': 'Point of View' },
+      complexityLevelOptions: { Beginner: 'Beginner', Intermediate: 'Intermediate', Advanced: 'Advanced' }
+    },
+    es: {
+      title: 'Laboratorio de Pr\u00e1ctica',
+      sub: 'Trabaja las habilidades de escritura, un ejercicio a la vez \u2014 no solo definiciones para consultar.',
+      todaysTerm: 'T\u00e9rmino de pr\u00e1ctica de hoy',
+      practicedOf: '{done} de {total} t\u00e9rminos practicados',
+      searchPlaceholder: 'Buscar t\u00e9rminos y definiciones\u2026',
+      search: 'Buscar',
+      craftCategory: 'Categor\u00eda de t\u00e9cnica',
+      complexityLevel: 'Nivel de complejidad',
+      show: 'Mostrar',
+      clear: 'Borrar',
+      all: 'Todos',
+      previous: 'Anterior',
+      next: 'Siguiente',
+      pageOf: 'P\u00e1gina {page} de {total}',
+      tryIt: 'Pract\u00edcalo',
+      markAsPracticed: 'Marcar como practicado',
+      practicedBadge: '\u2713 Practicado',
+      seeAlso: 'Ver tambi\u00e9n',
+      tryItWith: 'Pract\u00edcalo con: {name}',
+      noTermsMatch: 'Ning\u00fan t\u00e9rmino coincide con estos filtros.',
+      noTermsYet: 'A\u00fan no hay t\u00e9rminos.',
+      loginToView: 'Inicia sesi\u00f3n para ver el Laboratorio de Pr\u00e1ctica.',
+      logIn: 'Iniciar sesi\u00f3n',
+      noMembership: 'Tu cuenta a\u00fan no tiene una membres\u00eda activa de Stratum Method.',
+      goToMyAccount: 'Ir a mi cuenta',
+      craftCategoryOptions: { Character: 'Personaje', Plot: 'Trama', Dialogue: 'Di\u00e1logo', Setting: 'Ambientaci\u00f3n', Theme: 'Tema', Structure: 'Estructura', Pacing: 'Ritmo', 'Point of View': 'Punto de vista' },
+      complexityLevelOptions: { Beginner: 'Principiante', Intermediate: 'Intermedio', Advanced: 'Avanzado' }
+    }
+  };
+  var DB_STRINGS = {};
+  function loadUiStrings() {
+    return fetch(PROXY_URL + '/ui-strings?lang=' + encodeURIComponent(LANG))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { DB_STRINGS = (d && d.strings) || {}; })
+      .catch(function () { DB_STRINGS = {}; });
+  }
+  function format(str, vars) {
+    return str.replace(/\{(\w+)\}/g, function (m, k) { return vars[k] != null ? vars[k] : m; });
+  }
+  function t(key) {
+    var dbVal = DB_STRINGS['practicePage.' + key];
+    if (dbVal != null) return dbVal;
+    return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key];
+  }
+  function tOption(mapKey, value) {
+    var dbVal = DB_STRINGS['practicePage.' + mapKey + '.' + value];
+    if (dbVal != null) return dbVal;
+    var lang = STRINGS[LANG] && STRINGS[LANG][mapKey];
+    if (lang && lang[value] != null) return lang[value];
+    return (STRINGS.en[mapKey] && STRINGS.en[mapKey][value]) || value;
+  }
+
   var STUDENT_ID = null;
   var termsCache = null;
   var practicedIds = {};       // { [termId]: true }
@@ -138,7 +238,7 @@
     var done = Object.keys(practicedIds).filter(function (id) {
       return termsCache.some(function (t) { return String(t.id) === String(id); });
     }).length;
-    progressEl.textContent = total ? (done + ' of ' + total + ' terms practiced') : '';
+    progressEl.textContent = total ? format(t('practicedOf'), { done: done, total: total }) : '';
   }
 
   function buildTermCard(term, opts) {
@@ -152,14 +252,14 @@
     mount(head, el('span', 'sh-pl-word', term.word));
     var metaBits = [term.craftCategory, term.complexityLevel].filter(Boolean).join(' \u00b7 ');
     if (metaBits) mount(head, el('span', 'sh-pl-summary-meta', metaBits));
-    if (isPracticed) mount(head, el('span', 'sh-pl-practiced-badge', '\u2713 Practiced'));
+    if (isPracticed) mount(head, el('span', 'sh-pl-practiced-badge', t('practicedBadge')));
     mount(entry, head);
 
     var body = el('div', 'sh-pl-entry-body');
 
     if (Array.isArray(term.exerciseSteps) && term.exerciseSteps.length) {
       var exWrap = el('div', 'sh-pl-exercise');
-      mount(exWrap, el('div', 'sh-pl-exercise-label', 'Try it'));
+      mount(exWrap, el('div', 'sh-pl-exercise-label', t('tryIt')));
       var stepsList = document.createElement('ul');
       stepsList.className = 'sh-pl-exercise-list';
       term.exerciseSteps.forEach(function (step) {
@@ -169,14 +269,14 @@
       });
       mount(exWrap, stepsList);
       if (protagonistName) {
-        mount(exWrap, el('div', 'sh-pl-applied-hint', 'Try it with: ' + protagonistName));
+        mount(exWrap, el('div', 'sh-pl-applied-hint', format(t('tryItWith'), { name: protagonistName })));
       }
-      var practiceBtn = el('button', 'sh-pl-practice-btn' + (isPracticed ? ' sh-pl-practice-btn--done' : ''), isPracticed ? '\u2713 Practiced' : 'Mark as Practiced');
+      var practiceBtn = el('button', 'sh-pl-practice-btn' + (isPracticed ? ' sh-pl-practice-btn--done' : ''), isPracticed ? t('practicedBadge') : t('markAsPracticed'));
       practiceBtn.type = 'button';
       practiceBtn.addEventListener('click', function (e) {
         e.preventDefault();
         togglePracticed(term.id);
-        practiceBtn.textContent = practicedIds[term.id] ? '\u2713 Practiced' : 'Mark as Practiced';
+        practiceBtn.textContent = practicedIds[term.id] ? t('practicedBadge') : t('markAsPracticed');
         practiceBtn.classList.toggle('sh-pl-practice-btn--done', !!practicedIds[term.id]);
         entry.classList.toggle('sh-pl-practiced', !!practicedIds[term.id]);
       });
@@ -193,7 +293,7 @@
 
     if (Array.isArray(term.relatedTerms) && term.relatedTerms.length) {
       var crossWrap = el('div', 'sh-pl-crosslinks');
-      mount(crossWrap, el('span', 'sh-pl-crosslink-label', 'See also'));
+      mount(crossWrap, el('span', 'sh-pl-crosslink-label', t('seeAlso')));
       var chipsWrap = el('div', 'sh-pl-crosslink-chips');
       term.relatedTerms.forEach(function (rt) {
         var chip = document.createElement('button');
@@ -217,7 +317,7 @@
     var term = pickTodaysTerm(termsCache || []);
     if (!term) return;
     var card = el('div', 'sh-pl-today-card');
-    mount(card, el('p', 'sh-pl-today-label', "Today's Practice Term"));
+    mount(card, el('p', 'sh-pl-today-label', t('todaysTerm')));
     mount(card, buildTermCard(term, { collapsible: false }));
     mount(todaySlotEl, card);
   }
@@ -263,7 +363,7 @@
     pagerEl.innerHTML = '';
 
     if (!filtered.length) {
-      var emptyMsg = terms.length ? 'No terms match these filters.' : 'No terms yet.';
+      var emptyMsg = terms.length ? t('noTermsMatch') : t('noTermsYet');
       mount(listEl, el('div', 'sh-pl-empty', emptyMsg));
       return;
     }
@@ -277,14 +377,14 @@
     var lastLevel = null;
     pageItems.forEach(function (term) {
       if (term.complexityLevel !== lastLevel) {
-        mount(listEl, el('p', 'sh-pl-level-header', term.complexityLevel || 'Other'));
+        mount(listEl, el('p', 'sh-pl-level-header', tOption('complexityLevelOptions', term.complexityLevel) || term.complexityLevel || 'Other'));
         lastLevel = term.complexityLevel;
       }
       mount(listEl, buildTermCard(term, { collapsible: true }));
     });
 
     if (totalPages > 1) {
-      var prevBtn = el('button', 'sh-pl-pager-btn', 'Previous');
+      var prevBtn = el('button', 'sh-pl-pager-btn', t('previous'));
       prevBtn.type = 'button';
       prevBtn.disabled = currentPage <= 1;
       prevBtn.addEventListener('click', function () {
@@ -293,8 +393,8 @@
         listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
       mount(pagerEl, prevBtn);
-      mount(pagerEl, el('span', 'sh-pl-pager-status', 'Page ' + currentPage + ' of ' + totalPages));
-      var nextBtn = el('button', 'sh-pl-pager-btn', 'Next');
+      mount(pagerEl, el('span', 'sh-pl-pager-status', format(t('pageOf'), { page: currentPage, total: totalPages })));
+      var nextBtn = el('button', 'sh-pl-pager-btn', t('next'));
       nextBtn.type = 'button';
       nextBtn.disabled = currentPage >= totalPages;
       nextBtn.addEventListener('click', function () {
@@ -327,7 +427,7 @@
     container.innerHTML = '';
     var wrap = el('div', 'sh-wrap');
     if (window.StratumHeader) window.StratumHeader.buildTopbar(wrap);
-    var body = el('div', 'sh-gate');
+    var body = el('div', 'sh-gate sh-pl-page');
     mount(body, el('p', null, message));
     var link = document.createElement('a');
     link.className = 'sh-save-btn';
@@ -342,9 +442,9 @@
     var wrap = el('div', 'sh-wrap');
     if (window.StratumHeader) window.StratumHeader.buildTopbar(wrap);
 
-    var body = el('div', 'sh-form-body');
-    mount(body, el('h1', 'sh-form-title', 'Practice Lab'));
-    mount(body, el('p', 'sh-form-sub', 'Work through craft skills, one exercise at a time \u2014 not just definitions to look up.'));
+    var body = el('div', 'sh-form-body sh-pl-page');
+    mount(body, el('h1', 'sh-form-title', t('title')));
+    mount(body, el('p', 'sh-form-sub', t('sub')));
     progressEl = el('p', 'sh-pl-progress');
     mount(body, progressEl);
 
@@ -357,43 +457,43 @@
     searchInput = document.createElement('input');
     searchInput.type = 'text';
     searchInput.className = 'sh-pl-search-input';
-    searchInput.placeholder = 'Search terms and definitions\u2026';
+    searchInput.placeholder = t('searchPlaceholder');
     searchInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); performSearch(); } });
     mount(searchWrap, searchInput);
-    var searchBtn = el('button', 'sh-pl-search-btn', 'Search');
+    var searchBtn = el('button', 'sh-pl-search-btn', t('search'));
     searchBtn.type = 'button';
     searchBtn.addEventListener('click', performSearch);
     mount(searchWrap, searchBtn);
     mount(toolbar, searchWrap);
 
-    function buildFilterSelect(label, options) {
+    function buildFilterSelect(label, options, optionMapKey) {
       var fwrap = el('div', 'sh-pl-filter-wrap');
       mount(fwrap, el('span', 'sh-pl-filter-label', label));
       var select = document.createElement('select');
       select.className = 'sh-pl-filter-select';
       var allOpt = document.createElement('option');
       allOpt.value = '';
-      allOpt.textContent = 'All';
+      allOpt.textContent = t('all');
       select.appendChild(allOpt);
       options.forEach(function (opt) {
         var o = document.createElement('option');
-        o.value = opt;
-        o.textContent = opt;
+        o.value = opt; // canonical English value — matched directly against term data, never translated
+        o.textContent = optionMapKey ? tOption(optionMapKey, opt) : opt;
         select.appendChild(o);
       });
       select.addEventListener('change', function () { currentPage = 1; renderList(); });
       mount(fwrap, select);
       return { wrap: fwrap, select: select };
     }
-    var craftFilter = buildFilterSelect('Craft Category', CRAFT_CATEGORIES);
+    var craftFilter = buildFilterSelect(t('craftCategory'), CRAFT_CATEGORIES, 'craftCategoryOptions');
     craftSelect = craftFilter.select;
     mount(toolbar, craftFilter.wrap);
-    var complexityFilter = buildFilterSelect('Complexity Level', COMPLEXITY_LEVELS);
+    var complexityFilter = buildFilterSelect(t('complexityLevel'), COMPLEXITY_LEVELS, 'complexityLevelOptions');
     complexitySelect = complexityFilter.select;
     mount(toolbar, complexityFilter.wrap);
 
     var pageSizeWrap = el('div', 'sh-pl-filter-wrap');
-    mount(pageSizeWrap, el('span', 'sh-pl-filter-label', 'Show'));
+    mount(pageSizeWrap, el('span', 'sh-pl-filter-label', t('show')));
     var pageSizeSelect = document.createElement('select');
     pageSizeSelect.className = 'sh-pl-filter-select';
     PAGE_SIZES.forEach(function (size) {
@@ -411,7 +511,7 @@
     mount(pageSizeWrap, pageSizeSelect);
     mount(toolbar, pageSizeWrap);
 
-    var clearBtn = el('button', 'sh-pl-clear-btn', 'Clear');
+    var clearBtn = el('button', 'sh-pl-clear-btn', t('clear'));
     clearBtn.type = 'button';
     clearBtn.addEventListener('click', clearFilters);
     mount(toolbar, clearBtn);
@@ -448,22 +548,29 @@
       console.error('[Stratum] No #stratum-practice container found on this page.');
       return;
     }
-    if (!WP_USER.loggedIn) {
-      buildGate(container, 'Please log in to view the Practice Lab.', WP_USER.loginUrl, 'Log in');
-      return;
-    }
-    if (!WP_USER.hasMembership) {
-      buildGate(container, 'Your account doesn\u2019t have an active Stratum Method membership yet.', '/membership-account/', 'Go to My Account');
-      return;
-    }
-    if (window.StratumIdentity) {
-      window.StratumIdentity.init(function (studentId) {
-        STUDENT_ID = studentId;
+    // Load this page's own translated chrome before anything using t()
+    // runs, including the logged-out/no-membership gate messages -
+    // otherwise the very first paint (or the gate) would flash English
+    // before a later re-render caught up. Same ordering as stratum-
+    // library.js.
+    loadUiStrings().then(function () {
+      if (!WP_USER.loggedIn) {
+        buildGate(container, t('loginToView'), WP_USER.loginUrl, t('logIn'));
+        return;
+      }
+      if (!WP_USER.hasMembership) {
+        buildGate(container, t('noMembership'), '/membership-account/', t('goToMyAccount'));
+        return;
+      }
+      if (window.StratumIdentity) {
+        window.StratumIdentity.init(function (studentId) {
+          STUDENT_ID = studentId;
+          buildPage(container);
+        });
+      } else {
         buildPage(container);
-      });
-    } else {
-      buildPage(container);
-    }
+      }
+    });
   }
 
   if (document.readyState === 'loading') {

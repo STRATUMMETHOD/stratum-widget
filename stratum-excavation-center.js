@@ -510,20 +510,25 @@
             fetchConflictDataForSessions(conflictSessions, studentId, wipId, function (data) { conflictsBySlug = data; maybeRender(); });
           }
         }
+        // Sept 2026: this used to render its own second WIP dropdown
+        // here (via buildWipSelector()) whenever there was more than
+        // one WIP — a duplicate of the selector already living inside
+        // the Profile panel (stratum-wip-panel.js), which sets this
+        // same WIP_LOCK_KEY. Per Ted's explicit request, that's gone;
+        // this section now just reads whichever WIP is already locked
+        // and renders nothing of its own for switching it. Note: since
+        // there's no live cross-module event between the two files, a
+        // WIP switch made inside Profile updates that panel immediately
+        // but these Coaching columns only pick it up on the next full
+        // page load, same as how the very first render already worked
+        // before this change (buildSection() only ever read the lock
+        // once, at mount) - not a regression, just the one remaining
+        // selector's switch not being instantly reactive across modules.
         fetchWips(studentId, function (wips) {
           if (!wips.length) { render([], {}); return; }
           var lockedId = sessGet(WIP_LOCK_KEY);
           var active = (lockedId && wips.filter(function (w) { return w.id === lockedId; })[0]) || wips[0];
           if (!lockedId) sessSet(WIP_LOCK_KEY, active.id);
-          if (wips.length > 1) {
-            section.insertBefore(
-              buildWipSelector(wips, active.id, function (wipId) {
-                sessSet(WIP_LOCK_KEY, wipId);
-                loadForWip(wipId);
-              }),
-              columnsEl
-            );
-          }
           loadForWip(active.id);
         });
       });

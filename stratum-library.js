@@ -465,7 +465,7 @@
     container.innerHTML = '';
     var wrap = el('div', 'sh-wrap');
     if (window.StratumHeader) window.StratumHeader.buildTopbar(wrap);
-    var body = el('div', 'sh-gate');
+    var body = el('div', 'sh-gate sh-lib-page');
     mount(body, el('p', null, message));
     var link = document.createElement('a');
     link.className = 'sh-save-btn';
@@ -480,7 +480,7 @@
     var wrap = el('div', 'sh-wrap');
     if (window.StratumHeader) window.StratumHeader.buildTopbar(wrap);
 
-    var body = el('div', 'sh-form-body');
+    var body = el('div', 'sh-form-body sh-lib-page');
     mount(body, el('h1', 'sh-form-title', t('title')));
     mount(body, el('p', 'sh-form-sub', t('sub')));
 

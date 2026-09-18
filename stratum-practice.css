@@ -15,6 +15,17 @@
    site instead of drifting to its own fonts.
    ============================================================ */
 
+/* Sept 2026: flat ground for Practice Lab, same reasoning and same
+   technique as .sh-wrap:has(.sh-coach-page) in stratum-coach.css -
+   the Dashboard's own repeating-band texture (defined on .sh-wrap in
+   stratum-header.css) reads as busy behind this page's toolbar/list
+   too. Scoped to .sh-pl-page specifically (added to both the real
+   page body and the logged-out/no-membership gate body in stratum-
+   practice.js) so nothing else sharing .sh-wrap is affected. */
+.sh-wrap:has(.sh-pl-page) {
+  background: var(--sh-ink);
+}
+
 .sh-pl-progress {
   font-size: 12.5px;
   font-weight: 700;

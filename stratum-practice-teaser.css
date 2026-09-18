@@ -41,7 +41,17 @@
   font-family: var(--sh-font-sans);
   font-size: 19px;
   font-weight: 700;
-  color: var(--sh-card-ink);
+  /* Sept 2026: was var(--sh-card-ink), which resolves to --sh-ink
+     (#16130F, effectively black) — reads correctly for ordinary body
+     text on the parchment card, but this is a headline-weight word,
+     not body text, and rendering it black read as a mistake next to
+     everything else on the card using the warm palette. Switched to
+     --sh-card-title (the same warm gold/terracotta used for every
+     card's own title and labels) so it reads as an accent, matching
+     the rest of the card's language rather than standing out as an
+     unstyled default. Shared by both the Practice Lab and Library
+     teaser cards (stratum-library-teaser.js reuses this exact class).*/
+  color: var(--sh-card-title);
   margin-bottom: 6px;
 }
 .sh-pt-snippet {
