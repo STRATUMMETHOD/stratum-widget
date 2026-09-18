@@ -1,0 +1,50 @@
+/* ============================================================
+   STRATUM WHAT'S NEW — DASHBOARD CARD STYLES (Sept 2026)
+   ------------------------------------------------------------
+   Only styles the parts unique to this card's content — the shell
+   itself (.sh-dash-card, .sh-dash-card-head, .sh-dash-card-title,
+   .sh-dash-open-btn, .sh-dash-card-body) comes from stratum-
+   dashboard.css, reused directly rather than redefined, same as
+   every other dashboard card. Row layout intentionally mirrors
+   stratum-excavation-center.css's .sh-ec-row for visual consistency
+   with the cards directly below it, though this card has its own
+   class names since its content shape (title + body + date, no
+   status badge) genuinely differs.
+   ============================================================ */
+
+.sh-upd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sh-upd-row {
+  background: var(--sh-card-row-bg);
+  border: 1px solid var(--sh-card-border);
+  border-radius: 10px;
+  padding: 13px 16px;
+}
+.sh-upd-title {
+  font-family: var(--sh-font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sh-card-ink);
+  margin-bottom: 4px;
+}
+.sh-upd-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--sh-card-sub);
+  margin-bottom: 6px;
+}
+.sh-upd-date {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--sh-card-title);
+}
+
+@media (max-width: 400px) {
+  .sh-upd-row { padding: 11px 14px; }
+}

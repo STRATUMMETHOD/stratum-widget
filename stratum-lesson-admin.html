@@ -536,6 +536,7 @@
     <button class="nav-item" id="tabDashboardBtn" type="button"><span class="nav-dot"></span>Students</button>
     <button class="nav-item" id="tabDeliverablesBtn" type="button"><span class="nav-dot"></span>Deliverables</button>
     <button class="nav-item" id="tabTestimonialsBtn" type="button"><span class="nav-dot"></span>Testimonials</button>
+    <button class="nav-item" id="tabUpdatesBtn" type="button"><span class="nav-dot"></span>What's New</button>
     <button class="nav-item" id="tabVocabularyBtn" type="button"><span class="nav-dot"></span>Vocabulary</button>
     <button class="nav-item" id="tabLibraryBtn" type="button"><span class="nav-dot"></span>Library</button>
     <button class="nav-item" id="tabExcavationBtn" type="button"><span class="nav-dot"></span>Excavation</button>
@@ -728,6 +729,18 @@
       </div>
       <div id="tstList"></div>
       <button class="add-btn" id="tstAddBtn" type="button">+ Add testimonial</button>
+    </div>
+    <div id="updatesView" style="display:none;">
+      <div class="tst-toolbar">
+        <span class="sub" style="margin:0;">Shown as a "What's New" card on the student dashboard, above the Profile panel &mdash; scoped per language via "Editing content in:" above, same as Library and Vocabulary (English entries auto-translate into every other active language; inactive entries stay saved but are skipped). The card itself shows nothing at all when there are zero active entries for a student's language.</span>
+      </div>
+      <div class="tst-toolbar">
+        <button class="btn secondary" id="updReloadBtn" type="button">Reload</button>
+        <div class="spacer"></div>
+        <span id="updStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
+      </div>
+      <div id="updList"></div>
+      <button class="add-btn" id="updAddBtn" type="button">+ Add update</button>
     </div>
     <div id="vocabularyView" style="display:none;">
       <div class="tst-toolbar">
@@ -1392,6 +1405,7 @@ document.getElementById('adminLangSelect').addEventListener('change', function (
   if (vocabularyView.style.display !== 'none') loadVocabulary();
   // Same treatment for the Library and UI Strings panels, if open.
   if (libraryView.style.display !== 'none') loadLibrary();
+  if (updatesView.style.display !== 'none') loadUpdates();
   if (document.getElementById('manageUiStringsPanel').style.display !== 'none') loadUiStrings();
 });
 // ===== UI Strings (Sept 2026) =====
@@ -1528,6 +1542,8 @@ var tabAdminBtn = document.getElementById('tabAdminBtn');
 var dashboardView = document.getElementById('dashboardView');
 var deliverablesView = document.getElementById('deliverablesView');
 var testimonialsView = document.getElementById('testimonialsView');
+var tabUpdatesBtn = document.getElementById('tabUpdatesBtn');
+var updatesView = document.getElementById('updatesView');
 var vocabularyView = document.getElementById('vocabularyView');
 var libraryView = document.getElementById('libraryView');
 var globalInstructionsView = document.getElementById('globalInstructionsView');
@@ -1538,6 +1554,7 @@ var PAGE_HEADERS = {
   dashboard: ['Students', 'Search, add, and manage student records.'],
   deliverables: ['Deliverables', "Confirms every completed session actually captured a real, validated deliverable \u2014 not just the summary sentence."],
   testimonials: ['Testimonials', 'Shown in the homepage rotator, fading from one to the next.'],
+  updates: ["What's New", 'The dashboard announcement card, above the Profile panel \u2014 scoped per language.'],
   vocabulary: ['Vocabulary', "Writer's Vocabulary glossary shown on the student Vocabulary tab."],
   library: ['Library', 'Every resource PDF and video, in one place \u2014 replaces the old per-lesson Resource PDFs.'],
   globalInstructions: ['Global Instructions', 'Standing coaching direction that applies to every lesson, every session.'],
@@ -1548,6 +1565,7 @@ function showTopTab(which) {
   tabDashboardBtn.className = 'nav-item' + (which === 'dashboard' ? ' active' : '');
   tabDeliverablesBtn.className = 'nav-item' + (which === 'deliverables' ? ' active' : '');
   tabTestimonialsBtn.className = 'nav-item' + (which === 'testimonials' ? ' active' : '');
+  tabUpdatesBtn.className = 'nav-item' + (which === 'updates' ? ' active' : '');
   tabVocabularyBtn.className = 'nav-item' + (which === 'vocabulary' ? ' active' : '');
   tabLibraryBtn.className = 'nav-item' + (which === 'library' ? ' active' : '');
   tabGlobalInstructionsBtn.className = 'nav-item' + (which === 'globalInstructions' ? ' active' : '');
@@ -1559,6 +1577,7 @@ function showTopTab(which) {
   dashboardView.style.display = which === 'dashboard' ? '' : 'none';
   deliverablesView.style.display = which === 'deliverables' ? '' : 'none';
   testimonialsView.style.display = which === 'testimonials' ? '' : 'none';
+  updatesView.style.display = which === 'updates' ? '' : 'none';
   vocabularyView.style.display = which === 'vocabulary' ? '' : 'none';
   libraryView.style.display = which === 'library' ? '' : 'none';
   globalInstructionsView.style.display = which === 'globalInstructions' ? '' : 'none';
@@ -1581,6 +1600,10 @@ tabDeliverablesBtn.addEventListener('click', function () {
 tabTestimonialsBtn.addEventListener('click', function () {
   showTopTab('testimonials');
   loadTestimonials();
+});
+tabUpdatesBtn.addEventListener('click', function () {
+  showTopTab('updates');
+  loadUpdates();
 });
 tabVocabularyBtn.addEventListener('click', function () {
   showTopTab('vocabulary');
@@ -2281,6 +2304,159 @@ function addTestimonialBlock(t, isNew) {
   downBtn.addEventListener('click', function () {
     var next = block.nextElementSibling;
     if (next && next.classList.contains('tst-block')) swapOrderWith(next);
+  });
+}
+// ===== Dashboard Updates ("What's New" card) =====
+// Same lang-aware pattern as Library/Vocabulary (scoped per ADMIN_LANG,
+// English saves cascade-translate to every other active language
+// automatically) rather than Testimonials' single-language pattern -
+// this is authenticated dashboard content a student in any language
+// reads, not a single-language marketing carousel. No manual reorder
+// (unlike Testimonials) - sorted by Posted date server-side instead.
+var updList = document.getElementById('updList');
+var updStatus = document.getElementById('updStatus');
+document.getElementById('updReloadBtn').addEventListener('click', loadUpdates);
+document.getElementById('updAddBtn').addEventListener('click', function () {
+  var today = new Date().toISOString().slice(0, 10);
+  addUpdateBlock({ id: null, title: '', body: '', postedAt: today, isActive: true }, true);
+});
+function loadUpdates() {
+  if (!adminKey) { updStatus.textContent = 'Unlock the panel first.'; return; }
+  updStatus.textContent = 'Loading...';
+  updList.innerHTML = '';
+  fetch(PROXY_URL + '/admin/dashboard-updates?lang=' + encodeURIComponent(ADMIN_LANG), { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var data = (d && d.updates) || [];
+      if (!data.length) {
+        updStatus.textContent = 'No updates yet for this language - add the first one below.';
+        return;
+      }
+      updStatus.textContent = data.length + ' update' + (data.length === 1 ? '' : 's') + '.';
+      data.forEach(function (u) { addUpdateBlock(u, false); });
+    })
+    .catch(function () { updStatus.textContent = 'Could not load updates.'; });
+}
+function addUpdateBlock(u, isNew) {
+  var block = document.createElement('div');
+  block.className = 'tst-block';
+  if (u.isActive === false) block.style.opacity = '0.65';
+  var head = document.createElement('div');
+  head.className = 'tst-block-head';
+  var titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.className = 'tst-name';
+  titleInput.placeholder = 'Headline';
+  titleInput.value = u.title || '';
+  head.appendChild(titleInput);
+  if (u.isActive === false) {
+    var tag = document.createElement('span');
+    tag.className = 'tst-inactive-tag';
+    tag.textContent = 'Inactive';
+    head.appendChild(tag);
+  }
+  block.appendChild(head);
+  var bodyArea = document.createElement('textarea');
+  bodyArea.className = 'tst-quote';
+  bodyArea.placeholder = 'Short description (optional) - keep it brief, this shows inline on the dashboard card.';
+  bodyArea.value = u.body || '';
+  block.appendChild(bodyArea);
+  var metaRow = document.createElement('div');
+  metaRow.className = 'tst-meta-row';
+  var dateField = document.createElement('div');
+  dateField.className = 'field';
+  var dateLabel = document.createElement('label');
+  dateLabel.textContent = 'Posted';
+  var dateInput = document.createElement('input');
+  dateInput.type = 'date';
+  dateInput.value = u.postedAt || new Date().toISOString().slice(0, 10);
+  dateField.appendChild(dateLabel);
+  dateField.appendChild(dateInput);
+  metaRow.appendChild(dateField);
+  var activeField = document.createElement('div');
+  activeField.className = 'field';
+  var activeLabel = document.createElement('label');
+  activeLabel.textContent = 'Live on dashboard';
+  var activeWrap = document.createElement('div');
+  activeWrap.className = 'toggle-row';
+  activeWrap.style.marginBottom = '0';
+  var activeCb = document.createElement('input');
+  activeCb.type = 'checkbox';
+  activeCb.checked = u.isActive !== false;
+  activeCb.id = 'updActive_' + (u.id || 'new_' + Math.random().toString(36).slice(2));
+  var activeCbLabel = document.createElement('label');
+  activeCbLabel.setAttribute('for', activeCb.id);
+  activeCbLabel.style.margin = '0';
+  activeCbLabel.textContent = 'Active';
+  activeWrap.appendChild(activeCb);
+  activeWrap.appendChild(activeCbLabel);
+  activeField.appendChild(activeLabel);
+  activeField.appendChild(activeWrap);
+  metaRow.appendChild(activeField);
+  block.appendChild(metaRow);
+  var foot = document.createElement('div');
+  foot.className = 'tst-block-foot';
+  var saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = 'tst-save-btn';
+  saveBtn.textContent = isNew ? 'Add update' : 'Save';
+  foot.appendChild(saveBtn);
+  var deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'remove-btn';
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.style.display = isNew ? 'none' : '';
+  foot.appendChild(deleteBtn);
+  var saveStatus = document.createElement('span');
+  saveStatus.className = 'tst-save-status';
+  foot.appendChild(saveStatus);
+  block.appendChild(foot);
+  updList.appendChild(block);
+  var currentId = u.id || null;
+  function payload() {
+    return {
+      id: currentId,
+      title: titleInput.value.trim(),
+      body: bodyArea.value.trim(),
+      postedAt: dateInput.value,
+      isActive: activeCb.checked,
+      lang: ADMIN_LANG
+    };
+  }
+  function save() {
+    if (!payload().title) { saveStatus.textContent = 'Headline is required.'; return; }
+    if (!payload().postedAt) { saveStatus.textContent = 'Posted date is required.'; return; }
+    saveStatus.textContent = 'Saving...';
+    fetch(PROXY_URL + '/admin/dashboard-updates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+      body: JSON.stringify(payload())
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) { saveStatus.textContent = 'Save failed.'; return; }
+        currentId = d.id;
+        isNew = false;
+        saveBtn.textContent = 'Save';
+        deleteBtn.style.display = '';
+        saveStatus.textContent = (ADMIN_LANG === 'en') ? 'Saved \u2014 retranslating other languages\u2026' : 'Saved.';
+        setTimeout(function () { saveStatus.textContent = ''; }, 2500);
+      })
+      .catch(function () { saveStatus.textContent = 'Save failed.'; });
+  }
+  saveBtn.addEventListener('click', save);
+  deleteBtn.addEventListener('click', function () {
+    if (!currentId) { block.remove(); return; }
+    if (!confirm('Delete this update? This cannot be undone.')) return;
+    fetch(PROXY_URL + '/admin/dashboard-updates?id=' + encodeURIComponent(currentId), {
+      method: 'DELETE',
+      headers: { 'X-Stratum-Admin-Key': adminKey }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok) { block.remove(); } else { saveStatus.textContent = 'Delete failed.'; }
+      })
+      .catch(function () { saveStatus.textContent = 'Delete failed.'; });
   });
 }
 // ===== Writer's Vocabulary =====
