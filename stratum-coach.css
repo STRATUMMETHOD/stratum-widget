@@ -462,4 +462,3 @@
   .sh-rail-label { display: none; } /* labels crowd badly at this width; the check/current ring still communicates position */
   .sh-msg-row.sh-user { max-width: 92%; }
 }
-}

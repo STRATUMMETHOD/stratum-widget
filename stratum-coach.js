@@ -118,7 +118,13 @@
     var wrap = el('div', 'sh-coach-video-wrap');
     var player = document.createElement('wistia-player');
     player.setAttribute('media-id', mediaId);
-    player.setAttribute('aspect', '2.4');
+    // Sept 2026 fix: was hardcoded to aspect="2.4" (a wide cinematic
+    // ratio) regardless of the actual video's shape - every video here
+    // is a standard 16:9 recording, so Wistia was reserving a taller
+    // box than the video itself needed and filling the gap with black
+    // bars. No aspect override at all lets the player use each video's
+    // own native ratio automatically instead of assuming one fixed
+    // ratio for every video this page will ever show.
     mount(wrap, player);
     mount(container, wrap);
   }
@@ -1073,8 +1079,6 @@
 
     var page = el('div', 'sh-coach-page');
     mount(page, el('h1', 'sh-coach-title', SESSION.title || ''));
-    var charIndicatorSlot = el('div');
-    mount(page, charIndicatorSlot);
     var videoOuter = el('div', 'sh-coach-video-outer');
     var videoSlot = el('div');
     videoSlot.id = 'shCoachVideoSlot';
@@ -1084,6 +1088,15 @@
     var introSlot = el('div');
     introSlot.id = 'shCoachIntroSlot';
     mount(page, introSlot);
+
+    // Sept 2026 fix: this indicator ("Working in: X - Switch WIP", and
+    // for requiresCharacter excavations, "Excavating: Y - Switch
+    // character" right alongside it) used to sit above the video, far
+    // from the character list it actually governs, which read as
+    // disconnected from the picker itself. Moved to sit directly above
+    // where that list (or the chat panel, once resolved) renders.
+    var charIndicatorSlot = el('div');
+    mount(page, charIndicatorSlot);
 
     var body = el('div', 'sh-coach-body');
     railEl = el('div', 'sh-rail');
