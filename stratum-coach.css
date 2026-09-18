@@ -12,6 +12,16 @@
    than redeclaring them.
    ============================================================ */
 
+/* Per request: the coaching-session screen should sit on a flat ground,
+   not the Dashboard's subtle repeating-band texture (defined on .sh-wrap
+   in stratum-header.css) — that texture reads as "busy" behind a live
+   conversation in a way it doesn't behind short dashboard cards. Scoped
+   to pages that actually contain the coach page, so the Dashboard itself
+   keeps its texture untouched. */
+.sh-wrap:has(.sh-coach-page) {
+  background: var(--sh-ink);
+}
+
 .sh-coach-page {
   max-width: 1100px;
   margin: 0 auto 40px;
@@ -19,11 +29,17 @@
 }
 
 .sh-coach-title {
-  font-family: 'Newsreader', Georgia, serif;
-  font-size: 30px;
-  font-weight: 600;
+  /* Sept 2026: was 'Newsreader', Georgia, serif — a stale reference from
+     before the sitewide font revision. stratum-header.css's ".sh-welcome"
+     (the Dashboard's own title) now uses Quicksand, not Newsreader, so
+     this was quietly out of sync with the Dashboard it's supposed to
+     match. Matched exactly here, plus centered per request. */
+  font-family: 'Quicksand', var(--sh-font-sans);
+  font-weight: 700;
+  text-align: center;
+  font-size: 28px;
   color: var(--sh-paper);
-  margin: 22px 0 16px;
+  margin: 22px 0 6px;
 }
 
 .sh-coach-sub {
@@ -97,13 +113,18 @@
 }
 .sh-coach-video-wrap {
   width: 100%;
+  aspect-ratio: 16 / 9;
   border-radius: 12px;
   overflow: hidden;
   background: #000;
+  position: relative;
 }
 .sh-coach-video-wrap wistia-player {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
+  height: 100%;
 }
 
 /* ---- Before You Begin (coaching intro) ---- */
@@ -142,95 +163,76 @@
   padding: 0;
 }
 
-/* ---- Strata rail ---- */
+/* ---- Strata rail ----
+   Each row IS one stratum: pending layers sit at their own graduated
+   depth tone (lightest near the surface, darkest deepest — set inline
+   from RAIL_TONES in JS), at full opacity, so the "how far down" read
+   comes from actual color depth rather than a dimming trick. Current
+   and done layers break out of the tone scale entirely with a solid
+   gold fill — a visited/active stratum looks genuinely different from
+   an undug one, not just less faded. */
 .sh-rail {
   display: flex;
   flex-direction: column;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--sh-line);
-  position: relative;
-}
-
-/* Vertical progress track — a literal "how far down have you dug" line
-   running the full height of the rail, filling smoothly as layers
-   complete. Sits just inside the rail's left edge, in front of the row
-   backgrounds but behind their text/check content. */
-.sh-rail-track {
-  position: absolute;
-  top: 0;
-  left: 10px;
-  width: 3px;
-  height: 100%;
-  background: rgba(234, 224, 201, 0.12);
-  z-index: 1;
-  pointer-events: none;
-}
-.sh-rail-track-fill {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: var(--sh-rail-fill-pct, 0%);
-  background: var(--sh-warm);
-  transition: height .6s cubic-bezier(.4, 0, .2, 1);
-}
-.sh-rail-marker {
-  position: absolute;
-  top: var(--sh-rail-fill-pct, 0%);
-  left: 50%;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: var(--sh-warm);
-  transform: translate(-50%, -50%);
-  transition: top .6s cubic-bezier(.4, 0, .2, 1);
-  box-shadow: 0 0 0 4px rgba(160, 124, 62, 0.25);
-  animation: sh-rail-pulse 2s ease-in-out infinite;
-}
-@keyframes sh-rail-pulse {
-  0%, 100% { box-shadow: 0 0 0 4px rgba(160, 124, 62, 0.25); }
-  50% { box-shadow: 0 0 0 8px rgba(160, 124, 62, 0.08); }
 }
 
 .sh-rail-layer {
   flex: 1;
-  min-height: 78px;
-  padding: 14px 16px 14px 30px;
+  min-height: 72px;
+  padding: 14px 18px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  position: relative;
-  z-index: 2;
-  transition: opacity .3s ease, box-shadow .4s ease;
+  gap: 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.22);
 }
-.sh-rail-layer.sh-pending { opacity: 0.38; }
-.sh-rail-layer.sh-current { opacity: 1; box-shadow: inset 0 0 0 2px var(--sh-warm); }
-.sh-rail-layer.sh-done { opacity: 0.85; }
-.sh-rail-check {
-  width: 18px;
-  height: 18px;
+.sh-rail-layer:last-child { border-bottom: none; }
+.sh-rail-layer.sh-current,
+.sh-rail-layer.sh-done {
+  background: var(--sh-warm);
+}
+
+.sh-rail-badge {
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  border: 1.5px solid rgba(244,242,237,.5);
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  color: var(--sh-paper);
+  font-size: 12px;
+  font-weight: 700;
 }
-.sh-rail-layer.sh-done .sh-rail-check {
-  background: var(--sh-warm);
-  border-color: var(--sh-warm);
-  color: var(--sh-ink);
+.sh-rail-layer.sh-pending .sh-rail-badge {
+  background: rgba(234, 224, 201, 0.08);
+  border: 1px solid rgba(234, 224, 201, 0.18);
+  color: var(--sh-sub);
 }
+.sh-rail-layer.sh-current .sh-rail-badge,
+.sh-rail-layer.sh-done .sh-rail-badge {
+  background: var(--sh-ink);
+  color: var(--sh-warm);
+}
+
+.sh-rail-text { min-width: 0; }
 .sh-rail-label {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   letter-spacing: 0.2px;
-  color: var(--sh-paper);
-  text-shadow: 0 1px 2px rgba(0,0,0,.35);
   line-height: 1.3;
+  color: var(--sh-paper);
+}
+.sh-rail-layer.sh-current .sh-rail-label,
+.sh-rail-layer.sh-done .sh-rail-label {
+  color: var(--sh-ink);
+}
+.sh-rail-status {
+  font-size: 11px;
+  color: var(--sh-ink);
+  opacity: 0.65;
+  margin-top: 2px;
 }
 
 /* ---- Coaching chat panel ---- */
@@ -427,38 +429,17 @@
 @media (max-width: 780px) {
   .sh-coach-body { grid-template-columns: 1fr; }
   .sh-rail { flex-direction: row; overflow-x: auto; }
-  .sh-rail-layer { min-height: auto; flex-direction: column; text-align: center; gap: 6px; padding: 14px 12px 10px; }
+  .sh-rail-layer { min-height: auto; flex-direction: column; text-align: center; gap: 6px; padding: 12px 10px; border-bottom: none; border-right: 1px solid rgba(0,0,0,0.22); }
+  .sh-rail-layer:last-child { border-right: none; }
   .sh-rail-label { font-size: 11px; }
 
-  /* The rail itself just went horizontal above — the progress track
-     needs to follow: a vertical line/marker made no sense laid out
-     sideways in a horizontal scrolling strip. Same --sh-rail-fill-pct
-     value from the JS, just consumed by width/left instead of
-     height/top. */
-  .sh-rail-track {
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-  }
-  .sh-rail-track-fill {
-    width: var(--sh-rail-fill-pct, 0%);
-    height: 100%;
-    transition: width .6s cubic-bezier(.4, 0, .2, 1);
-  }
-  .sh-rail-marker {
-    top: 50%;
-    left: var(--sh-rail-fill-pct, 0%);
-    transition: left .6s cubic-bezier(.4, 0, .2, 1);
-  }
-  .sh-rail-layer { padding-top: 18px; } /* room for the horizontal track running along the top edge */
-
   .sh-coach-page { padding: 0 16px; }
-  .sh-coach-title { font-size: 24px; margin: 16px 0 12px; }
+  .sh-coach-title { font-size: 24px; margin: 16px 0 6px; }
 }
 
 @media (max-width: 420px) {
   .sh-coach-video-outer { max-width: 100%; }
-  .sh-rail-label { display: none; } /* labels crowd badly at this width; the check/current ring still communicates position */
+  .sh-rail-label { display: none; } /* labels crowd badly at this width; the badge/fill state still communicates position */
+  .sh-rail-status { display: none; }
   .sh-msg-row.sh-user { max-width: 92%; }
 }

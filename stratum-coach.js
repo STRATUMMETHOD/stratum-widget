@@ -147,25 +147,21 @@
   // rather than a static list of rows that only differ by opacity.
   function renderRail() {
     railEl.innerHTML = '';
-    var track = el('div', 'sh-rail-track');
-    var fill = el('div', 'sh-rail-track-fill');
-    var fillPct = (currentLayerIndex / SESSION.layers.length) * 100;
-    fill.style.setProperty('--sh-rail-fill-pct', fillPct + '%');
-    mount(track, fill);
-    var marker = el('div', 'sh-rail-marker');
-    marker.style.setProperty('--sh-rail-fill-pct', fillPct + '%');
-    mount(track, marker);
-    mount(railEl, track);
-
     SESSION.layers.forEach(function (layer, i) {
       var isDone = !!completedLayerIds[lessonKey(layer.layerNumber)];
       var isCurrent = i === currentLayerIndex;
       var state = isDone ? 'sh-done' : (isCurrent ? 'sh-current' : 'sh-pending');
       var row = el('div', 'sh-rail-layer ' + state);
-      row.style.background = RAIL_TONES[i % RAIL_TONES.length];
-      var check = el('div', 'sh-rail-check', isDone ? '\u2713' : '');
-      mount(row, check);
-      mount(row, el('div', 'sh-rail-label', layer.label));
+      // Current/done get their solid gold fill from the CSS state class;
+      // only pending layers carry an inline depth tone, so the graduated
+      // "deeper = darker" scale reads clearly against the two lit bands.
+      if (state === 'sh-pending') row.style.background = RAIL_TONES[i % RAIL_TONES.length];
+      var badge = el('div', 'sh-rail-badge', isDone ? '\u2713' : String(i + 1));
+      mount(row, badge);
+      var textWrap = el('div', 'sh-rail-text');
+      mount(textWrap, el('div', 'sh-rail-label', layer.label));
+      if (isCurrent) mount(textWrap, el('div', 'sh-rail-status', 'In progress'));
+      mount(row, textWrap);
       mount(railEl, row);
     });
   }
@@ -1167,8 +1163,7 @@
   }
 
   function resolveWipThenStart(container, indicatorSlot) {
-    container.innerHTML = '';
-    mount(container, el('div', 'sh-coach-loading', 'Loading your projects\u2026'));
+    container.innerHTML = ''; // left blank during the fetch, deliberately no "Loading..." text — see resolveCharacterThenStart() below for the same call
     fetchWips(function (wips) {
       var lockedId = sessGet(WIP_LOCK_KEY);
       var locked = lockedId ? wips.filter(function (w) { return w.id === lockedId; })[0] : null;
@@ -1265,8 +1260,7 @@
   }
 
   function resolveCharacterThenStart(container, indicatorSlot) {
-    container.innerHTML = '';
-    mount(container, el('div', 'sh-coach-loading', 'Loading your characters\u2026'));
+    container.innerHTML = ''; // deliberately no "Loading your characters..." text — see stated feedback; the gate is usually near-instant and the text only ever flashed
     fetchProjectData(function (project) {
       var characters = (project && Array.isArray(project.characters)) ? project.characters.filter(function (c) { return c.name; }) : [];
       var lockedId = sessGet(CHAR_LOCK_PREFIX + SESSION.slug);
