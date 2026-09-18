@@ -906,6 +906,11 @@
             <label for="gRequiresCharacter" style="margin:0;">This program is about a specific character (runs once per character, not once per student)</label>
           </div>
           <span class="hint" style="display:block;margin-top:4px;">When on, the coaching page asks the student to pick a character from their profile before Layer 1 starts, and tracks progress separately per character &mdash; they can come back later and excavate a different character from scratch. Leave off for programs not about one specific character (World Building, Plot, etc.).</span>
+          <div class="toggle-row" style="margin-top:8px;">
+            <input type="checkbox" id="gRequiresConflictPair" />
+            <label for="gRequiresConflictPair" style="margin:0;">This program is about a conflict between two characters (runs once per conflict, not once per student or per character)</label>
+          </div>
+          <span class="hint" style="display:block;margin-top:4px;">When on, the coaching page asks the student to pick TWO characters from their profile (and optionally name the conflict) before Layer 1 starts. A student can create more than one conflict per program &mdash; e.g. three separate relationship conflicts in the same WIP &mdash; each tracked completely separately. Mutually exclusive with &ldquo;about a specific character&rdquo; above; checking one unchecks the other.</span>
         </div>
         </details>
         <details class="card" data-group="open" open>
@@ -4966,11 +4971,25 @@ gHasCoachingIntroCb.addEventListener('change', function () {
 gHasDeliverableCb.addEventListener('change', function () {
   gDeliverableFields.className = 'resource-fields' + (gHasDeliverableCb.checked ? '' : ' disabled');
 });
+// Sept 2026 (two-character conflicts): an excavation is scoped to a
+// student, one character, or one conflict pair - never more than one
+// of these at once, since lessonKey()/the completions/deliverable
+// tables in worker.js all assume a single scoping id per layer save.
+// The admin UI enforces that as a simple "checking one unchecks the
+// other" pair rather than a radio group, so the existing single
+// checkbox's markup/id didn't need to change.
+document.getElementById('gRequiresCharacter').addEventListener('change', function () {
+  if (this.checked) document.getElementById('gRequiresConflictPair').checked = false;
+});
+document.getElementById('gRequiresConflictPair').addEventListener('change', function () {
+  if (this.checked) document.getElementById('gRequiresCharacter').checked = false;
+});
 function clearExcavationForm() {
   document.getElementById('gExcavationTitle').value = '';
   document.getElementById('gExcavationSlug').value = '';
   document.getElementById('gExcavationActive').checked = true;
   document.getElementById('gRequiresCharacter').checked = false;
+  document.getElementById('gRequiresConflictPair').checked = false;
   document.getElementById('gMediaId').value = '';
   document.getElementById('gTranscript').value = '';
   gHasCoachingIntroCb.checked = false;
@@ -4996,6 +5015,7 @@ function fillExcavationForm(ex) {
   gSlugManuallyEdited = true; // an existing track's slug is never auto-derived again
   document.getElementById('gExcavationActive').checked = !(ex.isActive === 0 || ex.isActive === false);
   document.getElementById('gRequiresCharacter').checked = !!ex.requiresCharacter;
+  document.getElementById('gRequiresConflictPair').checked = !!ex.requiresConflictPair;
   document.getElementById('gMediaId').value = ex.videoMediaId || '';
   document.getElementById('gTranscript').value = ex.transcript || '';
   if (ex.coachingIntroTitle || ex.coachingIntroText) {
@@ -5026,7 +5046,8 @@ function collectExcavationPayload() {
     } : { title: '', text: '' },
     closingMessage: document.getElementById('gClosingMessage').value.trim(),
     isActive: document.getElementById('gExcavationActive').checked,
-    requiresCharacter: document.getElementById('gRequiresCharacter').checked
+    requiresCharacter: document.getElementById('gRequiresCharacter').checked,
+    requiresConflictPair: document.getElementById('gRequiresConflictPair').checked
   };
 }
 // ---- Layers list (below the Track's own general fields) ----
