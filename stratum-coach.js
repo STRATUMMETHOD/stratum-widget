@@ -87,6 +87,7 @@
   var ALL_CHECKIN_NOTES = [];     // Recurring engine only — every past check-in across every topic in this session, fetched once and reused for both the topic list and each conversation's injected history
   var topicListEl = null;         // Recurring engine only
   var SELECTED_CHARACTER = null;  // {id, name, type, roleType, coreConflict} — set via the character picker for any excavation with requiresCharacter true; null for every other excavation
+  var SELECTED_CONFLICT = null;   // {id, label, characterA:{id,name,type,roleType,coreConflict,profile}, characterB:{...}} — set via the conflict-instance picker for any excavation with requiresConflictPair true; null for every other excavation. Mutually exclusive with SELECTED_CHARACTER in practice.
   var ACTIVE_WIP_ID = null;       // Sept 2026 (multiple WIPs): every Excavation-Track session's coaching context (and, for requiresCharacter sessions, its character list) is scoped to one WIP — resolved by resolveWipThenStart() before anything else runs
 
   var railEl, messagesEl, formEl, inputEl, sendBtn, contentEl;
@@ -394,6 +395,33 @@
       if (SELECTED_CHARACTER.coreConflict) charFacts.push('Core conflict: ' + SELECTED_CHARACTER.coreConflict);
       if (charFacts.length) charLines.push(charFacts.join(' | '));
       parts.push(charLines.join('\n'));
+    }
+    if (SELECTED_CONFLICT) {
+      var ca = SELECTED_CONFLICT.characterA, cb = SELECTED_CONFLICT.characterB;
+      function describeConflictCharacter(c) {
+        var lines = [c.name + ':'];
+        var facts = [];
+        if (c.type) facts.push('Type: ' + c.type);
+        if (c.roleType) facts.push('Role: ' + c.roleType);
+        if (c.coreConflict) facts.push('Core conflict: ' + c.coreConflict);
+        if (facts.length) lines.push('  ' + facts.join(' | '));
+        // Sept 2026 (two-character conflicts): when this character already
+        // has a completed Character Excavation profile, pull it in
+        // directly rather than re-deriving their psychology from scratch
+        // here — per the explicit "works either way, richer if it exists"
+        // decision. When there's no profile yet, this section is simply
+        // absent for that character; the layer-specific coaching content
+        // (see Layer 2's Area 1) is what handles deriving the equivalent
+        // live, at a lighter grain, in that case.
+        if (c.profile) lines.push('  Existing Character Excavation profile for ' + c.name + ':\n  """\n  ' + c.profile.split('\n').join('\n  ') + '\n  """');
+        return lines.join('\n');
+      }
+      var confLines = [
+        'THE CONFLICT THIS EXCAVATION IS ABOUT:\nEverything in this conversation is specifically about the conflict between ' + (ca.name || 'Character A') + ' and ' + (cb.name || 'Character B') + (SELECTED_CONFLICT.label ? ' (the writer has named this conflict "' + SELECTED_CONFLICT.label + '")' : '') + ' - not the writer themselves, and not any other character or conflict in their project. Keep every question anchored to these two specific people and this specific friction between them. Work through each character\u2019s side in turn within an area before moving to the next area, rather than mixing both sides together in one exchange.',
+        describeConflictCharacter(ca),
+        describeConflictCharacter(cb)
+      ];
+      parts.push(confLines.join('\n\n'));
     }
     parts.push(
       'WHAT THIS LAYER COVERS (' + scopeNote + ')' + (SESSION.transcript ? ':\n"""\n' + SESSION.transcript + '\n"""' : '.'),
@@ -853,7 +881,8 @@
   // alone isn't unique across excavations, since Character Excavation's
   // Layer 1 and a future Worldbuilding's Layer 1 are different things.
   function lessonKey(layerNumber) {
-    return SESSION.slug + ':' + layerNumber + (SELECTED_CHARACTER ? ':' + SELECTED_CHARACTER.id : '');
+    var scopeId = SELECTED_CONFLICT ? SELECTED_CONFLICT.id : (SELECTED_CHARACTER ? SELECTED_CHARACTER.id : '');
+    return SESSION.slug + ':' + layerNumber + (scopeId ? ':' + scopeId : '');
   }
 
   function loadLayerConfig(layerNumber, callback) {
@@ -932,13 +961,14 @@
   function synthesizeMasterDeliverable() {
     contentEl.innerHTML = '';
     mount(contentEl, el('div', 'sh-coach-loading', 'Bringing together everything you\u2019ve excavated\u2026'));
-    var charParam = SELECTED_CHARACTER ? '&characterId=' + encodeURIComponent(SELECTED_CHARACTER.id) : '';
-    fetch(PROXY_URL + '/excavation/master-deliverable?studentId=' + encodeURIComponent(STUDENT_ID) + '&excavationSlug=' + encodeURIComponent(SESSION.slug) + charParam)
+    var scopeParam = SELECTED_CONFLICT ? '&instanceId=' + encodeURIComponent(SELECTED_CONFLICT.id) : (SELECTED_CHARACTER ? '&characterId=' + encodeURIComponent(SELECTED_CHARACTER.id) : '');
+    fetch(PROXY_URL + '/excavation/master-deliverable?studentId=' + encodeURIComponent(STUDENT_ID) + '&excavationSlug=' + encodeURIComponent(SESSION.slug) + scopeParam)
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d && d.known && d.text) { renderSynthesisCard(d.text); return; }
         var body = { studentId: STUDENT_ID, excavationSlug: SESSION.slug, lang: LANG };
-        if (SELECTED_CHARACTER) body.characterId = SELECTED_CHARACTER.id;
+        if (SELECTED_CONFLICT) body.instanceId = SELECTED_CONFLICT.id;
+        else if (SELECTED_CHARACTER) body.characterId = SELECTED_CHARACTER.id;
         return fetch(PROXY_URL + '/excavation/synthesize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -975,7 +1005,9 @@
     // left blank.
     var closingWrap = el('div', 'sh-msg-row sh-assistant');
     var closingBubble = el('div', 'sh-msg-bubble');
-    var whoText = SELECTED_CHARACTER ? SELECTED_CHARACTER.name : null;
+    var whoText = SELECTED_CONFLICT
+      ? (SELECTED_CONFLICT.label || (SELECTED_CONFLICT.characterA.name + ' & ' + SELECTED_CONFLICT.characterB.name))
+      : (SELECTED_CHARACTER ? SELECTED_CHARACTER.name : null);
     if (SESSION.closingMessage) {
       closingBubble.textContent = applyClosingTokens(SESSION.closingMessage, studentName, whoText);
     } else {
@@ -1148,6 +1180,7 @@
       e.preventDefault();
       sessRemove(WIP_LOCK_KEY);
       sessRemove(CHAR_LOCK_PREFIX + SESSION.slug);
+      sessRemove(CONFLICT_LOCK_PREFIX + SESSION.slug);
       location.reload();
     });
     line.appendChild(switchLink);
@@ -1155,7 +1188,9 @@
   }
 
   function afterWipResolved(container, indicatorSlot) {
-    if (SESSION.requiresCharacter) {
+    if (SESSION.requiresConflictPair) {
+      resolveConflictThenStart(container, indicatorSlot);
+    } else if (SESSION.requiresCharacter) {
       resolveCharacterThenStart(container, indicatorSlot);
     } else {
       startExcavationProper();
@@ -1302,6 +1337,202 @@
       });
       mount(container, wrap);
     });
+  }
+
+  // ----------------------------------------------------------
+  // CONFLICT-PAIR PICKER — excavations with requiresConflictPair true
+  // ----------------------------------------------------------
+  // Unlike the single-character picker above (locked to ONE character
+  // per tab, silently resumed on reload), a conflict excavation is
+  // explicitly reusable: a writer may run it several times for
+  // different relationship conflicts in the same WIP, each with its
+  // own fully separate layer progress (see SELECTED_CONFLICT,
+  // lessonKey(), and the conflict context block in
+  // buildSystemPrompt()). So this picker always shows the writer their
+  // existing conflict instances (if any) alongside a "start a new
+  // conflict" option, rather than auto-resuming the way the
+  // single-character picker does when there's only one option -
+  // silently landing on the WRONG existing conflict would be a much
+  // worse mistake here than asking once per tab is an inconvenience.
+  //
+  // Sept 2026: once picked, the instance IS still locked per-tab via
+  // sessionStorage (CONFLICT_LOCK_PREFIX + slug), same mechanism as
+  // CHAR_LOCK_PREFIX, purely so a mid-session reload or back-button
+  // resumes the same instance rather than re-showing this screen - the
+  // explicit "Switch conflict" link the indicator shows is still the
+  // only way to change it once locked for this tab.
+  var CONFLICT_LOCK_PREFIX = 'stratum_conflict_';
+
+  function fetchConflictInstances(excavationSlug, callback) {
+    fetch(PROXY_URL + '/conflict-instances?studentId=' + encodeURIComponent(STUDENT_ID) + '&wipId=' + encodeURIComponent(ACTIVE_WIP_ID) + '&excavationSlug=' + encodeURIComponent(excavationSlug))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { callback((d && Array.isArray(d.instances)) ? d.instances : []); })
+      .catch(function () { callback([]); });
+  }
+
+  function createConflictInstance(excavationSlug, characterAId, characterBId, label, callback) {
+    fetch(PROXY_URL + '/conflict-instances', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: STUDENT_ID, wipId: ACTIVE_WIP_ID, excavationSlug: excavationSlug, characterAId: characterAId, characterBId: characterBId, label: label })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { callback((d && d.ok) ? d : null); })
+      .catch(function () { callback(null); });
+  }
+
+  function showConflictIndicator(slot, conflict) {
+    var line = el('p', 'sh-coach-sub');
+    var label = conflict.label || (conflict.characterA.name + ' & ' + conflict.characterB.name);
+    line.appendChild(document.createTextNode('Excavating: ' + label + '  \u00b7  '));
+    var switchLink = document.createElement('a');
+    switchLink.href = '#';
+    switchLink.className = 'sh-char-switch-link';
+    switchLink.textContent = 'Switch conflict';
+    switchLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      sessRemove(CONFLICT_LOCK_PREFIX + SESSION.slug);
+      location.reload();
+    });
+    line.appendChild(switchLink);
+    mount(slot, line);
+  }
+
+  // Fetches each character's existing Character Excavation synthesis
+  // (if any) so the conflict layers can pull real psychological
+  // material straight in rather than deriving it live every time - see
+  // the "works either way, richer if it exists" decision (Layer 2's
+  // Area 1 in the coaching content is what actually branches on
+  // whether c.profile ended up set). Best-effort: a missing or failed
+  // fetch just leaves that character's profile blank; it never blocks
+  // starting the excavation.
+  function attachExistingProfiles(conflict, callback) {
+    var pending = 2;
+    function done() { pending--; if (pending === 0) callback(conflict); }
+    [conflict.characterA, conflict.characterB].forEach(function (c) {
+      fetch(PROXY_URL + '/excavation/master-deliverable?studentId=' + encodeURIComponent(STUDENT_ID) + '&excavationSlug=character-excavation&characterId=' + encodeURIComponent(c.id))
+        .then(function (r) { return r.json(); })
+        .then(function (d) { c.profile = (d && d.known && d.text) ? d.text : null; done(); })
+        .catch(function () { c.profile = null; done(); });
+    });
+  }
+
+  function resolveConflictThenStart(container, indicatorSlot) {
+    container.innerHTML = ''; // deliberately no loading text, same reasoning as the WIP/character gates above
+    fetchProjectData(function (project) {
+      var characters = (project && Array.isArray(project.characters)) ? project.characters.filter(function (c) { return c.name; }) : [];
+      fetchConflictInstances(SESSION.slug, function (instances) {
+        function hydrateAndStart(inst) {
+          var a = characters.filter(function (c) { return c.id === inst.characterAId; })[0] || { id: inst.characterAId, name: 'Character A' };
+          var b = characters.filter(function (c) { return c.id === inst.characterBId; })[0] || { id: inst.characterBId, name: 'Character B' };
+          SELECTED_CONFLICT = { id: inst.id, label: inst.label || '', characterA: a, characterB: b };
+          sessSet(CONFLICT_LOCK_PREFIX + SESSION.slug, inst.id);
+          showConflictIndicator(indicatorSlot, SELECTED_CONFLICT);
+          attachExistingProfiles(SELECTED_CONFLICT, function () { startExcavationProper(); });
+        }
+
+        var lockedId = sessGet(CONFLICT_LOCK_PREFIX + SESSION.slug);
+        var locked = lockedId ? instances.filter(function (i) { return i.id === lockedId; })[0] : null;
+        if (locked) { hydrateAndStart(locked); return; }
+
+        container.innerHTML = '';
+        if (characters.length < 2) {
+          var empty = el('div', 'sh-coach-page');
+          mount(empty, el('p', null, 'This excavation is between two characters, and this WIP doesn\u2019t have two yet. Add another character, then come back here.'));
+          var link = document.createElement('a');
+          link.className = 'sh-save-btn';
+          link.href = '/system/';
+          link.textContent = '\u2190 Add a character';
+          mount(empty, link);
+          mount(container, empty);
+          return;
+        }
+
+        var wrap = el('div', 'sh-recurring-topics');
+        mount(container, el('p', 'sh-coach-sub', instances.length ? 'Pick up an existing conflict, or start a new one.' : 'Every conflict here runs between two characters. Pick who this one is between.'));
+
+        instances.forEach(function (inst) {
+          var row = el('div', 'sh-recurring-topic-row');
+          row.addEventListener('click', function () { hydrateAndStart(inst); });
+          var aName = (characters.filter(function (c) { return c.id === inst.characterAId; })[0] || {}).name || 'Character A';
+          var bName = (characters.filter(function (c) { return c.id === inst.characterBId; })[0] || {}).name || 'Character B';
+          mount(row, el('div', 'sh-recurring-topic-title', inst.label || (aName + ' & ' + bName)));
+          mount(row, el('div', 'sh-recurring-topic-meta', inst.label ? (aName + ' & ' + bName) : '\u00a0'));
+          mount(wrap, row);
+        });
+
+        mount(wrap, buildNewConflictForm(characters, hydrateAndStart));
+
+        mount(container, wrap);
+      });
+    });
+  }
+
+  // The "start a new conflict" form: pick two distinct characters and
+  // an optional label, then POST /conflict-instances. Kept as one
+  // self-contained block inside the same instance list rather than a
+  // separate screen, so resuming an old conflict and starting a new
+  // one are both one click away from the same view. Reuses the
+  // existing .sh-coach-input / .sh-synthesis-download classes rather
+  // than adding new CSS for a form shape used nowhere else on this
+  // page.
+  function buildNewConflictForm(characters, onReady) {
+    var wrap = el('div', 'sh-recurring-topic-row');
+    wrap.style.cursor = 'default';
+    wrap.style.flexDirection = 'column';
+    wrap.style.alignItems = 'stretch';
+    wrap.style.gap = '10px';
+
+    mount(wrap, el('div', 'sh-recurring-topic-title', '+ Start a new conflict'));
+
+    var selectA = document.createElement('select');
+    selectA.className = 'sh-coach-input';
+    var selectB = document.createElement('select');
+    selectB.className = 'sh-coach-input';
+    [selectA, selectB].forEach(function (sel, idx) {
+      var placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = idx === 0 ? 'First character\u2026' : 'Second character\u2026';
+      sel.appendChild(placeholder);
+      characters.forEach(function (c) {
+        var o = document.createElement('option');
+        o.value = c.id;
+        o.textContent = c.name;
+        sel.appendChild(o);
+      });
+    });
+    mount(wrap, selectA);
+    mount(wrap, selectB);
+
+    var labelInput = document.createElement('input');
+    labelInput.type = 'text';
+    labelInput.className = 'sh-coach-input';
+    labelInput.placeholder = 'Name this conflict (optional) \u2014 e.g. "The inheritance fight"';
+    mount(wrap, labelInput);
+
+    var errEl = el('div', 'sh-coach-sub');
+    errEl.style.margin = '0';
+    errEl.style.display = 'none';
+    mount(wrap, errEl);
+
+    var startBtn = el('button', 'sh-synthesis-download', 'Start this conflict');
+    startBtn.type = 'button';
+    startBtn.style.alignSelf = 'flex-start';
+    startBtn.addEventListener('click', function () {
+      var aId = selectA.value, bId = selectB.value;
+      if (!aId || !bId) { errEl.textContent = 'Pick both characters.'; errEl.style.display = ''; return; }
+      if (aId === bId) { errEl.textContent = 'Pick two different characters.'; errEl.style.display = ''; return; }
+      errEl.style.display = 'none';
+      startBtn.disabled = true;
+      createConflictInstance(SESSION.slug, aId, bId, labelInput.value.trim(), function (d) {
+        startBtn.disabled = false;
+        if (!d) { errEl.textContent = 'Could not start this conflict \u2014 try again.'; errEl.style.display = ''; return; }
+        onReady({ id: d.instanceId, characterAId: aId, characterBId: bId, label: d.label });
+      });
+    });
+    mount(wrap, startBtn);
+
+    return wrap;
   }
 
   // ----------------------------------------------------------
