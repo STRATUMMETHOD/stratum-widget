@@ -308,7 +308,16 @@
         }
         characters.forEach(function (c) {
           var status = computeStatus(session, completedLessonKeys, c.id);
-          var row = buildRow(session, status.label, status.key, session.title + ' \u2014 ' + c.name);
+          // Sept 2026: was session.title + ' — ' + c.name — per request,
+          // the character's name no longer shows on the card label. Note
+          // the side effect this creates on its own: with more than one
+          // character, every row for this session now renders with the
+          // identical title and the identical link, distinguishable only
+          // by each row's status badge — there's no longer any visible
+          // way to tell WHICH character a given row is for from the
+          // dashboard alone (the coach page's own character picker still
+          // knows, this is purely a Excavation Center display change).
+          var row = buildRow(session, status.label, status.key);
           mount(listEl, row);
           rowEls.push(row);
         });
