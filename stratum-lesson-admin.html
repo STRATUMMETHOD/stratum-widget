@@ -5376,7 +5376,7 @@ function parseCoachingDocument(rawText) {
           .replace(/\n{3,}/g, '\n\n')
           .trim();
       }
-      var noteM = sec.body.match(/\*{0,2}Note:\*{0,2}\s*([\s\S]*)/i);
+      var noteM = sec.body.match(/\*{0,2}Note:\*{0,2}\s*([\s\S]*?)(?=\n\s*\n---|$)/i);
       if (noteM) note = noteM[1].trim();
       if (!moment && !script && !note) warnings.push('A "Worked example" section was found but nothing could be parsed from it.');
       out.workedExamples.push({ label: moment, script: script, note: note });
