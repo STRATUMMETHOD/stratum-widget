@@ -5243,23 +5243,64 @@ function collectLayerConfig() {
 // heading boundaries) rather than trying to match "everything up to the
 // next thing", which is what makes this robust against minor prose
 // variation between documents.
-function splitByHeading(text, level) {
+// Detects a section heading two ways: literal Markdown ("## Title") for
+// someone who pastes raw .md source, OR by recognizing the heading's
+// own TEXT on its own short line when the markup isn't there at all -
+// which is exactly what happens when a document is copied out of
+// something that RENDERS Markdown (a Google Doc, Notion, Word) rather
+// than showing its raw source: the heading still LOOKS like a heading
+// on screen, but the actual "##"/"**" characters never made it into
+// the clipboard, because there was nothing left to copy - they'd
+// already been turned into real formatting. `knownPatterns` is the
+// small, fixed vocabulary of section names these documents always
+// use, so this fallback isn't a generic (and therefore false-positive-
+// prone) "any short line is a heading" guess - it's anchored to text
+// we already know to expect.
+function splitByHeading(text, level, knownPatterns) {
   var marker = new RegExp('^#{' + level + '}\\s+(.+)$', 'gm');
   var indices = [];
   var match;
   while ((match = marker.exec(text)) !== null) {
     indices.push({ title: match[1].trim(), start: match.index, contentStart: match.index + match[0].length });
   }
+  if (!indices.length && knownPatterns && knownPatterns.length) {
+    var lines = text.split('\n');
+    var offset = 0;
+    lines.forEach(function (line) {
+      var trimmed = line.trim();
+      // A real heading here is short (a title, not a paragraph) and
+      // matches one of the known section names - keeps this from
+      // false-positiving on ordinary sentences that happen to start
+      // with a matching word.
+      if (trimmed && trimmed.length < 150) {
+        for (var i = 0; i < knownPatterns.length; i++) {
+          if (knownPatterns[i].test(trimmed)) {
+            indices.push({ title: trimmed, start: offset, contentStart: offset + line.length + 1 });
+            break;
+          }
+        }
+      }
+      offset += line.length + 1;
+    });
+  }
   var sections = [];
-  for (var i = 0; i < indices.length; i++) {
-    var end = (i + 1 < indices.length) ? indices[i + 1].start : text.length;
-    sections.push({ title: indices[i].title, body: text.slice(indices[i].contentStart, end) });
+  for (var j = 0; j < indices.length; j++) {
+    var end = (j + 1 < indices.length) ? indices[j + 1].start : text.length;
+    sections.push({ title: indices[j].title, body: text.slice(indices[j].contentStart, end) });
   }
   return sections;
 }
 function giStripQuotes(s) {
   return String(s || '').trim().replace(/^"|"$/g, '').trim();
 }
+var TOP_HEADING_FALLBACKS = [
+  /^Layer identity\s*$/i,
+  /^Areas\b/i,
+  /^Worked examples?\b/i,
+  /^Structured deliverable\b/i,
+  /^Greeting\s*$/i
+];
+var AREA_HEADING_FALLBACKS = [/^Area\s*\d+\b/i];
 function parseCoachingDocument(rawText) {
   var warnings = [];
   var out = {
@@ -5272,37 +5313,42 @@ function parseCoachingDocument(rawText) {
     var dashSplit = h1[1].split(/\s+[\u2014-]\s+Coaching Content/i);
     if (dashSplit.length) out.label = dashSplit[0].trim();
   }
-  var top = splitByHeading(rawText, 2);
-  if (!top.length) warnings.push('No "## " section headings found at all - this may not be a recognized document format.');
+  var top = splitByHeading(rawText, 2, TOP_HEADING_FALLBACKS);
+  if (!top.length) warnings.push('No section headings found at all, even checking for plain text headings without "##" - this may not be a recognized document format, or was pasted from somewhere that stripped even the heading text itself.');
   top.forEach(function (sec) {
     var heading = sec.title.toLowerCase();
     if (heading.indexOf('layer identity') !== -1) {
-      var titleM = sec.body.match(/\*\*Layer title:\*\*\s*([^\n]+)/i);
+      var titleM = sec.body.match(/\*{0,2}Layer title:\*{0,2}\s*([^\n]+)/i);
       if (titleM) out.label = titleM[1].trim();
-      var scopeM = sec.body.match(/\*\*Scope note:\*\*\s*([^\n]+)/i);
+      var scopeM = sec.body.match(/\*{0,2}Scope note:\*{0,2}\s*([^\n]+)/i);
       if (scopeM) out.scopeNote = scopeM[1].trim();
-      var nextM = sec.body.match(/\*\*Next layer label:\*\*\s*([^\n]+)/i);
+      var nextM = sec.body.match(/\*{0,2}Next layer label:\*{0,2}\s*([^\n]+)/i);
       if (nextM) out.nextLessonLabel = nextM[1].trim();
     } else if (heading.indexOf('area') !== -1) {
-      var areaSecs = splitByHeading(sec.body, 3);
-      if (!areaSecs.length) warnings.push('An "Areas" section was found but no "### Area N" subsections inside it.');
+      var areaSecs = splitByHeading(sec.body, 3, AREA_HEADING_FALLBACKS);
+      if (!areaSecs.length) warnings.push('An "Areas" section was found but no individual Area subsections could be found inside it.');
       areaSecs.forEach(function (areaSec) {
         var areaTitle = areaSec.title.replace(/^Area\s*\d+\s*[\u2014-]\s*/i, '').trim();
         var body = areaSec.body;
         var area = { title: areaTitle, whatToSurface: '', technique: '', exitSignal: '', calibrationExamples: [] };
-        var whatM = body.match(/\*\*What to surface:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*\*\*|\n\s*\n---|$)/i);
+        var whatM = body.match(/\*{0,2}What to surface:\*{0,2}\s*([\s\S]*?)(?=\n\s*\n\s*\*{0,2}[A-Z]|\n\s*\n---|$)/);
         if (whatM) area.whatToSurface = whatM[1].trim();
         else warnings.push('Area "' + areaTitle + '": no "What to surface" found.');
-        var techM = body.match(/\*\*Technique for this area:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*\*\*Exit signal|\n\s*\n\s*\*\*Calibration|$)/i);
+        var techM = body.match(/\*{0,2}Technique for this area:\*{0,2}\s*([\s\S]*?)(?=\n\s*\n\s*\*{0,2}Exit signal|\n\s*\n\s*\*{0,2}Calibration|$)/i);
         if (techM) area.technique = techM[1].trim();
         else warnings.push('Area "' + areaTitle + '": no "Technique for this area" found.');
-        var exitM = body.match(/\*\*Exit signal:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*\*\*Calibration|\n\s*\n---|$)/i);
+        var exitM = body.match(/\*{0,2}Exit signal:\*{0,2}\s*([\s\S]*?)(?=\n\s*\n\s*\*{0,2}Calibration|\n\s*\n---|$)/i);
         if (exitM) area.exitSignal = exitM[1].trim();
         else warnings.push('Area "' + areaTitle + '": no "Exit signal" found.');
-        var calM = body.match(/\*\*Calibration examples:\*\*([\s\S]*)/i);
+        var calM = body.match(/\*{0,2}Calibration examples:\*{0,2}([\s\S]*)/i);
         if (calM) {
           var calBody = calM[1];
-          var bulletRe = /-\s*\*\*Title:\*\*\s*([^\n]+)\n\s*\*\*Weak \(stop here\):\*\*\s*([^\n]+)\n\s*\*\*Strong \(this passes\):\*\*\s*([^\n]+)\n\s*\*\*Coaching note:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*-\s*\*\*Title:|\n\s*\n---|$)/gi;
+          // Bullet prefix (before "Title:") is now optional and
+          // flexible ("- ", "\u2022 ", "* ", or nothing) - a rendered
+          // bulleted list often copies as a bullet glyph, not the
+          // literal hyphen the raw Markdown source used, and
+          // sometimes as no marker at all.
+          var bulletRe = /[-\u2022*]?\s*\*{0,2}Title:\*{0,2}\s*([^\n]+)\n\s*\*{0,2}Weak \(stop here\):\*{0,2}\s*([^\n]+)\n\s*\*{0,2}Strong \(this passes\):\*{0,2}\s*([^\n]+)\n\s*\*{0,2}Coaching note:\*{0,2}\s*([\s\S]*?)(?=\n\s*\n\s*[-\u2022*]?\s*\*{0,2}Title:|\n\s*\n---|$)/gi;
           var bm;
           while ((bm = bulletRe.exec(calBody)) !== null) {
             area.calibrationExamples.push({
@@ -5320,9 +5366,9 @@ function parseCoachingDocument(rawText) {
       });
     } else if (heading.indexOf('worked example') !== -1) {
       var moment = '', script = '', note = '';
-      var momentM = sec.body.match(/\*\*What moment does this show:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*\*\*Script|$)/i);
+      var momentM = sec.body.match(/\*{0,2}What moment does this show:\*{0,2}\s*([\s\S]*?)(?=\n\s*\n\s*\*{0,2}Script|$)/i);
       if (momentM) moment = momentM[1].trim();
-      var scriptM = sec.body.match(/\*\*Script:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*\*\*Note:|$)/i);
+      var scriptM = sec.body.match(/\*{0,2}Script:\*{0,2}\s*([\s\S]*?)(?=\n\s*\n\s*\*{0,2}Note:|$)/i);
       if (scriptM) {
         script = scriptM[1].split('\n')
           .map(function (l) { return l.replace(/^>\s?/, ''); })
@@ -5330,7 +5376,7 @@ function parseCoachingDocument(rawText) {
           .replace(/\n{3,}/g, '\n\n')
           .trim();
       }
-      var noteM = sec.body.match(/\*\*Note:\*\*\s*([\s\S]*)/i);
+      var noteM = sec.body.match(/\*{0,2}Note:\*{0,2}\s*([\s\S]*)/i);
       if (noteM) note = noteM[1].trim();
       if (!moment && !script && !note) warnings.push('A "Worked example" section was found but nothing could be parsed from it.');
       out.workedExamples.push({ label: moment, script: script, note: note });
@@ -5356,11 +5402,11 @@ function parseCoachingDocument(rawText) {
         fields.push(field);
       }
       if (fields.length) out.deliverable = { required: true, fields: fields };
-      else warnings.push('A "Structured deliverable" section was found but no field rows could be parsed from its table.');
+      else warnings.push('A "Structured deliverable" section was found but no field rows could be parsed from its table (this table is likely to survive only from a raw-text paste, not a rendered document - fill this in by hand if so).');
     } else if (heading.indexOf('greeting') !== -1) {
-      var freshM = sec.body.match(/\*\*Fresh[^:]*:\*\*\s*([\s\S]*?)(?=\n\s*\n\s*\*\*Known name|$)/i);
+      var freshM = sec.body.match(/\*{0,2}Fresh[^:]*:\*{0,2}\s*([\s\S]*?)(?=\n\s*\n\s*\*{0,2}Known name|$)/i);
       if (freshM) out.greetingFresh = giStripQuotes(freshM[1]);
-      var knownM = sec.body.match(/\*\*Known name:\*\*\s*([\s\S]*)/i);
+      var knownM = sec.body.match(/\*{0,2}Known name:\*{0,2}\s*([\s\S]*)/i);
       if (knownM) out.greetingKnown = giStripQuotes(knownM[1]);
       if (!out.greetingFresh && !out.greetingKnown) warnings.push('A "Greeting" section was found but neither Fresh nor Known name could be parsed.');
     }
