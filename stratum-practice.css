@@ -5,6 +5,14 @@
    .sh-form-title/.sh-form-sub/.sh-save-btn from stratum-header.css
    and stratum-wip-profile.css (load both on this page too) rather
    than redeclaring them.
+
+   Sept 2026 fix: .sh-pl-word/.sh-pl-definition were hardcoding
+   'Newsreader', Georgia, serif, and several buttons/inputs were
+   hardcoding Arial, sans-serif - both predate (or were missed by)
+   the sitewide font sweep everything else in the dashboard already
+   went through. All of those now use var(--sh-font-sans) like
+   everywhere else, so this page actually matches the rest of the
+   site instead of drifting to its own fonts.
    ============================================================ */
 
 .sh-pl-progress {
@@ -61,7 +69,7 @@
   flex: 1;
   padding: 9px 12px;
   font-size: 13px;
-  font-family: Arial, sans-serif;
+  font-family: var(--sh-font-sans);
   background: #1E1E22;
   color: var(--sh-paper);
   border: 1px solid var(--sh-line);
@@ -77,7 +85,7 @@
   font-size: 12.5px;
   font-weight: 800;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: var(--sh-font-sans);
   white-space: nowrap;
 }
 .sh-pl-filter-wrap {
@@ -96,7 +104,7 @@
 .sh-pl-filter-select {
   padding: 7px 9px;
   font-size: 12.5px;
-  font-family: Arial, sans-serif;
+  font-family: var(--sh-font-sans);
   background: #1E1E22;
   color: var(--sh-paper);
   border: 1px solid var(--sh-line);
@@ -111,7 +119,7 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: var(--sh-font-sans);
   white-space: nowrap;
 }
 .sh-pl-clear-btn:hover { border-color: var(--sh-warm); color: var(--sh-warm); }
@@ -154,7 +162,7 @@
 .sh-pl-entry[open] > summary::before { transform: rotate(90deg); }
 .sh-pl-entry[open] > summary { border-bottom: 1px solid var(--sh-line); }
 .sh-pl-word {
-  font-family: 'Newsreader', Georgia, serif;
+  font-family: var(--sh-font-sans);
   font-size: 17px;
   font-weight: 600;
   color: var(--sh-paper);
@@ -186,7 +194,7 @@
   padding: 2px 9px;
 }
 .sh-pl-definition {
-  font-family: 'Newsreader', Georgia, serif;
+  font-family: var(--sh-font-sans);
   font-size: 15px;
   line-height: 1.6;
   color: var(--sh-paper);
@@ -231,7 +239,7 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: var(--sh-font-sans);
 }
 .sh-pl-practice-btn:hover { background: rgba(160, 124, 62, 0.12); }
 .sh-pl-practice-btn--done {
@@ -259,7 +267,7 @@
   border-radius: 999px;
   padding: 4px 12px;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: var(--sh-font-sans);
 }
 .sh-pl-crosslink-chip:hover { background: rgba(160, 124, 62, 0.12); }
 
@@ -279,7 +287,7 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: var(--sh-font-sans);
 }
 .sh-pl-pager-btn:hover:not(:disabled) { background: rgba(160, 124, 62, 0.12); }
 .sh-pl-pager-btn:disabled { opacity: 0.4; cursor: default; }
