@@ -10,15 +10,17 @@
 
    Fonts (Sept 2026 revision — sitewide sans-serif, per Ted's
    direction): every font on the system is now plain sans-serif
-   (Arial/Helvetica) with exactly one exception — the "Welcome,
-   {name}" headline, which uses Quicksand, a rounded sans-serif, as
-   its one deliberate accent. Newsreader (serif) and Dancing Script
-   (cursive) — both previously reserved accents (the WIP title and
-   the "For writers" tagline respectively) — are retired; "For
-   writers" is now the same sans stack as everything else. The
-   Newsreader import is left in place only because other, not-yet-
-   audited stylesheets (stratum-coach.css in particular) may still
-   reference it — remove once those are confirmed clear.
+   (Arial/Helvetica) with two deliberate accents — the "Welcome,
+   {name}" headline, which uses Quicksand, a rounded sans-serif; and
+   "For Writers", which stays in the same sans stack but is italicized
+   and colored in the warm gold accent (--sh-warm) used on card
+   titles elsewhere, rather than plain white. Newsreader (serif) and
+   Dancing Script (cursive) — both previously reserved accents (the
+   WIP title and an earlier styling of the "For writers" tagline) —
+   are retired. The Newsreader import is left in place only because
+   other, not-yet-audited stylesheets (stratum-coach.css in
+   particular) may still reference it — remove once those are
+   confirmed clear.
 
    Accent color is warm terracotta/gold (--sh-warm, #A07C3E).
 
@@ -101,10 +103,11 @@
 }
 .sh-wrap .sh-for-writers {
   font-family: var(--sh-font-sans);
-  font-weight: 400; /* was 900 — "nothing bolded", per Ted's latest request, overrides the earlier bold match */
+  font-weight: 400; /* "nothing bolded", per Ted's earlier request */
+  font-style: italic; /* Sept 2026: italicized to match "The Stratum Method", per Ted's request */
   letter-spacing: 0.5px; /* matched to .sh-brand-name */
-  color: #ffffff; /* explicit hex per Ted's request, distinct from the brand mark/border gold */
-  font-size: 16px; /* now matches .sh-brand-name exactly — supersedes the earlier "25% larger" request */
+  color: var(--sh-warm); /* Sept 2026: changed from a flat white to the warm gold/parchment accent color used on card titles elsewhere, per Ted's request */
+  font-size: 16px; /* matches .sh-brand-name exactly */
 }
 
 /* ---- Top row: logo mark + primary nav ----
@@ -134,7 +137,7 @@
 .sh-brand {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: 8px; /* Sept 2026: tightened slightly (was 10px) per Ted flagging the gap before "For Writers" as too wide - if it's still visibly wide after this, the extra space is likely coming from the text content itself in stratum-header.js (e.g. a literal double space or separate margin there), not this gap value, and I'd need that file to confirm/fix it definitively. */
 }
 .sh-brand-mark {
   width: 20px;
