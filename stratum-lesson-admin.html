@@ -906,11 +906,6 @@
             <label for="gRequiresCharacter" style="margin:0;">This program is about a specific character (runs once per character, not once per student)</label>
           </div>
           <span class="hint" style="display:block;margin-top:4px;">When on, the coaching page asks the student to pick a character from their profile before Layer 1 starts, and tracks progress separately per character &mdash; they can come back later and excavate a different character from scratch. Leave off for programs not about one specific character (World Building, Plot, etc.).</span>
-          <div class="toggle-row" style="margin-top:8px;">
-            <input type="checkbox" id="gRequiresConflictPair" />
-            <label for="gRequiresConflictPair" style="margin:0;">This program is about a conflict between two characters (runs once per conflict, not once per student or per character)</label>
-          </div>
-          <span class="hint" style="display:block;margin-top:4px;">When on, the coaching page asks the student to pick TWO characters from their profile (and optionally name the conflict) before Layer 1 starts. A student can create more than one conflict per program &mdash; e.g. three separate relationship conflicts in the same WIP &mdash; each tracked completely separately. Mutually exclusive with &ldquo;about a specific character&rdquo; above; checking one unchecks the other.</span>
         </div>
         </details>
         <details class="card" data-group="open" open>
@@ -1013,9 +1008,9 @@
         </div>
         </details>
         <details class="card" data-group="auto">
-          <summary class="card-title">Reflection framework &mdash; areas</summary>
+          <summary class="card-title" id="gAreasCardTitle">Reflection framework &mdash; areas</summary>
           <div class="card-body">
-          <span class="hint" style="display:block;margin-bottom:12px;">Areas run in strict order &mdash; the coach will not move to the next area until the current one's Exit signal is reached. Each area carries its own technique guidance and calibration examples, not one shared pool for the whole layer.</span>
+          <span class="hint" id="gAreasCardIntroHint" style="display:block;margin-bottom:12px;">Areas run in strict order &mdash; the coach will not move to the next area until the current one's Exit signal is reached. Each area carries its own technique guidance and calibration examples, not one shared pool for the whole layer.</span>
           <div id="gAreasList"></div>
           <button class="add-btn" id="gAddAreaBtn" type="button">+ Add area</button>
         </div>
@@ -1074,6 +1069,13 @@
           <span class="hint" style="display:block;margin-bottom:12px;">At least one scripted exchange showing the coach handling a real moment in this layer well &mdash; ideally the hardest or most failure-prone moment (e.g. the first surface-level answer that needs a depth push). Shown to the coach only, never to the student.</span>
           <div id="gWorkedExamplesList"></div>
           <button class="add-btn" id="gAddWorkedExampleBtn" type="button">+ Add worked example</button>
+        </div>
+        </details>
+        <details class="card" data-group="plain" id="gClosingGuidanceCard">
+          <summary class="card-title">Closing guidance</summary>
+          <div class="card-body">
+          <span class="hint" style="display:block;margin-bottom:10px;">General/Writing tracks only &mdash; a fitting small commitment or closing direction for this specific topic (Stage 4 of the recurring Session Loop). Private, coach-facing only, never shown to the student directly. Excavation layers close via the Deliverable Card fields above instead, so this card is hidden for that track.</span>
+          <textarea id="gClosingGuidanceText" rows="4" placeholder="e.g. A fitting small commitment: the next time a line gets softened mid-draft, pause and name who's being imagined before deciding whether to keep the change."></textarea>
         </div>
         </details>
         <details class="card" data-group="plain">
@@ -4799,6 +4801,39 @@ function gRenumberBlockList(listEl) {
   });
 }
 
+// Sept 2026 (General/Writing tracks): the Areas card's language was
+// written entirely for Excavation's gated-sequence model ("Exit
+// signal" implying a required checkpoint before advancing), which
+// reads wrong for a recurring track's diagnosable pattern — even
+// though the underlying data shape and runtime behavior (see
+// buildRecurringSystemPrompt() in stratum-coach.js, which already
+// treats these as loose exploration topics, not a gated sequence)
+// already fit General/Writing content correctly. This is a labeling
+// fix only — same fields, same storage, same keys (whatToSurface/
+// technique/exitSignal/calibrationExamples) regardless of track, so
+// nothing about collectLayerConfig()/fillLayerForm() needed to
+// change, just what the admin calls each field while typing into it.
+var GI_AREA_LABELS = {
+  excavation: {
+    cardTitle: 'Reflection framework \u2014 areas',
+    introHint: 'Areas run in strict order \u2014 the coach will not move to the next area until the current one\u2019s Exit signal is reached. Each area carries its own technique guidance and calibration examples, not one shared pool for the whole layer.',
+    what: ['What to surface', 'The content goal \u2014 what this area genuinely needs to draw out.', 'e.g. Two or three specific, observable, repeated behaviors the character actually does.'],
+    technique: ['Technique for this area', 'How hard to press, specific pitfalls to watch for, pacing \u2014 scoped to this area only.', 'e.g. If they offer a trait label instead of a behavior, ask what that would look like on camera. Don\u2019t suggest behaviors yourself.'],
+    exit: ['Exit signal', 'The specific, concrete thing that tells the coach this area is genuinely complete \u2014 not just touched on.', 'e.g. The behavior has passed all four criteria and the user has confirmed it.']
+  },
+  general: {
+    cardTitle: 'Recognition & technique \u2014 topics',
+    introHint: 'For a recurring track, each block below is a diagnosable pattern the coach can recognize and work with \u2014 explored in whatever order the conversation naturally takes, not a gated sequence. \u201cWhat a genuine shift looks like\u201d is optional context for the coach, not a required checkpoint before it can close the session.',
+    what: ['Recognition signals', 'What the writer says or does that signals this pattern is active.', 'e.g. Says "it\u2019s not ready" about work that\u2019s never been shown to anyone at any stage.'],
+    technique: ['Core technique', 'The grounded move for this pattern \u2014 what the coach actually says or asks to shift it.', 'e.g. Ask which draft the inner critic thinks it\u2019s judging.'],
+    exit: ['What a genuine shift looks like', 'How the coach can tell the reframe actually landed versus being politely agreed with. Optional for a recurring topic.', 'e.g. The writer names the distinction in their own words, not just repeats it back.']
+  }
+};
+GI_AREA_LABELS.writing = GI_AREA_LABELS.general;
+function gAreaLabelsForCurrentTrack() {
+  return GI_AREA_LABELS[gTrackSelect.value] || GI_AREA_LABELS.excavation;
+}
+
 // Areas — Sept 2026 restructure: each area is now self-contained
 // (what to surface, technique, exit signal, and its own calibration
 // examples) instead of a bare title+instructions with technique and
@@ -4808,6 +4843,7 @@ function gRenumberBlockList(listEl) {
 // buildRecurringSystemPrompt() in stratum-coach.js).
 function gAddAreaBlock(area) {
   area = area || {};
+  var labels = gAreaLabelsForCurrentTrack();
   gAreaCounter++;
   var id = 'garea_' + gAreaCounter;
   var block = document.createElement('div');
@@ -4856,9 +4892,9 @@ function gAddAreaBlock(area) {
     block.appendChild(wrap);
     return ta;
   }
-  fieldRow('What to surface', 'The content goal \u2014 what this area genuinely needs to draw out.', 'area-what', 3, 'e.g. Two or three specific, observable, repeated behaviors the character actually does.', area.whatToSurface);
-  fieldRow('Technique for this area', 'How hard to press, specific pitfalls to watch for, pacing \u2014 scoped to this area only.', 'area-technique', 4, 'e.g. If they offer a trait label instead of a behavior, ask what that would look like on camera. Don\u2019t suggest behaviors yourself.', area.technique);
-  fieldRow('Exit signal', 'The specific, concrete thing that tells the coach this area is genuinely complete \u2014 not just touched on.', 'area-exit', 2, 'e.g. The behavior has passed all four criteria and the user has confirmed it.', area.exitSignal);
+  fieldRow(labels.what[0], labels.what[1], 'area-what', 3, labels.what[2], area.whatToSurface);
+  fieldRow(labels.technique[0], labels.technique[1], 'area-technique', 4, labels.technique[2], area.technique);
+  fieldRow(labels.exit[0], labels.exit[1], 'area-exit', 2, labels.exit[2], area.exitSignal);
 
   var calLabel = document.createElement('div');
   calLabel.style.cssText = 'font-size:11px;font-weight:700;color:#3B2F24;margin-top:14px;margin-bottom:4px;';
@@ -4971,25 +5007,11 @@ gHasCoachingIntroCb.addEventListener('change', function () {
 gHasDeliverableCb.addEventListener('change', function () {
   gDeliverableFields.className = 'resource-fields' + (gHasDeliverableCb.checked ? '' : ' disabled');
 });
-// Sept 2026 (two-character conflicts): an excavation is scoped to a
-// student, one character, or one conflict pair - never more than one
-// of these at once, since lessonKey()/the completions/deliverable
-// tables in worker.js all assume a single scoping id per layer save.
-// The admin UI enforces that as a simple "checking one unchecks the
-// other" pair rather than a radio group, so the existing single
-// checkbox's markup/id didn't need to change.
-document.getElementById('gRequiresCharacter').addEventListener('change', function () {
-  if (this.checked) document.getElementById('gRequiresConflictPair').checked = false;
-});
-document.getElementById('gRequiresConflictPair').addEventListener('change', function () {
-  if (this.checked) document.getElementById('gRequiresCharacter').checked = false;
-});
 function clearExcavationForm() {
   document.getElementById('gExcavationTitle').value = '';
   document.getElementById('gExcavationSlug').value = '';
   document.getElementById('gExcavationActive').checked = true;
   document.getElementById('gRequiresCharacter').checked = false;
-  document.getElementById('gRequiresConflictPair').checked = false;
   document.getElementById('gMediaId').value = '';
   document.getElementById('gTranscript').value = '';
   gHasCoachingIntroCb.checked = false;
@@ -5015,7 +5037,6 @@ function fillExcavationForm(ex) {
   gSlugManuallyEdited = true; // an existing track's slug is never auto-derived again
   document.getElementById('gExcavationActive').checked = !(ex.isActive === 0 || ex.isActive === false);
   document.getElementById('gRequiresCharacter').checked = !!ex.requiresCharacter;
-  document.getElementById('gRequiresConflictPair').checked = !!ex.requiresConflictPair;
   document.getElementById('gMediaId').value = ex.videoMediaId || '';
   document.getElementById('gTranscript').value = ex.transcript || '';
   if (ex.coachingIntroTitle || ex.coachingIntroText) {
@@ -5046,8 +5067,7 @@ function collectExcavationPayload() {
     } : { title: '', text: '' },
     closingMessage: document.getElementById('gClosingMessage').value.trim(),
     isActive: document.getElementById('gExcavationActive').checked,
-    requiresCharacter: document.getElementById('gRequiresCharacter').checked,
-    requiresConflictPair: document.getElementById('gRequiresConflictPair').checked
+    requiresCharacter: document.getElementById('gRequiresCharacter').checked
   };
 }
 // ---- Layers list (below the Track's own general fields) ----
@@ -5096,6 +5116,10 @@ function gUpdateLayerEditorForTrack() {
   var showDeliverable = gTrackSelect.value === 'excavation';
   document.getElementById('gDeliverableCard').style.display = showDeliverable ? '' : 'none';
   document.getElementById('gDeliverableCardCard').style.display = showDeliverable ? '' : 'none';
+  document.getElementById('gClosingGuidanceCard').style.display = showDeliverable ? 'none' : '';
+  var labels = gAreaLabelsForCurrentTrack();
+  document.getElementById('gAreasCardTitle').textContent = labels.cardTitle;
+  document.getElementById('gAreasCardIntroHint').textContent = labels.introHint;
 }
 document.getElementById('gAddLayerBtn').addEventListener('click', function () {
   if (!gCurrentExcavationSlug) { alert('Save the track first.'); return; }
@@ -5139,6 +5163,7 @@ function clearLayerForm() {
   document.getElementById('gNextStepTeaser').value = '';
   document.getElementById('gGreetingFresh').value = '';
   document.getElementById('gGreetingKnown').value = '';
+  document.getElementById('gClosingGuidanceText').value = '';
   updateGuidedJsonPreview();
 }
 function fillLayerForm(config, layerNumber) {
@@ -5199,6 +5224,7 @@ function fillLayerForm(config, layerNumber) {
   var g = config.greeting || {};
   document.getElementById('gGreetingFresh').value = g.fresh || '';
   document.getElementById('gGreetingKnown').value = g.knownTemplate || '';
+  document.getElementById('gClosingGuidanceText').value = config.closingGuidance || '';
   updateGuidedJsonPreview();
 }
 function collectLayerConfig() {
@@ -5249,7 +5275,8 @@ function collectLayerConfig() {
     greeting: {
       fresh: document.getElementById('gGreetingFresh').value.trim(),
       knownTemplate: document.getElementById('gGreetingKnown').value.trim()
-    }
+    },
+    closingGuidance: document.getElementById('gClosingGuidanceText').value.trim()
   };
 }
 // ===== Import from document (Sept 2026) =====
