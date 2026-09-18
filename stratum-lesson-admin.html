@@ -635,8 +635,9 @@
         <div class="toolbar">
           <span style="font-size:12px;font-weight:700;color:#3B2F24;">Type:</span>
           <select id="cpTrackSelect">
-            <option value="excavation">Excavation</option>
+            <option value="excavation">Story &amp; Character</option>
             <option value="general">General Coaching</option>
+            <option value="writing">Writing</option>
           </select>
           <div class="spacer"></div>
           <span class="save-status" id="cpSaveStatus"></span>
@@ -3925,7 +3926,7 @@ function addGlobalInstructionBlock(item, isNew) {
   block.className = 'tst-block';
   if (item.isActive === false) block.style.opacity = '0.65';
   var summary = document.createElement('summary');
-  var GI_TRACK_LABELS = { excavation: 'Excavation', general: 'General Coaching', writing: 'Writing' };
+  var GI_TRACK_LABELS = { excavation: 'Story & Character', general: 'General Coaching', writing: 'Writing' };
   function giSummaryText() {
     var base = titleInput.value.trim() || (isNew ? 'New instruction' : '(untitled)');
     if (matchFieldSelect.value && matchValueSelect.value) {
@@ -4069,7 +4070,7 @@ function addGlobalInstructionBlock(item, isNew) {
   // An empty tracks array (or all three checked) both mean "applies to
   // every track" - a brand-new instruction defaults to all three
   // checked, matching that same unrestricted default.
-  [['excavation', 'Excavation'], ['general', 'General Coaching'], ['writing', 'Writing']].forEach(function (pair) {
+  [['excavation', 'Story & Character'], ['general', 'General Coaching'], ['writing', 'Writing']].forEach(function (pair) {
     var wrap = document.createElement('label');
     wrap.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;';
     var cb = document.createElement('input');

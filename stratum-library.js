@@ -66,6 +66,7 @@
       librarianError: 'Could not reach the Librarian \u2014 try again in a moment.',
       librarianResultsFor: 'Librarian results for \u201c{q}\u201d',
       keyConcept: 'Key Concept', coreTakeaway: 'Core Takeaway',
+      perPage: 'Per page', pageOf: 'Page {page} of {total}', prevPage: '\u2039 Prev', nextPage: 'Next \u203a',
       loginToView: 'Please log in to view the Library.', logIn: 'Log in',
       noMembership: 'Your account doesn\u2019t have an active Stratum Method membership yet.', goToMyAccount: 'Go to My Account'
     },
@@ -82,6 +83,7 @@
       librarianError: 'No se pudo contactar al bibliotecario \u2014 intenta de nuevo en un momento.',
       librarianResultsFor: 'Resultados del bibliotecario para \u201c{q}\u201d',
       keyConcept: 'Concepto clave', coreTakeaway: 'Idea principal',
+      perPage: 'Por p\u00e1gina', pageOf: 'P\u00e1gina {page} de {total}', prevPage: '\u2039 Anterior', nextPage: 'Siguiente \u203a',
       loginToView: 'Inicia sesi\u00f3n para ver la Biblioteca.', logIn: 'Iniciar sesi\u00f3n',
       noMembership: 'Tu cuenta a\u00fan no tiene una membres\u00eda activa de Stratum Method.', goToMyAccount: 'Ir a mi cuenta'
     }
@@ -119,7 +121,9 @@
   var resourcesCache = [];
   var categoryFilterVal = '';
   var topicFilterVal = '';
-  var listEl, categorySelect, topicSelect, countEl;
+  var perPage = 25;
+  var currentPage = 1;
+  var listEl, categorySelect, topicSelect, perPageSelect, pagerEl, countEl;
   var searchInput, searchBtn, searchStatusEl, librarianResultsEl, searchClearBtnEl;
 
   function el(tag, className, text) {
@@ -270,6 +274,7 @@
       .then(function (r) { return r.json(); })
       .then(function (d) {
         resourcesCache = (d && Array.isArray(d.resources)) ? d.resources : [];
+        currentPage = 1;
         refreshFilters();
         renderList();
       })
@@ -329,18 +334,55 @@
       return true;
     });
 
+    var totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    var startIdx = (currentPage - 1) * perPage;
+    var pageItems = filtered.slice(startIdx, startIdx + perPage);
+
     listEl.innerHTML = '';
     countEl.textContent = resourcesCache.length ? format(t('resourcesOf'), { shown: filtered.length, total: resourcesCache.length }) : '';
 
     if (!filtered.length) {
       var emptyMsg = resourcesCache.length ? t('noResourcesMatch') : t('noResourcesYet');
       mount(listEl, el('div', 'sh-pl-empty', emptyMsg));
+      renderPager(0, 1);
       return;
     }
 
-    filtered.forEach(function (resource) {
+    pageItems.forEach(function (resource) {
       mount(listEl, buildRow(resource, function () { openResource(resource); }));
     });
+    renderPager(totalPages, currentPage);
+  }
+
+  // Sept 2026: pagination — a session/resource list can now run past
+  // one screenful, so the plain-list view (not the Librarian search
+  // results, which are already relevance-capped server-side to 12)
+  // pages at a size the student picks (25/50/100, see perPageSelect
+  // below). Hidden entirely when everything fits on one page.
+  function renderPager(totalPages, page) {
+    pagerEl.innerHTML = '';
+    if (totalPages <= 1) return;
+    var prevBtn = el('button', 'sh-pl-pager-btn', t('prevPage'));
+    prevBtn.type = 'button';
+    prevBtn.disabled = page <= 1;
+    prevBtn.addEventListener('click', function () {
+      currentPage = page - 1;
+      renderList();
+      listEl.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
+    mount(pagerEl, prevBtn);
+    mount(pagerEl, el('span', 'sh-pl-pager-info', format(t('pageOf'), { page: page, total: totalPages })));
+    var nextBtn = el('button', 'sh-pl-pager-btn', t('nextPage'));
+    nextBtn.type = 'button';
+    nextBtn.disabled = page >= totalPages;
+    nextBtn.addEventListener('click', function () {
+      currentPage = page + 1;
+      renderList();
+      listEl.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
+    mount(pagerEl, nextBtn);
   }
 
   // ----------------------------------------------------------
@@ -478,12 +520,23 @@
     }
     var catFilter = buildFilterSelect(t('category'));
     categorySelect = catFilter.select;
-    categorySelect.addEventListener('change', function () { categoryFilterVal = categorySelect.value; renderList(); });
+    categorySelect.addEventListener('change', function () { categoryFilterVal = categorySelect.value; currentPage = 1; renderList(); });
     mount(toolbar, catFilter.wrap);
     var topicFilter = buildFilterSelect(t('excavationTopic'));
     topicSelect = topicFilter.select;
-    topicSelect.addEventListener('change', function () { topicFilterVal = topicSelect.value; renderList(); });
+    topicSelect.addEventListener('change', function () { topicFilterVal = topicSelect.value; currentPage = 1; renderList(); });
     mount(toolbar, topicFilter.wrap);
+    var perPageFilter = buildFilterSelect(t('perPage'));
+    perPageSelect = perPageFilter.select;
+    ['25', '50', '100'].forEach(function (v) {
+      var o = document.createElement('option');
+      o.value = v;
+      o.textContent = v;
+      if (v === String(perPage)) o.selected = true;
+      perPageSelect.appendChild(o);
+    });
+    perPageSelect.addEventListener('change', function () { perPage = parseInt(perPageSelect.value, 10) || 25; currentPage = 1; renderList(); });
+    mount(toolbar, perPageFilter.wrap);
     mount(body, toolbar);
 
     countEl = el('p', 'sh-pl-progress');
@@ -495,6 +548,9 @@
 
     listEl = el('div', 'sh-lib-list');
     mount(body, listEl);
+
+    pagerEl = el('div', 'sh-pl-pager');
+    mount(body, pagerEl);
 
     mount(wrap, body);
     mount(container, wrap);

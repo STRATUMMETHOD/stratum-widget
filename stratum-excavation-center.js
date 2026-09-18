@@ -66,9 +66,9 @@
 
   var STRINGS = {
     en: {
-      colExcavation: 'Excavation Coaching',
+      colExcavation: 'Story & Character Coaching',
       colGeneral: 'General Coaching',
-      colWriting: 'Writer\u2019s Coaching',
+      colWriting: 'Writing Coaching',
       workInProgress: 'Work in progress:',
       untitledWip: 'Untitled WIP',
       loading: 'Loading\u2026',
@@ -87,7 +87,7 @@
       showLess: 'Show Less'
     },
     es: {
-      colExcavation: 'Coaching de excavación',
+      colExcavation: 'Coaching de historia y personaje',
       colGeneral: 'Coaching general',
       colWriting: 'Coaching de escritura',
       workInProgress: 'Obra en progreso:',
@@ -271,7 +271,14 @@
     var done = session.layers.filter(function (l) {
       return completedLessonKeys.indexOf(session.slug + ':' + l.layerNumber + suffix) !== -1;
     }).length;
-    if (done === 0) return { key: 'not-started', label: t('notStarted') };
+    // Sept 2026: was t('notStarted') here — since every session can be
+    // revisited/reused rather than started once and finished, "Not
+    // Started" no longer describes anything meaningful (there's no
+    // real starting line the way an Excavation might have implied).
+    // An empty label here means buildRow() below simply doesn't render
+    // a badge for this row, rather than showing a status that's no
+    // longer accurate.
+    if (done === 0) return { key: 'not-started', label: '' };
     if (done === total) return { key: 'completed', label: t('completed') };
     return { key: 'in-progress', label: t('inProgress') };
   }
@@ -290,7 +297,13 @@
     link.href = '/coach/' + session.slug + '/';
     link.textContent = titleOverride || session.title;
     mount(row, link);
-    mount(row, el('span', 'sh-ec-badge sh-ec-badge--' + statusKey, statusLabel));
+    // Sept 2026: no badge at all for an empty/blank status label, per
+    // the removal of "Not Started" above — an empty pill still reads
+    // as a status being reported, which is exactly what a reusable
+    // session shouldn't imply.
+    if (statusLabel) {
+      mount(row, el('span', 'sh-ec-badge sh-ec-badge--' + statusKey, statusLabel));
+    }
     return row;
   }
 
@@ -371,7 +384,6 @@
           noConflictLink.href = '/coach/' + session.slug + '/';
           noConflictLink.textContent = session.title;
           mount(noConflictRow, noConflictLink);
-          mount(noConflictRow, el('span', 'sh-ec-badge sh-ec-badge--not-started', t('notStarted')));
           mount(listEl, noConflictRow);
           rowEls.push(noConflictRow);
           return;
@@ -395,9 +407,13 @@
         fetchCheckinCount(studentId, session.slug, function (count, lastAt) {
           var badge = row.querySelector('.sh-ec-badge');
           if (!badge) return;
-          badge.textContent = count
-            ? (format(t(count === 1 ? 'checkinCountSingular' : 'checkinCountPlural'), { n: count }) + (lastAt ? ' \u00b7 ' + formatRelativeDate(lastAt) : ''))
-            : t('noCheckinsYet');
+          // Sept 2026: was t('noCheckinsYet') on a falsy count — same
+          // reasoning as computeStatus()'s not-started removal above,
+          // a reusable recurring session has no meaningful "hasn't
+          // started" state either. The placeholder badge just gets
+          // removed outright rather than relabeled.
+          if (!count) { badge.remove(); return; }
+          badge.textContent = format(t(count === 1 ? 'checkinCountSingular' : 'checkinCountPlural'), { n: count }) + (lastAt ? ' \u00b7 ' + formatRelativeDate(lastAt) : '');
         });
         mount(listEl, row);
         rowEls.push(row);
