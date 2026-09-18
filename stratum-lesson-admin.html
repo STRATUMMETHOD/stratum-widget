@@ -5349,6 +5349,13 @@ var TOP_HEADING_FALLBACKS = [
   /^Greeting\s*$/i
 ];
 var AREA_HEADING_FALLBACKS = [/^Area\s*\d+\b/i];
+var GENERAL_HEADING_FALLBACKS = [
+  /^Recognition Signals\s*$/i,
+  /^The Core Technique\s*$/i,
+  /^Calibration\s*$/i,
+  /^Worked Example\s*$/i,
+  /^Closing the Session\b/i
+];
 function parseCoachingDocument(rawText) {
   var warnings = [];
   var out = {
@@ -5463,28 +5470,122 @@ function parseCoachingDocument(rawText) {
   if (!out.areas.length) warnings.push('No areas were parsed - the Areas list below has been left empty.');
   return { config: out, warnings: warnings };
 }
-function applyParsedConfig(parsed) {
+// ===== Import from document — General/Writing tracks (Sept 2026) =====
+// Parallel to parseCoachingDocument()/applyParsedConfig() above, but for
+// the "pattern module" markdown shape used by General Coaching content
+// (Mindset, Motivation, Confidence, etc.) — # Title, ## Recognition
+// Signals, ## The Core Technique, ## Calibration (one example), ##
+// Worked Example (singular, no "What moment does this show" line), ##
+// Closing the Session. Genuinely different document shape from
+// Excavation's Areas/deliverable/greeting format above, not a variant
+// of it — no gated Areas, no deliverable, no per-layer greeting (the
+// Session Loop greeting lives once at the track level, not per pattern
+// module), and a new destination field (Closing Guidance) that
+// Excavation layers don't have at all. Reuses splitByHeading() and
+// stripQuotes() from the parser above rather than redefining them.
+function parseGeneralCoachingDocument(rawText) {
+  var warnings = [];
+  var out = {
+    label: '', scopeNote: '',
+    recognitionSignals: '', coreTechnique: '',
+    calibration: null, workedExample: null, closingGuidance: ''
+  };
+
+  var h1 = rawText.match(/^#\s+([^\n]+)/m);
+  if (h1) {
+    var dashSplit = h1[1].split(/\s+[\u2014-]\s+Coaching Content/i);
+    if (dashSplit.length) out.label = dashSplit[0].trim();
+  }
+  if (!out.label) warnings.push('Could not determine a Layer title from the document at all - fill it in by hand.');
+  out.scopeNote = out.label;
+
+  var top = splitByHeading(rawText, 2, GENERAL_HEADING_FALLBACKS);
+  if (!top.length) warnings.push('No section headings found at all, even checking for plain text headings without "##" - this may not be a recognized document format.');
+
+  top.forEach(function (sec) {
+    var heading = sec.title.toLowerCase();
+    if (heading.indexOf('recognition signals') !== -1) {
+      var lines = sec.body.split('\n')
+        .map(function (l) { return l.trim(); })
+        .filter(function (l) { return l.indexOf('-') === 0; })
+        .map(function (l) { return l.replace(/^-\s*/, '').trim(); });
+      out.recognitionSignals = lines.join('\n');
+      if (!lines.length) warnings.push('A "Recognition Signals" section was found but no bullet lines could be parsed from it.');
+    } else if (heading.indexOf('core technique') !== -1) {
+      out.coreTechnique = sec.body.trim();
+      if (!out.coreTechnique) warnings.push('A "Core Technique" section was found but appears empty.');
+    } else if (heading.indexOf('calibration') !== -1) {
+      var calM = sec.body.match(/-\s*\*\*Title:\*\*\s*([^\n]+)\n\s*\*\*Weak[^:]*:\*\*\s*([^\n]+)\n\s*\*\*Strong[^:]*:\*\*\s*([^\n]+)\n\s*\*\*Coaching note:\*\*\s*([\s\S]*?)(?=\n\s*\n---|$)/i);
+      if (calM) {
+        out.calibration = { title: calM[1].trim(), weak: giStripQuotes(calM[2]), strong: giStripQuotes(calM[3]), note: calM[4].trim() };
+      } else {
+        warnings.push('A "Calibration" section was found but could not be parsed - check formatting.');
+      }
+    } else if (heading.indexOf('worked example') !== -1) {
+      var noteM = sec.body.match(/\*\*Note:\*\*\s*([\s\S]*)/i);
+      var note = noteM ? noteM[1].trim() : '';
+      var scriptRaw = noteM ? sec.body.slice(0, noteM.index) : sec.body;
+      var script = scriptRaw.split('\n')
+        .map(function (l) { return l.replace(/^>\s?/, ''); })
+        .join('\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+      if (!script && !note) warnings.push('A "Worked Example" section was found but nothing could be parsed from it.');
+      out.workedExample = { label: out.label, script: script, note: note };
+    } else if (heading.indexOf('closing the session') !== -1) {
+      out.closingGuidance = sec.body.trim();
+      if (!out.closingGuidance) warnings.push('A "Closing the Session" section was found but appears empty.');
+    }
+  });
+
+  if (!out.recognitionSignals) warnings.push('No Recognition Signals were parsed - check the section heading matches "Recognition Signals".');
+  if (!out.coreTechnique) warnings.push('No Core Technique was parsed - check the section heading matches "The Core Technique".');
+  if (!out.calibration) warnings.push('No calibration example was parsed.');
+  if (!out.workedExample) warnings.push('No worked example was parsed.');
+  if (!out.closingGuidance) warnings.push('No closing guidance was parsed - check the section heading matches "Closing the Session".');
+
+  return { config: out, warnings: warnings };
+}
+function applyParsedGeneralConfig(parsed) {
   if (parsed.label) document.getElementById('gLayerLabel').value = parsed.label;
   if (parsed.scopeNote) document.getElementById('gScopeNote').value = parsed.scopeNote;
-  if (parsed.nextLessonLabel) document.getElementById('gNextLessonLabel').value = parsed.nextLessonLabel;
   gAreasList.innerHTML = '';
-  parsed.areas.forEach(function (a) { gAddAreaBlock(a); });
+  gAddAreaBlock({
+    title: parsed.label,
+    whatToSurface: parsed.recognitionSignals,
+    technique: parsed.coreTechnique,
+    exitSignal: '',
+    calibrationExamples: parsed.calibration ? [parsed.calibration] : []
+  });
   gWorkedExamplesList.innerHTML = '';
-  parsed.workedExamples.forEach(function (w) { gAddWorkedExampleBlock(w); });
-  gDeliverableEditor.clear();
-  if (parsed.deliverable && parsed.deliverable.required) {
-    gHasDeliverableCb.checked = true;
-    gDeliverableFields.className = 'resource-fields';
-    parsed.deliverable.fields.forEach(function (f) { gDeliverableEditor.addFieldBlock(f); });
-  }
-  if (parsed.greetingFresh) document.getElementById('gGreetingFresh').value = parsed.greetingFresh;
-  if (parsed.greetingKnown) document.getElementById('gGreetingKnown').value = parsed.greetingKnown;
+  if (parsed.workedExample) gAddWorkedExampleBlock(parsed.workedExample);
+  document.getElementById('gClosingGuidanceText').value = parsed.closingGuidance || '';
   updateGuidedJsonPreview();
 }
 document.getElementById('gImportParseBtn').addEventListener('click', function () {
   var text = document.getElementById('gImportText').value;
   var statusEl = document.getElementById('gImportStatus');
   if (!text.trim()) { statusEl.textContent = 'Paste a document first.'; statusEl.style.color = '#b3261e'; return; }
+  // Sept 2026: track-aware - Excavation and General/Writing use
+  // genuinely different document shapes (see the parser comment
+  // above), so the button branches on the currently selected track
+  // rather than guessing from the pasted text's shape.
+  if (gTrackSelect.value !== 'excavation') {
+    var gResult = parseGeneralCoachingDocument(text);
+    applyParsedGeneralConfig(gResult.config);
+    var gSummary = 'Filled in: Recognition & Technique, ' +
+      (gResult.config.calibration ? '1 calibration example, ' : 'no calibration example, ') +
+      (gResult.config.workedExample ? '1 worked example, ' : 'no worked example, ') +
+      (gResult.config.closingGuidance ? 'closing guidance.' : 'no closing guidance.');
+    if (gResult.warnings.length) {
+      statusEl.innerHTML = gSummary + '<br><strong style="color:#b3261e;">' + gResult.warnings.length + ' warning' + (gResult.warnings.length === 1 ? '' : 's') + ':</strong><br>' + gResult.warnings.map(function (w) { return '\u2022 ' + w.replace(/</g, '&lt;'); }).join('<br>');
+      statusEl.style.color = '#3B2F24';
+    } else {
+      statusEl.textContent = gSummary + ' Review below, then Save Layer when ready.';
+      statusEl.style.color = '#2e7d32';
+    }
+    return;
+  }
   var result = parseCoachingDocument(text);
   applyParsedConfig(result.config);
   var summary = 'Filled in: ' + result.config.areas.length + ' area' + (result.config.areas.length === 1 ? '' : 's') +
