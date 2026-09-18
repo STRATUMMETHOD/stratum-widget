@@ -59,12 +59,12 @@
       allCategories: 'All categories', allTopics: 'All topics',
       noResourcesMatch: 'No resources match these filters.', noResourcesYet: 'No resources yet.',
       loading: 'Loading\u2026', read: 'Read', watch: 'Watch', viewPdf: 'View PDF',
-      resourcesOf: function (shown, total) { return shown + ' of ' + total + ' resources'; },
+      resourcesOf: '{shown} of {total} resources',
       askLibrarian: 'Ask the Librarian', searchPlaceholder: 'Describe what you\u2019re looking for\u2026',
       searching: 'Searching\u2026', clearSearch: '\u2715 Clear search',
       librarianNoMatches: 'The Librarian didn\u2019t find a strong match for that \u2014 try describing it differently, or browse below.',
       librarianError: 'Could not reach the Librarian \u2014 try again in a moment.',
-      librarianResultsFor: function (q) { return 'Librarian results for \u201c' + q + '\u201d'; },
+      librarianResultsFor: 'Librarian results for \u201c{q}\u201d',
       keyConcept: 'Key Concept', coreTakeaway: 'Core Takeaway',
       loginToView: 'Please log in to view the Library.', logIn: 'Log in',
       noMembership: 'Your account doesn\u2019t have an active Stratum Method membership yet.', goToMyAccount: 'Go to My Account'
@@ -75,18 +75,40 @@
       allCategories: 'Todas las categor\u00edas', allTopics: 'Todos los temas',
       noResourcesMatch: 'Ning\u00fan recurso coincide con estos filtros.', noResourcesYet: 'A\u00fan no hay recursos.',
       loading: 'Cargando\u2026', read: 'Leer', watch: 'Ver', viewPdf: 'Ver PDF',
-      resourcesOf: function (shown, total) { return shown + ' de ' + total + ' recursos'; },
+      resourcesOf: '{shown} de {total} recursos',
       askLibrarian: 'Preguntar al bibliotecario', searchPlaceholder: 'Describe lo que buscas\u2026',
       searching: 'Buscando\u2026', clearSearch: '\u2715 Borrar b\u00fasqueda',
       librarianNoMatches: 'El bibliotecario no encontr\u00f3 una coincidencia clara \u2014 intenta describirlo de otra forma, o explora la lista de abajo.',
       librarianError: 'No se pudo contactar al bibliotecario \u2014 intenta de nuevo en un momento.',
-      librarianResultsFor: function (q) { return 'Resultados del bibliotecario para \u201c' + q + '\u201d'; },
+      librarianResultsFor: 'Resultados del bibliotecario para \u201c{q}\u201d',
       keyConcept: 'Concepto clave', coreTakeaway: 'Idea principal',
       loginToView: 'Inicia sesi\u00f3n para ver la Biblioteca.', logIn: 'Iniciar sesi\u00f3n',
       noMembership: 'Tu cuenta a\u00fan no tiene una membres\u00eda activa de Stratum Method.', goToMyAccount: 'Ir a mi cuenta'
     }
   };
-  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key]; }
+  var DB_STRINGS = {};
+  function loadUiStrings() {
+    return fetch(PROXY_URL + '/ui-strings?lang=' + encodeURIComponent(LANG))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { DB_STRINGS = (d && d.strings) || {}; })
+      .catch(function () { DB_STRINGS = {}; });
+  }
+  function format(str, vars) {
+    return str.replace(/\{(\w+)\}/g, function (m, k) { return vars[k] != null ? vars[k] : m; });
+  }
+  // Sept 2026: this page's own chrome (labels, buttons, empty states -
+  // not the resource/search DATA, which the Worker already lazy-fills)
+  // now checks the same DB-backed ui_strings table the six dashboard
+  // files use, under the libraryPage.* keys - a Urdu (or any future
+  // language) override there wins; otherwise falls back to the
+  // hardcoded en/es tables below exactly as before. loadUiStrings()
+  // must resolve before buildPage() runs so the very first paint is
+  // already in the right language, not a flash of English.
+  function t(key) {
+    var dbVal = DB_STRINGS['libraryPage.' + key];
+    if (dbVal != null) return dbVal;
+    return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key];
+  }
 
   // Same fixed base path the admin panel's own PDF-filename preview
   // assumes (see stratum-lesson-admin.html's updatePdfPreview()) —
@@ -291,7 +313,7 @@
     var textWrap = el('div', 'sh-lib-text');
     mount(textWrap, el('div', 'sh-lib-title', resource.title));
     var meta = el('div', 'sh-lib-meta');
-    mount(meta, el('span', 'sh-lib-tag', resource.category));
+    if (resource.category) mount(meta, el('span', 'sh-lib-tag', resource.category));
     if (resource.topic) mount(meta, el('span', 'sh-lib-tag sh-lib-tag--topic', resource.topic));
     mount(textWrap, meta);
     mount(row, textWrap);
@@ -308,7 +330,7 @@
     });
 
     listEl.innerHTML = '';
-    countEl.textContent = resourcesCache.length ? t('resourcesOf')(filtered.length, resourcesCache.length) : '';
+    countEl.textContent = resourcesCache.length ? format(t('resourcesOf'), { shown: filtered.length, total: resourcesCache.length }) : '';
 
     if (!filtered.length) {
       var emptyMsg = resourcesCache.length ? t('noResourcesMatch') : t('noResourcesYet');
@@ -368,7 +390,7 @@
   function renderLibrarianResults(query, matches) {
     librarianResultsEl.innerHTML = '';
     var header = el('div', 'sh-lib-librarian-head');
-    mount(header, el('p', 'sh-lib-librarian-title', t('librarianResultsFor')(query)));
+    mount(header, el('p', 'sh-lib-librarian-title', format(t('librarianResultsFor'), { q: query })));
     var clearBtn = el('button', 'sh-lib-librarian-clear', t('clearSearch'));
     clearBtn.type = 'button';
     clearBtn.addEventListener('click', clearLibrarianSearch);
@@ -486,15 +508,21 @@
       console.error('[Stratum] No #stratum-library container found on this page.');
       return;
     }
-    if (!WP_USER.loggedIn) {
-      buildGate(container, t('loginToView'), WP_USER.loginUrl, t('logIn'));
-      return;
-    }
-    if (!WP_USER.hasMembership) {
-      buildGate(container, t('noMembership'), '/membership-account/', t('goToMyAccount'));
-      return;
-    }
-    buildPage(container);
+    // Load this page's own translated chrome before anything using
+    // t() runs, including the logged-out/no-membership gate messages -
+    // otherwise the very first paint (or the gate, for a logged-out
+    // visitor) would flash English before a later re-render caught up.
+    loadUiStrings().then(function () {
+      if (!WP_USER.loggedIn) {
+        buildGate(container, t('loginToView'), WP_USER.loginUrl, t('logIn'));
+        return;
+      }
+      if (!WP_USER.hasMembership) {
+        buildGate(container, t('noMembership'), '/membership-account/', t('goToMyAccount'));
+        return;
+      }
+      buildPage(container);
+    });
   }
 
   if (document.readyState === 'loading') {

@@ -2849,14 +2849,14 @@ function renderLibCategoriesPanel() {
     var delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.textContent = '\u2715';
-    delBtn.title = 'Remove category (existing resources keep this value; it just stops appearing as an option)';
+    delBtn.title = 'Remove category and strip it from every resource currently using it (resources stay, they just lose this tag)';
     delBtn.style.cssText = 'background:none;border:none;color:#a33;cursor:pointer;font-size:12px;padding:2px 4px;';
     delBtn.addEventListener('click', function () {
-      if (!confirm('Remove "' + name + '" from the category list? Resources already using it keep it - it just stops being offered as an option.')) return;
+      if (!confirm('Remove "' + name + '"? This strips the tag from every resource currently using it (resources stay - they just lose this Category until you pick a new one).')) return;
       fetch(PROXY_URL + '/admin/library-categories?name=' + encodeURIComponent(name), {
         method: 'DELETE',
         headers: { 'X-Stratum-Admin-Key': adminKey }
-      }).then(function () { loadLibCategories(); });
+      }).then(function () { loadLibCategories(); loadLibrary(); });
     });
     chip.appendChild(delBtn);
     listEl.appendChild(chip);
