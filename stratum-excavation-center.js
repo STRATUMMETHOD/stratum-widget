@@ -182,6 +182,35 @@
       .catch(function () { callback([]); });
   }
 
+  // Sept 2026 (two-character conflicts): parallel to
+  // fetchCharactersForWip above, but scoped per (WIP, excavation slug)
+  // pair rather than per WIP alone, since conflict instances belong to
+  // one specific requiresConflictPair session, not the WIP as a whole.
+  // Called once per such session in the sessions list (see
+  // fetchConflictDataForSessions), then reused as-is when building
+  // every track column, same "fetch once up front, not once per row"
+  // reasoning as characters.
+  function fetchConflictInstancesForSession(studentId, wipId, excavationSlug, callback) {
+    if (!studentId || !wipId) { callback([]); return; }
+    fetch(PROXY_URL + '/conflict-instances?studentId=' + encodeURIComponent(studentId) + '&wipId=' + encodeURIComponent(wipId) + '&excavationSlug=' + encodeURIComponent(excavationSlug))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { callback((d && Array.isArray(d.instances)) ? d.instances : []); })
+      .catch(function () { callback([]); });
+  }
+
+  function fetchConflictDataForSessions(conflictSessions, studentId, wipId, callback) {
+    if (!conflictSessions.length) { callback({}); return; }
+    var bySlug = {};
+    var pending = conflictSessions.length;
+    conflictSessions.forEach(function (s) {
+      fetchConflictInstancesForSession(studentId, wipId, s.slug, function (instances) {
+        bySlug[s.slug] = instances;
+        pending--;
+        if (pending === 0) callback(bySlug);
+      });
+    });
+  }
+
   // Fetched fresh whenever the active WIP changes (initial load or the
   // selector), not once per dashboard load - the same Characters list is
   // reused across every requiresCharacter session in the Excavation
@@ -265,7 +294,7 @@
     return row;
   }
 
-  function buildColumn(columnDef, sessionsForTrack, studentId, completedLessonKeys, characters) {
+  function buildColumn(columnDef, sessionsForTrack, studentId, completedLessonKeys, characters, conflictsBySlug) {
     var col = el('div', 'sh-dash-card sh-ec-column');
     var head = el('div', 'sh-dash-card-head');
     mount(head, el('p', 'sh-dash-card-title', t(columnDef.labelKey)));
@@ -317,6 +346,38 @@
           // way to tell WHICH character a given row is for from the
           // dashboard alone (the coach page's own character picker still
           // knows, this is purely a Excavation Center display change).
+          var row = buildRow(session, status.label, status.key);
+          mount(listEl, row);
+          rowEls.push(row);
+        });
+      } else if (columnDef.track === 'excavation' && session.requiresConflictPair) {
+        // One row per CONFLICT INSTANCE, not one row for the whole
+        // program and not one row per character — this program's
+        // progress is tracked separately per conflict (a student may
+        // have three unrelated conflicts going for the same session
+        // type). Instance data comes pre-fetched via conflictsBySlug
+        // (see fetchConflictDataForSessions() in buildSection) rather
+        // than fetched here per-row, so the async work happens once
+        // up front instead of once per session.
+        var instances = (conflictsBySlug && conflictsBySlug[session.slug]) || [];
+        if (!instances.length) {
+          // Nothing to pick from the dashboard itself — the two-
+          // character/label picker lives on the coach page — so this
+          // is just a plain Not Started row linking there, not an
+          // "add a character"-style prompt.
+          var noConflictRow = el('div', 'sh-ec-row');
+          var noConflictLink = document.createElement('a');
+          noConflictLink.className = 'sh-ec-title';
+          noConflictLink.href = '/coach/' + session.slug + '/';
+          noConflictLink.textContent = session.title;
+          mount(noConflictRow, noConflictLink);
+          mount(noConflictRow, el('span', 'sh-ec-badge sh-ec-badge--not-started', t('notStarted')));
+          mount(listEl, noConflictRow);
+          rowEls.push(noConflictRow);
+          return;
+        }
+        instances.forEach(function (inst) {
+          var status = computeStatus(session, completedLessonKeys, inst.id);
           var row = buildRow(session, status.label, status.key);
           mount(listEl, row);
           rowEls.push(row);
@@ -394,7 +455,7 @@
     if (!window.StratumSessions) {
       columnsEl.innerHTML = '';
       TRACK_COLUMNS.forEach(function (columnDef) {
-        mount(columnsEl, buildColumn(columnDef, [], studentId, [], []));
+        mount(columnsEl, buildColumn(columnDef, [], studentId, [], [], {}));
       });
       return section;
     }
@@ -402,20 +463,39 @@
       fetchCompletions(studentId, function (completions) {
         var completedLessonKeys = completions.map(function (c) { return c.lesson; });
         var needsCharacters = sessions.some(function (s) { return s.requiresCharacter; });
-        function render(characters) {
+        var conflictSessions = sessions.filter(function (s) { return (s.track || 'excavation') === 'excavation' && s.requiresConflictPair; });
+        var needsConflicts = conflictSessions.length > 0;
+        function render(characters, conflictsBySlug) {
           columnsEl.innerHTML = '';
           TRACK_COLUMNS.forEach(function (columnDef) {
             var sessionsForTrack = sessions.filter(function (s) { return (s.track || 'excavation') === columnDef.track; });
-            mount(columnsEl, buildColumn(columnDef, sessionsForTrack, studentId, completedLessonKeys, characters));
+            mount(columnsEl, buildColumn(columnDef, sessionsForTrack, studentId, completedLessonKeys, characters, conflictsBySlug));
           });
         }
-        if (!needsCharacters) { render([]); return; }
-        // Sept 2026 (multiple WIPs): a requiresCharacter session's
-        // row-per-character listing needs to know which WIP to pull
-        // characters from - same WIP-first flow as the profile panel
-        // and the coach page.
+        if (!needsCharacters && !needsConflicts) { render([], {}); return; }
+        // Sept 2026 (multiple WIPs): both a requiresCharacter session's
+        // row-per-character listing AND a requiresConflictPair
+        // session's row-per-conflict listing need to know which WIP to
+        // pull from - same WIP-first flow as the profile panel and the
+        // coach page. The two data sets are fetched in parallel off
+        // the same resolved WIP rather than sequentially, since
+        // neither depends on the other.
+        function loadForWip(wipId) {
+          var pending = 0;
+          var characters = [];
+          var conflictsBySlug = {};
+          function maybeRender() { pending--; if (pending === 0) render(characters, conflictsBySlug); }
+          if (needsCharacters) {
+            pending++;
+            fetchCharactersForWip(studentId, wipId, function (c) { characters = c; maybeRender(); });
+          }
+          if (needsConflicts) {
+            pending++;
+            fetchConflictDataForSessions(conflictSessions, studentId, wipId, function (data) { conflictsBySlug = data; maybeRender(); });
+          }
+        }
         fetchWips(studentId, function (wips) {
-          if (!wips.length) { render([]); return; }
+          if (!wips.length) { render([], {}); return; }
           var lockedId = sessGet(WIP_LOCK_KEY);
           var active = (lockedId && wips.filter(function (w) { return w.id === lockedId; })[0]) || wips[0];
           if (!lockedId) sessSet(WIP_LOCK_KEY, active.id);
@@ -423,12 +503,12 @@
             section.insertBefore(
               buildWipSelector(wips, active.id, function (wipId) {
                 sessSet(WIP_LOCK_KEY, wipId);
-                fetchCharactersForWip(studentId, wipId, render);
+                loadForWip(wipId);
               }),
               columnsEl
             );
           }
-          fetchCharactersForWip(studentId, active.id, render);
+          loadForWip(active.id);
         });
       });
     });
