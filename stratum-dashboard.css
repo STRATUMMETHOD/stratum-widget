@@ -147,6 +147,18 @@
   color: var(--sh-card-ink);
   line-height: 1.35;
 }
+.sh-entry-wip-tag {
+  /* Small, quiet tag showing which WIP (and optionally character) an
+     Idea Log entry or Reminder was tagged with — reused verbatim by
+     both cards' collapsed and full-list rows. Deliberately subdued
+     (not the bold uppercase treatment of .sh-idea-tag) since it's
+     secondary context, not the primary label of the row. */
+  font-family: var(--sh-font-sans);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--sh-card-sub);
+  margin-top: 3px;
+}
 
 /* ---- Reminders ---- */
 .sh-reminder-row {

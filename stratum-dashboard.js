@@ -63,6 +63,11 @@
       writeNote: 'Write your note\u2026',
       addEntry: 'Add Entry',
       chooseCategoryAndWrite: 'Choose a category and write something first.',
+      chooseWipOptional: 'Tag a WIP (optional)\u2026',
+      generalNoWip: 'General \u2014 no WIP',
+      chooseCharacterOptional: 'Tag a character (optional)\u2026',
+      noCharacterTag: 'No character',
+      untitledWip: 'Untitled WIP',
       filterLabel: 'Filter',
       all: 'All',
       download: 'Download',
@@ -119,6 +124,11 @@
       writeNote: 'Escribe tu nota\u2026',
       addEntry: 'Agregar entrada',
       chooseCategoryAndWrite: 'Elige una categoría y escribe algo primero.',
+      chooseWipOptional: 'Etiqueta una obra (opcional)\u2026',
+      generalNoWip: 'General \u2014 sin obra',
+      chooseCharacterOptional: 'Etiqueta un personaje (opcional)\u2026',
+      noCharacterTag: 'Sin personaje',
+      untitledWip: 'Obra sin título',
       filterLabel: 'Filtrar',
       all: 'Todas',
       download: 'Descargar',
@@ -166,7 +176,7 @@
       }
     }
   };
-  var DB_COMMON_KEYS = { viewBtn: 'view', closeBtn: 'close', today: 'today', yesterday: 'yesterday', daysAgo: 'daysAgo' };
+  var DB_COMMON_KEYS = { viewBtn: 'view', closeBtn: 'close', today: 'today', yesterday: 'yesterday', daysAgo: 'daysAgo', untitledWip: 'untitledWip' };
   var PRESET_SLUGS = {
     'Finish a chapter draft': 'finishChapter',
     'Revise a scene': 'reviseScene',
@@ -324,6 +334,104 @@
   }
 
   // ============================================================
+  // WIP / CHARACTER TAGGING — data (shared by both cards below)
+  // ============================================================
+  var allWips = [];
+  function loadWips(callback) {
+    if (!STUDENT_ID) { allWips = []; callback(); return; }
+    fetch(PROXY_URL + '/wips?studentId=' + encodeURIComponent(STUDENT_ID))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { allWips = (d && Array.isArray(d.wips)) ? d.wips : []; callback(); })
+      .catch(function () { allWips = []; callback(); });
+  }
+  var wipCharactersCache = {};
+  function loadWipCharacters(wipId, callback) {
+    if (!wipId || !STUDENT_ID) { callback([]); return; }
+    if (wipCharactersCache[wipId]) { callback(wipCharactersCache[wipId]); return; }
+    fetch(PROXY_URL + '/project?studentId=' + encodeURIComponent(STUDENT_ID) + '&wipId=' + encodeURIComponent(wipId))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var chars = (d && d.known && Array.isArray(d.characters)) ? d.characters.filter(function (c) { return c && c.name; }) : [];
+        wipCharactersCache[wipId] = chars;
+        callback(chars);
+      })
+      .catch(function () { callback([]); });
+  }
+  function wipTitleById(wipId) {
+    var w = allWips.filter(function (x) { return x.id === wipId; })[0];
+    return w ? (w.title || t('untitledWip')) : '';
+  }
+  // Populates a <select> with a leading placeholder plus one option per
+  // WIP; selects currentVal if it matches one of them.
+  function fillWipSelect(select, currentVal) {
+    select.innerHTML = '';
+    var placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = t('chooseWipOptional');
+    select.appendChild(placeholder);
+    allWips.forEach(function (w) {
+      var o = document.createElement('option');
+      o.value = w.id;
+      o.textContent = w.title || t('untitledWip');
+      select.appendChild(o);
+    });
+    select.value = currentVal || '';
+  }
+  // Populates a character <select> for the given wipId (empty/disabled
+  // until a WIP is actually chosen, since a character only makes sense
+  // scoped to one WIP's cast).
+  function fillCharacterSelect(select, wipId, currentVal) {
+    select.innerHTML = '';
+    var placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = t('chooseCharacterOptional');
+    select.appendChild(placeholder);
+    if (!wipId) { select.disabled = true; select.value = ''; return; }
+    select.disabled = false;
+    loadWipCharacters(wipId, function (chars) {
+      chars.forEach(function (c) {
+        var o = document.createElement('option');
+        o.value = c.id;
+        o.textContent = c.name;
+        select.appendChild(o);
+      });
+      select.value = (currentVal && chars.some(function (c) { return c.id === currentVal; })) ? currentVal : '';
+    });
+  }
+  // Small "— WIP title · Character name" tag shown on an existing
+  // entry/reminder row when it's tagged; empty string when it isn't.
+  function wipTagText(wipId, characterId) {
+    if (!wipId) return '';
+    var title = wipTitleById(wipId);
+    if (!title) return '';
+    var charName = '';
+    if (characterId && wipCharactersCache[wipId]) {
+      var c = wipCharactersCache[wipId].filter(function (x) { return x.id === characterId; })[0];
+      if (c) charName = c.name;
+    }
+    return charName ? (title + ' \u00b7 ' + charName) : title;
+  }
+
+  // Pre-loads character names for every distinct wipId that appears
+  // (with a characterId set) among the given entries/tasks, so
+  // wipTagText() can show "WIP · Character" on first paint instead of
+  // the character name popping in a beat later.
+  function warmTagCaches(items, callback) {
+    var wipIds = [];
+    items.forEach(function (it) {
+      if (it.wipId && it.characterId && wipIds.indexOf(it.wipId) === -1) wipIds.push(it.wipId);
+    });
+    if (!wipIds.length) { callback(); return; }
+    var remaining = wipIds.length;
+    wipIds.forEach(function (wipId) {
+      loadWipCharacters(wipId, function () {
+        remaining -= 1;
+        if (remaining <= 0) callback();
+      });
+    });
+  }
+
+  // ============================================================
   // IDEA LOG CARD
   // ============================================================
   var ideaLogExpanded = false;
@@ -349,6 +457,8 @@
       mount(top, el('span', null, formatRelativeDate(entry.createdAt || entry.date)));
       mount(text, top);
       mount(text, el('div', 'sh-idea-text', entry.text || ''));
+      var wipTag = wipTagText(entry.wipId, entry.characterId);
+      if (wipTag) mount(text, el('div', 'sh-entry-wip-tag', wipTag));
       mount(item, text);
       mount(grid, item);
     });
@@ -379,6 +489,24 @@
     textInput.maxLength = 2000;
     mount(formRow, textInput);
     mount(form, formRow);
+
+    // WIP / Character tagging — both optional, per Ted's decision:
+    // entries can stay general/unassigned. Character options are
+    // scoped to whichever WIP is currently selected.
+    var tagRow = el('div', 'sh-dash-form-row');
+    var wipSelect = document.createElement('select');
+    wipSelect.className = 'sh-dash-select';
+    fillWipSelect(wipSelect, '');
+    mount(tagRow, wipSelect);
+    var characterSelect = document.createElement('select');
+    characterSelect.className = 'sh-dash-select';
+    fillCharacterSelect(characterSelect, '', '');
+    mount(tagRow, characterSelect);
+    wipSelect.addEventListener('change', function () {
+      fillCharacterSelect(characterSelect, wipSelect.value, '');
+    });
+    mount(form, tagRow);
+
     var formFoot = el('div', 'sh-dash-form-foot');
     var addStatus = el('span', 'sh-dash-add-status');
     mount(formFoot, addStatus);
@@ -393,11 +521,15 @@
         category: category,
         date: new Date().toISOString().slice(0, 10),
         createdAt: Date.now(),
-        text: text
+        text: text,
+        wipId: wipSelect.value || null,
+        characterId: characterSelect.value || null
       });
       saveIdeaLogEntries();
       categorySelect.value = '';
       textInput.value = '';
+      wipSelect.value = '';
+      fillCharacterSelect(characterSelect, '', '');
       addStatus.textContent = '';
       renderIdeaLogFullList();
     });
@@ -452,6 +584,8 @@
       mount(head, el('span', 'sh-dash-list-entry-date', formatFullDate(entry.date)));
       mount(row, head);
       mount(row, el('div', 'sh-dash-list-entry-text', entry.text));
+      var wipTag = wipTagText(entry.wipId, entry.characterId);
+      if (wipTag) mount(row, el('div', 'sh-entry-wip-tag', wipTag));
       var del = el('button', 'sh-dash-list-delete', '\u00d7');
       del.type = 'button';
       del.title = t('deleteEntry');
@@ -500,7 +634,7 @@
     ideaLogBodyEl = el('div', 'sh-dash-card-body');
     mount(card, ideaLogBodyEl);
 
-    loadIdeaLogEntries(renderIdeaLogCollapsed);
+    loadIdeaLogEntries(function () { warmTagCaches(ideaLogEntries, renderIdeaLogCollapsed); });
     return card;
   }
 
@@ -530,6 +664,8 @@
       var textWrap = el('div', 'sh-reminder-text');
       mount(textWrap, el('div', 'sh-reminder-title', task.text || ''));
       if (!task.done && task.dueDate) mount(textWrap, el('div', 'sh-reminder-meta', t('due') + formatShortDate(task.dueDate)));
+      var wipTag = wipTagText(task.wipId, task.characterId);
+      if (wipTag) mount(textWrap, el('div', 'sh-entry-wip-tag', wipTag));
       mount(row, textWrap);
       if (task.dueDate) mount(row, el('div', 'sh-reminder-date', formatShortDate(task.dueDate)));
       mount(remindersBodyEl, row);
@@ -578,6 +714,21 @@
     mount(inputRow, dateInput);
     mount(form, inputRow);
 
+    // WIP / Character tagging — both optional, same as Idea Log.
+    var tagRow = el('div', 'sh-dash-form-row');
+    var wipSelect = document.createElement('select');
+    wipSelect.className = 'sh-dash-select';
+    fillWipSelect(wipSelect, '');
+    mount(tagRow, wipSelect);
+    var characterSelect = document.createElement('select');
+    characterSelect.className = 'sh-dash-select';
+    fillCharacterSelect(characterSelect, '', '');
+    mount(tagRow, characterSelect);
+    wipSelect.addEventListener('change', function () {
+      fillCharacterSelect(characterSelect, wipSelect.value, '');
+    });
+    mount(form, tagRow);
+
     var formFoot = el('div', 'sh-dash-form-foot');
     var countEl = el('span', 'sh-dash-add-status');
     mount(formFoot, countEl);
@@ -586,10 +737,19 @@
     function addTask() {
       var text = textInput.value.trim();
       if (!text) return;
-      tasks.push({ id: Date.now().toString(), text: text, done: false, dueDate: dateInput.value || null });
+      tasks.push({
+        id: Date.now().toString(),
+        text: text,
+        done: false,
+        dueDate: dateInput.value || null,
+        wipId: wipSelect.value || null,
+        characterId: characterSelect.value || null
+      });
       saveTasks();
       textInput.value = '';
       dateInput.value = '';
+      wipSelect.value = '';
+      fillCharacterSelect(characterSelect, '', '');
       renderRemindersFullList();
     }
     addBtn.addEventListener('click', addTask);
@@ -646,6 +806,8 @@
       var textWrap = el('div', 'sh-dash-list-entry-text sh-dash-reminder-full-text');
       textWrap.addEventListener('click', function () { task.done = !task.done; saveTasks(); renderRemindersFullList(); });
       textWrap.textContent = task.text;
+      var wipTag = wipTagText(task.wipId, task.characterId);
+      if (wipTag) mount(textWrap, el('div', 'sh-entry-wip-tag', wipTag));
       mount(row, textWrap);
       if (task.dueDate) {
         var overdue = !task.done && task.dueDate < todayStr;
@@ -704,7 +866,7 @@
     remindersBodyEl = el('div', 'sh-dash-card-body');
     mount(card, remindersBodyEl);
 
-    loadTasks(renderRemindersCollapsed);
+    loadTasks(function () { warmTagCaches(tasks, renderRemindersCollapsed); });
     return card;
   }
 
@@ -728,7 +890,9 @@
   function proceed(studentId) {
     STUDENT_ID = studentId || null;
     loadUiStrings(function () {
-      mountInto(window.STRATUM_HEADER_WRAP);
+      loadWips(function () {
+        mountInto(window.STRATUM_HEADER_WRAP);
+      });
     });
   }
 
