@@ -149,7 +149,15 @@
       // every card below it - wrap it the same way here.
       var section = el('div', 'sh-upd-section');
       mount(section, buildCard(updates));
-      mount(wrapEl, section);
+      // Sept 2026: per Ted's request, What's New must render above the
+      // Profile card, not below it. This card mounts asynchronously
+      // (fetchUpdates is a network call) and Profile is built by a
+      // different module entirely, so appending here can't guarantee
+      // ordering against however that module's own timing works out -
+      // insertBefore(wrapEl.firstChild) forces this section to the front
+      // of wrapEl's DOM order regardless of which module actually
+      // finished mounting first.
+      wrapEl.insertBefore(section, wrapEl.firstChild);
     });
   }
 

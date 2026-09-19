@@ -9,14 +9,10 @@
    filter-toolbar treatment as Practice Lab, for visual consistency.
    ============================================================ */
 
-/* Sept 2026: flat ground for the Library page, same reasoning and
-   same technique as .sh-wrap:has(.sh-coach-page) in stratum-coach.css
-   - scoped to .sh-lib-page specifically (added to both the real page
-   body and the logged-out/no-membership gate body in stratum-
-   library.js) so nothing else sharing .sh-wrap is affected. */
-.sh-wrap:has(.sh-lib-page) {
-  background: var(--sh-ink);
-}
+/* Sept 2026: the flat-background treatment (matching Practice Lab and
+   the coaching pages) has been removed per Ted's request - the Library
+   page now shows the .sh-wrap's normal repeating-band texture like the
+   Dashboard does, instead of a solid --sh-ink background. */
 
 .sh-lib-list {
   display: flex;
