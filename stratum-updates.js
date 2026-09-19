@@ -149,15 +149,27 @@
       // every card below it - wrap it the same way here.
       var section = el('div', 'sh-upd-section');
       mount(section, buildCard(updates));
-      // Sept 2026: per Ted's request, What's New must render above the
-      // Profile card, not below it. This card mounts asynchronously
-      // (fetchUpdates is a network call) and Profile is built by a
-      // different module entirely, so appending here can't guarantee
-      // ordering against however that module's own timing works out -
-      // insertBefore(wrapEl.firstChild) forces this section to the front
-      // of wrapEl's DOM order regardless of which module actually
-      // finished mounting first.
-      wrapEl.insertBefore(section, wrapEl.firstChild);
+      // Sept 2026 fix, corrected: wrapEl.firstChild is actually the
+      // background strata-art SVG (stratum-header.js inserts it via
+      // insertAdjacentHTML('afterbegin', ...) before mounting anything
+      // else) - inserting before firstChild would have pushed this card
+      // above the topbar and "Welcome" heading entirely, not just above
+      // Profile. Instead, find the last element that's actually part of
+      // the header block (art / topbar / welcome row / the logged-out or
+      // no-membership notice row, per stratum-header.css's sh-strata-art/
+      // sh-topbar/sh-welcome-row/sh-hero-row classes) and insert right
+      // after it. This works regardless of whether Profile (or anything
+      // else) has already been appended by the time this async fetch
+      // resolves - insertBefore(headerEl.nextSibling) lands right after
+      // the header block either way, which is always above Profile
+      // without needing to know Profile's own class name at all.
+      var headerSelectors = ['.sh-strata-art', '.sh-topbar', '.sh-welcome-row', '.sh-hero-row'];
+      var lastHeaderEl = null;
+      Array.prototype.forEach.call(wrapEl.children, function (child) {
+        var isHeaderPart = headerSelectors.some(function (sel) { return child.matches(sel); });
+        if (isHeaderPart) lastHeaderEl = child;
+      });
+      wrapEl.insertBefore(section, lastHeaderEl ? lastHeaderEl.nextSibling : wrapEl.firstChild);
     });
   }
 

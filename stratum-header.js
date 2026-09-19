@@ -115,6 +115,45 @@
   function format(str, vars) {
     return str.replace(/\{(\w+)\}/g, function (_, k) { return (vars && vars[k] != null) ? vars[k] : ''; });
   }
+  // ---- Rotating welcome headline (Sept 2026, per Ted's request) ----
+  // Eight variants per language, picked at random on each page load
+  // (not a strict non-repeating cycle - that would need to persist which
+  // one was shown last, e.g. in localStorage, to avoid a same-session
+  // repeat; flagging that as an option if "rotating" is meant more
+  // strictly than "randomized each visit"). Deliberately kept as a local
+  // array here rather than routed through the DB-backed ui_strings
+  // override system t() uses everywhere else - that system stores one
+  // string per key, and eight per-variant keys (plus eight more for
+  // Spanish) felt like more admin-panel surface than this warranted.
+  // Only used when WP_USER.firstName is present, same gating as the old
+  // single welcomeWithName string it replaces.
+  var WELCOME_VARIANTS = {
+    en: [
+      'Welcome back, {name} \u2014 your story\u2019s waiting for you.',
+      'Good to see you, {name}. Let\u2019s make your characters breathe today.',
+      'Hey {name} \u2014 ready to shape something unforgettable?',
+      'Welcome, {name}. Your imagination has work to do.',
+      'You\u2019re back, {name} \u2014 let\u2019s get your words moving again.',
+      '{name}, your story didn\u2019t stop \u2014 let\u2019s pick up the thread.',
+      'Welcome back, {name}. Let\u2019s dig deeper into your worldbuilding today.',
+      '{name}, your characters have been whispering \u2014 let\u2019s hear what they\u2019re saying.'
+    ],
+    es: [
+      'Bienvenido de nuevo, {name} \u2014 tu historia te est\u00e1 esperando.',
+      'Qu\u00e9 bueno verte, {name}. Hagamos que tus personajes respiren hoy.',
+      'Hola {name} \u2014 \u00bflisto para darle forma a algo inolvidable?',
+      'Bienvenido, {name}. Tu imaginaci\u00f3n tiene trabajo que hacer.',
+      'Has vuelto, {name} \u2014 pongamos tus palabras en movimiento otra vez.',
+      '{name}, tu historia no se detuvo \u2014 retomemos el hilo.',
+      'Bienvenido de nuevo, {name}. Profundicemos hoy en la construcci\u00f3n de tu mundo.',
+      '{name}, tus personajes han estado susurrando \u2014 escuchemos qu\u00e9 dicen.'
+    ]
+  };
+  function pickWelcomeVariant(name) {
+    var list = WELCOME_VARIANTS[LANG] || WELCOME_VARIANTS.en;
+    var pick = list[Math.floor(Math.random() * list.length)];
+    return format(pick, { name: name });
+  }
   // ---- Database-backed translation overrides (Sept 2026) ----
   // t() checks DB overrides fetched from GET /ui-strings?lang= FIRST,
   // then falls back to the STRINGS.en/es defaults above. Adding a new
@@ -467,7 +506,7 @@
     // ---- Welcome ----
     var welcomeRow = el('div', 'sh-welcome-row');
     var welcomeText = WP_USER.loggedIn
-      ? (WP_USER.firstName ? format(t('welcomeWithName'), { name: WP_USER.firstName }) : t('welcomeNoName'))
+      ? (WP_USER.firstName ? pickWelcomeVariant(WP_USER.firstName) : t('welcomeNoName'))
       : t('welcomeLoggedOut');
     mount(welcomeRow, el('h2', 'sh-welcome', welcomeText));
     mount(wrap, welcomeRow);
