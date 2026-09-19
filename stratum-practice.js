@@ -80,8 +80,13 @@
       sub: 'Work through craft skills, one exercise at a time \u2014 not just definitions to look up.',
       todaysTerm: 'Today\u2019s Practice Term',
       practicedOf: '{done} of {total} terms practiced',
-      searchPlaceholder: 'Search terms and definitions\u2026',
-      search: 'Search',
+      searchPlaceholder: 'Describe what you\u2019re looking for\u2026',
+      search: 'Ask the Librarian',
+      searching: 'Searching\u2026',
+      clearSearch: '\u2715 Clear search',
+      librarianNoMatches: 'The Librarian didn\u2019t find a strong match for that \u2014 try describing it differently, or browse below.',
+      librarianError: 'Could not reach the Librarian \u2014 try again in a moment.',
+      librarianResultsFor: 'Librarian results for \u201c{q}\u201d',
       craftCategory: 'Craft Category',
       complexityLevel: 'Complexity Level',
       show: 'Show',
@@ -109,8 +114,13 @@
       sub: 'Trabaja las habilidades de escritura, un ejercicio a la vez \u2014 no solo definiciones para consultar.',
       todaysTerm: 'T\u00e9rmino de pr\u00e1ctica de hoy',
       practicedOf: '{done} de {total} t\u00e9rminos practicados',
-      searchPlaceholder: 'Buscar t\u00e9rminos y definiciones\u2026',
-      search: 'Buscar',
+      searchPlaceholder: 'Describe lo que buscas\u2026',
+      search: 'Preguntar al bibliotecario',
+      searching: 'Buscando\u2026',
+      clearSearch: '\u2715 Borrar b\u00fasqueda',
+      librarianNoMatches: 'El bibliotecario no encontr\u00f3 una coincidencia clara \u2014 intenta describirlo de otra forma, o explora la lista de abajo.',
+      librarianError: 'No se pudo contactar al bibliotecario \u2014 intenta de nuevo en un momento.',
+      librarianResultsFor: 'Resultados del bibliotecario para \u201c{q}\u201d',
       craftCategory: 'Categor\u00eda de t\u00e9cnica',
       complexityLevel: 'Nivel de complejidad',
       show: 'Mostrar',
@@ -161,10 +171,10 @@
   var termsCache = null;
   var practicedIds = {};       // { [termId]: true }
   var protagonistName = '';    // from the student's own WIP Characters list, if any
-  var searchQuery = '';
   var pageSize = PAGE_SIZES[0];
   var currentPage = 1;
   var listEl, pagerEl, searchInput, craftSelect, complexitySelect, progressEl, todaySlotEl;
+  var searchBtn, searchStatusEl, librarianResultsEl, searchClearBtnEl;
 
   function el(tag, className, text) {
     var node = document.createElement(tag);
@@ -322,18 +332,94 @@
     mount(todaySlotEl, card);
   }
 
-  function performSearch() {
-    searchQuery = searchInput.value.trim().toLowerCase();
-    currentPage = 1;
-    renderList();
-  }
   function clearFilters() {
     searchInput.value = '';
-    searchQuery = '';
+    updateSearchClearVisibility();
     craftSelect.value = '';
     complexitySelect.value = '';
     currentPage = 1;
+    clearLibrarianSearch();
     renderList();
+  }
+
+  // ----------------------------------------------------------
+  // THE LIBRARIAN — AI search over vocabulary terms (Sept 2026),
+  // same pattern as stratum-library.js's runLibrarianSearch/
+  // renderLibrarianResults/clearLibrarianSearch, pointed at the new
+  // POST /vocabulary/search endpoint instead of /library/search.
+  // Category/Complexity filters keep working independently against
+  // the normal list underneath, exactly as they do on the Library
+  // page relative to its own Librarian results.
+  // ----------------------------------------------------------
+  function updateSearchClearVisibility() {
+    if (!searchClearBtnEl) return;
+    if (searchInput.value.trim()) searchClearBtnEl.classList.add('sh-pl-visible');
+    else searchClearBtnEl.classList.remove('sh-pl-visible');
+  }
+
+  function runLibrarianSearch() {
+    var query = searchInput.value.trim();
+    if (!query) return;
+    searchBtn.disabled = true;
+    searchStatusEl.textContent = t('searching');
+    librarianResultsEl.innerHTML = '';
+    librarianResultsEl.style.display = '';
+    listEl.style.display = 'none';
+    pagerEl.style.display = 'none';
+    fetch(PROXY_URL + '/vocabulary/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: query, lang: LANG })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        searchBtn.disabled = false;
+        searchStatusEl.textContent = '';
+        renderLibrarianResults(query, (d && Array.isArray(d.matches)) ? d.matches : []);
+      })
+      .catch(function () {
+        searchBtn.disabled = false;
+        searchStatusEl.textContent = '';
+        librarianResultsEl.innerHTML = '';
+        mount(librarianResultsEl, el('div', 'sh-pl-empty', t('librarianError')));
+      });
+  }
+
+  function clearLibrarianSearch() {
+    searchInput.value = '';
+    updateSearchClearVisibility();
+    librarianResultsEl.innerHTML = '';
+    librarianResultsEl.style.display = 'none';
+    listEl.style.display = '';
+    pagerEl.style.display = '';
+  }
+
+  function renderLibrarianResults(query, matches) {
+    librarianResultsEl.innerHTML = '';
+    var header = el('div', 'sh-pl-librarian-head');
+    mount(header, el('p', 'sh-pl-librarian-title', format(t('librarianResultsFor'), { q: query })));
+    var clearBtn = el('button', 'sh-pl-librarian-clear', t('clearSearch'));
+    clearBtn.type = 'button';
+    clearBtn.addEventListener('click', clearLibrarianSearch);
+    mount(header, clearBtn);
+    mount(librarianResultsEl, header);
+
+    if (!matches.length) {
+      mount(librarianResultsEl, el('div', 'sh-pl-empty', t('librarianNoMatches')));
+      return;
+    }
+    matches.forEach(function (match) {
+      // Match id back to the full cached term (search results only carry
+      // display fields) so opening/expanding it works exactly like the
+      // normal list.
+      var term = (termsCache || []).filter(function (tm) { return String(tm.id) === String(match.id); })[0];
+      if (!term) return;
+      var card = buildTermCard(term, { collapsible: true });
+      if (match.reason) {
+        card.querySelector('summary').appendChild(el('div', 'sh-pl-librarian-reason', match.reason));
+      }
+      mount(librarianResultsEl, card);
+    });
   }
 
   function renderList() {
@@ -343,10 +429,6 @@
     var filtered = terms.filter(function (term) {
       if (craft && term.craftCategory !== craft) return false;
       if (level && term.complexityLevel !== level) return false;
-      if (searchQuery) {
-        var haystack = ((term.word || '') + ' ' + (term.definition || '')).toLowerCase();
-        if (haystack.indexOf(searchQuery) === -1) return false;
-      }
       return true;
     });
 
@@ -409,8 +491,7 @@
   function jumpToTerm(id) {
     var target = (termsCache || []).find(function (t) { return String(t.id) === String(id); });
     if (!target) return;
-    searchInput.value = '';
-    searchQuery = '';
+    clearLibrarianSearch();
     craftSelect.value = '';
     complexitySelect.value = '';
     renderList();
@@ -453,18 +534,29 @@
 
     var toolbar = el('div', 'sh-pl-toolbar');
 
-    var searchWrap = el('div', 'sh-pl-search-wrap');
+    var searchBar = el('div', 'sh-pl-search-bar');
+    var searchInputWrap = el('div', 'sh-pl-search-input-wrap');
     searchInput = document.createElement('input');
     searchInput.type = 'text';
     searchInput.className = 'sh-pl-search-input';
     searchInput.placeholder = t('searchPlaceholder');
-    searchInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); performSearch(); } });
-    mount(searchWrap, searchInput);
-    var searchBtn = el('button', 'sh-pl-search-btn', t('search'));
+    searchInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runLibrarianSearch(); } });
+    searchInput.addEventListener('input', updateSearchClearVisibility);
+    mount(searchInputWrap, searchInput);
+    var searchClearBtn = el('button', 'sh-pl-search-input-clear', '\u2715');
+    searchClearBtnEl = searchClearBtn;
+    searchClearBtn.type = 'button';
+    searchClearBtn.setAttribute('aria-label', t('clearSearch'));
+    searchClearBtn.addEventListener('click', function () { clearLibrarianSearch(); searchInput.focus(); });
+    mount(searchInputWrap, searchClearBtn);
+    mount(searchBar, searchInputWrap);
+    searchBtn = el('button', 'sh-pl-search-btn', t('search'));
     searchBtn.type = 'button';
-    searchBtn.addEventListener('click', performSearch);
-    mount(searchWrap, searchBtn);
-    mount(toolbar, searchWrap);
+    searchBtn.addEventListener('click', runLibrarianSearch);
+    mount(searchBar, searchBtn);
+    mount(body, searchBar);
+    searchStatusEl = el('p', 'sh-pl-progress');
+    mount(body, searchStatusEl);
 
     function buildFilterSelect(label, options, optionMapKey) {
       var fwrap = el('div', 'sh-pl-filter-wrap');
@@ -517,6 +609,10 @@
     mount(toolbar, clearBtn);
 
     mount(body, toolbar);
+
+    librarianResultsEl = el('div', 'sh-pl-list sh-pl-librarian-results');
+    librarianResultsEl.style.display = 'none';
+    mount(body, librarianResultsEl);
 
     listEl = el('div', 'sh-pl-list');
     mount(body, listEl);

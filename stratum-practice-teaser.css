@@ -27,7 +27,18 @@
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
-.sh-pt-slot, .sh-lt-slot { min-width: 0; }
+.sh-pt-slot, .sh-lt-slot { min-width: 0; display: flex; }
+/* Sept 2026 fix: .sh-teaser-row's grid already stretches .sh-pt-slot/
+   .sh-lt-slot to equal height (default align-items: stretch), but
+   .sh-dash-card inside each slot was a plain block div sized to its
+   own content, so the two visible bordered/backgrounded cards could
+   still end up different heights even though their invisible slots
+   matched. Making the slot a flex container and telling the card to
+   grow fills that gap so the two cards' borders always line up. */
+.sh-pt-slot > .sh-dash-card,
+.sh-lt-slot > .sh-dash-card {
+  flex: 1;
+}
 
 .sh-pt-label {
   font-size: 10.5px;

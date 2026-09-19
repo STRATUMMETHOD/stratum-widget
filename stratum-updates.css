@@ -12,6 +12,16 @@
    status badge) genuinely differs.
    ============================================================ */
 
+/* Sept 2026 fix: matches .sh-dash-section (stratum-dashboard.css) and
+   .sh-teaser-section (stratum-practice-teaser.css) - this card mounts
+   above both of those, so it needs the same inset padding or it reads
+   as flush-left/misaligned against everything below it. */
+.sh-upd-section {
+  padding: 16px 28px 4px;
+  position: relative;
+  z-index: 1;
+}
+
 .sh-upd-list {
   display: flex;
   flex-direction: column;
@@ -45,6 +55,10 @@
   color: var(--sh-card-title);
 }
 
+@media (max-width: 640px) {
+  .sh-upd-section { padding-left: 16px; padding-right: 16px; }
+}
 @media (max-width: 400px) {
+  .sh-upd-section { padding-left: 12px; padding-right: 12px; }
   .sh-upd-row { padding: 11px 14px; }
 }

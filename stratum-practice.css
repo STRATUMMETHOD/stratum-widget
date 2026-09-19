@@ -63,6 +63,85 @@
 }
 .sh-pl-level-header:first-child { margin-top: 0; }
 
+/* ---- The Librarian search bar (Sept 2026) — same pattern as
+   stratum-library.css's .sh-lib-search-*/.sh-lib-librarian-* rules,
+   duplicated under sh-pl- naming since this page loads its own CSS
+   file rather than stratum-library.css. ---- */
+.sh-pl-search-bar {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 10px;
+}
+.sh-pl-search-input-wrap {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+.sh-pl-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #1E1E22;
+  border: 1px solid var(--sh-line);
+  border-radius: 8px;
+  padding: 12px 40px 12px 14px;
+  font-size: 14px;
+  font-family: var(--sh-font-sans);
+  color: var(--sh-paper);
+}
+.sh-pl-search-input::placeholder { color: var(--sh-sub); }
+.sh-pl-search-input:focus { outline: none; border-color: var(--sh-warm); }
+.sh-pl-search-input-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--sh-sub);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  display: none;
+}
+.sh-pl-search-input-clear:hover { color: var(--sh-warm); }
+.sh-pl-search-input-clear.sh-pl-visible { display: block; }
+
+.sh-pl-librarian-results { margin-bottom: 6px; }
+.sh-pl-librarian-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.sh-pl-librarian-title {
+  font-family: var(--sh-font-sans);
+  font-size: 15px;
+  font-style: italic;
+  color: var(--sh-sub);
+  margin: 0;
+}
+.sh-pl-librarian-clear {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--sh-sub);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: var(--sh-font-sans);
+}
+.sh-pl-librarian-clear:hover { color: var(--sh-warm); }
+.sh-pl-librarian-reason {
+  width: 100%;
+  font-size: 12.5px;
+  color: var(--sh-sub);
+  font-style: italic;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
 .sh-pl-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -305,6 +384,8 @@
 .sh-pl-pager-status { font-size: 12px; color: var(--sh-sub); }
 
 @media (max-width: 640px) {
+  .sh-pl-search-bar { flex-direction: column; }
+  .sh-pl-search-btn { padding: 12px; }
   .sh-pl-toolbar { flex-direction: column; align-items: stretch; }
   .sh-pl-filter-wrap { justify-content: space-between; }
 }

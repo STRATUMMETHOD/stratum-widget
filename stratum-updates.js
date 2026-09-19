@@ -141,7 +141,15 @@
     if (!wrapEl || wrapEl.querySelector('.sh-upd-list')) return; // avoid double-mount
     fetchUpdates(function (updates) {
       if (!updates.length) return; // no card at all when there's nothing new — see file header
-      mount(wrapEl, buildCard(updates));
+      // Sept 2026 fix: every other dashboard module (stratum-dashboard.js's
+      // .sh-dash-section, the teasers' .sh-teaser-section) wraps its card(s)
+      // in a padded section before mounting into wrapEl. This file was
+      // mounting the bare card straight into wrapEl with no such wrapper,
+      // so it rendered flush against the page edge instead of inset like
+      // every card below it - wrap it the same way here.
+      var section = el('div', 'sh-upd-section');
+      mount(section, buildCard(updates));
+      mount(wrapEl, section);
     });
   }
 
