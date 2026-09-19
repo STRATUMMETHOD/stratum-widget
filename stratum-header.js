@@ -149,8 +149,28 @@
       '{name}, tus personajes han estado susurrando \u2014 escuchemos qu\u00e9 dicen.'
     ]
   };
+  // Sept 2026 fix: this local array was the ONLY source for the
+  // rotating headline - by design, per the comment above, to avoid
+  // adding 8x2 admin-panel keys. That meant any language beyond the
+  // two hardcoded here (en/es) always fell back to WELCOME_VARIANTS.en,
+  // which is why German and Urdu showed an English headline even
+  // though every other piece of header chrome was translated (those
+  // all go through t()/DB_STRINGS). Fixed below by routing each
+  // variant through the SAME DB_STRINGS override t() already uses,
+  // under keys header.welcomeVariant1..8 - those are now registered in
+  // worker.js's UI_STRING_KEYS, so they lazy-translate and cascade
+  // exactly like every other header string. This array remains the
+  // fallback when DB_STRINGS hasn't loaded a given variant yet (e.g.
+  // brand-new language, translation still in flight).
+  var WELCOME_VARIANT_COUNT = 8;
   function pickWelcomeVariant(name) {
-    var list = WELCOME_VARIANTS[LANG] || WELCOME_VARIANTS.en;
+    var localList = WELCOME_VARIANTS[LANG] || WELCOME_VARIANTS.en;
+    var list = [];
+    for (var i = 1; i <= WELCOME_VARIANT_COUNT; i++) {
+      var dbKey = 'header.welcomeVariant' + i;
+      var dbVal = (DB_STRINGS && DB_STRINGS[dbKey] != null) ? DB_STRINGS[dbKey] : null;
+      list.push(dbVal != null ? dbVal : (localList[i - 1] || WELCOME_VARIANTS.en[i - 1]));
+    }
     var pick = list[Math.floor(Math.random() * list.length)];
     return format(pick, { name: name });
   }
