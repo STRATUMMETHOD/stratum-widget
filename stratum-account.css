@@ -1,0 +1,193 @@
+/* ============================================================
+   STRATUM ACCOUNT PAGE — STYLES (Sept 2026)
+   ------------------------------------------------------------
+   Reuses --sh-* variables and .sh-wrap/.sh-topbar--standalone from
+   stratum-header.css (load that too on this page) rather than
+   redeclaring them - same convention every other per-page stylesheet
+   in this codebase follows.
+
+   .sh-account-content wraps PMPro's [pmpro_account] shortcode output,
+   whose exact internal markup/class names haven't been verified
+   against live rendered HTML (see account-page-template.php's file
+   comment). Everything below this point targets generic tags scoped
+   under .sh-account-content rather than PMPro-specific classes, so it
+   reskins reasonably regardless of PMPro's exact structure - some
+   individual pieces (e.g. a specific button or table PMPro renders
+   with unusual markup) may still need a targeted follow-up pass once
+   this is visible live.
+   ============================================================ */
+
+.sh-account-body {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 8px 28px 48px;
+  position: relative;
+  z-index: 1;
+}
+.sh-account-title {
+  font-family: 'Quicksand', var(--sh-font-sans);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--sh-paper);
+  margin: 0 0 20px;
+}
+
+/* ---- The parchment card wrapping PMPro's actual output ---- */
+.sh-account-content {
+  background: var(--sh-card-bg);
+  border: 1px solid var(--sh-card-border);
+  border-radius: 12px;
+  padding: 28px 30px;
+  box-shadow: 0 8px 22px rgba(20, 12, 0, 0.28), inset 0 0 46px rgba(90, 62, 18, 0.12);
+  color: var(--sh-card-ink);
+  font-family: var(--sh-font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.sh-account-content h1,
+.sh-account-content h2,
+.sh-account-content h3,
+.sh-account-content h4 {
+  font-family: var(--sh-font-sans);
+  color: var(--sh-card-title);
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  font-size: 13px;
+  margin: 26px 0 12px;
+}
+.sh-account-content h3:first-child,
+.sh-account-content h2:first-child {
+  margin-top: 0;
+}
+
+.sh-account-content p {
+  color: var(--sh-card-ink);
+  margin: 0 0 12px;
+}
+
+.sh-account-content a {
+  color: var(--sh-warm);
+  text-decoration: none;
+}
+.sh-account-content a:hover {
+  text-decoration: underline;
+}
+
+/* Lists (PMPro renders the account-links block, e.g. "Edit Account" /
+   "Change Password" / "Cancel Membership", as a plain <ul>) */
+.sh-account-content ul {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sh-account-content ul li {
+  background: var(--sh-card-row-bg);
+  border: 1px solid var(--sh-card-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.sh-account-content ol {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  color: var(--sh-card-ink);
+}
+
+/* Tables (payment history / membership details) */
+.sh-account-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 20px;
+  font-size: 13px;
+}
+.sh-account-content table th {
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--sh-card-title);
+  border-bottom: 1px solid var(--sh-card-border);
+  padding: 8px 10px;
+}
+.sh-account-content table td {
+  color: var(--sh-card-ink);
+  border-bottom: 1px solid var(--sh-card-border);
+  padding: 10px;
+}
+.sh-account-content table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Forms (edit-account / change-password screens the account links
+   above lead to, if PMPro renders them inline rather than as separate
+   page loads) */
+.sh-account-content label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--sh-card-sub);
+  margin: 14px 0 6px;
+}
+.sh-account-content input[type="text"],
+.sh-account-content input[type="email"],
+.sh-account-content input[type="password"],
+.sh-account-content input[type="tel"],
+.sh-account-content select,
+.sh-account-content textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--sh-card-input-bg);
+  border: 1px solid var(--sh-card-border);
+  border-radius: 7px;
+  padding: 9px 11px;
+  font-size: 13px;
+  font-family: var(--sh-font-sans);
+  color: var(--sh-card-ink);
+}
+.sh-account-content input:focus,
+.sh-account-content select:focus,
+.sh-account-content textarea:focus {
+  outline: none;
+  border-color: var(--sh-warm);
+}
+
+.sh-account-content input[type="submit"],
+.sh-account-content button,
+.sh-account-content .pmpro_btn {
+  background: var(--sh-warm);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: var(--sh-font-sans);
+  margin-top: 10px;
+}
+.sh-account-content input[type="submit"]:hover,
+.sh-account-content button:hover,
+.sh-account-content .pmpro_btn:hover {
+  filter: brightness(1.08);
+}
+
+/* A "Cancel Membership" style destructive action, if PMPro marks one
+   with a recognizable class - harmless no-op if it doesn't. */
+.sh-account-content .pmpro_btn-cancel,
+.sh-account-content .pmpro_btn-danger {
+  background: none;
+  border: 1px solid #A6472D;
+  color: #A6472D;
+}
+
+@media (max-width: 640px) {
+  .sh-account-body { padding: 8px 16px 40px; }
+  .sh-account-content { padding: 20px 18px; }
+}
