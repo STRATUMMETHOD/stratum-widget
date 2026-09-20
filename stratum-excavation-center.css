@@ -70,12 +70,12 @@
   background: var(--sh-card-row-bg);
   border: 1px solid var(--sh-card-border);
   border-radius: 10px;
-  padding: 13px 16px;
+  padding: 8px 16px; /* was 13px 16px — tightened top/bottom per request */
 }
 .sh-ec-title {
   font-family: var(--sh-font-sans);
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 12.75px; /* was 15px — 15% reduction per request, and now clearly smaller than it was reading relative to .sh-dash-card-title (11.5px/800) in stratum-dashboard.css */
+  font-weight: 600; /* was 700 — lightened further so it doesn't compete with the card header's weight even though the header itself is smaller */
   color: var(--sh-card-ink);
   text-decoration: none;
 }
