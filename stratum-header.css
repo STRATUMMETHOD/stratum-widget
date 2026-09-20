@@ -33,6 +33,17 @@
    those files, specifically so they can reference --sh-warm/
    --sh-ink below — those are scoped to .sh-wrap, not :root, so a
    :root-level custom property can't see them.
+
+   ---- Mobile contrast fix (Sept 2026) ----
+   .sh-welcome now sets its own color explicitly (with !important)
+   rather than relying on inheriting var(--sh-paper) from .sh-wrap.
+   Root cause: once system.php began calling wp_head()/wp_footer()
+   properly (fixing mobile responsiveness), Storefront's own theme
+   CSS started loading on this page for the first time and its
+   default text-color rules won the cascade over plain inheritance,
+   making the welcome headline render dark/unreadable against the
+   dark background. This was always latent — just invisible while
+   wp_head() wasn't firing and Storefront's CSS never loaded at all.
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Newsreader:wght@600&family=Quicksand:wght@600;700&display=swap');
@@ -285,6 +296,7 @@ body:has(.sh-wrap) {
   font-weight: 700; /* Quicksand tops out at 700 — the old 800 from Montserrat doesn't exist in this family */
   letter-spacing: 0;
   margin: 0;
+  color: var(--sh-paper) !important; /* Sept 2026 fix: Storefront's theme CSS now loads on this page (see file header note) and was winning the cascade over plain inheritance from .sh-wrap, rendering this headline dark/unreadable */
 }
 
 /* ---- Notice row (logged-out / no-membership edge cases only) ----
