@@ -373,36 +373,35 @@
         mount(listEl, row);
         rowEls.push(row);
       } else if (columnDef.track === 'excavation' && session.requiresConflictPair) {
-        // One row per CONFLICT INSTANCE, not one row for the whole
-        // program and not one row per character — this program's
-        // progress is tracked separately per conflict (a student may
-        // have three unrelated conflicts going for the same session
-        // type). Instance data comes pre-fetched via conflictsBySlug
-        // (see fetchConflictDataForSessions() in buildSection) rather
-        // than fetched here per-row, so the async work happens once
-        // up front instead of once per session.
+        // Sept 2026: ONE row for the whole program, same treatment as
+        // requiresCharacter above. A conflict-pair session is one
+        // program involving two characters, not two separate
+        // programs and not one row per pair the student has created -
+        // the dashboard never shows more than one row for it, no
+        // matter how many separate conflict instances exist. The
+        // coach page's own two-character picker is where an instance
+        // actually gets chosen or created; this row just links there.
+        // Status is an aggregate across every existing instance:
+        // "Completed" only when EVERY instance has finished every
+        // layer, "In Progress" if ANY instance has made any progress,
+        // no badge otherwise (same no-badge treatment computeStatus()
+        // already uses for zero progress, and the same aggregate
+        // logic used for requiresCharacter above).
         var instances = (conflictsBySlug && conflictsBySlug[session.slug]) || [];
-        if (!instances.length) {
-          // Nothing to pick from the dashboard itself — the two-
-          // character/label picker lives on the coach page — so this
-          // is just a plain Not Started row linking there, not an
-          // "add a character"-style prompt.
-          var noConflictRow = el('div', 'sh-ec-row');
-          var noConflictLink = document.createElement('a');
-          noConflictLink.className = 'sh-ec-title';
-          noConflictLink.href = '/coach/' + session.slug + '/';
-          noConflictLink.textContent = session.title;
-          mount(noConflictRow, noConflictLink);
-          mount(listEl, noConflictRow);
-          rowEls.push(noConflictRow);
-          return;
-        }
+        var anyConflictDone = false;
+        var allConflictComplete = instances.length > 0;
         instances.forEach(function (inst) {
-          var status = computeStatus(session, completedLessonKeys, inst.id);
-          var row = buildRow(session, status.label, status.key);
-          mount(listEl, row);
-          rowEls.push(row);
+          var iStatus = computeStatus(session, completedLessonKeys, inst.id);
+          if (iStatus.key !== 'not-started') anyConflictDone = true;
+          if (iStatus.key !== 'completed') allConflictComplete = false;
         });
+        var conflictLabel = '';
+        var conflictKey = 'not-started';
+        if (allConflictComplete) { conflictLabel = t('completed'); conflictKey = 'completed'; }
+        else if (anyConflictDone) { conflictLabel = t('inProgress'); conflictKey = 'in-progress'; }
+        var conflictRow = buildRow(session, conflictLabel, conflictKey);
+        mount(listEl, conflictRow);
+        rowEls.push(conflictRow);
       } else if (columnDef.track === 'excavation') {
         var status2 = computeStatus(session, completedLessonKeys);
         var row2 = buildRow(session, status2.label, status2.key);
