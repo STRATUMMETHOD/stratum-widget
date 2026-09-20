@@ -253,12 +253,21 @@
   border-radius: 16px 16px 0 0;
 }
 
-/* Full-bleed dark page background for any page that reuses this shared
-   topbar (WIP Profile, future Coach session pages) — without this, only
-   the card itself is dark and the rest of the browser viewport stays the
-   theme's default white, which is exactly the "floating card on a blank
-   white page, disconnected from the System Page" look Ted flagged. */
-body:has(.sh-topbar--standalone) {
+/* Full-bleed dark page background for any page that renders .sh-wrap —
+   without this, only the card itself is dark and the rest of the
+   browser viewport stays the theme's default white, which is exactly
+   the "floating card on a blank white page" look Ted flagged. Sept
+   2026 fix: was scoped to body:has(.sh-topbar--standalone) only, which
+   covers every standalone page (WIP Profile, Coach session pages,
+   Practice Lab, Library) since they all build their own .sh-wrap and
+   call window.StratumHeader.buildTopbar() into it - but NOT the System
+   Page/Dashboard itself, which builds its .sh-wrap via buildHeader()
+   and never gets that class. That's exactly why the Dashboard alone
+   showed a white edge around its rounded card while every other page
+   didn't. Broadened to match .sh-wrap directly, which every page type
+   has either way, so the same full-bleed treatment now applies
+   everywhere uniformly.*/
+body:has(.sh-wrap) {
   background: #16130F;
 }
 
