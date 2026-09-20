@@ -348,21 +348,30 @@
           rowEls.push(noCharRow);
           return;
         }
+        // Sept 2026: collapsed back to ONE row for the whole program,
+        // not one per character. The coach page's own character picker
+        // (stratum-coach.js buildCharacterPicker()) is where a writer
+        // actually chooses who this session is for - the dashboard's
+        // job is just to link there. This row's status badge is an
+        // aggregate across every character in the active WIP:
+        // "Completed" only when EVERY character has finished every
+        // layer, "In Progress" if ANY character has made any progress
+        // at all, no badge otherwise (same no-badge treatment
+        // computeStatus() already uses for zero progress).
+        var anyDone = false;
+        var allComplete = true;
         characters.forEach(function (c) {
-          var status = computeStatus(session, completedLessonKeys, c.id);
-          // Sept 2026: was session.title + ' — ' + c.name — per request,
-          // the character's name no longer shows on the card label. Note
-          // the side effect this creates on its own: with more than one
-          // character, every row for this session now renders with the
-          // identical title and the identical link, distinguishable only
-          // by each row's status badge — there's no longer any visible
-          // way to tell WHICH character a given row is for from the
-          // dashboard alone (the coach page's own character picker still
-          // knows, this is purely a Excavation Center display change).
-          var row = buildRow(session, status.label, status.key);
-          mount(listEl, row);
-          rowEls.push(row);
+          var cStatus = computeStatus(session, completedLessonKeys, c.id);
+          if (cStatus.key !== 'not-started') anyDone = true;
+          if (cStatus.key !== 'completed') allComplete = false;
         });
+        var aggLabel = '';
+        var aggKey = 'not-started';
+        if (allComplete) { aggLabel = t('completed'); aggKey = 'completed'; }
+        else if (anyDone) { aggLabel = t('inProgress'); aggKey = 'in-progress'; }
+        var row = buildRow(session, aggLabel, aggKey);
+        mount(listEl, row);
+        rowEls.push(row);
       } else if (columnDef.track === 'excavation' && session.requiresConflictPair) {
         // One row per CONFLICT INSTANCE, not one row for the whole
         // program and not one row per character — this program's
