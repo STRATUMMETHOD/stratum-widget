@@ -240,19 +240,36 @@
       .then(function (d) { callback((d && d.known && d.text) ? d.text : null); })
       .catch(function () { callback(null); });
   }
-  // Only meaningful when SELECTED_CONFLICT is set (requiresConflictPair
-  // sessions); callback(null) immediately for every other session so
-  // getContextBlock's chain below stays a no-op elsewhere.
-  function fetchConflictProfiles(callback) {
-    if (!SELECTED_CONFLICT) { callback(null); return; }
-    var pending = 2;
-    var result = {
-      aName: SELECTED_CONFLICT.characterA.name, aText: null,
-      bName: SELECTED_CONFLICT.characterB.name, bText: null
-    };
-    function maybeDone() { pending--; if (pending === 0) callback(result); }
-    fetchCharacterExcavationProfile(SELECTED_CONFLICT.characterA.id, function (text) { result.aText = text; maybeDone(); });
-    fetchCharacterExcavationProfile(SELECTED_CONFLICT.characterB.id, function (text) { result.bText = text; maybeDone(); });
+  // Sept 2026: generalized from the Conflict Resolution-only version —
+  // Character Voice (and any future single-character Writing/General
+  // topic) links a character per check-in via resolveCharacterForCheckin()
+  // below, and needs the exact same profile pull SELECTED_CONFLICT
+  // already gets. Guards against pulling a character's own excavation
+  // profile into the Character Excavation session itself, which would
+  // be circular and never actually useful.
+  function fetchLinkedProfiles(callback) {
+    if (SESSION.slug === CHARACTER_EXCAVATION_SLUG) { callback([]); return; }
+    if (SELECTED_CONFLICT) {
+      var pending = 2;
+      var result = [];
+      function maybeDone() { pending--; if (pending === 0) callback(result); }
+      fetchCharacterExcavationProfile(SELECTED_CONFLICT.characterA.id, function (text) {
+        if (text) result.push({ name: SELECTED_CONFLICT.characterA.name, text: text });
+        maybeDone();
+      });
+      fetchCharacterExcavationProfile(SELECTED_CONFLICT.characterB.id, function (text) {
+        if (text) result.push({ name: SELECTED_CONFLICT.characterB.name, text: text });
+        maybeDone();
+      });
+      return;
+    }
+    if (SELECTED_CHARACTER) {
+      fetchCharacterExcavationProfile(SELECTED_CHARACTER.id, function (text) {
+        callback(text ? [{ name: SELECTED_CHARACTER.name, text: text }] : []);
+      });
+      return;
+    }
+    callback([]);
   }
   // ---- Recurring Check-In engine (General/Writing tracks) ----
   // Every past check-in across every topic in this session type, in one
@@ -286,7 +303,7 @@
   // antagonistType/mcGoal are replaced by a real characters[] list, each
   // with name/type/roleType/coreConflict, listed out individually so the
   // coach has the full cast, not just one protagonist and one antagonist.
-  function buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy, conflictProfiles) {
+  function buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy, linkedProfiles) {
     var block = '';
     if (coachingPhilosophy) {
       block += '\n\nCOACHING PHILOSOPHY FOR THIS TRACK - PRIVATE, NEVER SHOWN TO THE STUDENT, APPLIES ACROSS EVERY EXCAVATION (this layer\'s own Coaching Approach below, if any, refines or takes precedence where they conflict):\n' + coachingPhilosophy;
@@ -314,13 +331,10 @@
         block += '\n\nLANGUAGE: This student has selected ' + project.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + project.language + ', every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically, not as a literal translation. Exception: keep every hidden bracket tag exactly in English bracket format as instructed elsewhere in this prompt - only the name inside a NAME tag and the content inside deliverable field tags should reflect what the student actually said.';
       }
     }
-    if (conflictProfiles) {
-      if (conflictProfiles.aText) {
-        block += '\n\nEXISTING CHARACTER EXCAVATION PROFILE FOR ' + conflictProfiles.aName.toUpperCase() + ' (already confirmed by the writer in a prior Character Development session - use this directly for The Real Stakes, Why Neither Will Bend, and any other layer that needs it, rather than re-deriving Wants/Needs or Hidden Truth from scratch; only ask live if this genuinely doesn\u2019t cover what a layer needs):\n' + conflictProfiles.aText;
-      }
-      if (conflictProfiles.bText) {
-        block += '\n\nEXISTING CHARACTER EXCAVATION PROFILE FOR ' + conflictProfiles.bName.toUpperCase() + ' (same as above - already confirmed by the writer, use it directly rather than re-deriving):\n' + conflictProfiles.bText;
-      }
+    if (linkedProfiles && linkedProfiles.length) {
+      linkedProfiles.forEach(function (p) {
+        block += '\n\nEXISTING CHARACTER EXCAVATION PROFILE FOR ' + p.name.toUpperCase() + ' (already confirmed by the writer in a prior Character Development session - use this directly rather than re-deriving Wants/Needs, Hidden Truth, or anything else it already covers from scratch; only ask live if this genuinely doesn\'t cover what\'s needed here):\n' + p.text;
+      });
     }
     if (ideaLog.length) {
       var sorted = ideaLog.slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); }).slice(0, 20);
@@ -635,8 +649,8 @@
         fetchTasks(function (tasks) {
           fetchGlobalInstructions(function (globalInstructions) {
             fetchCoachingPhilosophy(SESSION.track || 'excavation', function (coachingPhilosophy) {
-              fetchConflictProfiles(function (conflictProfiles) {
-                CONTEXT_BLOCK_CACHE = buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy, conflictProfiles);
+              fetchLinkedProfiles(function (linkedProfiles) {
+                CONTEXT_BLOCK_CACHE = buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy, linkedProfiles);
                 callback(CONTEXT_BLOCK_CACHE);
               });
             });
@@ -768,6 +782,16 @@
       'WHAT THIS TOPIC COVERS (' + scopeNote + ')' + (SESSION.transcript ? ':\n"""\n' + SESSION.transcript + '\n"""' : '.'),
       'WHAT THIS CONVERSATION IS FOR:\nThis single, continuous, natural conversation is a check-in on ' + layer.label + '. Draw on the areas below - in whatever order the conversation naturally takes - as a guide to what\u2019s worth exploring, not a checklist that must all be covered before you can close:\n\n' + areas
     ];
+    // Sept 2026: parallel to the Excavation engine's own SELECTED_CHARACTER
+    // block - a Writing/General topic flagged requiresCharacter (Character
+    // Voice) links a character per check-in via resolveCharacterForCheckin(),
+    // not once per tab, so this is read fresh every time a check-in starts.
+    if (SELECTED_CHARACTER) {
+      var recCharLines = ['THE CHARACTER THIS CHECK-IN IS ABOUT:\nThe writer has said this check-in concerns ' + (SELECTED_CHARACTER.name || 'this character') + ' specifically. Ground your questions in this character where it helps, using anything already known about them below rather than treating this as a check-in about the writer\u2019s craft in the abstract.'];
+      var recCharFacts = [SELECTED_CHARACTER.type, SELECTED_CHARACTER.roleType, SELECTED_CHARACTER.coreConflict].filter(Boolean).join(' | ');
+      if (recCharFacts) recCharLines.push(recCharFacts);
+      parts.push(recCharLines.join('\n'));
+    }
     if (workedExamples) {
       parts.push('WORKED EXAMPLES - HOW A WELL-TRAINED COACH HANDLES MOMENTS LIKE THESE - NEVER SHOWN OR QUOTED TO THE PERSON:\n' + workedExamples);
     }
@@ -1217,6 +1241,16 @@
   }
 
   function afterWipResolved(container, indicatorSlot) {
+    if (ENGINE_MODE !== 'excavation') {
+      // Sept 2026: General/Writing sessions don't gate on a character
+      // here even when requiresCharacter is set (Character Voice) -
+      // that link is asked per check-in, not once per tab, since
+      // "each visit is a fresh conversation" already means a different
+      // visit may reasonably be about a different character. See
+      // resolveCharacterForCheckin() in the recurring engine section.
+      buildRecurringPage(container);
+      return;
+    }
     if (SESSION.requiresCharacter) {
       resolveCharacterThenStart(container, indicatorSlot);
     } else if (SESSION.requiresConflictPair) {
@@ -1239,6 +1273,19 @@
       }
       container.innerHTML = '';
       if (!wips.length) {
+        // Sept 2026: only the Excavation engine hard-requires a WIP up
+        // front - a character- or conflict-scoped excavation genuinely
+        // has nothing to run without one. General/Writing sessions work
+        // fine with no WIP on file at all (project context and any
+        // linked-character profile pull are simply unavailable, same as
+        // they silently were before this WIP-resolution step existed
+        // for this engine), so they proceed straight through instead of
+        // gating on this empty state.
+        if (ENGINE_MODE !== 'excavation') {
+          ACTIVE_WIP_ID = null;
+          afterWipResolved(container, indicatorSlot);
+          return;
+        }
         var empty = el('div', 'sh-coach-page');
         mount(empty, el('p', null, 'You don\u2019t have a work-in-progress in your profile yet. Add one, then come back here.'));
         var link = document.createElement('a');
@@ -1545,6 +1592,7 @@
   // fresh conversation with the full history of past check-ins across
   // every topic in this session type injected as context.
   function buildRecurringPage(container) {
+    container.innerHTML = ''; // may be reached after resolveWipThenStart used this same container as scratch space for a WIP picker
     var shell = el('div', 'sh-wrap');
     if (window.StratumHeader) window.StratumHeader.buildTopbar(shell);
 
@@ -1614,28 +1662,98 @@
     loadLayerConfig(layer.layerNumber, function (cfg) {
       if (!cfg) { alert('This topic isn\u2019t set up yet.'); return; }
       LAYER_CONFIG = cfg;
-      var chatOuter = document.getElementById('shRecurringChatOuter');
-      chatOuter.innerHTML = '';
-      chatOuter.style.display = '';
-      topicListEl.style.display = 'none';
-      var backLink = document.createElement('a');
-      backLink.href = '#';
-      backLink.className = 'sh-recurring-back';
-      backLink.textContent = '\u2190 Back to topics';
-      backLink.addEventListener('click', function (e) { e.preventDefault(); returnToTopicList(); });
-      mount(chatOuter, backLink);
-      mount(chatOuter, el('h2', 'sh-recurring-topic-heading', layer.label));
-      buildChatPanel(chatOuter);
-      resetSessionState();
-      var knownName = studentName;
-      var primerText = knownName
-        ? "Begin the check-in. The student's name is already known: " + knownName + '. Do not ask for their name again - greet them by name and move straight in.'
-        : 'Begin the check-in.';
-      var greetingText = getGreetingText(knownName);
-      conversationHistory.push({ role: 'user', content: primerText });
-      conversationHistory.push({ role: 'assistant', content: greetingText });
-      addMessage('assistant', greetingText);
+      if (SESSION.requiresCharacter) {
+        resolveCharacterForCheckin(function () { reallyStartCheckin(layer); });
+      } else {
+        SELECTED_CHARACTER = null;
+        reallyStartCheckin(layer);
+      }
     });
+  }
+
+  // Sept 2026: Character Voice (and any future requiresCharacter
+  // Writing/General topic) asks which existing character this check-in
+  // is about BEFORE building the chat panel, so an existing Character
+  // Development profile can be pulled in via fetchLinkedProfiles().
+  // Deliberately NOT locked via sessionStorage the way the Excavation
+  // engine's character picker is - "each visit is a fresh conversation"
+  // already means a different visit may reasonably be about a different
+  // character, so this is asked fresh every time a check-in starts
+  // rather than remembered across the tab. Also unlike the Excavation
+  // engine, this is enrichment, not a requirement: a "not about one
+  // specific character" option is always offered, and having zero
+  // characters in the WIP (or no WIP at all) never blocks starting the
+  // check-in - it just proceeds with no character linked.
+  function resolveCharacterForCheckin(onResolved) {
+    var chatOuter = document.getElementById('shRecurringChatOuter');
+    chatOuter.innerHTML = '';
+    chatOuter.style.display = '';
+    topicListEl.style.display = 'none';
+    if (!ACTIVE_WIP_ID) {
+      SELECTED_CHARACTER = null;
+      onResolved();
+      return;
+    }
+    fetchProjectData(function (project) {
+      var characters = (project && Array.isArray(project.characters)) ? project.characters.filter(function (c) { return c.name; }) : [];
+      if (!characters.length) {
+        SELECTED_CHARACTER = null;
+        onResolved();
+        return;
+      }
+      chatOuter.innerHTML = '';
+      mount(chatOuter, el('p', 'sh-coach-sub', 'Which of your characters is this about? Optional \u2014 skip if it isn\u2019t about one specific character.'));
+      var wrap = el('div', 'sh-recurring-topics');
+      characters.forEach(function (c) {
+        var row = el('div', 'sh-recurring-topic-row');
+        row.addEventListener('click', function () {
+          SELECTED_CHARACTER = c;
+          CONTEXT_BLOCK_CACHE = null; // any cached context block was built for a different (or no) character - force a fresh fetch so the right profile gets pulled in
+          onResolved();
+        });
+        mount(row, el('div', 'sh-recurring-topic-title', c.name));
+        var metaBits = [c.type, c.roleType].filter(Boolean);
+        mount(row, el('div', 'sh-recurring-topic-meta', metaBits.join(' \u00b7 ') || '\u00a0'));
+        mount(wrap, row);
+      });
+      var skipRow = el('div', 'sh-recurring-topic-row');
+      skipRow.addEventListener('click', function () {
+        SELECTED_CHARACTER = null;
+        CONTEXT_BLOCK_CACHE = null;
+        onResolved();
+      });
+      mount(skipRow, el('div', 'sh-recurring-topic-title', 'Not about one specific character'));
+      mount(skipRow, el('div', 'sh-recurring-topic-meta', '\u00a0'));
+      mount(wrap, skipRow);
+      mount(chatOuter, wrap);
+    });
+  }
+
+  function reallyStartCheckin(layer) {
+    var chatOuter = document.getElementById('shRecurringChatOuter');
+    chatOuter.innerHTML = '';
+    chatOuter.style.display = '';
+    topicListEl.style.display = 'none';
+    var backLink = document.createElement('a');
+    backLink.href = '#';
+    backLink.className = 'sh-recurring-back';
+    backLink.textContent = '\u2190 Back to topics';
+    backLink.addEventListener('click', function (e) { e.preventDefault(); returnToTopicList(); });
+    mount(chatOuter, backLink);
+    mount(chatOuter, el('h2', 'sh-recurring-topic-heading', layer.label));
+    if (SELECTED_CHARACTER) {
+      mount(chatOuter, el('p', 'sh-coach-sub', 'About: ' + SELECTED_CHARACTER.name));
+    }
+    buildChatPanel(chatOuter);
+    resetSessionState();
+    var knownName = studentName;
+    var primerText = knownName
+      ? "Begin the check-in. The student's name is already known: " + knownName + '. Do not ask for their name again - greet them by name and move straight in.'
+      : 'Begin the check-in.';
+    var greetingText = getGreetingText(knownName);
+    conversationHistory.push({ role: 'user', content: primerText });
+    conversationHistory.push({ role: 'assistant', content: greetingText });
+    addMessage('assistant', greetingText);
   }
 
   function returnToTopicList() {
@@ -1698,7 +1816,17 @@
         if (ENGINE_MODE === 'excavation') {
           buildPage(container);
         } else {
-          buildRecurringPage(container);
+          // Sept 2026: General/Writing sessions now resolve ACTIVE_WIP_ID
+          // the same way Excavation sessions do (previously this engine
+          // never called resolveWipThenStart at all, so fetchProjectData's
+          // ACTIVE_WIP_ID guard silently returned null forever - no WIP
+          // facts, no character list, and no linked-character profile
+          // pull were ever possible here, even though buildProjectContextBlock
+          // was written to include them). The indicator slot is
+          // deliberately detached (never mounted) - recurring pages don't
+          // show a "Working in: X" line the way Excavation pages do; see
+          // afterWipResolved()'s ENGINE_MODE branch for what runs next.
+          resolveWipThenStart(container, el('div'));
         }
       });
     });
