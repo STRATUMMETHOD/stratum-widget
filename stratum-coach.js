@@ -87,6 +87,7 @@
   var ALL_CHECKIN_NOTES = [];     // Recurring engine only — every past check-in across every topic in this session, fetched once and reused for both the topic list and each conversation's injected history
   var topicListEl = null;         // Recurring engine only
   var SELECTED_CHARACTER = null;  // {id, name, type, roleType, coreConflict} — set via the character picker for any excavation with requiresCharacter true; null for every other excavation
+  var SELECTED_CONFLICT = null;   // {instanceId, characterA, characterB, label} — set via the conflict-pair picker for any excavation with requiresConflictPair true; null for every other excavation. characterA/characterB are full {id, name, type, roleType, coreConflict} objects, same shape as SELECTED_CHARACTER.
   var ACTIVE_WIP_ID = null;       // Sept 2026 (multiple WIPs): every Excavation-Track session's coaching context (and, for requiresCharacter sessions, its character list) is scoped to one WIP — resolved by resolveWipThenStart() before anything else runs
 
   var railEl, messagesEl, formEl, inputEl, sendBtn, contentEl;
@@ -222,6 +223,37 @@
       .then(function (d) { callback((d && d.known) ? d.content : ''); })
       .catch(function () { callback(''); });
   }
+
+  // Sept 2026: cross-excavation profile pull for requiresConflictPair
+  // sessions (Conflict Resolution). The Layer 2 coaching content
+  // ("The Real Stakes") is explicit that either character may already
+  // have a completed Character Excavation profile, and when one does,
+  // the session should pull it directly rather than re-deriving
+  // Wants/Needs and Hidden Truth from scratch. CHARACTER_EXCAVATION_SLUG
+  // must match whatever slug the admin actually saved Character
+  // Development under (confirmed via D1 as 'character-excavation') —
+  // if that ever changes, update it here too.
+  var CHARACTER_EXCAVATION_SLUG = 'character-excavation';
+  function fetchCharacterExcavationProfile(characterId, callback) {
+    fetch(PROXY_URL + '/excavation/master-deliverable?studentId=' + encodeURIComponent(STUDENT_ID) + '&excavationSlug=' + encodeURIComponent(CHARACTER_EXCAVATION_SLUG) + '&characterId=' + encodeURIComponent(characterId))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { callback((d && d.known && d.text) ? d.text : null); })
+      .catch(function () { callback(null); });
+  }
+  // Only meaningful when SELECTED_CONFLICT is set (requiresConflictPair
+  // sessions); callback(null) immediately for every other session so
+  // getContextBlock's chain below stays a no-op elsewhere.
+  function fetchConflictProfiles(callback) {
+    if (!SELECTED_CONFLICT) { callback(null); return; }
+    var pending = 2;
+    var result = {
+      aName: SELECTED_CONFLICT.characterA.name, aText: null,
+      bName: SELECTED_CONFLICT.characterB.name, bText: null
+    };
+    function maybeDone() { pending--; if (pending === 0) callback(result); }
+    fetchCharacterExcavationProfile(SELECTED_CONFLICT.characterA.id, function (text) { result.aText = text; maybeDone(); });
+    fetchCharacterExcavationProfile(SELECTED_CONFLICT.characterB.id, function (text) { result.bText = text; maybeDone(); });
+  }
   // ---- Recurring Check-In engine (General/Writing tracks) ----
   // Every past check-in across every topic in this session type, in one
   // running append-only log — NOT a single deliverable/synthesis, since
@@ -254,7 +286,7 @@
   // antagonistType/mcGoal are replaced by a real characters[] list, each
   // with name/type/roleType/coreConflict, listed out individually so the
   // coach has the full cast, not just one protagonist and one antagonist.
-  function buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy) {
+  function buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy, conflictProfiles) {
     var block = '';
     if (coachingPhilosophy) {
       block += '\n\nCOACHING PHILOSOPHY FOR THIS TRACK - PRIVATE, NEVER SHOWN TO THE STUDENT, APPLIES ACROSS EVERY EXCAVATION (this layer\'s own Coaching Approach below, if any, refines or takes precedence where they conflict):\n' + coachingPhilosophy;
@@ -280,6 +312,14 @@
       }
       if (project.language) {
         block += '\n\nLANGUAGE: This student has selected ' + project.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + project.language + ', every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically, not as a literal translation. Exception: keep every hidden bracket tag exactly in English bracket format as instructed elsewhere in this prompt - only the name inside a NAME tag and the content inside deliverable field tags should reflect what the student actually said.';
+      }
+    }
+    if (conflictProfiles) {
+      if (conflictProfiles.aText) {
+        block += '\n\nEXISTING CHARACTER EXCAVATION PROFILE FOR ' + conflictProfiles.aName.toUpperCase() + ' (already confirmed by the writer in a prior Character Development session - use this directly for The Real Stakes, Why Neither Will Bend, and any other layer that needs it, rather than re-deriving Wants/Needs or Hidden Truth from scratch; only ask live if this genuinely doesn\u2019t cover what a layer needs):\n' + conflictProfiles.aText;
+      }
+      if (conflictProfiles.bText) {
+        block += '\n\nEXISTING CHARACTER EXCAVATION PROFILE FOR ' + conflictProfiles.bName.toUpperCase() + ' (same as above - already confirmed by the writer, use it directly rather than re-deriving):\n' + conflictProfiles.bText;
       }
     }
     if (ideaLog.length) {
@@ -394,6 +434,14 @@
       if (SELECTED_CHARACTER.coreConflict) charFacts.push('Core conflict: ' + SELECTED_CHARACTER.coreConflict);
       if (charFacts.length) charLines.push(charFacts.join(' | '));
       parts.push(charLines.join('\n'));
+    } else if (SELECTED_CONFLICT) {
+      var confLines = ['THE CONFLICT THIS EXCAVATION IS ABOUT:\nEverything in this conversation is specifically about the conflict between ' + SELECTED_CONFLICT.characterA.name + ' and ' + SELECTED_CONFLICT.characterB.name + ' - not the writer themselves, and not any other character or conflict in their project. Keep every question anchored to this one dispute between these two people.'];
+      var aBits = [SELECTED_CONFLICT.characterA.type, SELECTED_CONFLICT.characterA.roleType, SELECTED_CONFLICT.characterA.coreConflict].filter(Boolean).join(' | ');
+      var bBits = [SELECTED_CONFLICT.characterB.type, SELECTED_CONFLICT.characterB.roleType, SELECTED_CONFLICT.characterB.coreConflict].filter(Boolean).join(' | ');
+      if (aBits) confLines.push(SELECTED_CONFLICT.characterA.name + ': ' + aBits);
+      if (bBits) confLines.push(SELECTED_CONFLICT.characterB.name + ': ' + bBits);
+      if (SELECTED_CONFLICT.label) confLines.push('This conflict\u2019s working label (as the writer named it): ' + SELECTED_CONFLICT.label);
+      parts.push(confLines.join('\n'));
     }
     parts.push(
       'WHAT THIS LAYER COVERS (' + scopeNote + ')' + (SESSION.transcript ? ':\n"""\n' + SESSION.transcript + '\n"""' : '.'),
@@ -587,8 +635,10 @@
         fetchTasks(function (tasks) {
           fetchGlobalInstructions(function (globalInstructions) {
             fetchCoachingPhilosophy(SESSION.track || 'excavation', function (coachingPhilosophy) {
-              CONTEXT_BLOCK_CACHE = buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy);
-              callback(CONTEXT_BLOCK_CACHE);
+              fetchConflictProfiles(function (conflictProfiles) {
+                CONTEXT_BLOCK_CACHE = buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy, conflictProfiles);
+                callback(CONTEXT_BLOCK_CACHE);
+              });
             });
           });
         });
@@ -862,7 +912,8 @@
   // alone isn't unique across excavations, since Character Excavation's
   // Layer 1 and a future Worldbuilding's Layer 1 are different things.
   function lessonKey(layerNumber) {
-    return SESSION.slug + ':' + layerNumber + (SELECTED_CHARACTER ? ':' + SELECTED_CHARACTER.id : '');
+    var scopeId = SELECTED_CHARACTER ? SELECTED_CHARACTER.id : (SELECTED_CONFLICT ? SELECTED_CONFLICT.instanceId : null);
+    return SESSION.slug + ':' + layerNumber + (scopeId ? ':' + scopeId : '');
   }
 
   function loadLayerConfig(layerNumber, callback) {
@@ -941,13 +992,14 @@
   function synthesizeMasterDeliverable() {
     contentEl.innerHTML = '';
     mount(contentEl, el('div', 'sh-coach-loading', 'Bringing together everything you\u2019ve excavated\u2026'));
-    var charParam = SELECTED_CHARACTER ? '&characterId=' + encodeURIComponent(SELECTED_CHARACTER.id) : '';
-    fetch(PROXY_URL + '/excavation/master-deliverable?studentId=' + encodeURIComponent(STUDENT_ID) + '&excavationSlug=' + encodeURIComponent(SESSION.slug) + charParam)
+    var scopeParam = SELECTED_CHARACTER ? '&characterId=' + encodeURIComponent(SELECTED_CHARACTER.id) : (SELECTED_CONFLICT ? '&instanceId=' + encodeURIComponent(SELECTED_CONFLICT.instanceId) : '');
+    fetch(PROXY_URL + '/excavation/master-deliverable?studentId=' + encodeURIComponent(STUDENT_ID) + '&excavationSlug=' + encodeURIComponent(SESSION.slug) + scopeParam)
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d && d.known && d.text) { renderSynthesisCard(d.text); return; }
         var body = { studentId: STUDENT_ID, excavationSlug: SESSION.slug, lang: LANG };
         if (SELECTED_CHARACTER) body.characterId = SELECTED_CHARACTER.id;
+        else if (SELECTED_CONFLICT) body.instanceId = SELECTED_CONFLICT.instanceId;
         return fetch(PROXY_URL + '/excavation/synthesize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -984,7 +1036,7 @@
     // left blank.
     var closingWrap = el('div', 'sh-msg-row sh-assistant');
     var closingBubble = el('div', 'sh-msg-bubble');
-    var whoText = SELECTED_CHARACTER ? SELECTED_CHARACTER.name : null;
+    var whoText = SELECTED_CHARACTER ? SELECTED_CHARACTER.name : (SELECTED_CONFLICT ? (SELECTED_CONFLICT.characterA.name + ' & ' + SELECTED_CONFLICT.characterB.name) : null);
     if (SESSION.closingMessage) {
       closingBubble.textContent = applyClosingTokens(SESSION.closingMessage, studentName, whoText);
     } else {
@@ -1157,6 +1209,7 @@
       e.preventDefault();
       sessRemove(WIP_LOCK_KEY);
       sessRemove(CHAR_LOCK_PREFIX + SESSION.slug);
+      sessRemove(CONFLICT_LOCK_PREFIX + SESSION.slug);
       location.reload();
     });
     line.appendChild(switchLink);
@@ -1166,6 +1219,8 @@
   function afterWipResolved(container, indicatorSlot) {
     if (SESSION.requiresCharacter) {
       resolveCharacterThenStart(container, indicatorSlot);
+    } else if (SESSION.requiresConflictPair) {
+      resolveConflictThenStart(container, indicatorSlot);
     } else {
       startExcavationProper();
     }
@@ -1310,6 +1365,173 @@
         mount(wrap, row);
       });
       mount(container, wrap);
+    });
+  }
+
+  // ----------------------------------------------------------
+  // CONFLICT-PAIR PICKER — excavations with requiresConflictPair true
+  // ----------------------------------------------------------
+  // Conflict Resolution (and any future requiresConflictPair
+  // excavation) runs once PER CONFLICT INSTANCE, not once per student
+  // and not once per character — a writer may have several unrelated
+  // conflicts going in the same WIP, each with its own separate
+  // progress (see SELECTED_CONFLICT, lessonKey(), and the conflict
+  // context block in buildSystemPrompt()). Deliberately mirrors the
+  // character picker immediately above: once picked, the instance is
+  // LOCKED for this browser tab via sessionStorage so a reload resumes
+  // the same conflict silently; the only way to change it is the
+  // explicit "Switch conflict" link. Reuses the character picker's own
+  // CSS classes (sh-recurring-topic-row etc.) rather than introducing
+  // new ones, since the row shape is identical.
+  var CONFLICT_LOCK_PREFIX = 'stratum_conflict_';
+
+  function showConflictIndicator(slot) {
+    var line = el('p', 'sh-coach-sub');
+    var names = SELECTED_CONFLICT.characterA.name + ' & ' + SELECTED_CONFLICT.characterB.name;
+    line.appendChild(document.createTextNode('Working through: ' + names + '  \u00b7  '));
+    var switchLink = document.createElement('a');
+    switchLink.href = '#';
+    switchLink.className = 'sh-char-switch-link';
+    switchLink.textContent = 'Switch conflict';
+    switchLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      sessRemove(CONFLICT_LOCK_PREFIX + SESSION.slug);
+      location.reload();
+    });
+    line.appendChild(switchLink);
+    mount(slot, line);
+  }
+
+  function fetchConflictInstances(callback) {
+    fetch(PROXY_URL + '/conflict-instances?studentId=' + encodeURIComponent(STUDENT_ID) + '&wipId=' + encodeURIComponent(ACTIVE_WIP_ID) + '&excavationSlug=' + encodeURIComponent(SESSION.slug))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { callback((d && Array.isArray(d.instances)) ? d.instances : []); })
+      .catch(function () { callback([]); });
+  }
+
+  function createConflictInstance(characterAId, characterBId, callback) {
+    fetch(PROXY_URL + '/conflict-instances', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: STUDENT_ID, wipId: ACTIVE_WIP_ID, excavationSlug: SESSION.slug, characterAId: characterAId, characterBId: characterBId })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { callback((d && d.ok) ? d.instanceId : null); })
+      .catch(function () { callback(null); });
+  }
+
+  function resolveConflictThenStart(container, indicatorSlot) {
+    container.innerHTML = ''; // deliberately no loading text, same reasoning as resolveCharacterThenStart above
+    fetchProjectData(function (project) {
+      var characters = (project && Array.isArray(project.characters)) ? project.characters.filter(function (c) { return c.name; }) : [];
+      var charById = {};
+      characters.forEach(function (c) { charById[c.id] = c; });
+
+      fetchConflictInstances(function (instances) {
+        var lockedId = sessGet(CONFLICT_LOCK_PREFIX + SESSION.slug);
+        var lockedInst = lockedId ? instances.filter(function (i) { return i.id === lockedId; })[0] : null;
+        if (lockedInst && charById[lockedInst.characterAId] && charById[lockedInst.characterBId]) {
+          // Resuming this tab's already-locked conflict — skip the
+          // picker entirely, no prompt, no chance to switch by accident.
+          SELECTED_CONFLICT = {
+            instanceId: lockedInst.id,
+            characterA: charById[lockedInst.characterAId],
+            characterB: charById[lockedInst.characterBId],
+            label: lockedInst.label || null
+          };
+          showConflictIndicator(indicatorSlot);
+          startExcavationProper();
+          return;
+        }
+
+        container.innerHTML = '';
+        if (characters.length < 2) {
+          var empty = el('div', 'sh-coach-page');
+          mount(empty, el('p', null, 'This excavation is between two characters, and there aren\u2019t at least two in this WIP yet. Add another, then come back here.'));
+          var link = document.createElement('a');
+          link.className = 'sh-save-btn';
+          link.href = '/system/';
+          link.textContent = '\u2190 Add a character';
+          mount(empty, link);
+          mount(container, empty);
+          return;
+        }
+
+        function startNewInstance(charA, charB) {
+          container.innerHTML = '';
+          mount(container, el('div', 'sh-coach-loading', 'Setting up this conflict\u2026'));
+          createConflictInstance(charA.id, charB.id, function (instanceId) {
+            if (!instanceId) {
+              container.innerHTML = '';
+              mount(container, el('p', null, 'Couldn\u2019t start this conflict right now. Refresh to try again.'));
+              return;
+            }
+            SELECTED_CONFLICT = { instanceId: instanceId, characterA: charA, characterB: charB, label: null };
+            sessSet(CONFLICT_LOCK_PREFIX + SESSION.slug, instanceId);
+            showConflictIndicator(indicatorSlot);
+            startExcavationProper();
+          });
+        }
+
+        function renderPickSecond(charA) {
+          container.innerHTML = '';
+          mount(container, el('p', 'sh-coach-sub', 'And who is ' + charA.name + ' in conflict with?'));
+          var wrap = el('div', 'sh-recurring-topics');
+          characters.filter(function (c) { return c.id !== charA.id; }).forEach(function (c) {
+            var row = el('div', 'sh-recurring-topic-row');
+            row.addEventListener('click', function () { startNewInstance(charA, c); });
+            mount(row, el('div', 'sh-recurring-topic-title', c.name));
+            var metaBits = [c.type, c.roleType].filter(Boolean);
+            mount(row, el('div', 'sh-recurring-topic-meta', metaBits.join(' \u00b7 ') || '\u00a0'));
+            mount(wrap, row);
+          });
+          mount(container, wrap);
+        }
+
+        function renderPickFirst() {
+          container.innerHTML = '';
+          mount(container, el('p', 'sh-coach-sub', 'Which two characters is this conflict between? Choose the first.'));
+          var wrap = el('div', 'sh-recurring-topics');
+          characters.forEach(function (c) {
+            var row = el('div', 'sh-recurring-topic-row');
+            row.addEventListener('click', function () { renderPickSecond(c); });
+            mount(row, el('div', 'sh-recurring-topic-title', c.name));
+            var metaBits = [c.type, c.roleType].filter(Boolean);
+            mount(row, el('div', 'sh-recurring-topic-meta', metaBits.join(' \u00b7 ') || '\u00a0'));
+            mount(wrap, row);
+          });
+          mount(container, wrap);
+        }
+
+        if (!instances.length) {
+          renderPickFirst();
+          return;
+        }
+
+        // Existing conflicts to resume, plus the option to start a new one.
+        mount(container, el('p', 'sh-coach-sub', 'Which conflict is this session for?'));
+        var wrap = el('div', 'sh-recurring-topics');
+        instances.forEach(function (inst) {
+          var a = charById[inst.characterAId], b = charById[inst.characterBId];
+          if (!a || !b) return; // a character behind this instance was since removed from the WIP — skip rather than show a broken row
+          var row = el('div', 'sh-recurring-topic-row');
+          row.addEventListener('click', function () {
+            SELECTED_CONFLICT = { instanceId: inst.id, characterA: a, characterB: b, label: inst.label || null };
+            sessSet(CONFLICT_LOCK_PREFIX + SESSION.slug, inst.id);
+            showConflictIndicator(indicatorSlot);
+            startExcavationProper();
+          });
+          mount(row, el('div', 'sh-recurring-topic-title', inst.label || (a.name + ' & ' + b.name)));
+          mount(row, el('div', 'sh-recurring-topic-meta', inst.label ? (a.name + ' & ' + b.name) : '\u00a0'));
+          mount(wrap, row);
+        });
+        var newRow = el('div', 'sh-recurring-topic-row');
+        newRow.addEventListener('click', renderPickFirst);
+        mount(newRow, el('div', 'sh-recurring-topic-title', '+ Start a new conflict'));
+        mount(newRow, el('div', 'sh-recurring-topic-meta', '\u00a0'));
+        mount(wrap, newRow);
+        mount(container, wrap);
+      });
     });
   }
 
