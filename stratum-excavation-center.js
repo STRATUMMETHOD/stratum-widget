@@ -326,7 +326,7 @@
     var col = el('div', 'sh-dash-card sh-ec-column');
     var head = el('div', 'sh-dash-card-head');
     mount(head, el('p', 'sh-dash-card-title', t(columnDef.labelKey)));
-    // Sept 2026: each card now caps at 2 rows by default, with a View
+    // Sept 2026: each card now caps at 3 rows by default, with a View
     // All / Show Less toggle - same collapsed/expanded pattern the
     // other dashboard cards already use, but per-card here rather than
     // for the whole section, since each of the three tracks can have
@@ -444,16 +444,17 @@
     // true recency sorting that isn't actually there.
     var expanded = false;
     function updateVisibility() {
-      rowEls.forEach(function (r, i) { r.style.display = (expanded || i < 2) ? '' : 'none'; });
+      rowEls.forEach(function (r, i) { r.style.display = (expanded || i < 3) ? '' : 'none'; });
     }
     updateVisibility();
-    // Sept 2026 fix: was only shown when rowEls.length > 2, so a card
-    // with 0-2 rows never got a button at all - looked like the button
-    // was simply missing from that card. Ted asked for it on all three
-    // cards, always, so it's now always rendered; it's just inert
-    // (disabled, no-op) when there's nothing to expand.
+    // Sept 2026 fix: was only shown when rowEls.length > 2 (now > 3, to
+    // match the collapsed cap above), so a card with 0-3 rows never got
+    // a button at all - looked like the button was simply missing from
+    // that card. Ted asked for it on all three cards, always, so it's
+    // now always rendered; it's just inert (disabled, no-op) when
+    // there's nothing to expand.
     viewAllBtn.style.display = '';
-    if (rowEls.length > 2) {
+    if (rowEls.length > 3) {
       viewAllBtn.addEventListener('click', function () {
         expanded = !expanded;
         viewAllBtn.textContent = expanded ? t('showLess') : t('viewAll');

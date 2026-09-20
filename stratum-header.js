@@ -511,7 +511,6 @@
       a.textContent = pair[0];
       mount(nav, a);
     });
-    mount(nav, buildTutorialDropdown());
     mount(nav, buildLanguageDropdown());
     mount(nav, buildAvatarDropdown());
     mount(topbar, nav);
