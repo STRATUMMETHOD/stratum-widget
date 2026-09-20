@@ -155,6 +155,21 @@
   }
   function mount(parent, child) { parent.appendChild(child); return child; }
 
+  // Sept 2026 fix: see stratum-updates.js/stratum-wip-panel.js for the
+  // full comment - duplicated identically here. RANK ORDER: 0 What's
+  // New, 1 Profile, 2 Coaching columns (this file), 3 Practice/Library
+  // teaser row, 4 Idea Log/Reminders.
+  function insertAtDashOrder(wrapEl, section, rank) {
+    section.setAttribute('data-dash-order', String(rank));
+    var children = Array.prototype.slice.call(wrapEl.children);
+    var before = null;
+    for (var i = 0; i < children.length; i++) {
+      var childRank = children[i].getAttribute('data-dash-order');
+      if (childRank !== null && Number(childRank) > rank) { before = children[i]; break; }
+    }
+    wrapEl.insertBefore(section, before);
+  }
+
   function fetchCompletions(studentId, callback) {
     if (!studentId) { callback([]); return; }
     fetch(PROXY_URL + '/completions?studentId=' + encodeURIComponent(studentId))
@@ -348,60 +363,52 @@
           rowEls.push(noCharRow);
           return;
         }
-        // Sept 2026: collapsed back to ONE row for the whole program,
-        // not one per character. The coach page's own character picker
-        // (stratum-coach.js buildCharacterPicker()) is where a writer
-        // actually chooses who this session is for - the dashboard's
-        // job is just to link there. This row's status badge is an
-        // aggregate across every character in the active WIP:
-        // "Completed" only when EVERY character has finished every
-        // layer, "In Progress" if ANY character has made any progress
-        // at all, no badge otherwise (same no-badge treatment
-        // computeStatus() already uses for zero progress).
-        var anyDone = false;
-        var allComplete = true;
         characters.forEach(function (c) {
-          var cStatus = computeStatus(session, completedLessonKeys, c.id);
-          if (cStatus.key !== 'not-started') anyDone = true;
-          if (cStatus.key !== 'completed') allComplete = false;
+          var status = computeStatus(session, completedLessonKeys, c.id);
+          // Sept 2026: was session.title + ' — ' + c.name — per request,
+          // the character's name no longer shows on the card label. Note
+          // the side effect this creates on its own: with more than one
+          // character, every row for this session now renders with the
+          // identical title and the identical link, distinguishable only
+          // by each row's status badge — there's no longer any visible
+          // way to tell WHICH character a given row is for from the
+          // dashboard alone (the coach page's own character picker still
+          // knows, this is purely a Excavation Center display change).
+          var row = buildRow(session, status.label, status.key);
+          mount(listEl, row);
+          rowEls.push(row);
         });
-        var aggLabel = '';
-        var aggKey = 'not-started';
-        if (allComplete) { aggLabel = t('completed'); aggKey = 'completed'; }
-        else if (anyDone) { aggLabel = t('inProgress'); aggKey = 'in-progress'; }
-        var row = buildRow(session, aggLabel, aggKey);
-        mount(listEl, row);
-        rowEls.push(row);
       } else if (columnDef.track === 'excavation' && session.requiresConflictPair) {
-        // Sept 2026: ONE row for the whole program, same treatment as
-        // requiresCharacter above. A conflict-pair session is one
-        // program involving two characters, not two separate
-        // programs and not one row per pair the student has created -
-        // the dashboard never shows more than one row for it, no
-        // matter how many separate conflict instances exist. The
-        // coach page's own two-character picker is where an instance
-        // actually gets chosen or created; this row just links there.
-        // Status is an aggregate across every existing instance:
-        // "Completed" only when EVERY instance has finished every
-        // layer, "In Progress" if ANY instance has made any progress,
-        // no badge otherwise (same no-badge treatment computeStatus()
-        // already uses for zero progress, and the same aggregate
-        // logic used for requiresCharacter above).
+        // One row per CONFLICT INSTANCE, not one row for the whole
+        // program and not one row per character — this program's
+        // progress is tracked separately per conflict (a student may
+        // have three unrelated conflicts going for the same session
+        // type). Instance data comes pre-fetched via conflictsBySlug
+        // (see fetchConflictDataForSessions() in buildSection) rather
+        // than fetched here per-row, so the async work happens once
+        // up front instead of once per session.
         var instances = (conflictsBySlug && conflictsBySlug[session.slug]) || [];
-        var anyConflictDone = false;
-        var allConflictComplete = instances.length > 0;
+        if (!instances.length) {
+          // Nothing to pick from the dashboard itself — the two-
+          // character/label picker lives on the coach page — so this
+          // is just a plain Not Started row linking there, not an
+          // "add a character"-style prompt.
+          var noConflictRow = el('div', 'sh-ec-row');
+          var noConflictLink = document.createElement('a');
+          noConflictLink.className = 'sh-ec-title';
+          noConflictLink.href = '/coach/' + session.slug + '/';
+          noConflictLink.textContent = session.title;
+          mount(noConflictRow, noConflictLink);
+          mount(listEl, noConflictRow);
+          rowEls.push(noConflictRow);
+          return;
+        }
         instances.forEach(function (inst) {
-          var iStatus = computeStatus(session, completedLessonKeys, inst.id);
-          if (iStatus.key !== 'not-started') anyConflictDone = true;
-          if (iStatus.key !== 'completed') allConflictComplete = false;
+          var status = computeStatus(session, completedLessonKeys, inst.id);
+          var row = buildRow(session, status.label, status.key);
+          mount(listEl, row);
+          rowEls.push(row);
         });
-        var conflictLabel = '';
-        var conflictKey = 'not-started';
-        if (allConflictComplete) { conflictLabel = t('completed'); conflictKey = 'completed'; }
-        else if (anyConflictDone) { conflictLabel = t('inProgress'); conflictKey = 'in-progress'; }
-        var conflictRow = buildRow(session, conflictLabel, conflictKey);
-        mount(listEl, conflictRow);
-        rowEls.push(conflictRow);
       } else if (columnDef.track === 'excavation') {
         var status2 = computeStatus(session, completedLessonKeys);
         var row2 = buildRow(session, status2.label, status2.key);
@@ -547,7 +554,7 @@
 
   function mountInto(wrapEl, studentId) {
     if (!wrapEl || wrapEl.querySelector('.sh-ec-section')) return; // avoid double-mount
-    mount(wrapEl, buildSection(studentId));
+    insertAtDashOrder(wrapEl, buildSection(studentId), 2);
   }
 
   function proceed(studentId) {

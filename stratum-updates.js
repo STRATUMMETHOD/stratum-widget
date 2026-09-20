@@ -137,39 +137,43 @@
     return card;
   }
 
+  // Sept 2026 fix: every dashboard-card module used to just blind-append
+  // to the end of wrapEl once its own async fetch resolved, so the
+  // visual order of the whole dashboard was a pure network race -
+  // whichever module's fetch happened to finish first ended up first,
+  // and that changed on every reload. This inserts at a FIXED rank
+  // instead, via a data-dash-order attribute every dashboard section now
+  // carries, so the final order is deterministic no matter which
+  // module's fetch finishes first. This helper is duplicated identically
+  // in every dashboard-card module (stratum-wip-panel.js, stratum-
+  // dashboard.js, stratum-excavation-center.js, stratum-practice-
+  // teaser.js, stratum-library-teaser.js) - same reasoning as mount()/
+  // el() already being duplicated per file rather than shared, since
+  // these are independent scripts with no module system between them.
+  // RANK ORDER (keep these numbers identical across every file that
+  // defines this helper): 0 What's New, 1 Profile, 2 Coaching columns
+  // (Story & Character/General/Writing), 3 Practice/Library teaser row,
+  // 4 Idea Log/Reminders. Anything without a data-dash-order attribute
+  // (the header's own art/topbar/welcome/hero elements) is always
+  // treated as coming before every ranked section.
+  function insertAtDashOrder(wrapEl, section, rank) {
+    section.setAttribute('data-dash-order', String(rank));
+    var children = Array.prototype.slice.call(wrapEl.children);
+    var before = null;
+    for (var i = 0; i < children.length; i++) {
+      var childRank = children[i].getAttribute('data-dash-order');
+      if (childRank !== null && Number(childRank) > rank) { before = children[i]; break; }
+    }
+    wrapEl.insertBefore(section, before); // before === null means insertBefore appends at the end, which is correct here
+  }
+
   function mountInto(wrapEl) {
     if (!wrapEl || wrapEl.querySelector('.sh-upd-list')) return; // avoid double-mount
     fetchUpdates(function (updates) {
       if (!updates.length) return; // no card at all when there's nothing new — see file header
-      // Sept 2026 fix: every other dashboard module (stratum-dashboard.js's
-      // .sh-dash-section, the teasers' .sh-teaser-section) wraps its card(s)
-      // in a padded section before mounting into wrapEl. This file was
-      // mounting the bare card straight into wrapEl with no such wrapper,
-      // so it rendered flush against the page edge instead of inset like
-      // every card below it - wrap it the same way here.
       var section = el('div', 'sh-upd-section');
       mount(section, buildCard(updates));
-      // Sept 2026 fix, corrected: wrapEl.firstChild is actually the
-      // background strata-art SVG (stratum-header.js inserts it via
-      // insertAdjacentHTML('afterbegin', ...) before mounting anything
-      // else) - inserting before firstChild would have pushed this card
-      // above the topbar and "Welcome" heading entirely, not just above
-      // Profile. Instead, find the last element that's actually part of
-      // the header block (art / topbar / welcome row / the logged-out or
-      // no-membership notice row, per stratum-header.css's sh-strata-art/
-      // sh-topbar/sh-welcome-row/sh-hero-row classes) and insert right
-      // after it. This works regardless of whether Profile (or anything
-      // else) has already been appended by the time this async fetch
-      // resolves - insertBefore(headerEl.nextSibling) lands right after
-      // the header block either way, which is always above Profile
-      // without needing to know Profile's own class name at all.
-      var headerSelectors = ['.sh-strata-art', '.sh-topbar', '.sh-welcome-row', '.sh-hero-row'];
-      var lastHeaderEl = null;
-      Array.prototype.forEach.call(wrapEl.children, function (child) {
-        var isHeaderPart = headerSelectors.some(function (sel) { return child.matches(sel); });
-        if (isHeaderPart) lastHeaderEl = child;
-      });
-      wrapEl.insertBefore(section, lastHeaderEl ? lastHeaderEl.nextSibling : wrapEl.firstChild);
+      insertAtDashOrder(wrapEl, section, 0);
     });
   }
 

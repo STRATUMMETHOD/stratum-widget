@@ -249,6 +249,21 @@
   }
   function mount(parent, child) { parent.appendChild(child); return child; }
 
+  // Sept 2026 fix: see stratum-updates.js/stratum-wip-panel.js for the
+  // full comment - duplicated identically here. RANK ORDER: 0 What's
+  // New, 1 Profile, 2 Coaching columns, 3 Practice/Library teaser row,
+  // 4 Idea Log/Reminders (this file).
+  function insertAtDashOrder(wrapEl, section, rank) {
+    section.setAttribute('data-dash-order', String(rank));
+    var children = Array.prototype.slice.call(wrapEl.children);
+    var before = null;
+    for (var i = 0; i < children.length; i++) {
+      var childRank = children[i].getAttribute('data-dash-order');
+      if (childRank !== null && Number(childRank) > rank) { before = children[i]; break; }
+    }
+    wrapEl.insertBefore(section, before);
+  }
+
   function formatRelativeDate(isoDateOrMs) {
     var d = typeof isoDateOrMs === 'number' ? new Date(isoDateOrMs) : new Date(isoDateOrMs + 'T00:00:00');
     if (isNaN(d.getTime())) return '';
@@ -884,7 +899,7 @@
 
   function mountInto(wrapEl) {
     if (!wrapEl || wrapEl.querySelector('.sh-dash-section')) return; // avoid double-mount
-    mount(wrapEl, buildDashboardSection());
+    insertAtDashOrder(wrapEl, buildDashboardSection(), 4);
   }
 
   function proceed(studentId) {

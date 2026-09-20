@@ -298,6 +298,36 @@
     return node;
   }
   function mount(parent, child) { parent.appendChild(child); return child; }
+
+  // Sept 2026 fix: every dashboard-card module used to just blind-append
+  // to the end of wrapEl once its own async fetch resolved, so the
+  // visual order of the whole dashboard was a pure network race -
+  // whichever module's fetch happened to finish first ended up first,
+  // and that changed on every reload. This inserts at a FIXED rank
+  // instead, via a data-dash-order attribute every dashboard section now
+  // carries, so the final order is deterministic no matter which
+  // module's fetch finishes first. Duplicated identically in every
+  // dashboard-card module (stratum-updates.js, stratum-dashboard.js,
+  // stratum-excavation-center.js, stratum-practice-teaser.js, stratum-
+  // library-teaser.js) - same reasoning as mount()/el() already being
+  // duplicated per file rather than shared, since these are independent
+  // scripts with no module system between them. RANK ORDER (keep these
+  // numbers identical across every file that defines this helper): 0
+  // What's New, 1 Profile, 2 Coaching columns (Story & Character/
+  // General/Writing), 3 Practice/Library teaser row, 4 Idea Log/
+  // Reminders. Anything without a data-dash-order attribute (the
+  // header's own art/topbar/welcome/hero elements) is always treated as
+  // coming before every ranked section.
+  function insertAtDashOrder(wrapEl, section, rank) {
+    section.setAttribute('data-dash-order', String(rank));
+    var children = Array.prototype.slice.call(wrapEl.children);
+    var before = null;
+    for (var i = 0; i < children.length; i++) {
+      var childRank = children[i].getAttribute('data-dash-order');
+      if (childRank !== null && Number(childRank) > rank) { before = children[i]; break; }
+    }
+    wrapEl.insertBefore(section, before); // before === null means insertBefore appends at the end, which is correct here
+  }
   function buildSelect(className, values, groupKey, placeholderText) {
     var select = document.createElement('select');
     select.className = className;
@@ -715,7 +745,7 @@
     mount(card, body);
     var section = el('div', 'sh-wip-panel-section');
     mount(section, card);
-    mount(wrapEl, section);
+    insertAtDashOrder(wrapEl, section, 1);
 
     return {
       titleInput: titleInput, genreSelect: genreSelect, stageSelect: stageSelect,

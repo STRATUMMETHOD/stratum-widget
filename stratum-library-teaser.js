@@ -79,6 +79,21 @@
   }
   function mount(parent, child) { parent.appendChild(child); return child; }
 
+  // Sept 2026 fix: see stratum-updates.js/stratum-wip-panel.js for the
+  // full comment - duplicated identically here. RANK ORDER: 0 What's
+  // New, 1 Profile, 2 Coaching columns, 3 Practice/Library teaser row
+  // (this file), 4 Idea Log/Reminders.
+  function insertAtDashOrder(wrapEl, section, rank) {
+    section.setAttribute('data-dash-order', String(rank));
+    var children = Array.prototype.slice.call(wrapEl.children);
+    var before = null;
+    for (var i = 0; i < children.length; i++) {
+      var childRank = children[i].getAttribute('data-dash-order');
+      if (childRank !== null && Number(childRank) > rank) { before = children[i]; break; }
+    }
+    wrapEl.insertBefore(section, before);
+  }
+
   // Same day-of-year-modulo approach as stratum-practice-teaser.js and
   // stratum-practice.js's pickTodaysTerm() — intentionally duplicated,
   // not shared, since this loads on a different page than either.
@@ -134,7 +149,7 @@
     var section = el('div', 'sh-teaser-section');
     var row = el('div', 'sh-teaser-row');
     mount(section, row);
-    mount(wrapEl, section);
+    insertAtDashOrder(wrapEl, section, 3);
     return row;
   }
 
