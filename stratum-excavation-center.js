@@ -349,35 +349,25 @@
     var rowEls = [];
     sessionsForTrack.forEach(function (session) {
       if (columnDef.track === 'excavation' && session.requiresCharacter) {
-        // One row per character, not one row for the whole program -
-        // this program's progress is tracked separately per character.
-        if (!characters.length) {
-          var noCharRow = el('div', 'sh-ec-row');
-          var noCharLink = document.createElement('a');
-          noCharLink.className = 'sh-ec-title';
-          noCharLink.href = '/coach/' + session.slug + '/';
-          noCharLink.textContent = session.title;
-          mount(noCharRow, noCharLink);
-          mount(noCharRow, el('span', 'sh-ec-badge sh-ec-badge--not-started', t('addACharacter')));
-          mount(listEl, noCharRow);
-          rowEls.push(noCharRow);
-          return;
-        }
-        characters.forEach(function (c) {
-          var status = computeStatus(session, completedLessonKeys, c.id);
-          // Sept 2026: was session.title + ' — ' + c.name — per request,
-          // the character's name no longer shows on the card label. Note
-          // the side effect this creates on its own: with more than one
-          // character, every row for this session now renders with the
-          // identical title and the identical link, distinguishable only
-          // by each row's status badge — there's no longer any visible
-          // way to tell WHICH character a given row is for from the
-          // dashboard alone (the coach page's own character picker still
-          // knows, this is purely a Excavation Center display change).
-          var row = buildRow(session, status.label, status.key);
-          mount(listEl, row);
-          rowEls.push(row);
-        });
+        // Sept 2026 (dashboard change): ALWAYS exactly one row for a
+        // requiresCharacter session, regardless of how many characters
+        // exist in the active WIP — was one row per character (see the
+        // removed characters.forEach loop below in version history).
+        // Character selection happens exactly once, on the coach page's
+        // own picker (stratum-coach.js buildCharacterPicker()), which
+        // then locks the session to that one character; the dashboard
+        // itself never lists characters or shows per-character status,
+        // since a per-character badge on a single collapsed row would
+        // describe only one character's progress while silently hiding
+        // the others'. If there are no characters yet in the WIP, the
+        // row still links straight to the coach page (same as any other
+        // session) — that page's own "no characters" state, not this
+        // one, is responsible for telling the student to add one; the
+        // addACharacter badge/string is kept in STRINGS/DB_STRINGS for
+        // that page's use, just no longer rendered here.
+        var row1 = buildRow(session, '', '');
+        mount(listEl, row1);
+        rowEls.push(row1);
       } else if (columnDef.track === 'excavation' && session.requiresConflictPair) {
         // One row per CONFLICT INSTANCE, not one row for the whole
         // program and not one row per character — this program's
