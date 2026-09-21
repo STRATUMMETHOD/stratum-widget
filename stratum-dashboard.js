@@ -55,7 +55,9 @@
   var STRINGS = {
     en: {
       ideaLogTitle: 'Idea Log',
+      ideaLogSubtitle: 'A running record of story ideas and half-formed thoughts.',
       remindersTitle: 'Reminders',
+      remindersSubtitle: 'Keep track of deadlines, story revisions, and more.',
       viewBtn: 'View',
       closeBtn: 'Close',
       noIdeaEntries: 'No idea log entries yet.',
@@ -116,7 +118,9 @@
     },
     es: {
       ideaLogTitle: 'Registro de ideas',
+      ideaLogSubtitle: 'Un registro continuo de ideas para tu historia y pensamientos aún sin definir.',
       remindersTitle: 'Recordatorios',
+      remindersSubtitle: 'Lleva el control de plazos, revisiones de la historia y más.',
       viewBtn: 'Ver',
       closeBtn: 'Cerrar',
       noIdeaEntries: 'Aún no hay entradas en el registro de ideas.',
@@ -637,13 +641,16 @@
   function buildIdeaLogCard() {
     var card = el('div', 'sh-dash-card');
     var head = el('div', 'sh-dash-card-head');
-    mount(head, el('p', 'sh-dash-card-title', t('ideaLogTitle')));
+    var headTop = el('div', 'sh-dash-card-head-top');
+    mount(headTop, el('p', 'sh-dash-card-title', t('ideaLogTitle')));
     ideaLogOpenBtn = document.createElement('button');
     ideaLogOpenBtn.type = 'button';
     ideaLogOpenBtn.className = 'sh-dash-open-btn';
     ideaLogOpenBtn.textContent = t('viewBtn');
     ideaLogOpenBtn.addEventListener('click', toggleIdeaLog);
-    mount(head, ideaLogOpenBtn);
+    mount(headTop, ideaLogOpenBtn);
+    mount(head, headTop);
+    mount(head, el('p', 'sh-dash-card-subtitle', t('ideaLogSubtitle')));
     mount(card, head);
 
     ideaLogBodyEl = el('div', 'sh-dash-card-body');
@@ -869,13 +876,16 @@
   function buildRemindersCard() {
     var card = el('div', 'sh-dash-card');
     var head = el('div', 'sh-dash-card-head');
-    mount(head, el('p', 'sh-dash-card-title', t('remindersTitle')));
+    var headTop = el('div', 'sh-dash-card-head-top');
+    mount(headTop, el('p', 'sh-dash-card-title', t('remindersTitle')));
     remindersOpenBtn = document.createElement('button');
     remindersOpenBtn.type = 'button';
     remindersOpenBtn.className = 'sh-dash-open-btn';
     remindersOpenBtn.textContent = t('viewBtn');
     remindersOpenBtn.addEventListener('click', toggleReminders);
-    mount(head, remindersOpenBtn);
+    mount(headTop, remindersOpenBtn);
+    mount(head, headTop);
+    mount(head, el('p', 'sh-dash-card-subtitle', t('remindersSubtitle')));
     mount(card, head);
 
     remindersBodyEl = el('div', 'sh-dash-card-body');

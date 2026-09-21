@@ -64,6 +64,7 @@
   var STRINGS = {
     en: {
       profileTitle: 'Profile',
+      profileSubtitle: 'Your WIP feeds into all coaching sessions, notes, and reminders.',
       viewBtn: 'View',
       closeBtn: 'Close',
       workInProgress: 'Work in Progress',
@@ -131,6 +132,7 @@
     },
     es: {
       profileTitle: 'Perfil',
+      profileSubtitle: 'Tu obra en progreso alimenta todas las sesiones de coaching, notas y recordatorios.',
       viewBtn: 'Ver',
       closeBtn: 'Cerrar',
       workInProgress: 'Obra en progreso',
@@ -630,13 +632,16 @@
   function buildPanel(wrapEl) {
     var card = el('div', 'sh-dash-card');
     var head = el('div', 'sh-dash-card-head');
-    mount(head, el('p', 'sh-dash-card-title', t('profileTitle')));
+    var headTop = el('div', 'sh-dash-card-head-top');
+    mount(headTop, el('p', 'sh-dash-card-title', t('profileTitle')));
     openBtn = document.createElement('button');
     openBtn.type = 'button';
     openBtn.className = 'sh-dash-open-btn';
     openBtn.textContent = t('viewBtn');
     openBtn.addEventListener('click', toggleExpanded);
-    mount(head, openBtn);
+    mount(headTop, openBtn);
+    mount(head, headTop);
+    mount(head, el('p', 'sh-dash-card-subtitle', t('profileSubtitle')));
     mount(card, head);
 
     var body = el('div', 'sh-dash-card-body');

@@ -34,8 +34,8 @@
   var LANG = lsGet(LANG_STORE_KEY) || 'en';
 
   var STRINGS = {
-    en: { title: 'Practice Lab', view: 'View', noTermsYet: 'No practice terms yet.', label: 'Today\u2019s Practice Term', practicedOf: '{done} of {total} terms practiced' },
-    es: { title: 'Laboratorio de Práctica', view: 'Ver', noTermsYet: 'Aún no hay términos de práctica.', label: 'Término de práctica de hoy', practicedOf: '{done} de {total} términos practicados' }
+    en: { title: 'Practice Lab', subtitle: 'A daily term to test and sharpen your grasp of craft concepts.', view: 'View', noTermsYet: 'No practice terms yet.', label: 'Today\u2019s Practice Term', practicedOf: '{done} of {total} terms practiced' },
+    es: { title: 'Laboratorio de Práctica', subtitle: 'Un término diario para poner a prueba y afinar tu dominio de los conceptos del oficio.', view: 'Ver', noTermsYet: 'Aún no hay términos de práctica.', label: 'Término de práctica de hoy', practicedOf: '{done} de {total} términos practicados' }
   };
   var DB_COMMON_KEYS = { view: 'view' };
   var DB_STRINGS = null;
@@ -119,12 +119,15 @@
   function buildCard(studentId) {
     var card = el('div', 'sh-dash-card');
     var head = el('div', 'sh-dash-card-head');
-    mount(head, el('p', 'sh-dash-card-title', t('title')));
+    var headTop = el('div', 'sh-dash-card-head-top');
+    mount(headTop, el('p', 'sh-dash-card-title', t('title')));
     var openLink = document.createElement('a');
     openLink.className = 'sh-dash-open-btn';
     openLink.href = '/practice/';
     openLink.textContent = t('view');
-    mount(head, openLink);
+    mount(headTop, openLink);
+    mount(head, headTop);
+    mount(head, el('p', 'sh-dash-card-subtitle', t('subtitle')));
     mount(card, head);
 
     var body = el('div', 'sh-dash-card-body');

@@ -67,8 +67,11 @@
   var STRINGS = {
     en: {
       colExcavation: 'Story & Character Coaching',
+      colExcavationSub: 'Your coach will help you develop deeper, more believable characters and stories.',
       colGeneral: 'General Coaching',
+      colGeneralSub: 'Coaching for the writer behind the writing.',
       colWriting: 'Writing Coaching',
+      colWritingSub: 'Craft-focused coaching on voice, dialog and more.',
       workInProgress: 'Work in progress:',
       untitledWip: 'Untitled WIP',
       loading: 'Loading\u2026',
@@ -88,8 +91,11 @@
     },
     es: {
       colExcavation: 'Coaching de historia y personaje',
+      colExcavationSub: 'Tu coach te ayudará a desarrollar personajes e historias más profundos y creíbles.',
       colGeneral: 'Coaching general',
+      colGeneralSub: 'Coaching para el escritor detrás de la escritura.',
       colWriting: 'Coaching de escritura',
+      colWritingSub: 'Coaching centrado en el oficio: voz, diálogo y más.',
       workInProgress: 'Obra en progreso:',
       untitledWip: 'Obra sin título',
       loading: 'Cargando\u2026',
@@ -142,9 +148,9 @@
   }
 
   var TRACK_COLUMNS = [
-    { track: 'excavation', labelKey: 'colExcavation' },
-    { track: 'general', labelKey: 'colGeneral' },
-    { track: 'writing', labelKey: 'colWriting' }
+    { track: 'excavation', labelKey: 'colExcavation', subKey: 'colExcavationSub' },
+    { track: 'general', labelKey: 'colGeneral', subKey: 'colGeneralSub' },
+    { track: 'writing', labelKey: 'colWriting', subKey: 'colWritingSub' }
   ];
 
   function el(tag, className, text) {
@@ -325,7 +331,8 @@
   function buildColumn(columnDef, sessionsForTrack, studentId, completedLessonKeys, characters, conflictsBySlug) {
     var col = el('div', 'sh-dash-card sh-ec-column');
     var head = el('div', 'sh-dash-card-head');
-    mount(head, el('p', 'sh-dash-card-title', t(columnDef.labelKey)));
+    var headTop = el('div', 'sh-dash-card-head-top');
+    mount(headTop, el('p', 'sh-dash-card-title', t(columnDef.labelKey)));
     // Sept 2026: each card now caps at 3 rows by default, with a View
     // All / Show Less toggle - same collapsed/expanded pattern the
     // other dashboard cards already use, but per-card here rather than
@@ -336,7 +343,9 @@
     viewAllBtn.type = 'button';
     viewAllBtn.className = 'sh-dash-open-btn';
     viewAllBtn.textContent = t('viewAll');
-    mount(head, viewAllBtn);
+    mount(headTop, viewAllBtn);
+    mount(head, headTop);
+    mount(head, el('p', 'sh-dash-card-subtitle', t(columnDef.subKey)));
     mount(col, head);
     var body = el('div', 'sh-dash-card-body');
     var listEl = el('div', 'sh-ec-list');
@@ -466,7 +475,10 @@
     TRACK_COLUMNS.forEach(function (columnDef) {
       var col = el('div', 'sh-dash-card sh-ec-column');
       var head = el('div', 'sh-dash-card-head');
-      mount(head, el('p', 'sh-dash-card-title', t(columnDef.labelKey)));
+      var headTop = el('div', 'sh-dash-card-head-top');
+      mount(headTop, el('p', 'sh-dash-card-title', t(columnDef.labelKey)));
+      mount(head, headTop);
+      mount(head, el('p', 'sh-dash-card-subtitle', t(columnDef.subKey)));
       mount(col, head);
       var body = el('div', 'sh-dash-card-body');
       mount(body, el('div', 'sh-ec-empty', t('loading')));

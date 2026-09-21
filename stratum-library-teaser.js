@@ -41,8 +41,8 @@
   var LANG = lsGet(LANG_STORE_KEY) || 'en';
 
   var STRINGS = {
-    en: { title: 'Library', view: 'View', noResourcesYet: 'No resources yet.', label: 'Today\u2019s Featured Resource', video: 'Video', pdf: 'PDF' },
-    es: { title: 'Biblioteca', view: 'Ver', noResourcesYet: 'Aún no hay recursos.', label: 'Recurso destacado de hoy', video: 'Video', pdf: 'PDF' }
+    en: { title: 'Library', subtitle: 'Curated articles and resources on fiction writing.', view: 'View', noResourcesYet: 'No resources yet.', label: 'Today\u2019s Featured Resource', video: 'Video', pdf: 'PDF' },
+    es: { title: 'Biblioteca', subtitle: 'Artículos y recursos seleccionados sobre la escritura de ficción.', view: 'Ver', noResourcesYet: 'Aún no hay recursos.', label: 'Recurso destacado de hoy', video: 'Video', pdf: 'PDF' }
   };
   // 'view' is shared across several cards - stored under the DB's
   // "common.*" namespace, not "library.*", so a translation entered once
@@ -113,12 +113,15 @@
   function buildCard() {
     var card = el('div', 'sh-dash-card');
     var head = el('div', 'sh-dash-card-head');
-    mount(head, el('p', 'sh-dash-card-title', t('title')));
+    var headTop = el('div', 'sh-dash-card-head-top');
+    mount(headTop, el('p', 'sh-dash-card-title', t('title')));
     var openLink = document.createElement('a');
     openLink.className = 'sh-dash-open-btn';
     openLink.href = '/library/';
     openLink.textContent = t('view');
-    mount(head, openLink);
+    mount(headTop, openLink);
+    mount(head, headTop);
+    mount(head, el('p', 'sh-dash-card-subtitle', t('subtitle')));
     mount(card, head);
 
     var body = el('div', 'sh-dash-card-body');

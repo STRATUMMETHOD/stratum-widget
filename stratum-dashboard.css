@@ -59,10 +59,26 @@
 }
 .sh-dash-card-head {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 5px;
   padding: 14px 18px;
   border-bottom: 1px solid var(--sh-card-border);
+}
+.sh-dash-card-head-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sh-dash-card-subtitle {
+  /* One-line blurb under each card title, added Sept 2026 per Ted's
+     spec: smaller than the card's normal body copy, plain black (not
+     the warm palette used elsewhere on the card), never italic. */
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.4;
+  color: #000000;
 }
 .sh-dash-card-title {
   /* The "COACHING" treatment, per Ted's reference: every card title in
