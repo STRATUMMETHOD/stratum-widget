@@ -649,32 +649,12 @@
       mount(summaryEl, el('div', 'sh-dash-empty', t('noWipYet')));
       return;
     }
-    var title = profile.wipTitle || t('untitledWip');
-    var chars = collectCharacters();
-    var metaParts = [];
-    if (profile.genre) metaParts.push(optLabel('genreOptions', profile.genre));
-    metaParts.push(format(t(chars.length === 1 ? 'charactersCountSingular' : 'charactersCountPlural'), { n: chars.length }));
+    // Sept 24 2026: WIP title / character list / Resume pill removed
+    // per Ted - students may be in coaching that doesn't involve a WIP.
+    // Collapsed card shows the WIP count only, as before.
     var n = WIPS.length || 1;
-    if (n > 1) metaParts.push(format(t('wipsCount'), { n: n }));
-
-    var nameLine = mount(summaryEl, el('p', 'sh-wip-name'));
-    mount(nameLine, el('span', null, title));
-    mount(nameLine, el('span', 'sh-wip-meta', metaParts.join(' \u00b7 ')));
-
-    var inner = mount(summaryEl, el('div', 'sh-wip-inner'));
-    if (chars.length) {
-      mount(inner, el('p', 'sh-wip-inner-label', t('charactersLabel')));
-      var list = mount(inner, el('ul', 'sh-wip-char-list'));
-      chars.forEach(function (c) {
-        var li = mount(list, el('li', null, c.name || t('characterNamePlaceholder')));
-        if (c.type) mount(li, el('span', 'sh-wip-meta', optLabel('characterTypeOptions', c.type)));
-      });
-    }
-    var resume = document.createElement('a');
-    resume.className = 'sh-wip-resume-btn';
-    resume.href = COACH_URL;
-    resume.textContent = t('resumeExcavating');
-    mount(inner, resume);
+    var countText = format(t(n === 1 ? 'wipsCountSingular' : 'wipsCount'), { n: n });
+    mount(summaryEl, el('div', 'sh-wip-summary-line', countText));
 
     updateStatusLine(profile.wipTitle || '');
   }
