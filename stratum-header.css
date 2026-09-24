@@ -274,6 +274,16 @@ body:has(.sh-wrap) {
   color: var(--sh-paper) !important; /* Sept 2026 fix: Storefront's theme CSS now loads on this page (see file header note) and was winning the cascade over plain inheritance from .sh-wrap, rendering this headline dark/unreadable */
 }
 
+/* "Currently excavating: {title}" line under the welcome headline
+   (Sept 24 2026) - filled in by stratum-wip-panel.js once the active
+   WIP loads. Matches "1 of 240 terms practiced" on the Practice Lab page. */
+.sh-status-line {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sh-warm);
+}
+
 /* ---- Notice row (logged-out / no-membership edge cases only) ----
    Sept 2026: the "You are currently excavating" eyebrow and the Resume
    Excavating button that used to live here for every visitor are both

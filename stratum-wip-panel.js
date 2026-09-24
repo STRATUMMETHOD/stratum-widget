@@ -115,6 +115,8 @@
       maxCharacters: 'Maximum {n} characters',
       wipsCount: '{n} WIPs',
       wipsCountSingular: '{n} WIP',
+      currentlyExcavating: 'Currently excavating: {name}',
+      resumeExcavating: 'Resume excavating',
       charactersCountSingular: '{n} character',
       charactersCountPlural: '{n} characters',
       chooseGenre: 'Choose a genre\u2026',
@@ -183,6 +185,8 @@
       maxCharacters: 'Máximo {n} personajes',
       wipsCount: '{n} obras',
       wipsCountSingular: '{n} obra',
+      currentlyExcavating: 'Excavando ahora: {name}',
+      resumeExcavating: 'Retomar la excavación',
       charactersCountSingular: '{n} personaje',
       charactersCountPlural: '{n} personajes',
       chooseGenre: 'Elige un género\u2026',
@@ -618,20 +622,61 @@
   var formWrapEl = null;
   var openBtn = null;
 
+  // Sept 24 2026 (dark re-theme, per Ted's approved mockup): the
+  // collapsed Profile card now shows the active WIP's title with genre /
+  // character count / WIP count as quiet meta, then an inner panel
+  // listing the characters with a Resume excavating pill. Also fills
+  // the "Currently excavating: {title}" status line under the welcome
+  // headline (see updateStatusLine) - done here rather than in
+  // stratum-header.js since this file already owns the WIP data.
+  var COACH_URL = '/coach/character-excavation/';
+
+  function updateStatusLine(title) {
+    var wrapEl = window.STRATUM_HEADER_WRAP;
+    var row = wrapEl && wrapEl.querySelector('.sh-welcome-row');
+    if (!row) return;
+    var line = row.querySelector('.sh-status-line');
+    if (!title) { if (line) line.remove(); return; }
+    if (!line) line = mount(row, el('p', 'sh-status-line'));
+    line.textContent = format(t('currentlyExcavating'), { name: title });
+  }
+
   function renderSummary(profile) {
     if (!summaryEl) return;
     summaryEl.innerHTML = '';
-    if (!ACTIVE_WIP_ID) {
+    if (!ACTIVE_WIP_ID || !profile) {
+      updateStatusLine('');
       mount(summaryEl, el('div', 'sh-dash-empty', t('noWipYet')));
       return;
     }
-    // Sept 2026: collapsed summary now shows ONLY the WIP count - no
-    // title, genre, or character count - per Ted's request. Always
-    // shown once a WIP exists (previously only appeared once there
-    // were 2+), with a singular form for exactly one.
+    var title = profile.wipTitle || t('untitledWip');
+    var chars = collectCharacters();
+    var metaParts = [];
+    if (profile.genre) metaParts.push(optLabel('genreOptions', profile.genre));
+    metaParts.push(format(t(chars.length === 1 ? 'charactersCountSingular' : 'charactersCountPlural'), { n: chars.length }));
     var n = WIPS.length || 1;
-    var countText = format(t(n === 1 ? 'wipsCountSingular' : 'wipsCount'), { n: n });
-    mount(summaryEl, el('div', 'sh-wip-summary-line', countText));
+    if (n > 1) metaParts.push(format(t('wipsCount'), { n: n }));
+
+    var nameLine = mount(summaryEl, el('p', 'sh-wip-name'));
+    mount(nameLine, el('span', null, title));
+    mount(nameLine, el('span', 'sh-wip-meta', metaParts.join(' \u00b7 ')));
+
+    var inner = mount(summaryEl, el('div', 'sh-wip-inner'));
+    if (chars.length) {
+      mount(inner, el('p', 'sh-wip-inner-label', t('charactersLabel')));
+      var list = mount(inner, el('ul', 'sh-wip-char-list'));
+      chars.forEach(function (c) {
+        var li = mount(list, el('li', null, c.name || t('characterNamePlaceholder')));
+        if (c.type) mount(li, el('span', 'sh-wip-meta', optLabel('characterTypeOptions', c.type)));
+      });
+    }
+    var resume = document.createElement('a');
+    resume.className = 'sh-wip-resume-btn';
+    resume.href = COACH_URL;
+    resume.textContent = t('resumeExcavating');
+    mount(inner, resume);
+
+    updateStatusLine(profile.wipTitle || '');
   }
 
   function toggleExpanded() {
