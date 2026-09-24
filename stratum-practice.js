@@ -41,19 +41,26 @@
 
    ---- Database-backed translation (Sept 2026) ----
    This page's own chrome (labels, buttons, filter text, empty states —
-   not the term DATA, which the Worker already lazy-fills per language)
-   now checks the same DB-backed ui_strings table every other dashboard
-   and page file uses, under the practicePage.* keys — a language
-   override there wins; otherwise falls back to the hardcoded en/es
-   tables below. Same t()/DB_STRINGS/loadUiStrings() pattern as
-   stratum-library.js, and loadUiStrings() resolves before buildPage()/
-   buildGate() runs so the very first paint is already in the right
-   language, not a flash of English. Craft Category and Complexity
-   Level option VALUES stay canonical English (they're matched directly
-   against term.craftCategory/term.complexityLevel from server data,
-   which is not translated) — only the displayed option TEXT changes,
-   same technique stratum-wip-panel.js already uses for its Genre/
-   Stage/Story Style dropdowns.
+   not the term DATA, which the Worker translates per language) checks
+   the same DB-backed ui_strings table every other dashboard and page
+   file uses, under the practicePage.* keys — a language override there
+   wins; otherwise falls back to the hardcoded en/es tables below. Same
+   t()/DB_STRINGS/loadUiStrings() pattern as stratum-library.js, and
+   loadUiStrings() resolves before buildPage()/buildGate() runs so the
+   very first paint is already in the right language.
+
+   ---- Canonical enum keys (Sept 24 2026 fix) ----
+   /vocabulary?lang=xx now returns craftCategory/complexityLevel (and
+   the other badge fields) ALREADY TRANSLATED in place (worker's
+   vocab_enum_label overlay). The filters, the Beginner->Advanced sort,
+   and the level section headers all need the canonical English value,
+   so in any non-English language loadTerms() also fetches
+   /vocabulary?lang=en and attaches term.craftCategoryKey /
+   term.complexityLevelKey by id (ids are the same English row ids in
+   every language). Filtering/sorting/headers use the *Key fields;
+   displayed badges keep the translated values. If the English fetch
+   fails, the keys fall back to the displayed values (English pages are
+   unaffected either way — key === value).
 
    Requires stratum-identity.js AND stratum-header.js (for
    window.StratumHeader.buildTopbar) loaded first on this page.
@@ -194,11 +201,27 @@
     return terms[dayOfYear() % terms.length];
   }
 
-  function loadTerms(callback) {
-    fetch(PROXY_URL + '/vocabulary?lang=' + encodeURIComponent(LANG))
+  function fetchTermsFor(lang) {
+    return fetch(PROXY_URL + '/vocabulary?lang=' + encodeURIComponent(lang))
       .then(function (r) { return r.json(); })
-      .then(function (d) {
-        termsCache = (d && Array.isArray(d.terms)) ? d.terms : [];
+      .then(function (d) { return (d && Array.isArray(d.terms)) ? d.terms : []; });
+  }
+
+  // See "Canonical enum keys" in the file header.
+  function loadTerms(callback) {
+    var main = fetchTermsFor(LANG);
+    var canonical = LANG === 'en' ? main : fetchTermsFor('en').catch(function () { return []; });
+    Promise.all([main, canonical])
+      .then(function (res) {
+        var terms = res[0];
+        var enById = {};
+        res[1].forEach(function (tm) { enById[String(tm.id)] = tm; });
+        terms.forEach(function (tm) {
+          var en = enById[String(tm.id)];
+          tm.craftCategoryKey = (en && en.craftCategory) || tm.craftCategory || '';
+          tm.complexityLevelKey = (en && en.complexityLevel) || tm.complexityLevel || '';
+        });
+        termsCache = terms;
         callback();
       })
       .catch(function () { termsCache = []; callback(); });
@@ -427,14 +450,14 @@
     var craft = craftSelect.value;
     var level = complexitySelect.value;
     var filtered = terms.filter(function (term) {
-      if (craft && term.craftCategory !== craft) return false;
-      if (level && term.complexityLevel !== level) return false;
+      if (craft && term.craftCategoryKey !== craft) return false;
+      if (level && term.complexityLevelKey !== level) return false;
       return true;
     });
 
     filtered.sort(function (a, b) {
-      var la = COMPLEXITY_ORDER[a.complexityLevel];
-      var lb = COMPLEXITY_ORDER[b.complexityLevel];
+      var la = COMPLEXITY_ORDER[a.complexityLevelKey];
+      var lb = COMPLEXITY_ORDER[b.complexityLevelKey];
       la = la == null ? 99 : la;
       lb = lb == null ? 99 : lb;
       if (la !== lb) return la - lb;
@@ -458,9 +481,9 @@
 
     var lastLevel = null;
     pageItems.forEach(function (term) {
-      if (term.complexityLevel !== lastLevel) {
-        mount(listEl, el('p', 'sh-pl-level-header', tOption('complexityLevelOptions', term.complexityLevel) || term.complexityLevel || 'Other'));
-        lastLevel = term.complexityLevel;
+      if (term.complexityLevelKey !== lastLevel) {
+        mount(listEl, el('p', 'sh-pl-level-header', (term.complexityLevelKey && tOption('complexityLevelOptions', term.complexityLevelKey)) || term.complexityLevel || 'Other'));
+        lastLevel = term.complexityLevelKey;
       }
       mount(listEl, buildTermCard(term, { collapsible: true }));
     });
@@ -569,7 +592,7 @@
       select.appendChild(allOpt);
       options.forEach(function (opt) {
         var o = document.createElement('option');
-        o.value = opt; // canonical English value — matched directly against term data, never translated
+        o.value = opt; // canonical English value — matched against term.*Key, never translated
         o.textContent = optionMapKey ? tOption(optionMapKey, opt) : opt;
         select.appendChild(o);
       });
