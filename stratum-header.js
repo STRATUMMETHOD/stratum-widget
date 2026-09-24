@@ -183,13 +183,19 @@
   // gated on this fetch (see init()) so the header still renders
   // correctly on first paint for a language with no local en/es block
   // above, not just after a later patch.
+  // Sept 24 2026: the fetch is now memoized in uiStringsPromise so the
+  // System Page (init) and standalone pages (StratumHeader.buildTopbar)
+  // share one request, however many times either calls loadUiStrings().
   var DB_STRINGS = null;
+  var uiStringsPromise = null;
   function loadUiStrings(callback) {
-    fetch(PROXY_URL + '/ui-strings?lang=' + encodeURIComponent(LANG))
-      .then(function (r) { return r.json(); })
-      .then(function (d) { DB_STRINGS = (d && d.strings) || {}; })
-      .catch(function () { DB_STRINGS = {}; })
-      .then(callback);
+    if (!uiStringsPromise) {
+      uiStringsPromise = fetch(PROXY_URL + '/ui-strings?lang=' + encodeURIComponent(LANG))
+        .then(function (r) { return r.json(); })
+        .then(function (d) { DB_STRINGS = (d && d.strings) || {}; })
+        .catch(function () { DB_STRINGS = {}; });
+    }
+    uiStringsPromise.then(callback);
   }
   function t(key) {
     if (DB_STRINGS && DB_STRINGS['header.' + key] != null) return DB_STRINGS['header.' + key];
@@ -587,23 +593,29 @@
     loadUiStrings(function () { buildHeader(container); });
   }
 
-  // Public API for other pages (WIP Profile, future Coach session pages)
-  // that want the SAME persistent top nav bar as the System Page, without
-  // the dashboard-specific welcome/WIP-hero/Focus-Tracking content below
-  // it. One shared implementation — see buildTopbar() above.
-  // KNOWN LIMITATION: buildTopbar() here is synchronous (other pages -
-  // the coach session pages - call it directly and don't expect an
-  // async result), so it always uses the LOCAL en/es defaults, never
-  // DB_STRINGS - only the System Page itself (via init() above) waits
-  // for the DB fetch. A language added only via admin (no local en/es
-  // block) will show English nav text on coach pages until that's
-  // retrofitted too - flagged, not silently accepted as correct.
+  // Public API for other pages (Practice Lab, Library, Coach session
+  // pages) that want the SAME persistent top nav bar as the System Page,
+  // without the dashboard-specific welcome/WIP content below it. One
+  // shared implementation — see buildTopbar() above.
+  // Sept 24 2026 fix: this used to build synchronously from the local
+  // en/es STRINGS only, so any admin-added language (de, ur, ...) showed
+  // English nav on every page except the System Page. It still returns
+  // synchronously (callers don't expect an async result), but now mounts
+  // the bar hidden, loads DB_STRINGS via the same shared fetch init()
+  // uses, then swaps in a fully translated bar — no English flash, no
+  // layout shift.
   window.StratumHeader = {
     buildTopbar: function (container) {
       if (!container) return;
       var bar = buildTopbar();
       bar.classList.add('sh-topbar--standalone');
+      bar.style.visibility = 'hidden';
       mount(container, bar);
+      loadUiStrings(function () {
+        var fresh = buildTopbar();
+        fresh.classList.add('sh-topbar--standalone');
+        if (bar.parentNode) bar.parentNode.replaceChild(fresh, bar);
+      });
     }
   };
 
