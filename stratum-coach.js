@@ -28,6 +28,20 @@
    directly — reusing an old localStorage cache here would silently
    see nothing.
 
+   ---- Database-backed translation (Sept 24 2026) ----
+   Every student-facing chrome string on this page (rail status, input
+   placeholder, WIP/character/conflict pickers and indicators, error
+   and empty states, synthesis card, recurring topic list) now goes
+   through t(), which checks DB overrides from GET /ui-strings under
+   the coachPage.* keys FIRST, then falls back to the local en/es
+   STRINGS below — same t()/DB_STRINGS/loadUiStrings() pattern as
+   stratum-practice.js and stratum-library.js. loadUiStrings() resolves
+   before anything renders, so the first paint is already translated.
+   The coach's own prompt text (buildSystemPrompt etc.) deliberately
+   stays English — it's model-facing, not student-facing, and the
+   LANGUAGE instruction in buildProjectContextBlock already makes the
+   coach reply in the student's language.
+
    Requires stratum-identity.js, stratum-header.js (for
    window.StratumHeader.buildTopbar), AND stratum-sessions.js loaded
    first on this page.
@@ -91,6 +105,169 @@
   var ACTIVE_WIP_ID = null;       // Sept 2026 (multiple WIPs): every Excavation-Track session's coaching context (and, for requiresCharacter sessions, its character list) is scoped to one WIP — resolved by resolveWipThenStart() before anything else runs
 
   var railEl, messagesEl, formEl, inputEl, sendBtn, contentEl;
+
+  // ----------------------------------------------------------
+  // TRANSLATION (Sept 24 2026) — see file header
+  // ----------------------------------------------------------
+  var STRINGS = {
+    en: {
+      inProgress: 'In progress',
+      typeYourReply: 'Type your reply...',
+      poolExhausted: 'You\u2019ve used all your coaching sessions for now. Message Ted and he\u2019ll sort it out.',
+      accountSuspended: 'Something\u2019s wrong with the access on this account. Send a message and it will get sorted out.',
+      lostTrain: 'I lost my train of thought there for a second. Could you say that again?',
+      lostConnection: 'Hang on - I lost the connection for a second. Mind sending that again?',
+      layerNotSetUp: 'This layer hasn\u2019t been set up yet. Let Ted know.',
+      greetBackFallback: 'Hey {name} - good to have you back. Let\u2019s pick up where we left off.',
+      greetFreshFallback: 'Hey - let\u2019s get started. What\u2019s your name?',
+      synthesizing: 'Bringing together everything you\u2019ve excavated\u2026',
+      synthGenerateError: 'Couldn\u2019t generate your synthesis right now. Refresh to try again.',
+      synthLoadError: 'Couldn\u2019t load your synthesis right now. Refresh to try again.',
+      closingNameWho: 'Congratulations, {name} \u2014 you\u2019ve built a complete, usable profile for {who}. Everything we found across all six layers is pulled together below. You can download it or print it now to keep working from as you draft.',
+      closingName: 'Congratulations, {name} \u2014 you\u2019ve built a complete, usable profile. Everything we found across all six layers is pulled together below. You can download it or print it now to keep working from as you draft.',
+      closingWho: 'Congratulations \u2014 you\u2019ve built a complete, usable profile for {who}. Everything we found across all six layers is pulled together below. You can download it or print it now to keep working from as you draft.',
+      closingPlain: 'Congratulations \u2014 you\u2019ve built a complete, usable profile. Everything we found across all six layers is pulled together below. You can download it or print it now to keep working from as you draft.',
+      synthTitle: '{title} \u2014 Complete',
+      synthTitleWho: '{title} \u2014 Complete: {who}',
+      download: 'Download',
+      print: 'Print',
+      completeProfile: 'COMPLETE PROFILE',
+      student: 'Student',
+      noLayersYet: 'This excavation doesn\u2019t have any layers set up yet. Check back soon.',
+      workingIn: 'Working in: {title}',
+      untitledWip: 'Untitled WIP',
+      switchWip: 'Switch WIP',
+      noWipYet: 'You don\u2019t have a work-in-progress in your profile yet. Add one, then come back here.',
+      addWip: '\u2190 Add a WIP',
+      whichWip: 'Which work-in-progress is this session for?',
+      characterCountOne: '{n} character',
+      characterCountMany: '{n} characters',
+      excavating: 'Excavating: {name}',
+      thisCharacter: 'this character',
+      switchCharacter: 'Switch character',
+      noCharacterYet: 'This excavation is done one character at a time, and there\u2019s no character in this WIP yet to excavate. Add one, then come back here.',
+      addCharacter: '\u2190 Add a character',
+      whoIsThisFor: 'Who is this excavation for? Once you start, this stays locked to that character for this session.',
+      workingThrough: 'Working through: {names}',
+      switchConflict: 'Switch conflict',
+      settingUpConflict: 'Setting up this conflict\u2026',
+      conflictStartError: 'Couldn\u2019t start this conflict right now. Refresh to try again.',
+      needTwoCharacters: 'This excavation is between two characters, and there aren\u2019t at least two in this WIP yet. Add another, then come back here.',
+      pickSecond: 'And who is {name} in conflict with?',
+      pickFirst: 'Which two characters is this conflict between? Choose the first.',
+      whichConflict: 'Which conflict is this session for?',
+      startNewConflict: '+ Start a new conflict',
+      pickTopic: 'Pick a topic to start a check-in. Each visit is a fresh conversation \u2014 your coach carries everything forward from before.',
+      relToday: 'today',
+      relYesterday: 'yesterday',
+      relDaysAgo: '{n} days ago',
+      relWeekAgo: '1 week ago',
+      relWeeksAgo: '{n} weeks ago',
+      noTopicsYet: 'This session doesn\u2019t have any topics set up yet. Check back soon.',
+      checkinCountOne: '{n} check-in \u00b7 last {when}',
+      checkinCountMany: '{n} check-ins \u00b7 last {when}',
+      noCheckinsYet: 'No check-ins yet',
+      topicNotSetUp: 'This topic isn\u2019t set up yet.',
+      whichCharacterCheckin: 'Which of your characters is this about? Optional \u2014 skip if it isn\u2019t about one specific character.',
+      notAboutOneCharacter: 'Not about one specific character',
+      backToTopics: '\u2190 Back to topics',
+      aboutCharacter: 'About: {name}',
+      beforeYouBegin: 'Before You Begin',
+      notConfigured: 'This coaching session hasn\u2019t been configured yet.',
+      backToDashboard: '\u2190 Back to Dashboard',
+      loginToStart: 'Please log in to start this coaching session.',
+      logIn: 'Log in',
+      noMembership: 'Your account doesn\u2019t have an active Stratum Method membership yet.',
+      goToMyAccount: 'Go to My Account',
+      couldNotConnect: 'Could not connect your account. Refresh and try again.'
+    },
+    es: {
+      inProgress: 'En curso',
+      typeYourReply: 'Escribe tu respuesta...',
+      poolExhausted: 'Has usado todas tus sesiones de coaching por ahora. Escríbele a Ted y él lo resolverá.',
+      accountSuspended: 'Algo no está bien con el acceso de esta cuenta. Envía un mensaje y se resolverá.',
+      lostTrain: 'Perdí el hilo por un segundo. ¿Podrías repetirlo?',
+      lostConnection: 'Un momento: perdí la conexión por un segundo. ¿Puedes enviarlo de nuevo?',
+      layerNotSetUp: 'Esta capa aún no está configurada. Avísale a Ted.',
+      greetBackFallback: 'Hola {name}, qué bueno tenerte de vuelta. Retomemos donde lo dejamos.',
+      greetFreshFallback: 'Hola, empecemos. ¿Cómo te llamas?',
+      synthesizing: 'Reuniendo todo lo que has excavado\u2026',
+      synthGenerateError: 'No se pudo generar tu síntesis en este momento. Actualiza la página para intentarlo de nuevo.',
+      synthLoadError: 'No se pudo cargar tu síntesis en este momento. Actualiza la página para intentarlo de nuevo.',
+      closingNameWho: 'Felicidades, {name}: has construido un perfil completo y útil para {who}. Todo lo que encontramos en las seis capas está reunido abajo. Puedes descargarlo o imprimirlo ahora para seguir trabajando con él mientras escribes.',
+      closingName: 'Felicidades, {name}: has construido un perfil completo y útil. Todo lo que encontramos en las seis capas está reunido abajo. Puedes descargarlo o imprimirlo ahora para seguir trabajando con él mientras escribes.',
+      closingWho: 'Felicidades: has construido un perfil completo y útil para {who}. Todo lo que encontramos en las seis capas está reunido abajo. Puedes descargarlo o imprimirlo ahora para seguir trabajando con él mientras escribes.',
+      closingPlain: 'Felicidades: has construido un perfil completo y útil. Todo lo que encontramos en las seis capas está reunido abajo. Puedes descargarlo o imprimirlo ahora para seguir trabajando con él mientras escribes.',
+      synthTitle: '{title} \u2014 Completo',
+      synthTitleWho: '{title} \u2014 Completo: {who}',
+      download: 'Descargar',
+      print: 'Imprimir',
+      completeProfile: 'PERFIL COMPLETO',
+      student: 'Estudiante',
+      noLayersYet: 'Esta excavación aún no tiene capas configuradas. Vuelve pronto.',
+      workingIn: 'Trabajando en: {title}',
+      untitledWip: 'Obra sin título',
+      switchWip: 'Cambiar obra',
+      noWipYet: 'Aún no tienes una obra en curso en tu perfil. Agrega una y luego vuelve aquí.',
+      addWip: '\u2190 Agregar una obra',
+      whichWip: '¿Para qué obra en curso es esta sesión?',
+      characterCountOne: '{n} personaje',
+      characterCountMany: '{n} personajes',
+      excavating: 'Excavando: {name}',
+      thisCharacter: 'este personaje',
+      switchCharacter: 'Cambiar personaje',
+      noCharacterYet: 'Esta excavación se hace un personaje a la vez, y todavía no hay ningún personaje en esta obra para excavar. Agrega uno y luego vuelve aquí.',
+      addCharacter: '\u2190 Agregar un personaje',
+      whoIsThisFor: '¿Para quién es esta excavación? Una vez que empieces, quedará fijada a ese personaje durante esta sesión.',
+      workingThrough: 'Trabajando: {names}',
+      switchConflict: 'Cambiar conflicto',
+      settingUpConflict: 'Preparando este conflicto\u2026',
+      conflictStartError: 'No se pudo iniciar este conflicto en este momento. Actualiza la página para intentarlo de nuevo.',
+      needTwoCharacters: 'Esta excavación es entre dos personajes, y todavía no hay al menos dos en esta obra. Agrega otro y luego vuelve aquí.',
+      pickSecond: '¿Y con quién está en conflicto {name}?',
+      pickFirst: '¿Entre qué dos personajes es este conflicto? Elige el primero.',
+      whichConflict: '¿Para qué conflicto es esta sesión?',
+      startNewConflict: '+ Iniciar un nuevo conflicto',
+      pickTopic: 'Elige un tema para iniciar un seguimiento. Cada visita es una conversación nueva \u2014 tu coach lleva consigo todo lo anterior.',
+      relToday: 'hoy',
+      relYesterday: 'ayer',
+      relDaysAgo: 'hace {n} días',
+      relWeekAgo: 'hace 1 semana',
+      relWeeksAgo: 'hace {n} semanas',
+      noTopicsYet: 'Esta sesión aún no tiene temas configurados. Vuelve pronto.',
+      checkinCountOne: '{n} seguimiento \u00b7 último {when}',
+      checkinCountMany: '{n} seguimientos \u00b7 último {when}',
+      noCheckinsYet: 'Aún no hay seguimientos',
+      topicNotSetUp: 'Este tema aún no está configurado.',
+      whichCharacterCheckin: '¿Sobre cuál de tus personajes es esto? Opcional \u2014 omítelo si no se trata de un personaje específico.',
+      notAboutOneCharacter: 'No se trata de un personaje específico',
+      backToTopics: '\u2190 Volver a los temas',
+      aboutCharacter: 'Sobre: {name}',
+      beforeYouBegin: 'Antes de empezar',
+      notConfigured: 'Esta sesión de coaching aún no está configurada.',
+      backToDashboard: '\u2190 Volver al panel',
+      loginToStart: 'Inicia sesión para comenzar esta sesión de coaching.',
+      logIn: 'Iniciar sesión',
+      noMembership: 'Tu cuenta aún no tiene una membresía activa de Stratum Method.',
+      goToMyAccount: 'Ir a mi cuenta',
+      couldNotConnect: 'No se pudo conectar tu cuenta. Actualiza la página e inténtalo de nuevo.'
+    }
+  };
+  var DB_STRINGS = {};
+  function loadUiStrings() {
+    return fetch(PROXY_URL + '/ui-strings?lang=' + encodeURIComponent(LANG))
+      .then(function (r) { return r.json(); })
+      .then(function (d) { DB_STRINGS = (d && d.strings) || {}; })
+      .catch(function () { DB_STRINGS = {}; });
+  }
+  function format(str, vars) {
+    return String(str).replace(/\{(\w+)\}/g, function (m, k) { return (vars && vars[k] != null) ? vars[k] : m; });
+  }
+  function t(key, vars) {
+    var dbVal = DB_STRINGS['coachPage.' + key];
+    var str = dbVal != null ? dbVal : ((STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key] || key);
+    return vars ? format(str, vars) : str;
+  }
 
   function makeId() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -161,7 +338,7 @@
       mount(row, badge);
       var textWrap = el('div', 'sh-rail-text');
       mount(textWrap, el('div', 'sh-rail-label', layer.label));
-      if (isCurrent) mount(textWrap, el('div', 'sh-rail-status', 'In progress'));
+      if (isCurrent) mount(textWrap, el('div', 'sh-rail-status', t('inProgress')));
       mount(row, textWrap);
       mount(railEl, row);
     });
@@ -687,10 +864,10 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
           data = data || {};
-          if (data.stratum_error === 'pool_exhausted') { hideTyping(); setBusy(false); poolExhausted = true; addMessage('assistant', 'You\u2019ve used all your coaching sessions for now. Message Ted and he\u2019ll sort it out.'); return; }
-          if (data.stratum_error === 'account_suspended') { hideTyping(); setBusy(false); addMessage('assistant', 'Something\u2019s wrong with the access on this account. Send a message and it will get sorted out.'); return; }
+          if (data.stratum_error === 'pool_exhausted') { hideTyping(); setBusy(false); poolExhausted = true; addMessage('assistant', t('poolExhausted')); return; }
+          if (data.stratum_error === 'account_suspended') { hideTyping(); setBusy(false); addMessage('assistant', t('accountSuspended')); return; }
           var block = (data.content || []).find(function (b) { return b.type === 'text'; });
-          var raw = block ? block.text : 'I lost my train of thought there for a second. Could you say that again?';
+          var raw = block ? block.text : t('lostTrain');
           var parsed = extractTags(raw);
           var deliverableConfig = getDeliverableConfig();
           if (parsed.complete && deliverableConfig) {
@@ -721,7 +898,7 @@
         .catch(function () {
           hideTyping();
           setBusy(false);
-          addMessage('assistant', 'Hang on - I lost the connection for a second. Mind sending that again?');
+          addMessage('assistant', t('lostConnection'));
         });
     });
   }
@@ -859,10 +1036,10 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
           data = data || {};
-          if (data.stratum_error === 'pool_exhausted') { hideTyping(); setBusy(false); poolExhausted = true; addMessage('assistant', 'You\u2019ve used all your coaching sessions for now. Message Ted and he\u2019ll sort it out.'); return; }
-          if (data.stratum_error === 'account_suspended') { hideTyping(); setBusy(false); addMessage('assistant', 'Something\u2019s wrong with the access on this account. Send a message and it will get sorted out.'); return; }
+          if (data.stratum_error === 'pool_exhausted') { hideTyping(); setBusy(false); poolExhausted = true; addMessage('assistant', t('poolExhausted')); return; }
+          if (data.stratum_error === 'account_suspended') { hideTyping(); setBusy(false); addMessage('assistant', t('accountSuspended')); return; }
           var block = (data.content || []).find(function (b) { return b.type === 'text'; });
-          var raw = block ? block.text : 'I lost my train of thought there for a second. Could you say that again?';
+          var raw = block ? block.text : t('lostTrain');
           var parsed = extractTags(raw);
           hideTyping();
           setBusy(false);
@@ -880,7 +1057,7 @@
         .catch(function () {
           hideTyping();
           setBusy(false);
-          addMessage('assistant', 'Hang on - I lost the connection for a second. Mind sending that again?');
+          addMessage('assistant', t('lostConnection'));
         });
     });
   }
@@ -909,7 +1086,7 @@
     formEl.className = 'sh-coach-form';
     inputEl = document.createElement('textarea');
     inputEl.className = 'sh-coach-input';
-    inputEl.placeholder = 'Type your reply...';
+    inputEl.placeholder = t('typeYourReply');
     inputEl.rows = 1;
     mount(formEl, inputEl);
     sendBtn = el('button', 'sh-coach-send', '\u2192');
@@ -959,8 +1136,8 @@
     var template = knownName ? (g.knownTemplate || g.fresh) : g.fresh;
     if (!template) {
       return knownName
-        ? 'Hey ' + knownName + ' - good to have you back. Let\u2019s pick up where we left off.'
-        : 'Hey - let\u2019s get started. What\u2019s your name?';
+        ? t('greetBackFallback', { name: knownName })
+        : t('greetFreshFallback');
     }
     if (knownName) return template.indexOf('{name}') !== -1 ? template.replace('{name}', knownName) : template;
     return template.replace(/,?\s*\{name\}/g, '').replace(/\s{2,}/g, ' ').trim();
@@ -980,7 +1157,7 @@
     var layer = SESSION.layers[index];
     loadLayerConfig(layer.layerNumber, function (cfg) {
       if (!cfg) {
-        addMessage('assistant', 'This layer hasn\u2019t been set up yet. Let Ted know.');
+        addMessage('assistant', t('layerNotSetUp'));
         return;
       }
       LAYER_CONFIG = cfg;
@@ -1015,7 +1192,7 @@
   // ----------------------------------------------------------
   function synthesizeMasterDeliverable() {
     contentEl.innerHTML = '';
-    mount(contentEl, el('div', 'sh-coach-loading', 'Bringing together everything you\u2019ve excavated\u2026'));
+    mount(contentEl, el('div', 'sh-coach-loading', t('synthesizing')));
     var scopeParam = SELECTED_CHARACTER ? '&characterId=' + encodeURIComponent(SELECTED_CHARACTER.id) : (SELECTED_CONFLICT ? '&instanceId=' + encodeURIComponent(SELECTED_CONFLICT.instanceId) : '');
     fetch(PROXY_URL + '/excavation/master-deliverable?studentId=' + encodeURIComponent(STUDENT_ID) + '&excavationSlug=' + encodeURIComponent(SESSION.slug) + scopeParam)
       .then(function (r) { return r.json(); })
@@ -1032,11 +1209,12 @@
           .then(function (r2) { return r2.json(); })
           .then(function (d2) {
             if (d2 && d2.ok && d2.text) renderSynthesisCard(d2.text);
-            else contentEl.innerHTML = '<div class="sh-coach-loading">Couldn\u2019t generate your synthesis right now. Refresh to try again.</div>';
+            else { contentEl.innerHTML = ''; mount(contentEl, el('div', 'sh-coach-loading', t('synthGenerateError'))); }
           });
       })
       .catch(function () {
-        contentEl.innerHTML = '<div class="sh-coach-loading">Couldn\u2019t load your synthesis right now. Refresh to try again.</div>';
+        contentEl.innerHTML = '';
+        mount(contentEl, el('div', 'sh-coach-loading', t('synthLoadError')));
       });
   }
   function applyClosingTokens(template, name, character) {
@@ -1064,23 +1242,23 @@
     if (SESSION.closingMessage) {
       closingBubble.textContent = applyClosingTokens(SESSION.closingMessage, studentName, whoText);
     } else {
-      var namePrefix = studentName ? ('Congratulations, ' + studentName + ' \u2014 ') : 'Congratulations \u2014 ';
-      closingBubble.textContent = namePrefix + 'you\u2019ve built a complete, usable profile' + (whoText ? ' for ' + whoText : '') + '. Everything we found across all six layers is pulled together below. You can download it or print it now to keep working from as you draft.';
+      var closingKey = studentName ? (whoText ? 'closingNameWho' : 'closingName') : (whoText ? 'closingWho' : 'closingPlain');
+      closingBubble.textContent = t(closingKey, { name: studentName, who: whoText });
     }
     mount(closingWrap, closingBubble);
     mount(contentEl, closingWrap);
 
     var card = el('div', 'sh-synthesis-card');
-    mount(card, el('div', 'sh-synthesis-title', SESSION.title + ' \u2014 Complete' + (whoText ? ': ' + whoText : '')));
+    mount(card, el('div', 'sh-synthesis-title', whoText ? t('synthTitleWho', { title: SESSION.title, who: whoText }) : t('synthTitle', { title: SESSION.title })));
     var body = el('div', 'sh-synthesis-text');
     body.innerHTML = textToParagraphs(text);
     mount(card, body);
     var actions = el('div', 'sh-synthesis-actions');
-    var dlBtn = el('button', 'sh-synthesis-download', 'Download');
+    var dlBtn = el('button', 'sh-synthesis-download', t('download'));
     dlBtn.type = 'button';
     dlBtn.addEventListener('click', function () { downloadSynthesis(text); });
     mount(actions, dlBtn);
-    var printBtn = el('button', 'sh-synthesis-download', 'Print');
+    var printBtn = el('button', 'sh-synthesis-download', t('print'));
     printBtn.type = 'button';
     printBtn.addEventListener('click', function () { window.print(); });
     mount(actions, printBtn);
@@ -1088,9 +1266,11 @@
     mount(contentEl, card);
   }
   function downloadSynthesis(text) {
-    var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    var who = studentName || 'Student';
-    var txt = SESSION.title.toUpperCase() + ' \u2014 COMPLETE PROFILE\n' + who + ' \u2014 ' + dateStr + '\n' +
+    var dateStr;
+    try { dateStr = new Date().toLocaleDateString(LANG, { year: 'numeric', month: 'long', day: 'numeric' }); }
+    catch (e) { dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }); }
+    var who = studentName || t('student');
+    var txt = SESSION.title.toUpperCase() + ' \u2014 ' + t('completeProfile') + '\n' + who + ' \u2014 ' + dateStr + '\n' +
       '==========================================\n\n' + text;
     var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
     var link = document.createElement('a');
@@ -1111,7 +1291,7 @@
       // producing a confusing "Couldn't generate your synthesis right
       // now" error on a session that was simply never set up yet.
       contentEl.innerHTML = '';
-      mount(contentEl, el('div', 'sh-coach-loading', 'This excavation doesn\u2019t have any layers set up yet. Check back soon.'));
+      mount(contentEl, el('div', 'sh-coach-loading', t('noLayersYet')));
       return;
     }
     fetch(PROXY_URL + '/completions?studentId=' + encodeURIComponent(STUDENT_ID))
@@ -1224,11 +1404,11 @@
 
   function showWipIndicator(slot, wip) {
     var line = el('p', 'sh-coach-sub');
-    line.appendChild(document.createTextNode('Working in: ' + (wip.title || 'Untitled WIP') + '  \u00b7  '));
+    line.appendChild(document.createTextNode(t('workingIn', { title: wip.title || t('untitledWip') }) + '  \u00b7  '));
     var switchLink = document.createElement('a');
     switchLink.href = '#';
     switchLink.className = 'sh-char-switch-link';
-    switchLink.textContent = 'Switch WIP';
+    switchLink.textContent = t('switchWip');
     switchLink.addEventListener('click', function (e) {
       e.preventDefault();
       sessRemove(WIP_LOCK_KEY);
@@ -1287,11 +1467,11 @@
           return;
         }
         var empty = el('div', 'sh-coach-page');
-        mount(empty, el('p', null, 'You don\u2019t have a work-in-progress in your profile yet. Add one, then come back here.'));
+        mount(empty, el('p', null, t('noWipYet')));
         var link = document.createElement('a');
         link.className = 'sh-save-btn';
         link.href = '/system/';
-        link.textContent = '\u2190 Add a WIP';
+        link.textContent = t('addWip');
         mount(empty, link);
         mount(container, empty);
         return;
@@ -1306,7 +1486,7 @@
         return;
       }
       var wrap = el('div', 'sh-recurring-topics');
-      mount(container, el('p', 'sh-coach-sub', 'Which work-in-progress is this session for?'));
+      mount(container, el('p', 'sh-coach-sub', t('whichWip')));
       wips.forEach(function (w) {
         var row = el('div', 'sh-recurring-topic-row');
         row.addEventListener('click', function () {
@@ -1315,8 +1495,8 @@
           showWipIndicator(indicatorSlot, w);
           afterWipResolved(container, indicatorSlot);
         });
-        mount(row, el('div', 'sh-recurring-topic-title', w.title || 'Untitled WIP'));
-        var metaBits = [w.genre, w.characterCount ? (w.characterCount + ' character' + (w.characterCount === 1 ? '' : 's')) : null].filter(Boolean);
+        mount(row, el('div', 'sh-recurring-topic-title', w.title || t('untitledWip')));
+        var metaBits = [w.genre, w.characterCount ? t(w.characterCount === 1 ? 'characterCountOne' : 'characterCountMany', { n: w.characterCount }) : null].filter(Boolean);
         mount(row, el('div', 'sh-recurring-topic-meta', metaBits.join(' \u00b7 ') || '\u00a0'));
         mount(wrap, row);
       });
@@ -1356,11 +1536,11 @@
     // "Switch" link does a full location.reload() anyway, so there's no
     // stale-DOM risk from appending rather than replacing.
     var line = el('p', 'sh-coach-sub');
-    line.appendChild(document.createTextNode('Excavating: ' + (SELECTED_CHARACTER.name || 'this character') + '  \u00b7  '));
+    line.appendChild(document.createTextNode(t('excavating', { name: SELECTED_CHARACTER.name || t('thisCharacter') }) + '  \u00b7  '));
     var switchLink = document.createElement('a');
     switchLink.href = '#';
     switchLink.className = 'sh-char-switch-link';
-    switchLink.textContent = 'Switch character';
+    switchLink.textContent = t('switchCharacter');
     switchLink.addEventListener('click', function (e) {
       e.preventDefault();
       sessRemove(CHAR_LOCK_PREFIX + SESSION.slug);
@@ -1387,17 +1567,17 @@
       container.innerHTML = '';
       if (!characters.length) {
         var empty = el('div', 'sh-coach-page');
-        mount(empty, el('p', null, 'This excavation is done one character at a time, and there\u2019s no character in this WIP yet to excavate. Add one, then come back here.'));
+        mount(empty, el('p', null, t('noCharacterYet')));
         var link = document.createElement('a');
         link.className = 'sh-save-btn';
         link.href = '/system/';
-        link.textContent = '\u2190 Add a character';
+        link.textContent = t('addCharacter');
         mount(empty, link);
         mount(container, empty);
         return;
       }
       var wrap = el('div', 'sh-recurring-topics');
-      mount(container, el('p', 'sh-coach-sub', 'Who is this excavation for? Once you start, this stays locked to that character for this session.'));
+      mount(container, el('p', 'sh-coach-sub', t('whoIsThisFor')));
       characters.forEach(function (c) {
         var row = el('div', 'sh-recurring-topic-row');
         row.addEventListener('click', function () {
@@ -1435,11 +1615,11 @@
   function showConflictIndicator(slot) {
     var line = el('p', 'sh-coach-sub');
     var names = SELECTED_CONFLICT.characterA.name + ' & ' + SELECTED_CONFLICT.characterB.name;
-    line.appendChild(document.createTextNode('Working through: ' + names + '  \u00b7  '));
+    line.appendChild(document.createTextNode(t('workingThrough', { names: names }) + '  \u00b7  '));
     var switchLink = document.createElement('a');
     switchLink.href = '#';
     switchLink.className = 'sh-char-switch-link';
-    switchLink.textContent = 'Switch conflict';
+    switchLink.textContent = t('switchConflict');
     switchLink.addEventListener('click', function (e) {
       e.preventDefault();
       sessRemove(CONFLICT_LOCK_PREFIX + SESSION.slug);
@@ -1494,11 +1674,11 @@
         container.innerHTML = '';
         if (characters.length < 2) {
           var empty = el('div', 'sh-coach-page');
-          mount(empty, el('p', null, 'This excavation is between two characters, and there aren\u2019t at least two in this WIP yet. Add another, then come back here.'));
+          mount(empty, el('p', null, t('needTwoCharacters')));
           var link = document.createElement('a');
           link.className = 'sh-save-btn';
           link.href = '/system/';
-          link.textContent = '\u2190 Add a character';
+          link.textContent = t('addCharacter');
           mount(empty, link);
           mount(container, empty);
           return;
@@ -1506,11 +1686,11 @@
 
         function startNewInstance(charA, charB) {
           container.innerHTML = '';
-          mount(container, el('div', 'sh-coach-loading', 'Setting up this conflict\u2026'));
+          mount(container, el('div', 'sh-coach-loading', t('settingUpConflict')));
           createConflictInstance(charA.id, charB.id, function (instanceId) {
             if (!instanceId) {
               container.innerHTML = '';
-              mount(container, el('p', null, 'Couldn\u2019t start this conflict right now. Refresh to try again.'));
+              mount(container, el('p', null, t('conflictStartError')));
               return;
             }
             SELECTED_CONFLICT = { instanceId: instanceId, characterA: charA, characterB: charB, label: null };
@@ -1522,7 +1702,7 @@
 
         function renderPickSecond(charA) {
           container.innerHTML = '';
-          mount(container, el('p', 'sh-coach-sub', 'And who is ' + charA.name + ' in conflict with?'));
+          mount(container, el('p', 'sh-coach-sub', t('pickSecond', { name: charA.name })));
           var wrap = el('div', 'sh-recurring-topics');
           characters.filter(function (c) { return c.id !== charA.id; }).forEach(function (c) {
             var row = el('div', 'sh-recurring-topic-row');
@@ -1537,7 +1717,7 @@
 
         function renderPickFirst() {
           container.innerHTML = '';
-          mount(container, el('p', 'sh-coach-sub', 'Which two characters is this conflict between? Choose the first.'));
+          mount(container, el('p', 'sh-coach-sub', t('pickFirst')));
           var wrap = el('div', 'sh-recurring-topics');
           characters.forEach(function (c) {
             var row = el('div', 'sh-recurring-topic-row');
@@ -1556,7 +1736,7 @@
         }
 
         // Existing conflicts to resume, plus the option to start a new one.
-        mount(container, el('p', 'sh-coach-sub', 'Which conflict is this session for?'));
+        mount(container, el('p', 'sh-coach-sub', t('whichConflict')));
         var wrap = el('div', 'sh-recurring-topics');
         instances.forEach(function (inst) {
           var a = charById[inst.characterAId], b = charById[inst.characterBId];
@@ -1574,7 +1754,7 @@
         });
         var newRow = el('div', 'sh-recurring-topic-row');
         newRow.addEventListener('click', renderPickFirst);
-        mount(newRow, el('div', 'sh-recurring-topic-title', '+ Start a new conflict'));
+        mount(newRow, el('div', 'sh-recurring-topic-title', t('startNewConflict')));
         mount(newRow, el('div', 'sh-recurring-topic-meta', '\u00a0'));
         mount(wrap, newRow);
         mount(container, wrap);
@@ -1598,7 +1778,7 @@
 
     var page = el('div', 'sh-coach-page');
     mount(page, el('h1', 'sh-coach-title', SESSION.title || ''));
-    mount(page, el('p', 'sh-coach-sub', 'Pick a topic to start a check-in. Each visit is a fresh conversation \u2014 your coach carries everything forward from before.'));
+    mount(page, el('p', 'sh-coach-sub', t('pickTopic')));
 
     if (SESSION.coachingIntro && SESSION.coachingIntro.text) {
       var introSlot = el('div');
@@ -1628,19 +1808,19 @@
     var d = new Date(iso.indexOf('Z') === -1 ? iso.replace(' ', 'T') + 'Z' : iso);
     if (isNaN(d.getTime())) return '';
     var days = Math.floor((Date.now() - d.getTime()) / 86400000);
-    if (days <= 0) return 'today';
-    if (days === 1) return 'yesterday';
-    if (days < 7) return days + ' days ago';
+    if (days <= 0) return t('relToday');
+    if (days === 1) return t('relYesterday');
+    if (days < 7) return t('relDaysAgo', { n: days });
     var weeks = Math.floor(days / 7);
-    if (weeks === 1) return '1 week ago';
-    if (weeks < 5) return weeks + ' weeks ago';
+    if (weeks === 1) return t('relWeekAgo');
+    if (weeks < 5) return t('relWeeksAgo', { n: weeks });
     return d.toLocaleDateString();
   }
 
   function renderTopicList() {
     topicListEl.innerHTML = '';
     if (!SESSION.layers.length) {
-      mount(topicListEl, el('div', 'sh-coach-loading', 'This session doesn\u2019t have any topics set up yet. Check back soon.'));
+      mount(topicListEl, el('div', 'sh-coach-loading', t('noTopicsYet')));
       return;
     }
     SESSION.layers.forEach(function (layer, i) {
@@ -1649,8 +1829,8 @@
       row.addEventListener('click', function () { startCheckin(i); });
       mount(row, el('div', 'sh-recurring-topic-title', layer.label));
       var meta = layerNotes.length
-        ? (layerNotes.length + ' check-in' + (layerNotes.length === 1 ? '' : 's') + ' \u00b7 last ' + formatRelativeDate(layerNotes[layerNotes.length - 1].createdAt))
-        : 'No check-ins yet';
+        ? t(layerNotes.length === 1 ? 'checkinCountOne' : 'checkinCountMany', { n: layerNotes.length, when: formatRelativeDate(layerNotes[layerNotes.length - 1].createdAt) })
+        : t('noCheckinsYet');
       mount(row, el('div', 'sh-recurring-topic-meta', meta));
       mount(topicListEl, row);
     });
@@ -1660,7 +1840,7 @@
     currentLayerIndex = layerIndex;
     var layer = SESSION.layers[layerIndex];
     loadLayerConfig(layer.layerNumber, function (cfg) {
-      if (!cfg) { alert('This topic isn\u2019t set up yet.'); return; }
+      if (!cfg) { alert(t('topicNotSetUp')); return; }
       LAYER_CONFIG = cfg;
       if (SESSION.requiresCharacter) {
         resolveCharacterForCheckin(function () { reallyStartCheckin(layer); });
@@ -1702,7 +1882,7 @@
         return;
       }
       chatOuter.innerHTML = '';
-      mount(chatOuter, el('p', 'sh-coach-sub', 'Which of your characters is this about? Optional \u2014 skip if it isn\u2019t about one specific character.'));
+      mount(chatOuter, el('p', 'sh-coach-sub', t('whichCharacterCheckin')));
       var wrap = el('div', 'sh-recurring-topics');
       characters.forEach(function (c) {
         var row = el('div', 'sh-recurring-topic-row');
@@ -1722,7 +1902,7 @@
         CONTEXT_BLOCK_CACHE = null;
         onResolved();
       });
-      mount(skipRow, el('div', 'sh-recurring-topic-title', 'Not about one specific character'));
+      mount(skipRow, el('div', 'sh-recurring-topic-title', t('notAboutOneCharacter')));
       mount(skipRow, el('div', 'sh-recurring-topic-meta', '\u00a0'));
       mount(wrap, skipRow);
       mount(chatOuter, wrap);
@@ -1737,12 +1917,12 @@
     var backLink = document.createElement('a');
     backLink.href = '#';
     backLink.className = 'sh-recurring-back';
-    backLink.textContent = '\u2190 Back to topics';
+    backLink.textContent = t('backToTopics');
     backLink.addEventListener('click', function (e) { e.preventDefault(); returnToTopicList(); });
     mount(chatOuter, backLink);
     mount(chatOuter, el('h2', 'sh-recurring-topic-heading', layer.label));
     if (SELECTED_CHARACTER) {
-      mount(chatOuter, el('p', 'sh-coach-sub', 'About: ' + SELECTED_CHARACTER.name));
+      mount(chatOuter, el('p', 'sh-coach-sub', t('aboutCharacter', { name: SELECTED_CHARACTER.name })));
     }
     buildChatPanel(chatOuter);
     resetSessionState();
@@ -1773,7 +1953,7 @@
     var details = document.createElement('details');
     details.className = 'sh-coach-intro';
     var summary = document.createElement('summary');
-    summary.textContent = intro.title || 'Before You Begin';
+    summary.textContent = intro.title || t('beforeYouBegin');
     mount(details, summary);
     var body = el('div', 'sh-coach-intro-body');
     body.innerHTML = textToParagraphs(intro.text);
@@ -1787,47 +1967,51 @@
       console.error('[Stratum] No #stratum-coach container found on this page.');
       return;
     }
-    var slug = window.STRATUM_SESSION_SLUG || '';
-    if (!window.StratumSessions) {
-      buildGate(container, 'This coaching session hasn\u2019t been configured yet.', '/system/', '\u2190 Back to Dashboard');
-      return;
-    }
-    window.StratumSessions.ready(function () {
-      SESSION = window.StratumSessions.get(slug);
-      if (!SESSION) {
-        buildGate(container, 'This coaching session hasn\u2019t been configured yet.', '/system/', '\u2190 Back to Dashboard');
+    // Load this page's translated chrome before anything using t() runs,
+    // including the gate messages - same ordering as stratum-practice.js.
+    loadUiStrings().then(function () {
+      var slug = window.STRATUM_SESSION_SLUG || '';
+      if (!window.StratumSessions) {
+        buildGate(container, t('notConfigured'), '/system/', t('backToDashboard'));
         return;
       }
-      if (!WP_USER.loggedIn) {
-        buildGate(container, 'Please log in to start this coaching session.', WP_USER.loginUrl, 'Log in');
-        return;
-      }
-      if (!WP_USER.hasMembership) {
-        buildGate(container, 'Your account doesn\u2019t have an active Stratum Method membership yet.', '/membership-account/', 'Go to My Account');
-        return;
-      }
-      window.StratumIdentity.init(function (studentId) {
-        if (!studentId) {
-          buildGate(container, 'Could not connect your account. Refresh and try again.', '/system/', '\u2190 Back to Dashboard');
+      window.StratumSessions.ready(function () {
+        SESSION = window.StratumSessions.get(slug);
+        if (!SESSION) {
+          buildGate(container, t('notConfigured'), '/system/', t('backToDashboard'));
           return;
         }
-        STUDENT_ID = studentId;
-        ENGINE_MODE = SESSION.track || 'excavation';
-        if (ENGINE_MODE === 'excavation') {
-          buildPage(container);
-        } else {
-          // Sept 2026: General/Writing sessions now resolve ACTIVE_WIP_ID
-          // the same way Excavation sessions do (previously this engine
-          // never called resolveWipThenStart at all, so fetchProjectData's
-          // ACTIVE_WIP_ID guard silently returned null forever - no WIP
-          // facts, no character list, and no linked-character profile
-          // pull were ever possible here, even though buildProjectContextBlock
-          // was written to include them). The indicator slot is
-          // deliberately detached (never mounted) - recurring pages don't
-          // show a "Working in: X" line the way Excavation pages do; see
-          // afterWipResolved()'s ENGINE_MODE branch for what runs next.
-          resolveWipThenStart(container, el('div'));
+        if (!WP_USER.loggedIn) {
+          buildGate(container, t('loginToStart'), WP_USER.loginUrl, t('logIn'));
+          return;
         }
+        if (!WP_USER.hasMembership) {
+          buildGate(container, t('noMembership'), '/membership-account/', t('goToMyAccount'));
+          return;
+        }
+        window.StratumIdentity.init(function (studentId) {
+          if (!studentId) {
+            buildGate(container, t('couldNotConnect'), '/system/', t('backToDashboard'));
+            return;
+          }
+          STUDENT_ID = studentId;
+          ENGINE_MODE = SESSION.track || 'excavation';
+          if (ENGINE_MODE === 'excavation') {
+            buildPage(container);
+          } else {
+            // Sept 2026: General/Writing sessions now resolve ACTIVE_WIP_ID
+            // the same way Excavation sessions do (previously this engine
+            // never called resolveWipThenStart at all, so fetchProjectData's
+            // ACTIVE_WIP_ID guard silently returned null forever - no WIP
+            // facts, no character list, and no linked-character profile
+            // pull were ever possible here, even though buildProjectContextBlock
+            // was written to include them). The indicator slot is
+            // deliberately detached (never mounted) - recurring pages don't
+            // show a "Working in: X" line the way Excavation pages do; see
+            // afterWipResolved()'s ENGINE_MODE branch for what runs next.
+            resolveWipThenStart(container, el('div'));
+          }
+        });
       });
     });
   }
