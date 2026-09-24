@@ -62,7 +62,7 @@
      the rest of the card's language rather than standing out as an
      unstyled default. Shared by both the Practice Lab and Library
      teaser cards (stratum-library-teaser.js reuses this exact class).*/
-  color: var(--sh-card-title);
+  color: var(--sh-card-ink); /* Sept 24 2026: paper white on the dark card, matching the Practice Lab term name */
   margin-bottom: 6px;
 }
 .sh-pt-snippet {

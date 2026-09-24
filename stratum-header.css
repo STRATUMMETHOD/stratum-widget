@@ -59,23 +59,17 @@
   --sh-warm: #A07C3E;
   --sh-sub: #9C8F72;
 
-  /* Parchment card tokens — see file header note above. Sept 2026: the
-     background gained mottled radial layers on top of the base
-     gradient — a flat two-stop gradient was reading as plain tan, not
-     "parchment," per Ted's feedback. The radial layers simulate
-     uneven aging/light without adding an actual noise image asset. */
-  --sh-card-bg:
-    radial-gradient(ellipse 60% 50% at 18% 22%, rgba(255, 252, 240, 0.35), transparent 60%),
-    radial-gradient(ellipse 55% 45% at 85% 15%, rgba(120, 90, 40, 0.10), transparent 55%),
-    radial-gradient(ellipse 70% 55% at 78% 85%, rgba(120, 90, 40, 0.14), transparent 60%),
-    radial-gradient(ellipse 50% 40% at 10% 90%, rgba(255, 252, 240, 0.18), transparent 55%),
-    linear-gradient(165deg, #F2E6C6 0%, #E7D6AA 100%);
-  --sh-card-border: rgba(160, 124, 62, 0.28);
-  --sh-card-ink: var(--sh-ink);
-  --sh-card-sub: #74582B;
+  /* Card tokens (Sept 24 2026 dark re-theme): all cards now match the
+     Practice Lab page - dark panels, brass outline on the card itself
+     (set in stratum-dashboard.css), line-colored inner borders, and the
+     cool-dark Try It shade for inner rows and inputs. Parchment retired. */
+  --sh-card-bg: var(--sh-panel2);
+  --sh-card-border: var(--sh-line);
+  --sh-card-ink: var(--sh-paper);
+  --sh-card-sub: var(--sh-sub);
   --sh-card-title: var(--sh-warm);
-  --sh-card-row-bg: rgba(255, 252, 242, 0.5);
-  --sh-card-input-bg: #FBF5E4;
+  --sh-card-row-bg: #1E1E22;
+  --sh-card-input-bg: #1E1E22;
   --sh-font-sans: Arial, "Helvetica Neue", Helvetica, sans-serif;
 
   /* Navbar tokens (Sept 2026 — sticky blur-glass treatment, replacing
@@ -85,28 +79,9 @@
   --sh-nav-link: #EADBB0;
 
   font-family: var(--sh-font-sans);
-  /* Very subtle full-page strata texture (Sept 2026): faint horizontal
-     bands echoing the header's .sh-strata-art accent, but low-contrast
-     enough (2-4% opacity) to read as quiet texture behind the parchment
-     cards rather than a competing graphic. Runs the full height of
-     .sh-wrap, not just behind the header, so the dashboard cards below
-     sit on the same subtly-layered ground. */
-  background:
-    repeating-linear-gradient(
-      180deg,
-      rgba(160, 124, 62, 0.05) 0px,
-      rgba(160, 124, 62, 0.05) 2px,
-      transparent 2px,
-      transparent 46px
-    ),
-    repeating-linear-gradient(
-      180deg,
-      rgba(234, 224, 201, 0.025) 0px,
-      rgba(234, 224, 201, 0.025) 22px,
-      transparent 22px,
-      transparent 46px
-    ),
-    var(--sh-ink);
+  /* Sept 24 2026: plain ink ground, matching the Practice Lab page
+     (strata texture retired). */
+  background: var(--sh-ink);
   border-radius: 16px;
   color: var(--sh-paper);
   overflow: hidden;
@@ -284,16 +259,16 @@ body:has(.sh-wrap) {
 
 /* ---- Welcome line ---- */
 .sh-welcome-row {
-  padding: 24px 28px 28px;
-  text-align: center;
+  padding: 26px 28px 20px;
+  text-align: left;
   position: relative;
   z-index: 1;
 }
 .sh-welcome {
-  font-family: 'Quicksand', var(--sh-font-sans);
-  font-size: 34px;
-  line-height: 1;
-  font-weight: 700; /* Quicksand tops out at 700 — the old 800 from Montserrat doesn't exist in this family */
+  font-family: 'Newsreader', Georgia, serif; /* Sept 24 2026: matches the Practice Lab page title */
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 600;
   letter-spacing: 0;
   margin: 0;
   color: var(--sh-paper) !important; /* Sept 2026 fix: Storefront's theme CSS now loads on this page (see file header note) and was winning the cascade over plain inheritance from .sh-wrap, rendering this headline dark/unreadable */
@@ -348,6 +323,7 @@ body:has(.sh-wrap) {
    own width, per Ted's request that it cover the right 2/3 rather than
    just a corner accent. */
 .sh-strata-art {
+  display: none; /* Sept 24 2026: hidden to match the Practice Lab page */
   position: absolute;
   top: 0;
   right: 0;
