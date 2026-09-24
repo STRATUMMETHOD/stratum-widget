@@ -32,19 +32,25 @@
    Requires stratum-identity.js AND stratum-header.js (for
    window.StratumHeader / the identity-ready signal) loaded first.
 
-   ---- Spanish translation (Sept 2026) ----
+   ---- Translation (Sept 2026) ----
    Card chrome, field labels, placeholders, status messages, and the
    top-level Genre/Stage/Story Style/POV/Character-Type option labels
    all translate via STRINGS/t(), keyed off the same 'wlfc_preferred_
    lang' the header sets. Every dropdown's stored VALUE stays the
    canonical English string (option.value, what actually gets saved
    to /project) — only the displayed label changes — so a WIP saved
-   in one language still reads back correctly after switching to the
-   other. DEFERRED, deliberately: the ~50 Role Type / Core Conflict
-   options nested under ROLE_TYPE_BY_TYPE/CORE_CONFLICT_BY_TYPE are
-   specialized craft vocabulary and stay English-only for now rather
-   than getting a rushed translation — flag if you want those done
-   too and I'll take a proper pass.
+   in one language still reads back correctly after switching to
+   another.
+
+   Sept 24 2026: the ~50 Role Type / Core Conflict options (ROLE_TYPE_
+   BY_TYPE / CORE_CONFLICT_BY_TYPE) now translate too, via
+   cascadeLabel(): DB keys 'wip.roleType.<slug>' and
+   'wip.coreConflict.<slug>', where slug = the English value
+   lowercased with every run of non-alphanumerics turned into '_'
+   (e.g. 'Love/Connection' -> 'wip.coreConflict.love_connection').
+   Those keys are registered in UI_STRING_KEYS in worker.js — keep the
+   slug rule identical on both sides. Falls back to the English value
+   when no DB translation exists.
    ============================================================ */
 (function () {
   'use strict';
@@ -253,6 +259,12 @@
     var group = (STRINGS[LANG] && STRINGS[LANG][groupKey]) || STRINGS.en[groupKey];
     return (group && group[value]) || value;
   }
+  // Sept 24 2026: display label for a Role Type / Core Conflict option.
+  // Slug rule must match the keys registered in worker.js UI_STRING_KEYS.
+  function cascadeLabel(prefix, value) {
+    var k = prefix + String(value).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    return (DB_STRINGS && DB_STRINGS[k] != null) ? DB_STRINGS[k] : value;
+  }
 
   // Sept 2026 (multiple WIPs): a student can now have more than one
   // work-in-progress, each with its own Characters list (characters are
@@ -271,8 +283,8 @@
 
   // ----------------------------------------------------------
   // OPTION LISTS — canonical (English) values, used as option.value
-  // and as what's actually stored/matched; optLabel() above supplies
-  // the displayed, language-appropriate text.
+  // and as what's actually stored/matched; optLabel()/cascadeLabel()
+  // above supply the displayed, language-appropriate text.
   // ----------------------------------------------------------
   var GENRE_VALUES = ['Thriller/Suspense', 'Literary Fiction', 'Historical Fiction', 'Romance/Domestic Fiction', 'Fantasy/Science Fiction', 'Other'];
   var STAGE_VALUES = ['Outlining', 'Drafting', 'Revising', 'Polishing'];
@@ -281,7 +293,7 @@
 
   var CHARACTER_TYPES = ['Protagonist', 'Antagonist', 'Supporting Character'];
 
-  // DEFERRED from translation for now — see file header note.
+  // Labels translated via cascadeLabel() — see file header note.
   var ROLE_TYPE_BY_TYPE = {
     'Protagonist': ['Hero protagonist', 'Antihero protagonist', 'Tragic protagonist', 'Everyman protagonist', 'Dynamic protagonist', 'Static protagonist', 'Reluctant protagonist', 'Multiple protagonist'],
     'Antagonist': ['Villain', 'Ideological', 'Societal', 'Nature or Circumstance', 'Internal', 'Moral Foil', 'Ally', 'Inanimate'],
@@ -372,10 +384,10 @@
     var prevConflict = row.coreConflictSelect.value;
     row.roleTypeSelect.innerHTML = '';
     row.roleTypeSelect.appendChild(new Option(t('roleTypePlaceholder'), ''));
-    roleOptions.forEach(function (v) { row.roleTypeSelect.appendChild(new Option(v, v)); });
+    roleOptions.forEach(function (v) { row.roleTypeSelect.appendChild(new Option(cascadeLabel('wip.roleType.', v), v)); });
     row.coreConflictSelect.innerHTML = '';
     row.coreConflictSelect.appendChild(new Option(t('coreConflictPlaceholder'), ''));
-    conflictOptions.forEach(function (v) { row.coreConflictSelect.appendChild(new Option(v, v)); });
+    conflictOptions.forEach(function (v) { row.coreConflictSelect.appendChild(new Option(cascadeLabel('wip.coreConflict.', v), v)); });
     row.roleTypeSelect.disabled = !type;
     row.coreConflictSelect.disabled = !type;
     // Preserve the prior selection if it's still valid for the new type
