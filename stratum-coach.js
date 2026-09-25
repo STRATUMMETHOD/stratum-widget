@@ -847,6 +847,19 @@
     sendToClaude();
   }
 
+  // Sept 25 2026: when a request fails, take the unanswered user turn back
+  // out of the history (and put the student's text back in the input box)
+  // so an error message is never saved - or re-sent to the model on every
+  // later turn - as something the coach said.
+  function rollBackFailedTurn() {
+    var last = conversationHistory[conversationHistory.length - 1];
+    if (!last || last.role !== 'user') return;
+    conversationHistory.pop();
+    var isInternal = typeof last.content === 'string' && last.content.indexOf('[STRATUM_INTERNAL_RETRY]') !== -1;
+    if (!isInternal && inputEl && !inputEl.value && typeof last.content === 'string') inputEl.value = last.content;
+    if (ENGINE_MODE === 'excavation') saveTranscript();
+  }
+
   function sendToClaude() {
     setBusy(true);
     showTyping();
@@ -867,7 +880,8 @@
           if (data.stratum_error === 'pool_exhausted') { hideTyping(); setBusy(false); poolExhausted = true; addMessage('assistant', t('poolExhausted')); return; }
           if (data.stratum_error === 'account_suspended') { hideTyping(); setBusy(false); addMessage('assistant', t('accountSuspended')); return; }
           var block = (data.content || []).find(function (b) { return b.type === 'text'; });
-          var raw = block ? block.text : t('lostTrain');
+          if (!block) { hideTyping(); setBusy(false); rollBackFailedTurn(); addMessage('assistant', t('lostTrain')); return; }
+          var raw = block.text;
           var parsed = extractTags(raw);
           var deliverableConfig = getDeliverableConfig();
           if (parsed.complete && deliverableConfig) {
@@ -898,6 +912,7 @@
         .catch(function () {
           hideTyping();
           setBusy(false);
+          rollBackFailedTurn();
           addMessage('assistant', t('lostConnection'));
         });
     });
@@ -1039,7 +1054,8 @@
           if (data.stratum_error === 'pool_exhausted') { hideTyping(); setBusy(false); poolExhausted = true; addMessage('assistant', t('poolExhausted')); return; }
           if (data.stratum_error === 'account_suspended') { hideTyping(); setBusy(false); addMessage('assistant', t('accountSuspended')); return; }
           var block = (data.content || []).find(function (b) { return b.type === 'text'; });
-          var raw = block ? block.text : t('lostTrain');
+          if (!block) { hideTyping(); setBusy(false); rollBackFailedTurn(); addMessage('assistant', t('lostTrain')); return; }
+          var raw = block.text;
           var parsed = extractTags(raw);
           hideTyping();
           setBusy(false);
@@ -1057,6 +1073,7 @@
         .catch(function () {
           hideTyping();
           setBusy(false);
+          rollBackFailedTurn();
           addMessage('assistant', t('lostConnection'));
         });
     });
