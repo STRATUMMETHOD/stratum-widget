@@ -13,10 +13,19 @@
    same contract as before.
 
    Sept 25 2026: it ALSO reads window.STRATUM_WP_AUTH = { email, ts, sig },
-   printed into <head> by the stratum-auth.php must-use plugin for
-   logged-in members. Those three values are sent to /resolve-identity,
-   which verifies the signature before returning (or creating) the
-   student's identity.
+   printed by the stratum-auth.php must-use plugin for logged-in
+   members (automatically via wp_head(), or via stratum_print_auth()
+   in templates that don't call wp_head()). Those three values are sent
+   to /resolve-identity, which verifies the signature before returning
+   (or creating) the student's identity.
+
+   Sept 25 2026 (lockdown): /resolve-identity also returns a signed
+   session token. This file wraps window.fetch so EVERY request to the
+   worker automatically carries it as "Authorization: Bearer <token>".
+   The worker uses it to check that the studentId in a request really
+   belongs to the person making it. No other Stratum file needs to know
+   about the token — as long as this file loads first, their existing
+   fetch() calls are covered.
 
    Public API (window.StratumIdentity):
      .PROXY_URL            — the Worker base URL, shared so pages
@@ -24,6 +33,7 @@
      .getWpUser()           — returns the WP_USER object read from
                               window.STRATUM_WP_USER (safe fallback
                               shape if the template didn't set it).
+     .getToken()            — the current session token, or null.
      .init(callback)         — resolves the stratum_sid identity for a
                               logged-in member, then calls
                               callback(studentId) once settled
@@ -60,6 +70,28 @@
     return (a && a.email && a.ts && a.sig) ? a : null;
   }
 
+  // ---- Session token + fetch wrapper (Sept 25 2026 lockdown) ----
+  // The token lives in memory only (never a cookie or localStorage),
+  // so it disappears when the page closes and is re-issued on the
+  // next page load.
+  var authToken = null;
+  if (!window.__STRATUM_FETCH_WRAPPED && typeof window.fetch === 'function') {
+    var nativeFetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' ? input : (input && input.url) || '';
+        if (authToken && url.indexOf(PROXY_URL) === 0) {
+          init = init ? Object.assign({}, init) : {};
+          var headers = new Headers(init.headers || (typeof input !== 'string' && input.headers) || {});
+          if (!headers.has('Authorization')) headers.set('Authorization', 'Bearer ' + authToken);
+          init.headers = headers;
+        }
+      } catch (e) { /* never let the wrapper break a request */ }
+      return nativeFetch(input, init);
+    };
+    window.__STRATUM_FETCH_WRAPPED = true;
+  }
+
   var studentId = null;
   var pendingCallbacks = [];
   var resolving = false;
@@ -82,6 +114,7 @@
   // failure clears the cookie and settles on null, which shows the
   // normal "Could not connect" state instead of someone else's data.
   function fail() {
+    authToken = null;
     clearCookie(SID_COOKIE);
     finalize(null);
   }
@@ -103,6 +136,7 @@
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d && d.ok && d.stratumId) {
+          authToken = d.token || null; // set BEFORE finalize so every callback's first request carries it
           setCookie(SID_COOKIE, d.stratumId, SID_COOKIE_MAX_AGE);
           finalize(d.stratumId);
         } else {
@@ -121,6 +155,7 @@
   window.StratumIdentity = {
     PROXY_URL: PROXY_URL,
     getWpUser: getWpUser,
+    getToken: function () { return authToken; },
     init: init
   };
 })();
