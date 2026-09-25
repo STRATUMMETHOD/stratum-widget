@@ -12,16 +12,21 @@
    hasMembership, firstName, email, loginUrl) — this file reads that,
    same contract as before.
 
+   Sept 25 2026: it ALSO reads window.STRATUM_WP_AUTH = { email, ts, sig },
+   printed into <head> by the stratum-auth.php must-use plugin for
+   logged-in members. Those three values are sent to /resolve-identity,
+   which verifies the signature before returning (or creating) the
+   student's identity.
+
    Public API (window.StratumIdentity):
      .PROXY_URL            — the Worker base URL, shared so pages
                               don't redeclare it.
      .getWpUser()           — returns the WP_USER object read from
                               window.STRATUM_WP_USER (safe fallback
                               shape if the template didn't set it).
-     .init(callback)         — resolves/creates the stratum_sid
-                              identity for a logged-in member (same
-                              /resolve-identity call as before), then
-                              calls callback(studentId) once settled
+     .init(callback)         — resolves the stratum_sid identity for a
+                              logged-in member, then calls
+                              callback(studentId) once settled
                               (studentId is null if logged out, no
                               membership, or resolution failed). Safe
                               to call from multiple scripts on the same
@@ -40,24 +45,22 @@
   var SID_COOKIE = 'stratum_sid';
   var SID_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 2; // ~2 years, matches the old engine's cookie lifetime
 
-  function readCookie(name) {
-    var parts = document.cookie ? document.cookie.split(';') : [];
-    for (var i = 0; i < parts.length; i++) {
-      var kv = parts[i].trim();
-      var eq = kv.indexOf('=');
-      if (eq > -1 && kv.slice(0, eq) === name) return decodeURIComponent(kv.slice(eq + 1));
-    }
-    return null;
-  }
   function setCookie(name, value, maxAgeSeconds) {
     document.cookie = name + '=' + encodeURIComponent(value) + '; max-age=' + maxAgeSeconds + '; path=/; SameSite=Lax';
+  }
+  function clearCookie(name) {
+    document.cookie = name + '=; max-age=0; path=/; SameSite=Lax';
   }
 
   function getWpUser() {
     return window.STRATUM_WP_USER || { loggedIn: false, hasMembership: false, firstName: '', email: '', loginUrl: '#' };
   }
+  function getWpAuth() {
+    var a = window.STRATUM_WP_AUTH;
+    return (a && a.email && a.ts && a.sig) ? a : null;
+  }
 
-  var studentId = readCookie(SID_COOKIE); // local cache only now — never trusted on its own, see resolve() below
+  var studentId = null;
   var pendingCallbacks = [];
   var resolving = false;
 
@@ -70,36 +73,32 @@
     pendingCallbacks = [];
   }
 
-  // Sept 2026 fix: a stratum_sid cookie's mere PRESENCE used to be treated
-  // as sufficient proof of correctness — this function only ever called
-  // /resolve-identity when the cookie was completely absent, which meant
-  // a stale cookie (e.g. left over from testing, or from a different
-  // account previously logged into the same browser/shared device) would
-  // be trusted forever, silently pointing at the wrong student's data.
-  // Fix: whenever WordPress reports a logged-in, active member, ALWAYS
-  // resolve/verify against that authoritative email (window.
-  // STRATUM_WP_USER.email, from wp_get_current_user() server-side) —
-  // every page load, not just when the cookie is missing. /resolve-
-  // identity is idempotent (same email always returns the same
-  // stratumId), so this costs one extra network call per page load in
-  // exchange for identity being fully, provably derived from the real
-  // WordPress session rather than ever trusting a cached cookie value on
-  // faith. The cookie is now only a fallback used when there's nothing
-  // to resolve against at all (logged out, no membership, no email).
+  // Sept 25 2026 fix: the cached stratum_sid cookie is NEVER used as a
+  // fallback any more. It used to be returned whenever the user was
+  // logged out or /resolve-identity failed — so a second person signing
+  // in on the same browser (or anyone whose lookup failed) silently got
+  // the PREVIOUS person's account and data. Identity now comes only
+  // from a successful, signature-verified /resolve-identity call. Any
+  // failure clears the cookie and settles on null, which shows the
+  // normal "Could not connect" state instead of someone else's data.
+  function fail() {
+    clearCookie(SID_COOKIE);
+    finalize(null);
+  }
+
   function resolve() {
     if (resolving) return; // already in flight — every caller's callback is queued in pendingCallbacks
     resolving = true;
     var wpUser = getWpUser();
-    if (!wpUser.loggedIn || !wpUser.hasMembership || !wpUser.email) {
-      // Nothing to verify against — fall back to whatever's cached
-      // locally (may be null), same as before.
-      finalize(studentId);
+    var auth = getWpAuth();
+    if (!wpUser.loggedIn || !wpUser.hasMembership || !auth) {
+      fail();
       return;
     }
     fetch(PROXY_URL + '/resolve-identity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: wpUser.email })
+      body: JSON.stringify({ email: auth.email, ts: auth.ts, sig: auth.sig })
     })
       .then(function (r) { return r.json(); })
       .then(function (d) {
@@ -107,13 +106,10 @@
           setCookie(SID_COOKIE, d.stratumId, SID_COOKIE_MAX_AGE);
           finalize(d.stratumId);
         } else {
-          // Resolution call failed for some reason — fall back to
-          // whatever was cached locally rather than leaving the page
-          // with no identity at all.
-          finalize(studentId);
+          fail();
         }
       })
-      .catch(function () { finalize(studentId); });
+      .catch(fail);
   }
 
   function init(callback) {
