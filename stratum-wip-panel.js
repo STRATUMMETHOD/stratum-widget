@@ -51,6 +51,12 @@
    Those keys are registered in UI_STRING_KEYS in worker.js — keep the
    slug rule identical on both sides. Falls back to the English value
    when no DB translation exists.
+
+   Sept 26 2026: "Watch tutorial" button in the card header, via
+   stratum-tutorial.js (section key 'profile'). Shows only when a video
+   exists for the student's language or English; label is the DB key
+   'tutorial.watch'. Videos are managed in the admin panel's Tutorial
+   Videos tab.
    ============================================================ */
 (function () {
   'use strict';
@@ -73,6 +79,7 @@
       profileSubtitle: 'Your WIP feeds into all coaching sessions, notes, and reminders.',
       viewBtn: 'View',
       closeBtn: 'Close',
+      watchTutorial: 'Watch tutorial',
       workInProgress: 'Work in Progress',
       newWip: '+ New WIP',
       deleteThisWip: 'Delete this WIP',
@@ -143,6 +150,7 @@
       profileSubtitle: 'Tu obra en progreso alimenta todas las sesiones de coaching, notas y recordatorios.',
       viewBtn: 'Ver',
       closeBtn: 'Cerrar',
+      watchTutorial: 'Ver tutorial',
       workInProgress: 'Obra en progreso',
       newWip: '+ Nueva obra',
       deleteThisWip: 'Eliminar esta obra',
@@ -666,6 +674,16 @@
     formWrapEl.style.display = expanded ? '' : 'none';
   }
 
+  function attachTutorial(slotEl) {
+    if (!window.StratumTutorial) return;
+    window.StratumTutorial.attach(slotEl, {
+      section: 'profile',
+      lang: LANG,
+      label: (DB_STRINGS && DB_STRINGS['tutorial.watch']) || t('watchTutorial'),
+      closeLabel: t('closeBtn')
+    });
+  }
+
   function buildPanel(wrapEl) {
     var card = el('div', 'sh-dash-card');
     var head = el('div', 'sh-dash-card-head');
@@ -676,7 +694,13 @@
     openBtn.className = 'sh-dash-open-btn';
     openBtn.textContent = t('viewBtn');
     openBtn.addEventListener('click', toggleExpanded);
-    mount(headTop, openBtn);
+    var headActions = el('div', 'sh-wip-head-actions');
+    headActions.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;';
+    var tutSlot = el('span', 'sh-wip-tut-slot');
+    mount(headActions, tutSlot);
+    mount(headActions, openBtn);
+    mount(headTop, headActions);
+    attachTutorial(tutSlot);
     mount(head, headTop);
     mount(head, el('p', 'sh-dash-card-subtitle', t('profileSubtitle')));
     mount(card, head);

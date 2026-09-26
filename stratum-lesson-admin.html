@@ -537,6 +537,7 @@
     <button class="nav-item" id="tabDeliverablesBtn" type="button"><span class="nav-dot"></span>Deliverables</button>
     <button class="nav-item" id="tabTestimonialsBtn" type="button"><span class="nav-dot"></span>Testimonials</button>
     <button class="nav-item" id="tabUpdatesBtn" type="button"><span class="nav-dot"></span>What's New</button>
+    <button class="nav-item" id="tabTutorialsBtn" type="button"><span class="nav-dot"></span>Tutorial Videos</button>
     <button class="nav-item" id="tabVocabularyBtn" type="button"><span class="nav-dot"></span>Vocabulary</button>
     <button class="nav-item" id="tabLibraryBtn" type="button"><span class="nav-dot"></span>Library</button>
     <button class="nav-item" id="tabExcavationBtn" type="button"><span class="nav-dot"></span>Excavation</button>
@@ -741,6 +742,22 @@
       </div>
       <div id="updList"></div>
       <button class="add-btn" id="updAddBtn" type="button">+ Add update</button>
+    </div>
+    <div id="tutorialsView" style="display:none;">
+      <div class="tst-toolbar">
+        <span class="sub" style="margin:0;">One YouTube video per dashboard section per language. Paste a YouTube link (watch, youtu.be, shorts or embed) or the 11-character video ID, then click out of the box to save. Clear a box to remove that video. Students see the video for their language; if there isn't one, they see the English video; if there's no English video either, no button appears. Upload videos as Unlisted so they don't clutter the public channel. Not translated &mdash; each language is its own video.</span>
+      </div>
+      <div class="tst-toolbar">
+        <button class="btn secondary" id="tutReloadBtn" type="button">Reload</button>
+        <div class="spacer"></div>
+        <span id="tutStatus" style="font-size:12px;color:#9A927E;font-style:italic;"></span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="tutTable" style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #ECE7DC;border-radius:10px;text-align:left;">
+          <thead id="tutTableHead"></thead>
+          <tbody id="tutTableBody"></tbody>
+        </table>
+      </div>
     </div>
     <div id="vocabularyView" style="display:none;">
       <div class="tst-toolbar">
@@ -1544,6 +1561,8 @@ var deliverablesView = document.getElementById('deliverablesView');
 var testimonialsView = document.getElementById('testimonialsView');
 var tabUpdatesBtn = document.getElementById('tabUpdatesBtn');
 var updatesView = document.getElementById('updatesView');
+var tabTutorialsBtn = document.getElementById('tabTutorialsBtn');
+var tutorialsView = document.getElementById('tutorialsView');
 var vocabularyView = document.getElementById('vocabularyView');
 var libraryView = document.getElementById('libraryView');
 var globalInstructionsView = document.getElementById('globalInstructionsView');
@@ -1555,6 +1574,7 @@ var PAGE_HEADERS = {
   deliverables: ['Deliverables', "Confirms every completed session actually captured a real, validated deliverable \u2014 not just the summary sentence."],
   testimonials: ['Testimonials', 'Shown in the homepage rotator, fading from one to the next.'],
   updates: ["What's New", 'The dashboard announcement card, above the Profile panel \u2014 scoped per language.'],
+  tutorials: ['Tutorial Videos', 'YouTube tutorial per dashboard section, one video per language, with English as the fallback.'],
   vocabulary: ['Vocabulary', "Writer's Vocabulary glossary shown on the student Vocabulary tab."],
   library: ['Library', 'Every resource PDF and video, in one place \u2014 replaces the old per-lesson Resource PDFs.'],
   globalInstructions: ['Global Instructions', 'Standing coaching direction that applies to every lesson, every session.'],
@@ -1566,6 +1586,7 @@ function showTopTab(which) {
   tabDeliverablesBtn.className = 'nav-item' + (which === 'deliverables' ? ' active' : '');
   tabTestimonialsBtn.className = 'nav-item' + (which === 'testimonials' ? ' active' : '');
   tabUpdatesBtn.className = 'nav-item' + (which === 'updates' ? ' active' : '');
+  tabTutorialsBtn.className = 'nav-item' + (which === 'tutorials' ? ' active' : '');
   tabVocabularyBtn.className = 'nav-item' + (which === 'vocabulary' ? ' active' : '');
   tabLibraryBtn.className = 'nav-item' + (which === 'library' ? ' active' : '');
   tabGlobalInstructionsBtn.className = 'nav-item' + (which === 'globalInstructions' ? ' active' : '');
@@ -1578,6 +1599,7 @@ function showTopTab(which) {
   deliverablesView.style.display = which === 'deliverables' ? '' : 'none';
   testimonialsView.style.display = which === 'testimonials' ? '' : 'none';
   updatesView.style.display = which === 'updates' ? '' : 'none';
+  tutorialsView.style.display = which === 'tutorials' ? '' : 'none';
   vocabularyView.style.display = which === 'vocabulary' ? '' : 'none';
   libraryView.style.display = which === 'library' ? '' : 'none';
   globalInstructionsView.style.display = which === 'globalInstructions' ? '' : 'none';
@@ -1604,6 +1626,10 @@ tabTestimonialsBtn.addEventListener('click', function () {
 tabUpdatesBtn.addEventListener('click', function () {
   showTopTab('updates');
   loadUpdates();
+});
+tabTutorialsBtn.addEventListener('click', function () {
+  showTopTab('tutorials');
+  loadTutorialVideos();
 });
 tabVocabularyBtn.addEventListener('click', function () {
   showTopTab('vocabulary');
@@ -6262,6 +6288,134 @@ document.getElementById('dcPreviewOverlay').addEventListener('click', function (
 mainNavGroup.style.display = 'none';
 showTopTab('admin');
 if (savedKey) unlock();
+
+// ===== Tutorial Videos (Sept 26 2026) =====
+// One YouTube video per dashboard section per language, stored in D1
+// table tutorial_videos via /admin/tutorial-videos. Section keys must
+// match what each dashboard module passes to StratumTutorial.attach()
+// (stratum-wip-panel.js uses 'profile'). Only 'profile' is wired into
+// the dashboard so far; the other rows are ready for when those
+// modules get their button.
+var TUTORIAL_SECTIONS = [
+  { key: 'profile', label: 'Profile' },
+  { key: 'coaching', label: 'Coaching tracks' },
+  { key: 'practice-lab', label: 'Practice Lab' },
+  { key: 'library', label: 'Library' },
+  { key: 'idea-log', label: 'Idea Log' },
+  { key: 'reminders', label: 'Reminders' }
+];
+var tutStatus = document.getElementById('tutStatus');
+var tutTableHead = document.getElementById('tutTableHead');
+var tutTableBody = document.getElementById('tutTableBody');
+document.getElementById('tutReloadBtn').addEventListener('click', loadTutorialVideos);
+function tutCellStyle(input, state) {
+  input.style.borderColor = state === 'ok' ? '#6a9a5b' : state === 'err' ? '#b5483a' : '';
+}
+function loadTutorialVideos() {
+  if (!adminKey) return;
+  tutStatus.textContent = 'Loading\u2026';
+  var h = { 'X-Stratum-Admin-Key': adminKey };
+  Promise.all([
+    fetch(PROXY_URL + '/admin/languages', { headers: h }).then(function (r) { return r.json(); }),
+    fetch(PROXY_URL + '/admin/tutorial-videos', { headers: h }).then(function (r) { return r.json(); })
+  ]).then(function (res) {
+    var langs = ((res[0] && res[0].languages) || []).filter(function (l) { return l.active || l.code === 'en'; });
+    langs.sort(function (a, b) { return a.code === 'en' ? -1 : b.code === 'en' ? 1 : 0; });
+    var map = {};
+    ((res[1] && res[1].videos) || []).forEach(function (v) {
+      if (!map[v.section]) map[v.section] = {};
+      map[v.section][v.lang] = v.youtubeId;
+    });
+    renderTutorialTable(langs, map);
+    tutStatus.textContent = '';
+  }).catch(function () {
+    tutStatus.textContent = 'Could not load tutorial videos.';
+  });
+}
+function renderTutorialTable(langs, map) {
+  var thStyle = 'padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9A927E;text-align:left;white-space:nowrap;';
+  tutTableHead.innerHTML = '';
+  var hr = document.createElement('tr');
+  hr.style.borderBottom = '1px solid #ECE7DC';
+  var th0 = document.createElement('th');
+  th0.style.cssText = thStyle;
+  th0.textContent = 'Section';
+  hr.appendChild(th0);
+  langs.forEach(function (l) {
+    var th = document.createElement('th');
+    th.style.cssText = thStyle;
+    th.textContent = l.label + ' (' + l.code + ')';
+    hr.appendChild(th);
+  });
+  tutTableHead.appendChild(hr);
+  tutTableBody.innerHTML = '';
+  TUTORIAL_SECTIONS.forEach(function (sec) {
+    var tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid #ECE7DC';
+    var td0 = document.createElement('td');
+    td0.style.cssText = 'padding:10px 12px;font-weight:700;color:#3B2F24;white-space:nowrap;';
+    td0.textContent = sec.label;
+    tr.appendChild(td0);
+    langs.forEach(function (l) {
+      tr.appendChild(buildTutorialCell(sec, l, map[sec.key] && map[sec.key][l.code]));
+    });
+    tutTableBody.appendChild(tr);
+  });
+}
+function buildTutorialCell(sec, l, id) {
+  var td = document.createElement('td');
+  td.style.cssText = 'padding:8px 12px;min-width:220px;';
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'YouTube link or ID';
+  input.style.cssText = 'width:100%;box-sizing:border-box;';
+  input.value = id ? 'https://youtu.be/' + id : '';
+  input.dataset.saved = input.value;
+  var link = document.createElement('a');
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.style.cssText = 'display:inline-block;margin-top:4px;font-size:11.5px;color:#8a6630;';
+  function setLink(vid) {
+    if (vid) { link.href = 'https://youtu.be/' + vid; link.textContent = 'Open on YouTube'; link.style.display = 'inline-block'; }
+    else { link.removeAttribute('href'); link.textContent = ''; link.style.display = 'none'; }
+  }
+  setLink(id);
+  input.addEventListener('change', function () {
+    var val = input.value.trim();
+    if (val === input.dataset.saved) return;
+    tutCellStyle(input, '');
+    tutStatus.textContent = 'Saving\u2026';
+    fetch(PROXY_URL + '/admin/tutorial-videos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Stratum-Admin-Key': adminKey },
+      body: JSON.stringify({ section: sec.key, lang: l.code, url: val })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d || !d.ok) {
+        tutCellStyle(input, 'err');
+        tutStatus.textContent = (d && d.reason === 'not_a_youtube_link') ? 'That doesn\u2019t look like a YouTube link.' : 'Could not save.';
+        return;
+      }
+      if (d.cleared) {
+        input.value = '';
+        setLink(null);
+        tutStatus.textContent = 'Removed ' + sec.label + ' (' + l.code + ').';
+      } else {
+        input.value = 'https://youtu.be/' + d.youtubeId;
+        setLink(d.youtubeId);
+        tutStatus.textContent = 'Saved ' + sec.label + ' (' + l.code + ').';
+      }
+      input.dataset.saved = input.value;
+      tutCellStyle(input, 'ok');
+    }).catch(function () {
+      tutCellStyle(input, 'err');
+      tutStatus.textContent = 'Network error \u2014 not saved.';
+    });
+  });
+  td.appendChild(input);
+  td.appendChild(document.createElement('br'));
+  td.appendChild(link);
+  return td;
+}
 </script>
 </body>
 </html>
