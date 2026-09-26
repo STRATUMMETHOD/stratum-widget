@@ -39,6 +39,11 @@
    Date formatting also switches locale (DATE_LOCALE) so "Today" /
    relative dates / the exported .txt files' dates read naturally in
    either language.
+
+   ---- Filters (Sept 2026) ----
+   Idea Log: Category + WIP + Character. Reminders: Status + WIP +
+   Character. Download exports the filtered view; Clear Completed and
+   Reset All still act on the full reminders list.
    ============================================================ */
 (function () {
   'use strict';
@@ -72,6 +77,14 @@
       untitledWip: 'Untitled WIP',
       filterLabel: 'Filter',
       all: 'All',
+      allCategories: 'All categories',
+      allWips: 'All WIPs',
+      allCharacters: 'All characters',
+      allReminders: 'All reminders',
+      statusOpen: 'Open',
+      statusCompleted: 'Completed',
+      noEntriesMatchFilter: 'No entries match these filters.',
+      noRemindersMatchFilter: 'No reminders match these filters.',
       download: 'Download',
       noEntriesInCategory: 'No entries in this category yet.',
       noEntriesAddOne: 'No entries yet. Add one above.',
@@ -135,6 +148,14 @@
       untitledWip: 'Obra sin título',
       filterLabel: 'Filtrar',
       all: 'Todas',
+      allCategories: 'Todas las categorías',
+      allWips: 'Todas las obras',
+      allCharacters: 'Todos los personajes',
+      allReminders: 'Todos los recordatorios',
+      statusOpen: 'Pendientes',
+      statusCompleted: 'Completados',
+      noEntriesMatchFilter: 'Ninguna entrada coincide con estos filtros.',
+      noRemindersMatchFilter: 'Ningún recordatorio coincide con estos filtros.',
       download: 'Descargar',
       noEntriesInCategory: 'Aún no hay entradas en esta categoría.',
       noEntriesAddOne: 'Aún no hay entradas. Agrega una arriba.',
@@ -451,12 +472,105 @@
   }
 
   // ============================================================
+  // FILTER HELPERS (Sept 2026) — WIP / Character filtering shared by
+  // Idea Log and Reminders. '' = all, '__none__' = untagged.
+  // Character options are scoped to the WIP chosen in the WIP filter.
+  // ============================================================
+  var FILTER_NONE = '__none__';
+
+  function fillWipFilterSelect(select, currentVal) {
+    select.innerHTML = '';
+    var allOpt = document.createElement('option');
+    allOpt.value = '';
+    allOpt.textContent = t('allWips');
+    select.appendChild(allOpt);
+    var noneOpt = document.createElement('option');
+    noneOpt.value = FILTER_NONE;
+    noneOpt.textContent = t('generalNoWip');
+    select.appendChild(noneOpt);
+    allWips.forEach(function (w) {
+      var o = document.createElement('option');
+      o.value = w.id;
+      o.textContent = w.title || t('untitledWip');
+      select.appendChild(o);
+    });
+    var valid = currentVal === FILTER_NONE || allWips.some(function (w) { return w.id === currentVal; });
+    select.value = valid ? currentVal : '';
+  }
+
+  function fillCharacterFilterSelect(select, wipVal, currentVal) {
+    select.innerHTML = '';
+    var allOpt = document.createElement('option');
+    allOpt.value = '';
+    allOpt.textContent = t('allCharacters');
+    select.appendChild(allOpt);
+    if (!wipVal || wipVal === FILTER_NONE) { select.disabled = true; select.value = ''; return; }
+    select.disabled = false;
+    var noneOpt = document.createElement('option');
+    noneOpt.value = FILTER_NONE;
+    noneOpt.textContent = t('noCharacterTag');
+    select.appendChild(noneOpt);
+    loadWipCharacters(wipVal, function (chars) {
+      chars.forEach(function (c) {
+        var o = document.createElement('option');
+        o.value = c.id;
+        o.textContent = c.name;
+        select.appendChild(o);
+      });
+      var valid = currentVal === FILTER_NONE || chars.some(function (c) { return c.id === currentVal; });
+      select.value = valid ? currentVal : '';
+    });
+  }
+
+  function matchesTagFilter(item, wipVal, charVal) {
+    if (wipVal === FILTER_NONE) { if (item.wipId) return false; }
+    else if (wipVal) { if (item.wipId !== wipVal) return false; }
+    if (charVal === FILTER_NONE) { if (item.characterId) return false; }
+    else if (charVal) { if (item.characterId !== charVal) return false; }
+    return true;
+  }
+
+  // Builds the WIP + Character filter pair into `parent`. state is an
+  // object with .wip and .character; onChange re-renders the list.
+  function mountTagFilters(parent, state, onChange) {
+    var wipSel = document.createElement('select');
+    wipSel.className = 'sh-dash-select';
+    fillWipFilterSelect(wipSel, state.wip);
+    state.wip = wipSel.value;
+    var charSel = document.createElement('select');
+    charSel.className = 'sh-dash-select';
+    if (!state.wip || state.wip === FILTER_NONE) state.character = '';
+    fillCharacterFilterSelect(charSel, state.wip, state.character);
+    wipSel.addEventListener('change', function () {
+      state.wip = wipSel.value;
+      state.character = '';
+      fillCharacterFilterSelect(charSel, state.wip, '');
+      onChange();
+    });
+    charSel.addEventListener('change', function () {
+      state.character = charSel.value;
+      onChange();
+    });
+    mount(parent, wipSel);
+    mount(parent, charSel);
+  }
+
+  // ============================================================
   // IDEA LOG CARD
   // ============================================================
   var ideaLogExpanded = false;
   var ideaLogBodyEl = null;
   var ideaLogOpenBtn = null;
   var ideaLogFilterVal = '';
+  var ideaLogTagFilter = { wip: '', character: '' };
+
+  function getFilteredIdeaLogEntries() {
+    var sorted = ideaLogEntries.slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    return sorted.filter(function (e) {
+      if (ideaLogFilterVal && e.category !== ideaLogFilterVal) return false;
+      return matchesTagFilter(e, ideaLogTagFilter.wip, ideaLogTagFilter.character);
+    });
+  }
 
   function renderIdeaLogCollapsed() {
     ideaLogBodyEl.innerHTML = '';
@@ -557,12 +671,13 @@
     mount(ideaLogBodyEl, form);
 
     var toolbar = el('div', 'sh-dash-toolbar');
+    toolbar.style.flexWrap = 'wrap';
     mount(toolbar, el('span', 'sh-dash-filter-label', t('filterLabel')));
     var filterSelect = document.createElement('select');
     filterSelect.className = 'sh-dash-select';
     var allOpt = document.createElement('option');
     allOpt.value = '';
-    allOpt.textContent = t('all');
+    allOpt.textContent = t('allCategories');
     filterSelect.appendChild(allOpt);
     IDEA_LOG_CATEGORIES.concat([GENERAL_CATEGORY]).forEach(function (cat) {
       var o = document.createElement('option');
@@ -573,6 +688,7 @@
     filterSelect.value = ideaLogFilterVal;
     filterSelect.addEventListener('change', function () { ideaLogFilterVal = filterSelect.value; renderIdeaLogFullList(); });
     mount(toolbar, filterSelect);
+    mountTagFilters(toolbar, ideaLogTagFilter, renderIdeaLogFullList);
     var dlBtn = el('button', 'sh-dash-download-btn', t('download'));
     dlBtn.type = 'button';
     dlBtn.addEventListener('click', downloadIdeaLog);
@@ -588,11 +704,13 @@
   function renderIdeaLogFullList() {
     var listEl = document.getElementById('shDashIdeaLogFullList');
     if (!listEl) return;
-    var sorted = ideaLogEntries.slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
-    var filtered = ideaLogFilterVal ? sorted.filter(function (e) { return e.category === ideaLogFilterVal; }) : sorted;
+    var filtered = getFilteredIdeaLogEntries();
     listEl.innerHTML = '';
     if (!filtered.length) {
-      mount(listEl, el('div', 'sh-dash-empty', ideaLogFilterVal ? t('noEntriesInCategory') : t('noEntriesAddOne')));
+      var emptyKey = 'noEntriesAddOne';
+      if (ideaLogEntries.length && (ideaLogTagFilter.wip || ideaLogTagFilter.character)) emptyKey = 'noEntriesMatchFilter';
+      else if (ideaLogEntries.length && ideaLogFilterVal) emptyKey = 'noEntriesInCategory';
+      mount(listEl, el('div', 'sh-dash-empty', t(emptyKey)));
       return;
     }
     filtered.forEach(function (entry) {
@@ -619,11 +737,15 @@
   }
 
   function downloadIdeaLog() {
-    var sorted = ideaLogEntries.slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    // Respects the active Category / WIP / Character filters.
+    var sorted = getFilteredIdeaLogEntries();
     if (!sorted.length) { alert(t('noEntriesToDownload')); return; }
     var dateStr = new Date().toLocaleDateString(DATE_LOCALE, { year: 'numeric', month: 'long', day: 'numeric' });
     var txt = t('exportHeaderIdeaLog') + '\n' + t('exported') + dateStr + '\n==========================================\n\n';
-    sorted.forEach(function (e) { txt += '[' + catLabel(e.category) + '] ' + formatFullDate(e.date) + '\n' + e.text + '\n\n'; });
+    sorted.forEach(function (e) {
+      var tag = wipTagText(e.wipId, e.characterId);
+      txt += '[' + catLabel(e.category) + '] ' + formatFullDate(e.date) + (tag ? '  (' + tag + ')' : '') + '\n' + e.text + '\n\n';
+    });
     var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
     var link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -666,6 +788,16 @@
   var remindersExpanded = false;
   var remindersBodyEl = null;
   var remindersOpenBtn = null;
+  var remindersTagFilter = { wip: '', character: '' };
+  var remindersStatusFilter = ''; // '' all, 'open', 'done'
+
+  function getFilteredTasks() {
+    return tasks.filter(function (task) {
+      if (remindersStatusFilter === 'open' && task.done) return false;
+      if (remindersStatusFilter === 'done' && !task.done) return false;
+      return matchesTagFilter(task, remindersTagFilter.wip, remindersTagFilter.character);
+    });
+  }
 
   function renderRemindersCollapsed() {
     remindersBodyEl.innerHTML = '';
@@ -780,6 +912,23 @@
     mount(form, formFoot);
     mount(remindersBodyEl, form);
 
+    var filterBar = el('div', 'sh-dash-toolbar');
+    filterBar.style.flexWrap = 'wrap';
+    mount(filterBar, el('span', 'sh-dash-filter-label', t('filterLabel')));
+    var statusSelect = document.createElement('select');
+    statusSelect.className = 'sh-dash-select';
+    [['', 'allReminders'], ['open', 'statusOpen'], ['done', 'statusCompleted']].forEach(function (pair) {
+      var o = document.createElement('option');
+      o.value = pair[0];
+      o.textContent = t(pair[1]);
+      statusSelect.appendChild(o);
+    });
+    statusSelect.value = remindersStatusFilter;
+    statusSelect.addEventListener('change', function () { remindersStatusFilter = statusSelect.value; renderRemindersFullList(); });
+    mount(filterBar, statusSelect);
+    mountTagFilters(filterBar, remindersTagFilter, renderRemindersFullList);
+    mount(remindersBodyEl, filterBar);
+
     var listEl = el('div', 'sh-dash-full-list');
     listEl.id = 'shDashRemindersFullList';
     mount(remindersBodyEl, listEl);
@@ -819,8 +968,13 @@
       mount(listEl, el('div', 'sh-dash-empty', t('noRemindersAddOne')));
       return;
     }
+    var visibleTasks = getFilteredTasks();
+    if (!visibleTasks.length) {
+      mount(listEl, el('div', 'sh-dash-empty', t('noRemindersMatchFilter')));
+      return;
+    }
     var todayStr = new Date().toISOString().slice(0, 10);
-    tasks.forEach(function (task) {
+    visibleTasks.forEach(function (task) {
       var row = el('div', 'sh-dash-list-entry sh-dash-reminder-full' + (task.done ? ' sh-row-done' : ''));
       var check = el('div', 'sh-check' + (task.done ? ' sh-done' : ''), task.done ? '\u2713' : '');
       check.addEventListener('click', function () { task.done = !task.done; saveTasks(); renderRemindersFullList(); });
@@ -849,16 +1003,20 @@
   }
 
   function downloadReminders() {
-    if (!tasks.length) { alert(t('noRemindersToDownload')); return; }
+    // Respects the active Status / WIP / Character filters.
+    var list = getFilteredTasks();
+    if (!list.length) { alert(t('noRemindersToDownload')); return; }
     var dateStr = new Date().toLocaleDateString(DATE_LOCALE, { year: 'numeric', month: 'long', day: 'numeric' });
     var txt = t('exportHeaderReminders') + '\n' + t('exported') + dateStr + '\n==========================================\n\n';
-    tasks.forEach(function (task) {
+    list.forEach(function (task) {
       txt += (task.done ? '[x] ' : '[ ] ') + task.text;
       if (task.dueDate) txt += '  (' + t('due').toLowerCase() + formatShortDate(task.dueDate) + ')';
+      var tag = wipTagText(task.wipId, task.characterId);
+      if (tag) txt += '  [' + tag + ']';
       txt += '\n';
     });
-    var remaining = tasks.filter(function (task) { return !task.done; }).length;
-    txt += '\n==========================================\n' + format(t('remainingOf'), { remaining: remaining, total: tasks.length }) + '\n';
+    var remaining = list.filter(function (task) { return !task.done; }).length;
+    txt += '\n==========================================\n' + format(t('remainingOf'), { remaining: remaining, total: list.length }) + '\n';
     var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
     var link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
