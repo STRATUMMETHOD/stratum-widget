@@ -69,6 +69,32 @@
   function stripAsteriskEmphasis(text) {
     return String(text).replace(/\*([^*\n]+)\*/g, '$1');
   }
+  // Sept 26 2026 (beta feedback): the synthesis model sometimes writes
+  // markdown (**Section**, # Heading) that showed as literal asterisks.
+  // Heading-only lines become real headings; stray markers are removed.
+  function stripMarkdown(line) {
+    return String(line).replace(/^#{1,6}\s*/, '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/__(.+?)__/g, '$1').replace(/\*\*/g, '');
+  }
+  function synthesisToHtml(text) {
+    var lines = String(text).replace(/\r\n/g, '\n').split('\n');
+    var out = '', para = [];
+    function flush() {
+      if (para.length) out += '<p>' + para.map(function (l) { return escapeHtml(stripMarkdown(l)); }).join('<br>') + '</p>';
+      para = [];
+    }
+    lines.forEach(function (raw) {
+      var line = raw.trim();
+      if (!line) { flush(); return; }
+      var isHeading = /^#{1,6}\s+\S/.test(line) || /^\*\*[^*]+\*\*:?$/.test(line) || /^__[^_]+__:?$/.test(line);
+      if (isHeading) { flush(); out += '<h3 class="sh-synthesis-heading">' + escapeHtml(stripMarkdown(line).replace(/:$/, '')) + '</h3>'; return; }
+      para.push(line);
+    });
+    flush();
+    return out;
+  }
+  function synthesisToPlain(text) {
+    return String(text).replace(/\r\n/g, '\n').split('\n').map(function (l) { return stripMarkdown(l); }).join('\n');
+  }
   function textToParagraphs(text) {
     var blocks = String(text).replace(/\r\n/g, '\n').split(/\n\s*\n/);
     var out = '';
@@ -622,7 +648,7 @@
       'PRONOUNS: Use exactly the pronouns the writer uses for their character or characters, and keep using them for the rest of the conversation. If the writer corrects a pronoun, apply the correction immediately and permanently. If you do not yet know a character\u2019s pronouns, use the character\u2019s name or "your character" rather than guessing. Every example in this prompt (calibration examples, worked examples, sample sentences) is illustration only - the pronouns, genders and details in those examples never carry over to the writer\u2019s own characters.'
     ];
     if (SELECTED_CHARACTER) {
-      var charLines = ['THE CHARACTER THIS EXCAVATION IS ABOUT:\nEverything in this conversation is specifically about ' + (SELECTED_CHARACTER.name || 'this character') + ', not the writer themselves and not any other character in their project. Keep every question anchored to this one character.'];
+      var charLines = ['THE CHARACTER THIS EXCAVATION IS ABOUT:\nEverything in this conversation is specifically about ' + (SELECTED_CHARACTER.name || 'this character') + ', not the writer themselves and not any other character in their project. Keep every question anchored to this one character. The CHARACTERS list further down is background only: other characters may come up where they relate to ' + (SELECTED_CHARACTER.name || 'this character') + ', but every question, reflection and captured deliverable stays about ' + (SELECTED_CHARACTER.name || 'this character') + '. If you notice yourself, or the writer, drifting onto a different character, name it briefly and bring the focus back.'];
       var charFacts = [];
       if (SELECTED_CHARACTER.type) charFacts.push('Type: ' + SELECTED_CHARACTER.type);
       if (SELECTED_CHARACTER.roleType) charFacts.push('Role: ' + SELECTED_CHARACTER.roleType);
@@ -698,6 +724,7 @@
       var fieldSummary = deliverable.fields.map(function (f) {
         return f.type === 'list' ? (f.count || 3) + ' ' + (f.label || f.key) + '(s)' : (f.label || f.key);
       }).join(', ');
+      wrapParts.push('CONFIRM BEFORE YOU CAPTURE:\nWhen you believe every deliverable field is complete, do NOT emit any tags yet. First, in one short message, read the finished items back to the person in plain words and ask whether you have them right. Be exact about who did what to whom - small misreadings (whose face, whose idea, who spoke first) are the most common error. Only after they confirm, or after you have applied their corrections, move to capture and close. The captured content must match what they confirmed.');
       wrapParts.push('CAPTURING THE DELIVERABLE - REQUIRED BEFORE YOU CAN CLOSE:\nBefore your closing message, on their own lines, include hidden tags capturing every finished deliverable field - ' + fieldSummary + ':\n\n' + tagLines + '\nEvery field must contain real, specific content the person actually gave you. Do not emit these tags, and do not close the layer, until you actually have all of this.');
       wrapParts.push('Immediately after those tags, on its own line, include a hidden tag: [SUMMARY: One plain sentence, third person, under twenty words, capturing the core insight that surfaced.] - never shown to the person. End your closing message with the exact tag [REFLECTION_COMPLETE] on its own line at the very end, after every other tag.');
     } else {
@@ -1352,7 +1379,7 @@
     var card = el('div', 'sh-synthesis-card');
     mount(card, el('div', 'sh-synthesis-title', whoText ? t('synthTitleWho', { title: SESSION.title, who: whoText }) : t('synthTitle', { title: SESSION.title })));
     var body = el('div', 'sh-synthesis-text');
-    body.innerHTML = textToParagraphs(text);
+    body.innerHTML = synthesisToHtml(text);
     mount(card, body);
     var actions = el('div', 'sh-synthesis-actions');
     var dlBtn = el('button', 'sh-synthesis-download', t('download'));
@@ -1372,7 +1399,7 @@
     catch (e) { dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }); }
     var who = studentName || t('student');
     var txt = SESSION.title.toUpperCase() + ' \u2014 ' + t('completeProfile') + '\n' + who + ' \u2014 ' + dateStr + '\n' +
-      '==========================================\n\n' + text;
+      '==========================================\n\n' + synthesisToPlain(text);
     var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
     var link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
