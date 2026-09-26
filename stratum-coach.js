@@ -97,6 +97,9 @@
   var MAX_DELIVERABLE_RETRIES = 2;
   var busy = false;
   var poolExhausted = false;
+  var IS_TOUCH = (function () {
+    try { return window.matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window && navigator.maxTouchPoints > 0); } catch (e) { return false; }
+  })();
   var ENGINE_MODE = 'excavation'; // set from SESSION.track once loaded — 'excavation' = Linear Layers -> Synthesis (unchanged); 'general'/'writing' = Recurring Check-In (see buildRecurringPage() etc below)
   var ALL_CHECKIN_NOTES = [];     // Recurring engine only — every past check-in across every topic in this session, fetched once and reused for both the topic list and each conversation's injected history
   var topicListEl = null;         // Recurring engine only
@@ -615,7 +618,8 @@
     var parts = [
       'You are a professional writing coach, live, in a real one-on-one coaching conversation exploring "' + layer.label + '" as part of the ' + SESSION.title + ' coaching session on The Stratum Method. You have no name and no personal biography - you are simply an experienced, well-trained coach who works with fiction writers on their own work, using the Socratic method: you draw the person\u2019s own answers out of them, you never supply the answer yourself. This is who you are in this conversation: warm, direct, genuinely curious about this specific person, unhurried.',
       'STAY IN VOICE: Speak only in first person as this coach, for the entire conversation. If the person sincerely and directly asks whether they are talking to a real person or an AI, answer honestly and briefly - you are an AI coach trained in the Socratic method, not a human live - then gently continue the conversation.',
-      'CRITICAL FORMATTING RULE: Never wrap any word in asterisks for emphasis - this chat renders plain text only, so *anything like this* appears to the person as literal asterisks. If a word needs emphasis, use plain phrasing or sentence rhythm instead.'
+      'CRITICAL FORMATTING RULE: Never wrap any word in asterisks for emphasis - this chat renders plain text only, so *anything like this* appears to the person as literal asterisks. If a word needs emphasis, use plain phrasing or sentence rhythm instead.',
+      'PRONOUNS: Use exactly the pronouns the writer uses for their character or characters, and keep using them for the rest of the conversation. If the writer corrects a pronoun, apply the correction immediately and permanently. If you do not yet know a character\u2019s pronouns, use the character\u2019s name or "your character" rather than guessing. Every example in this prompt (calibration examples, worked examples, sample sentences) is illustration only - the pronouns, genders and details in those examples never carry over to the writer\u2019s own characters.'
     ];
     if (SELECTED_CHARACTER) {
       var charLines = ['THE CHARACTER THIS EXCAVATION IS ABOUT:\nEverything in this conversation is specifically about ' + (SELECTED_CHARACTER.name || 'this character') + ', not the writer themselves and not any other character in their project. Keep every question anchored to this one character.'];
@@ -970,6 +974,7 @@
       'You are a professional writing coach, live, in a real one-on-one coaching conversation about "' + layer.label + '", part of the ongoing ' + SESSION.title + ' coaching relationship on The Stratum Method. You have no name and no personal biography - you are simply an experienced, well-trained coach who works with fiction writers on their own work, using the Socratic method: you draw the person\u2019s own answers out of them, you never supply the answer yourself. This is who you are in this conversation: warm, direct, genuinely curious about this specific person, unhurried.',
       'STAY IN VOICE: Speak only in first person as this coach, for the entire conversation. If the person sincerely and directly asks whether they are talking to a real person or an AI, answer honestly and briefly - you are an AI coach trained in the Socratic method, not a human live - then gently continue the conversation.',
       'CRITICAL FORMATTING RULE: Never wrap any word in asterisks for emphasis - this chat renders plain text only, so *anything like this* appears to the person as literal asterisks. If a word needs emphasis, use plain phrasing or sentence rhythm instead.',
+      'PRONOUNS: Use exactly the pronouns the writer uses for their character or characters, and keep using them for the rest of the conversation. If the writer corrects a pronoun, apply the correction immediately and permanently. If you do not yet know a character\u2019s pronouns, use the character\u2019s name or "your character" rather than guessing. Every example in this prompt (calibration examples, worked examples, sample sentences) is illustration only - the pronouns, genders and details in those examples never carry over to the writer\u2019s own characters.',
       'THIS IS A RECURRING CHECK-IN, NOT A ONE-TIME SESSION: Unlike Stratum\u2019s Excavation coaching, this topic has no fixed completion and no required deliverable. The person may return to it many times over weeks or months. Each visit is a genuinely fresh conversation - you do not remember the literal back-and-forth of past visits, only the summaries below - so treat this as picking up an ongoing relationship, not starting from zero and not pretending to recall exact wording you were never given.',
       'WHAT THIS TOPIC COVERS (' + scopeNote + ')' + (SESSION.transcript ? ':\n"""\n' + SESSION.transcript + '\n"""' : '.'),
       'WHAT THIS CONVERSATION IS FOR:\nThis single, continuous, natural conversation is a check-in on ' + layer.label + '. Draw on the areas below - in whatever order the conversation naturally takes - as a guide to what\u2019s worth exploring, not a checklist that must all be covered before you can close:\n\n' + areas
@@ -1105,6 +1110,7 @@
     inputEl.className = 'sh-coach-input';
     inputEl.placeholder = t('typeYourReply');
     inputEl.rows = 1;
+    if (IS_TOUCH) inputEl.setAttribute('enterkeyhint', 'enter');
     mount(formEl, inputEl);
     sendBtn = el('button', 'sh-coach-send', '\u2192');
     sendBtn.type = 'submit';
@@ -1113,8 +1119,15 @@
     mount(container, panel);
 
     formEl.addEventListener('submit', function (e) { e.preventDefault(); handleSend(); });
+    // Sept 26 2026 (beta feedback): on phones/tablets Return adds a new
+    // line and only the Send button sends, so a stray Return no longer
+    // sends a half-written reply. On desktop, Enter still sends and
+    // Shift+Enter adds a new line.
     inputEl.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+      if (e.key !== 'Enter' || e.isComposing) return;
+      if (IS_TOUCH || e.shiftKey) return;
+      e.preventDefault();
+      handleSend();
     });
     inputEl.addEventListener('input', function () {
       inputEl.style.height = 'auto';
@@ -1179,7 +1192,18 @@
       }
       LAYER_CONFIG = cfg;
       resetSessionState();
-      if (showDivider) addDivider(layer.label);
+      if (showDivider) { addDivider(layer.label); startFreshLayer(); return; }
+      // Sept 26 2026 (beta feedback): resuming mid-layer. On phones,
+      // switching to another app often makes the browser reload this
+      // tab, which used to restart the layer from its greeting (and
+      // open a new metered session). Restore the saved transcript
+      // instead, if this layer has one with real progress in it.
+      restoreTranscript(function (restored) { if (!restored) startFreshLayer(); });
+    });
+  }
+
+  function startFreshLayer() {
+    (function () {
       var knownName = studentName;
       var primerText = knownName
         ? "Begin the session. The student's name is already known: " + knownName + '. Do not ask for their name again - greet them by name and move straight into the first area.'
@@ -1189,8 +1213,68 @@
       conversationHistory.push({ role: 'assistant', content: greetingText });
       addMessage('assistant', greetingText);
       saveTranscript();
-    });
+    })();
   }
+
+  function restoreTranscript(callback) {
+    var lesson = lessonKey(SESSION.layers[currentLayerIndex].layerNumber);
+    fetch(PROXY_URL + '/transcript?studentId=' + encodeURIComponent(STUDENT_ID) + '&lesson=' + encodeURIComponent(lesson))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var history = (d && d.known && Array.isArray(d.history)) ? d.history : [];
+        // Only the primer + greeting means nothing was said yet - start fresh.
+        if (!d || !d.conversationId || d.reflectionComplete || history.length <= 2) { callback(false); return; }
+        conversationId = d.conversationId;
+        conversationHistory = history;
+        if (d.studentName) studentName = d.studentName;
+        // A reply that was sent but never answered (the tab was closed
+        // mid-request) goes back into the input box instead.
+        var pending = null;
+        var last = conversationHistory[conversationHistory.length - 1];
+        if (last && last.role === 'user') {
+          conversationHistory.pop();
+          if (typeof last.content === 'string' && last.content.indexOf('[STRATUM_INTERNAL_RETRY]') === -1) pending = last.content;
+        }
+        conversationHistory.forEach(function (m, i) {
+          if (typeof m.content !== 'string') return;
+          if (m.role === 'user') {
+            if (i === 0 && m.content.indexOf('Begin the session.') === 0) return;
+            if (m.content.indexOf('[STRATUM_INTERNAL_RETRY]') !== -1) return;
+            addMessage('user', m.content);
+          } else {
+            var shown = extractTags(m.content).text;
+            if (shown) addMessage('assistant', shown);
+          }
+        });
+        if (pending && inputEl && !inputEl.value) inputEl.value = pending;
+        restoreScrollPosition();
+        callback(true);
+      })
+      .catch(function () { callback(false); });
+  }
+
+  // Sept 26 2026 (beta feedback): remembers where the page was scrolled
+  // when the writer left, so a reload after switching apps puts them
+  // back at the same spot instead of the top of the page.
+  var SCROLL_KEY_PREFIX = 'stratum_scroll_';
+  function scrollKey() { return SCROLL_KEY_PREFIX + (SESSION ? SESSION.slug : ''); }
+  function rememberScrollPosition() {
+    try { sessionStorage.setItem(scrollKey(), String(window.scrollY || window.pageYOffset || 0)); } catch (e) {}
+  }
+  function restoreScrollPosition() {
+    var saved = null;
+    try { saved = sessionStorage.getItem(scrollKey()); } catch (e) { saved = null; }
+    setTimeout(function () {
+      scrollToBottom();
+      var y = saved != null ? Number(saved) : NaN;
+      if (Number.isFinite(y) && y > 0) window.scrollTo(0, y);
+      else if (messagesEl && messagesEl.parentNode) messagesEl.parentNode.scrollIntoView({ block: 'end' });
+    }, 400);
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') rememberScrollPosition();
+  });
+  window.addEventListener('pagehide', rememberScrollPosition);
 
   function advanceOrFinish() {
     var layer = SESSION.layers[currentLayerIndex];
