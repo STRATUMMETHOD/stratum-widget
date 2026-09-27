@@ -1601,7 +1601,17 @@
     resolveWipThenStart(contentEl, charIndicatorSlot);
   }
 
+  // Sept 27 2026 fix: starting a session used to leave the picker list
+  // (character / conflict) on screen with the chat added below it, and
+  // the rows stayed clickable - a second click started the whole session
+  // again (duplicate indicator line, duplicate chat window). Now the
+  // session can only start once per page load, and it clears the picker
+  // out of the content area first.
+  var EXCAVATION_STARTED = false;
   function startExcavationProper() {
+    if (EXCAVATION_STARTED) return;
+    EXCAVATION_STARTED = true;
+    contentEl.innerHTML = '';
     buildChatPanel(contentEl);
     renderRail();
     loadProgressThenStart();
@@ -1712,9 +1722,12 @@
       }
       var wrap = el('div', 'sh-recurring-topics');
       mount(container, el('p', 'sh-coach-sub', t('whichWip')));
+      var wipPicked = false; // Sept 27 2026: ignore repeat clicks - see startExcavationProper()
       wips.forEach(function (w) {
         var row = el('div', 'sh-recurring-topic-row');
         row.addEventListener('click', function () {
+          if (wipPicked) return;
+          wipPicked = true;
           ACTIVE_WIP_ID = w.id;
           sessSet(WIP_LOCK_KEY, w.id);
           showWipIndicator(indicatorSlot, w);
@@ -1803,9 +1816,12 @@
       }
       var wrap = el('div', 'sh-recurring-topics');
       mount(container, el('p', 'sh-coach-sub', t('whoIsThisFor')));
+      var charPicked = false; // Sept 27 2026: ignore repeat clicks - see startExcavationProper()
       characters.forEach(function (c) {
         var row = el('div', 'sh-recurring-topic-row');
         row.addEventListener('click', function () {
+          if (charPicked) return;
+          charPicked = true;
           SELECTED_CHARACTER = c;
           sessSet(CHAR_LOCK_PREFIX + SESSION.slug, c.id);
           showCharacterIndicator(indicatorSlot);
@@ -1909,7 +1925,10 @@
           return;
         }
 
+        var conflictPicked = false; // Sept 27 2026: a double-click here used to create two conflict records
         function startNewInstance(charA, charB) {
+          if (conflictPicked) return;
+          conflictPicked = true;
           container.innerHTML = '';
           mount(container, el('div', 'sh-coach-loading', t('settingUpConflict')));
           createConflictInstance(charA.id, charB.id, function (instanceId) {
@@ -1968,6 +1987,8 @@
           if (!a || !b) return; // a character behind this instance was since removed from the WIP — skip rather than show a broken row
           var row = el('div', 'sh-recurring-topic-row');
           row.addEventListener('click', function () {
+            if (conflictPicked) return;
+            conflictPicked = true;
             SELECTED_CONFLICT = { instanceId: inst.id, characterA: a, characterB: b, label: inst.label || null };
             sessSet(CONFLICT_LOCK_PREFIX + SESSION.slug, inst.id);
             showConflictIndicator(indicatorSlot);
