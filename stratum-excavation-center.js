@@ -374,7 +374,7 @@
     viewAllBtn.className = 'sh-dash-open-btn';
     viewAllBtn.textContent = t('viewAll');
     var headActions = el('div', 'sh-dash-head-actions');
-    headActions.style.cssText = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;';
+    headActions.style.cssText = 'display:flex;align-items:center;gap:8px;flex-wrap:nowrap;flex-shrink:0;justify-content:flex-end;';
     var tutorialSlot = el('span');
     tutorialSlot.style.cssText = 'display:inline-flex;';
     mount(headActions, tutorialSlot);

@@ -644,9 +644,11 @@
     var row = wrapEl && wrapEl.querySelector('.sh-welcome-row');
     if (!row) return;
     var line = row.querySelector('.sh-status-line');
-    if (!title) { if (line) line.remove(); return; }
-    if (!line) line = mount(row, el('p', 'sh-status-line'));
-    line.textContent = format(t('currentlyExcavating'), { name: title });
+    // Sept 27 2026: the "Currently excavating: {title}" line was removed
+    // from the dashboard per Ted. This now only clears any leftover line;
+    // it never adds one. The currentlyExcavating string is kept in case
+    // the line comes back.
+    if (line) line.remove();
   }
 
   function renderSummary(profile) {
