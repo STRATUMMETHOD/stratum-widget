@@ -147,6 +147,36 @@
     return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key];
   }
 
+  // Sept 27 2026: each coaching card gets its own "Watch tutorial"
+  // button (stratum-tutorial.js), placed next to View All the same way
+  // the Profile card does it. Keys must match TUTORIAL_SECTIONS in
+  // stratum-lesson-admin.html. The button only appears once a video is
+  // saved for that card in the student's language or in English.
+  var TUTORIAL_KEY_BY_TRACK = {
+    excavation: 'coaching-story',
+    general: 'coaching-general',
+    writing: 'coaching-writing'
+  };
+  function dbString(key, fallback) {
+    return (DB_STRINGS && DB_STRINGS[key] != null) ? DB_STRINGS[key] : fallback;
+  }
+  function attachTutorial(slot, track) {
+    var section = TUTORIAL_KEY_BY_TRACK[track];
+    if (!section) return;
+    function go() {
+      if (!window.StratumTutorial) return false;
+      window.StratumTutorial.attach(slot, {
+        section: section,
+        lang: LANG,
+        label: dbString('tutorial.watch', 'Watch tutorial'),
+        closeLabel: dbString('common.close', 'Close')
+      });
+      return true;
+    }
+    // stratum-tutorial.js may load after this file - try again once the page has finished loading
+    if (!go()) window.addEventListener('load', go, { once: true });
+  }
+
   var TRACK_COLUMNS = [
     { track: 'excavation', labelKey: 'colExcavation', subKey: 'colExcavationSub' },
     { track: 'general', labelKey: 'colGeneral', subKey: 'colGeneralSub' },
@@ -343,7 +373,14 @@
     viewAllBtn.type = 'button';
     viewAllBtn.className = 'sh-dash-open-btn';
     viewAllBtn.textContent = t('viewAll');
-    mount(headTop, viewAllBtn);
+    var headActions = el('div', 'sh-dash-head-actions');
+    headActions.style.cssText = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;';
+    var tutorialSlot = el('span');
+    tutorialSlot.style.cssText = 'display:inline-flex;';
+    mount(headActions, tutorialSlot);
+    mount(headActions, viewAllBtn);
+    mount(headTop, headActions);
+    attachTutorial(tutorialSlot, columnDef.track);
     mount(head, headTop);
     mount(head, el('p', 'sh-dash-card-subtitle', t(columnDef.subKey)));
     mount(col, head);

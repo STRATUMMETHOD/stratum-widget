@@ -6298,7 +6298,12 @@ if (savedKey) unlock();
 // modules get their button.
 var TUTORIAL_SECTIONS = [
   { key: 'profile', label: 'Profile' },
-  { key: 'coaching', label: 'Coaching tracks' },
+  // Sept 27 2026: one tutorial per coaching card instead of a single
+  // 'coaching' slot. Keys must match TUTORIAL_KEY_BY_TRACK in
+  // stratum-excavation-center.js.
+  { key: 'coaching-story', label: 'Story & Character Coaching' },
+  { key: 'coaching-general', label: 'General Coaching' },
+  { key: 'coaching-writing', label: 'Writing Coaching' },
   { key: 'practice-lab', label: 'Practice Lab' },
   { key: 'library', label: 'Library' },
   { key: 'idea-log', label: 'Idea Log' },
