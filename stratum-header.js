@@ -495,13 +495,31 @@
   // carries identical, persistent navigation rather than feeling like a
   // disconnected page with no way back. One implementation, one place to
   // change it.
+  // Replace the file on GitHub under the same name to change the logo.
+  var BRAND_LOGO_URL = 'https://stratummethod.github.io/stratum-widget/Platinum-logo.png';
   function buildTopbar() {
     var topbar = el('div', 'sh-topbar');
-    var brand = el('div', 'sh-brand');
-    mount(brand, el('div', 'sh-brand-mark'));
-    mount(brand, el('span', 'sh-brand-name', 'The Stratum Method'));
-    var tagline = el('span', 'sh-for-writers', t('forWriters'));
-    mount(brand, tagline);
+    // Sept 27 2026: the gold square + "The Stratum Method / For writers"
+    // text is replaced by the Platinum logo image, which already carries
+    // "Method for Writers". The logo links back to the dashboard. If the
+    // image ever fails to load, the old text brand comes back so the
+    // header is never empty.
+    var brand = document.createElement('a');
+    brand.className = 'sh-brand';
+    brand.href = '/system/';
+    brand.style.cssText = 'display:flex;align-items:center;text-decoration:none;';
+    var logo = document.createElement('img');
+    logo.src = BRAND_LOGO_URL;
+    logo.alt = 'The Stratum Method for Writers';
+    logo.className = 'sh-brand-logo';
+    logo.style.cssText = 'display:block;height:40px;width:auto;max-width:60vw;object-fit:contain;';
+    logo.addEventListener('error', function () {
+      logo.remove();
+      mount(brand, el('div', 'sh-brand-mark'));
+      mount(brand, el('span', 'sh-brand-name', 'The Stratum Method'));
+      mount(brand, el('span', 'sh-for-writers', t('forWriters')));
+    });
+    mount(brand, logo);
     mount(topbar, brand);
 
     var nav = el('div', 'sh-nav');
