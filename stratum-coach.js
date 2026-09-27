@@ -119,6 +119,11 @@
   var conversationId = null;
   var studentName = WP_USER.firstName || '';
   var lastDeliverable = null;
+  // Sept 27 2026: layers finished in THIS page load, keyed by lessonKey.
+  // The /complete save is fire-and-forget, so the next layer can boot
+  // before the server has it - this local copy guarantees the layer the
+  // writer just finished is always carried forward.
+  var LOCAL_LAYER_RESULTS = {};
   var deliverableRetryCount = 0;
   var MAX_DELIVERABLE_RETRIES = 2;
   var busy = false;
@@ -501,6 +506,80 @@
       .catch(function () { callback(); });
   }
 
+  // Sept 27 2026: EARLIER LAYERS CARRY FORWARD. Every layer used to
+  // start blind - conversationHistory is cleared between layers and
+  // nothing re-fed what the writer had already confirmed, so Layer 2
+  // (The Hidden Truth) did not actually know the Anchor Behavior from
+  // Layer 1, and so on. This fetches every earlier layer's captured
+  // deliverable for THIS excavation and THIS character / conflict (same
+  // scope as lessonKey()) and hands it to the coach. Linear Excavation
+  // engine only - the Recurring engine already carries its own
+  // check-in history.
+  function fetchPriorLayerResults(callback) {
+    if (ENGINE_MODE !== 'excavation' || !SESSION || !STUDENT_ID || !SESSION.layers || !SESSION.layers[currentLayerIndex]) { callback([]); return; }
+    var currentNumber = SESSION.layers[currentLayerIndex].layerNumber;
+    var scopeId = SELECTED_CHARACTER ? SELECTED_CHARACTER.id : (SELECTED_CONFLICT ? SELECTED_CONFLICT.instanceId : null);
+    var url = PROXY_URL + '/excavation/layer-deliverables?studentId=' + encodeURIComponent(STUDENT_ID) +
+      '&excavationSlug=' + encodeURIComponent(SESSION.slug) +
+      '&beforeLayer=' + encodeURIComponent(currentNumber) +
+      (scopeId ? '&scopeId=' + encodeURIComponent(scopeId) : '');
+    function finish(serverLayers) {
+      var byNumber = {};
+      (serverLayers || []).forEach(function (l) { byNumber[l.layerNumber] = l; });
+      Object.keys(LOCAL_LAYER_RESULTS).forEach(function (key) {
+        var l = LOCAL_LAYER_RESULTS[key];
+        if (key === lessonKey(l.layerNumber) && l.layerNumber < currentNumber) byNumber[l.layerNumber] = l;
+      });
+      callback(Object.keys(byNumber).map(Number).sort(function (a, b) { return a - b; }).map(function (n) { return byNumber[n]; }));
+    }
+    fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (d) { finish((d && Array.isArray(d.layers)) ? d.layers : []); })
+      .catch(function () { finish([]); });
+  }
+  function formatDeliverableValue(value) {
+    if (value == null) return '';
+    if (Array.isArray(value)) {
+      return value.map(function (item, i) {
+        if (item && typeof item === 'object') {
+          var bits = Object.keys(item).filter(function (k) { return item[k]; }).map(function (k) { return k + ': ' + item[k]; });
+          return '  ' + (i + 1) + '. ' + bits.join(' | ');
+        }
+        return '  ' + (i + 1) + '. ' + item;
+      }).join('\n');
+    }
+    if (typeof value === 'object') {
+      return Object.keys(value).filter(function (k) { return value[k]; }).map(function (k) { return k + ': ' + value[k]; }).join(' | ');
+    }
+    return String(value);
+  }
+  function buildPriorLayersBlock(priorLayers) {
+    if (!priorLayers || !priorLayers.length) return '';
+    var who = SELECTED_CHARACTER ? (SELECTED_CHARACTER.name || 'this character')
+      : (SELECTED_CONFLICT ? SELECTED_CONFLICT.characterA.name + ' and ' + SELECTED_CONFLICT.characterB.name : null);
+    var sections = priorLayers.map(function (l) {
+      var lines = ['--- ' + (l.label || ('Layer ' + l.layerNumber)) + ' ---'];
+      var fields = l.fields || {};
+      var labels = l.fieldLabels || {};
+      var keys = Object.keys(fields).filter(function (k) {
+        var v = fields[k];
+        return v != null && v !== '' && !(Array.isArray(v) && !v.length);
+      });
+      keys.forEach(function (k) {
+        var v = fields[k];
+        var label = labels[k] || k;
+        if (Array.isArray(v)) lines.push(label + ':\n' + formatDeliverableValue(v));
+        else lines.push(label + ': ' + formatDeliverableValue(v));
+      });
+      if (!keys.length && l.summary) lines.push('Summary: ' + l.summary);
+      return lines.join('\n');
+    });
+    return '\n\nWHAT THE WRITER HAS ALREADY ESTABLISHED IN EARLIER LAYERS OF THIS SESSION' + (who ? ' (about ' + who + ')' : '') +
+      ' - confirmed by the writer, in their own words. This layer builds directly on this work. Refer to it specifically and by its content ' +
+      '(e.g. name the actual behavior, the actual belief), never ask the writer to restate or re-explain it, and never treat this layer as a blank slate. ' +
+      'If the writer revises or contradicts something here during this conversation, follow their revision:\n' + sections.join('\n\n');
+  }
+
   // Sept 2026: reads the restructured /project record — wipTitle/genre/
   // stage/storyStyle/pov unchanged, theme now holds the MERGED Theme/
   // Focus free text (the old separate "focus" enum field and its
@@ -509,7 +588,7 @@
   // antagonistType/mcGoal are replaced by a real characters[] list, each
   // with name/type/roleType/coreConflict, listed out individually so the
   // coach has the full cast, not just one protagonist and one antagonist.
-  function buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy, linkedProfiles) {
+  function buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy, linkedProfiles, priorLayers) {
     var block = '';
     if (coachingPhilosophy) {
       block += '\n\nCOACHING PHILOSOPHY FOR THIS TRACK - PRIVATE, NEVER SHOWN TO THE STUDENT, APPLIES ACROSS EVERY EXCAVATION (this layer\'s own Coaching Approach below, if any, refines or takes precedence where they conflict):\n' + coachingPhilosophy;
@@ -537,6 +616,7 @@
         block += '\n\nLANGUAGE: This student has selected ' + project.language + ' as their preferred coaching language. From this point forward, conduct the entire conversation in ' + project.language + ', every question, every follow-up, every reflection, and the closing message. Write naturally and idiomatically, not as a literal translation. Exception: keep every hidden bracket tag exactly in English bracket format as instructed elsewhere in this prompt - only the name inside a NAME tag and the content inside deliverable field tags should reflect what the student actually said.';
       }
     }
+    block += buildPriorLayersBlock(priorLayers);
     if (linkedProfiles && linkedProfiles.length) {
       linkedProfiles.forEach(function (p) {
         block += '\n\nEXISTING CHARACTER EXCAVATION PROFILE FOR ' + p.name.toUpperCase() + ' (already confirmed by the writer in a prior Character Development session - use this directly rather than re-deriving Wants/Needs, Hidden Truth, or anything else it already covers from scratch; only ask live if this genuinely doesn\'t cover what\'s needed here):\n' + p.text;
@@ -840,8 +920,19 @@
   }
   function reportLayerComplete(summaryText) {
     if (!STUDENT_ID) return;
-    var body = { studentId: STUDENT_ID, lesson: lessonKey(SESSION.layers[currentLayerIndex].layerNumber), summary: summaryText || null };
+    var layerNow = SESSION.layers[currentLayerIndex];
+    var body = { studentId: STUDENT_ID, lesson: lessonKey(layerNow.layerNumber), summary: summaryText || null };
     if (lastDeliverable) body.deliverable = lastDeliverable;
+    var cfgFields = (getDeliverableConfig() || {}).fields || [];
+    var fieldLabels = {};
+    cfgFields.forEach(function (f) { fieldLabels[f.key] = f.label || f.key; });
+    LOCAL_LAYER_RESULTS[body.lesson] = {
+      layerNumber: layerNow.layerNumber,
+      label: layerNow.label,
+      summary: summaryText || null,
+      fields: lastDeliverable ? lastDeliverable.fields : {},
+      fieldLabels: fieldLabels
+    };
     fetch(PROXY_URL + '/complete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -858,8 +949,10 @@
           fetchGlobalInstructions(function (globalInstructions) {
             fetchCoachingPhilosophy(SESSION.track || 'excavation', function (coachingPhilosophy) {
               fetchLinkedProfiles(function (linkedProfiles) {
-                CONTEXT_BLOCK_CACHE = buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy, linkedProfiles);
-                callback(CONTEXT_BLOCK_CACHE);
+                fetchPriorLayerResults(function (priorLayers) {
+                  CONTEXT_BLOCK_CACHE = buildProjectContextBlock(project, ideaLog, tasks, globalInstructions, coachingPhilosophy, linkedProfiles, priorLayers);
+                  callback(CONTEXT_BLOCK_CACHE);
+                });
               });
             });
           });
@@ -1219,6 +1312,10 @@
       }
       LAYER_CONFIG = cfg;
       resetSessionState();
+      // Sept 27 2026: the context block now includes earlier layers'
+      // results, so it must be rebuilt for every layer rather than
+      // reused from the previous one.
+      CONTEXT_BLOCK_CACHE = null;
       if (showDivider) { addDivider(layer.label); startFreshLayer(); return; }
       // Sept 26 2026 (beta feedback): resuming mid-layer. On phones,
       // switching to another app often makes the browser reload this
