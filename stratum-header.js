@@ -512,7 +512,7 @@
     logo.src = BRAND_LOGO_URL;
     logo.alt = 'The Stratum Method for Writers';
     logo.className = 'sh-brand-logo';
-    logo.style.cssText = 'display:block;height:40px;width:auto;max-width:60vw;object-fit:contain;';
+    logo.style.cssText = 'display:block;height:50px;width:auto;max-width:60vw;object-fit:contain;';
     logo.addEventListener('error', function () {
       logo.remove();
       mount(brand, el('div', 'sh-brand-mark'));
