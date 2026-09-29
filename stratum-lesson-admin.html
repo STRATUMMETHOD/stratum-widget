@@ -525,6 +525,36 @@
   .srx-dc-upnext-text { font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.55; color: var(--srx-offwhite); margin: 0; }
   .srx-dc-btn-wrap { padding: 20px 22px 22px; text-align: center; }
   .srx-dc-btn { display: inline-block; background: none; color: #8a6630; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12.5px; letter-spacing: .03em; padding: 10px 22px; border-radius: 8px; border: 1px solid var(--srx-clay); cursor: not-allowed; opacity: .7; }
+  /* ===== Activity tab (Sept 29 2026) ===== */
+  .act-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .act-toolbar .spacer { flex: 1; }
+  .act-toolbar select, .act-toolbar input[type="text"] { padding: 8px 10px; font-size: 13px; font-family: 'Inter', Arial, sans-serif; border: 1px solid #E3DCC9; border-radius: 8px; background: #FCFAF5; }
+  .act-toolbar input[type="text"] { min-width: 220px; }
+  .act-note { font-size: 12px; color: #9A927E; margin: -4px 0 12px; }
+  table.exc-table tr.act-zero td { color: #B8AE98; }
+  table.exc-table tr.act-zero td:first-child::after { content: ' \2014 nobody'; font-style: italic; }
+  .act-bar { display: inline-block; vertical-align: middle; height: 8px; border-radius: 4px; background: #C9A46C; margin-right: 8px; min-width: 2px; }
+  .act-bar.muted { background: #E3DCC9; }
+  .act-track-title { font-size: 13px; font-weight: 700; color: #3B2F24; margin: 16px 0 6px; }
+  .act-track-kind { font-weight: 500; color: #9A927E; margin-left: 6px; }
+  table.exc-table th.act-sort { cursor: pointer; user-select: none; }
+  table.exc-table th.act-sort:hover { color: #8a6630; }
+  table.exc-table th.act-sort.on { color: #8a6630; }
+  tr.act-member { cursor: pointer; }
+  tr.act-member:hover td { background: #FBF9F4; }
+  tr.act-member.quiet td.act-last { color: #b3261e; font-weight: 600; }
+  tr.act-member.never td.act-last { color: #9A927E; font-style: italic; }
+  .act-name { font-weight: 600; color: #3B2F24; }
+  .act-email { font-size: 12px; color: #8a7a5e; }
+  .act-contact { white-space: nowrap; }
+  .act-contact a, .act-contact button { background: none; border: none; color: #8a6630; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; margin-right: 10px; text-decoration: underline; font-family: inherit; }
+  tr.act-timeline-row td { background: #FBF9F4; padding: 14px 16px; }
+  .act-tl-day { font-size: 12px; font-weight: 700; color: #8a6630; margin: 10px 0 4px; }
+  .act-tl-day:first-child { margin-top: 0; }
+  .act-tl-item { font-size: 12.5px; color: #3B2F24; padding: 2px 0 2px 12px; border-left: 2px solid #E3DCC9; }
+  .act-tl-item.coaching { border-left-color: #C9A46C; }
+  .act-tl-item.completed { border-left-color: #6f8a3f; }
+  .act-tl-time { color: #9A927E; display: inline-block; width: 64px; }
 </style>
 </head>
 <body>
@@ -534,6 +564,7 @@
     <button class="nav-item" id="tabGuidedBtn" type="button"><span class="nav-dot"></span>Coaching Tracks</button>
     <button class="nav-item" id="tabGlobalInstructionsBtn" type="button"><span class="nav-dot"></span>Global Instructions</button>
     <button class="nav-item" id="tabDashboardBtn" type="button"><span class="nav-dot"></span>Students</button>
+    <button class="nav-item" id="tabActivityBtn" type="button"><span class="nav-dot"></span>Activity</button>
     <button class="nav-item" id="tabDeliverablesBtn" type="button"><span class="nav-dot"></span>Deliverables</button>
     <button class="nav-item" id="tabTestimonialsBtn" type="button"><span class="nav-dot"></span>Testimonials</button>
     <button class="nav-item" id="tabUpdatesBtn" type="button"><span class="nav-dot"></span>What's New</button>
@@ -700,6 +731,71 @@
         <tbody id="studentsTableBody"></tbody>
       </table>
       <div id="studentsStatus" style="padding:14px 2px;font-size:12px;color:#9A927E;font-style:italic;"></div>
+    </div>
+    <div id="activityView" style="display:none;">
+      <div class="act-toolbar">
+        <label for="actDays" style="font-size:12px;color:#8a7a5e;">Show the last</label>
+        <select id="actDays">
+          <option value="7">7 days</option>
+          <option value="30" selected>30 days</option>
+          <option value="90">90 days</option>
+          <option value="0">All time</option>
+        </select>
+        <div class="spacer"></div>
+        <button class="btn secondary" id="actRefreshBtn" type="button">Refresh</button>
+      </div>
+      <div class="exc-stat-row">
+        <div class="exc-stat-card"><div class="exc-stat-num" id="actStatMembers">&mdash;</div><div class="exc-stat-label">Members</div></div>
+        <div class="exc-stat-card"><div class="exc-stat-num" id="actStatActive">&mdash;</div><div class="exc-stat-label">Active in period</div></div>
+        <div class="exc-stat-card"><div class="exc-stat-num" id="actStatQuiet">&mdash;</div><div class="exc-stat-label">Quiet 14+ days</div></div>
+        <div class="exc-stat-card"><div class="exc-stat-num" id="actStatSessions">&mdash;</div><div class="exc-stat-label">Coaching sessions</div></div>
+      </div>
+
+      <div class="exc-section-title">Where people go</div>
+      <p class="act-note">Members who opened each area in the period. Page visits are recorded from Sept 29, 2026 onward.</p>
+      <table class="exc-table">
+        <thead><tr><th>Area</th><th>Members</th><th>Visits</th><th>Last visit</th></tr></thead>
+        <tbody id="actAreasBody"></tbody>
+      </table>
+      <div id="actActionsWrap" style="display:none;">
+        <div class="exc-section-title">What people do on those pages</div>
+        <table class="exc-table">
+          <thead><tr><th>Action</th><th>Members</th><th>Times</th></tr></thead>
+          <tbody id="actActionsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="exc-section-title">How far people get in coaching</div>
+      <p class="act-note">Members who had a session in each layer during the period, and how many completed it.</p>
+      <div id="actFunnel"></div>
+
+      <div class="exc-section-title">Members</div>
+      <div class="act-toolbar">
+        <input type="text" id="actSearch" placeholder="Search name or email" />
+        <select id="actQuietFilter">
+          <option value="">Everyone</option>
+          <option value="7">Quiet 7+ days</option>
+          <option value="14">Quiet 14+ days</option>
+          <option value="30">Quiet 30+ days</option>
+          <option value="never">No activity recorded</option>
+        </select>
+        <button class="btn secondary" id="actCopyEmailsBtn" type="button">Copy these emails</button>
+      </div>
+      <table class="exc-table">
+        <thead>
+          <tr>
+            <th class="act-sort" data-key="name">Member</th>
+            <th class="act-sort on" data-key="lastActive">Last active</th>
+            <th class="act-sort" data-key="daysActive">Days active</th>
+            <th class="act-sort" data-key="visits">Page visits</th>
+            <th class="act-sort" data-key="sessions">Sessions</th>
+            <th class="act-sort" data-key="completed">Layers done</th>
+            <th>Contact</th>
+          </tr>
+        </thead>
+        <tbody id="actMembersBody"></tbody>
+      </table>
+      <div id="actStatus" style="padding:14px 2px;font-size:12px;color:#9A927E;font-style:italic;"></div>
     </div>
     <div id="deliverablesView" style="display:none;">
       <div class="dlv-toolbar">
@@ -1567,8 +1663,11 @@ var vocabularyView = document.getElementById('vocabularyView');
 var libraryView = document.getElementById('libraryView');
 var globalInstructionsView = document.getElementById('globalInstructionsView');
 var excavationView = document.getElementById('excavationView');
+var tabActivityBtn = document.getElementById('tabActivityBtn');
+var activityView = document.getElementById('activityView');
 var guidedView = document.getElementById('guidedView');
 var PAGE_HEADERS = {
+  activity: ['Activity', 'Where members go, how active each one is, and who has gone quiet.'],
   admin: ['Admin', 'Panel access and admin key.'],
   dashboard: ['Students', 'Search, add, and manage student records.'],
   deliverables: ['Deliverables', "Confirms every completed session actually captured a real, validated deliverable \u2014 not just the summary sentence."],
@@ -1583,6 +1682,7 @@ var PAGE_HEADERS = {
 };
 function showTopTab(which) {
   tabDashboardBtn.className = 'nav-item' + (which === 'dashboard' ? ' active' : '');
+  tabActivityBtn.className = 'nav-item' + (which === 'activity' ? ' active' : '');
   tabDeliverablesBtn.className = 'nav-item' + (which === 'deliverables' ? ' active' : '');
   tabTestimonialsBtn.className = 'nav-item' + (which === 'testimonials' ? ' active' : '');
   tabUpdatesBtn.className = 'nav-item' + (which === 'updates' ? ' active' : '');
@@ -1596,6 +1696,7 @@ function showTopTab(which) {
   adminView.style.display = which === 'admin' ? '' : 'none';
   panel.style.display = which === 'admin' ? 'none' : 'block';
   dashboardView.style.display = which === 'dashboard' ? '' : 'none';
+  activityView.style.display = which === 'activity' ? '' : 'none';
   deliverablesView.style.display = which === 'deliverables' ? '' : 'none';
   testimonialsView.style.display = which === 'testimonials' ? '' : 'none';
   updatesView.style.display = which === 'updates' ? '' : 'none';
@@ -1615,6 +1716,10 @@ tabAdminBtn.addEventListener('click', function () {
 tabDashboardBtn.addEventListener('click', function () {
   showTopTab('dashboard');
   loadStudents();
+});
+tabActivityBtn.addEventListener('click', function () {
+  showTopTab('activity');
+  loadActivity();
 });
 tabDeliverablesBtn.addEventListener('click', function () {
   showTopTab('deliverables');
@@ -6421,6 +6526,302 @@ function buildTutorialCell(sec, l, id) {
   td.appendChild(link);
   return td;
 }
+// ===== Activity tab (Sept 29 2026) =====
+// Reads /admin/activity/overview, /admin/activity/members and
+// /admin/activity/member. Page visits come from stratum-identity.js;
+// coaching sessions and completions come from data the worker already
+// kept before this tab existed.
+var actDays = document.getElementById('actDays');
+var actStatus = document.getElementById('actStatus');
+var actAreasBody = document.getElementById('actAreasBody');
+var actActionsWrap = document.getElementById('actActionsWrap');
+var actActionsBody = document.getElementById('actActionsBody');
+var actFunnel = document.getElementById('actFunnel');
+var actMembersBody = document.getElementById('actMembersBody');
+var actSearch = document.getElementById('actSearch');
+var actQuietFilter = document.getElementById('actQuietFilter');
+var actMembers = [];
+var actSortKey = 'lastActive';
+var actSortDir = -1;
+var actOpenTimeline = null;
+var ACT_ACTION_LABELS = {
+  library_open: 'Opened a Library resource',
+  library_search: 'Searched with the Librarian',
+  practice_open: 'Opened a Practice Lab term',
+  practice_mark: 'Marked a Practice Lab term as practiced',
+  practice_search: 'Searched the Practice Lab',
+  tutorial_play: 'Watched a tutorial'
+};
+var ACT_TRACK_KINDS = { excavation: 'Story & Character', general: 'General Coaching', writing: 'Writing Coaching' };
+
+function actEl(tag, text, cls) {
+  var e = document.createElement(tag);
+  if (text != null) e.textContent = text;
+  if (cls) e.className = cls;
+  return e;
+}
+function actParse(when) {
+  if (!when) return null;
+  var d = new Date(String(when).replace(' ', 'T') + (String(when).indexOf('Z') === -1 ? 'Z' : ''));
+  return isNaN(d.getTime()) ? null : d;
+}
+function actDaysSince(when) {
+  var d = actParse(when);
+  return d ? Math.floor((Date.now() - d.getTime()) / 86400000) : null;
+}
+function actAgo(when) {
+  var n = actDaysSince(when);
+  if (n == null) return 'Never';
+  if (n <= 0) return 'Today';
+  if (n === 1) return 'Yesterday';
+  return n + ' days ago';
+}
+function actDateLabel(d) {
+  return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+function actTimeLabel(d) {
+  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+function actGet(path) {
+  return fetch(PROXY_URL + path, { headers: { 'X-Stratum-Admin-Key': adminKey } })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+}
+
+function loadActivity() {
+  if (!adminKey) { actStatus.textContent = 'Unlock the panel first.'; return; }
+  actStatus.textContent = 'Loading activity\u2026';
+  var days = actDays.value;
+  Promise.all([
+    actGet('/admin/activity/overview?days=' + encodeURIComponent(days)),
+    actGet('/admin/activity/members?days=' + encodeURIComponent(days))
+  ]).then(function (res) {
+    renderActivityOverview(res[0]);
+    actMembers = (res[1].members || []);
+    renderActivityStats(res[0]);
+    renderActivityMembers();
+    actStatus.textContent = '';
+  }).catch(function (e) {
+    actStatus.textContent = 'Could not load activity (' + e.message + '). Check the worker is deployed with the Activity routes.';
+  });
+}
+
+function renderActivityStats(overview) {
+  var active = 0, quiet = 0;
+  actMembers.forEach(function (m) {
+    if (m.daysActive > 0) active++;
+    var n = actDaysSince(m.lastActive);
+    if (n == null || n >= 14) quiet++;
+  });
+  var sessions = 0;
+  (overview.tracks || []).forEach(function (t) { t.layers.forEach(function (l) { sessions += l.sessions; }); });
+  document.getElementById('actStatMembers').textContent = actMembers.length;
+  document.getElementById('actStatActive').textContent = active;
+  document.getElementById('actStatQuiet').textContent = quiet;
+  document.getElementById('actStatSessions').textContent = sessions;
+}
+
+function renderActivityOverview(d) {
+  actAreasBody.innerHTML = '';
+  var areas = d.areas || [];
+  var maxMembers = Math.max.apply(null, [1].concat(areas.map(function (a) { return a.members; })));
+  areas.forEach(function (a) {
+    var tr = document.createElement('tr');
+    if (!a.members) tr.className = 'act-zero';
+    tr.appendChild(actEl('td', a.label));
+    var tdM = document.createElement('td');
+    var bar = actEl('span', null, 'act-bar' + (a.members ? '' : ' muted'));
+    bar.style.width = Math.round((a.members / maxMembers) * 120) + 'px';
+    tdM.appendChild(bar);
+    tdM.appendChild(document.createTextNode(a.members));
+    tr.appendChild(tdM);
+    tr.appendChild(actEl('td', a.visits));
+    tr.appendChild(actEl('td', a.lastVisit ? actAgo(a.lastVisit) : '\u2014'));
+    actAreasBody.appendChild(tr);
+  });
+
+  actActionsBody.innerHTML = '';
+  var actions = d.actions || [];
+  actActionsWrap.style.display = actions.length ? '' : 'none';
+  actions.forEach(function (a) {
+    var tr = document.createElement('tr');
+    tr.appendChild(actEl('td', ACT_ACTION_LABELS[a.action] || a.action));
+    tr.appendChild(actEl('td', a.members));
+    tr.appendChild(actEl('td', a.count));
+    actActionsBody.appendChild(tr);
+  });
+
+  actFunnel.innerHTML = '';
+  var tracks = d.tracks || [];
+  if (!tracks.length) { actFunnel.appendChild(actEl('p', 'No coaching tracks found.', 'act-note')); return; }
+  tracks.forEach(function (t) {
+    var title = actEl('div', t.title, 'act-track-title');
+    title.appendChild(actEl('span', ACT_TRACK_KINDS[t.track] || t.track, 'act-track-kind'));
+    actFunnel.appendChild(title);
+    if (!t.layers.length) { actFunnel.appendChild(actEl('p', 'No layers set up yet.', 'act-note')); return; }
+    var table = actEl('table', null, 'exc-table');
+    var head = document.createElement('tr');
+    ['Layer', 'Members', 'Completed', 'Sessions', 'Avg. messages'].forEach(function (h) { head.appendChild(actEl('th', h)); });
+    var thead = document.createElement('thead'); thead.appendChild(head); table.appendChild(thead);
+    var tbody = document.createElement('tbody');
+    var top = Math.max.apply(null, [1].concat(t.layers.map(function (l) { return l.members; })));
+    t.layers.forEach(function (l) {
+      var tr = document.createElement('tr');
+      if (!l.members) tr.className = 'act-zero';
+      tr.appendChild(actEl('td', (l.layerNumber != null ? l.layerNumber + '. ' : '') + l.label));
+      var td = document.createElement('td');
+      var bar = actEl('span', null, 'act-bar' + (l.members ? '' : ' muted'));
+      bar.style.width = Math.round((l.members / top) * 120) + 'px';
+      td.appendChild(bar);
+      td.appendChild(document.createTextNode(l.members));
+      tr.appendChild(td);
+      tr.appendChild(actEl('td', l.completed));
+      tr.appendChild(actEl('td', l.sessions));
+      tr.appendChild(actEl('td', l.sessions ? l.avgTurns + 1 : '\u2014'));
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    actFunnel.appendChild(table);
+  });
+}
+
+function actFilteredMembers() {
+  var q = actSearch.value.trim().toLowerCase();
+  var quiet = actQuietFilter.value;
+  var list = actMembers.filter(function (m) {
+    if (q && (m.email + ' ' + m.firstName).toLowerCase().indexOf(q) === -1) return false;
+    if (quiet === 'never') return !m.lastActive;
+    if (quiet) {
+      var n = actDaysSince(m.lastActive);
+      return n == null || n >= Number(quiet);
+    }
+    return true;
+  });
+  list.sort(function (a, b) {
+    var x, y;
+    if (actSortKey === 'name') { x = (a.firstName || a.email).toLowerCase(); y = (b.firstName || b.email).toLowerCase(); return x < y ? -actSortDir : x > y ? actSortDir : 0; }
+    if (actSortKey === 'lastActive') { x = actParse(a.lastActive); y = actParse(b.lastActive); x = x ? x.getTime() : 0; y = y ? y.getTime() : 0; }
+    else { x = a[actSortKey] || 0; y = b[actSortKey] || 0; }
+    return (x - y) * actSortDir;
+  });
+  return list;
+}
+
+function renderActivityMembers() {
+  actMembersBody.innerHTML = '';
+  actOpenTimeline = null;
+  var list = actFilteredMembers();
+  if (!list.length) {
+    var tr = document.createElement('tr');
+    var td = actEl('td', actMembers.length ? 'No members match these filters.' : 'No members yet. Members appear here after their first visit to a Stratum page.');
+    td.colSpan = 7;
+    tr.appendChild(td);
+    actMembersBody.appendChild(tr);
+    return;
+  }
+  list.forEach(function (m) {
+    var tr = document.createElement('tr');
+    var n = actDaysSince(m.lastActive);
+    tr.className = 'act-member' + (n == null ? ' never' : (n >= 14 ? ' quiet' : ''));
+    var tdName = document.createElement('td');
+    tdName.appendChild(actEl('div', m.firstName || '(no name)', 'act-name'));
+    tdName.appendChild(actEl('div', m.email || m.studentId, 'act-email'));
+    if (m.status && m.status !== 'active') tdName.appendChild(actEl('div', 'Status: ' + m.status, 'act-email'));
+    tr.appendChild(tdName);
+    tr.appendChild(actEl('td', actAgo(m.lastActive), 'act-last'));
+    tr.appendChild(actEl('td', m.daysActive));
+    tr.appendChild(actEl('td', m.visits));
+    tr.appendChild(actEl('td', m.sessions));
+    tr.appendChild(actEl('td', m.completed + (m.completedTotal > m.completed ? ' (' + m.completedTotal + ' total)' : '')));
+    var tdC = actEl('td', null, 'act-contact');
+    if (m.email) {
+      var mail = document.createElement('a');
+      mail.textContent = 'Email';
+      mail.href = 'mailto:' + encodeURIComponent(m.email) + '?subject=' + encodeURIComponent('Checking in from The Stratum Method');
+      mail.addEventListener('click', function (e) { e.stopPropagation(); });
+      tdC.appendChild(mail);
+      var copy = actEl('button', 'Copy');
+      copy.type = 'button';
+      copy.addEventListener('click', function (e) {
+        e.stopPropagation();
+        navigator.clipboard.writeText(m.email).then(function () { copy.textContent = 'Copied'; setTimeout(function () { copy.textContent = 'Copy'; }, 1500); });
+      });
+      tdC.appendChild(copy);
+    }
+    tr.appendChild(tdC);
+    tr.addEventListener('click', function () { toggleActivityTimeline(tr, m); });
+    actMembersBody.appendChild(tr);
+  });
+}
+
+function toggleActivityTimeline(tr, m) {
+  if (actOpenTimeline) {
+    var wasSame = actOpenTimeline.previousSibling === tr;
+    actOpenTimeline.remove();
+    actOpenTimeline = null;
+    if (wasSame) return;
+  }
+  var row = actEl('tr', null, 'act-timeline-row');
+  var td = actEl('td', 'Loading timeline\u2026');
+  td.colSpan = 7;
+  row.appendChild(td);
+  tr.parentNode.insertBefore(row, tr.nextSibling);
+  actOpenTimeline = row;
+  var days = actDays.value === '0' ? 0 : Math.max(60, Number(actDays.value));
+  actGet('/admin/activity/member?studentId=' + encodeURIComponent(m.studentId) + '&days=' + days).then(function (d) {
+    td.textContent = '';
+    var items = d.items || [];
+    if (!items.length) { td.textContent = 'No activity recorded for this member in the period.'; return; }
+    var lastDay = '';
+    items.forEach(function (it) {
+      var when = actParse(it.at);
+      var dayKey = when ? when.toDateString() : 'Unknown date';
+      if (dayKey !== lastDay) {
+        td.appendChild(actEl('div', when ? actDateLabel(when) : 'Unknown date', 'act-tl-day'));
+        lastDay = dayKey;
+      }
+      var text;
+      if (it.kind === 'page_view') text = 'Visited ' + it.label;
+      else if (it.kind === 'coaching') text = 'Coaching session: ' + it.label + ' (' + ((it.turns || 0) + 1) + ' messages)';
+      else if (it.kind === 'completed') text = 'Completed ' + it.label;
+      else {
+        text = ACT_ACTION_LABELS[it.kind] || it.kind;
+        if (it.detail) {
+          try { var det = JSON.parse(it.detail); if (det && (det.title || det.query || det.word)) text += ': ' + (det.title || det.query || det.word); }
+          catch (e) { text += ': ' + it.detail; }
+        }
+      }
+      var line = actEl('div', null, 'act-tl-item' + (it.kind === 'coaching' ? ' coaching' : it.kind === 'completed' ? ' completed' : ''));
+      line.appendChild(actEl('span', when ? actTimeLabel(when) : '', 'act-tl-time'));
+      line.appendChild(document.createTextNode(text));
+      td.appendChild(line);
+    });
+  }).catch(function () {
+    td.textContent = 'Could not load this timeline.';
+  });
+}
+
+actDays.addEventListener('change', loadActivity);
+document.getElementById('actRefreshBtn').addEventListener('click', loadActivity);
+actSearch.addEventListener('input', renderActivityMembers);
+actQuietFilter.addEventListener('change', renderActivityMembers);
+document.getElementById('actCopyEmailsBtn').addEventListener('click', function () {
+  var btn = this;
+  var emails = actFilteredMembers().map(function (m) { return m.email; }).filter(Boolean);
+  if (!emails.length) { btn.textContent = 'No emails to copy'; setTimeout(function () { btn.textContent = 'Copy these emails'; }, 1500); return; }
+  navigator.clipboard.writeText(emails.join(', ')).then(function () {
+    btn.textContent = 'Copied ' + emails.length;
+    setTimeout(function () { btn.textContent = 'Copy these emails'; }, 1500);
+  });
+});
+Array.prototype.forEach.call(document.querySelectorAll('#activityView th.act-sort'), function (th) {
+  th.addEventListener('click', function () {
+    var key = th.getAttribute('data-key');
+    if (actSortKey === key) actSortDir = -actSortDir;
+    else { actSortKey = key; actSortDir = key === 'name' ? 1 : -1; }
+    Array.prototype.forEach.call(document.querySelectorAll('#activityView th.act-sort'), function (h) { h.classList.toggle('on', h === th); });
+    renderActivityMembers();
+  });
+});
 </script>
 </body>
 </html>

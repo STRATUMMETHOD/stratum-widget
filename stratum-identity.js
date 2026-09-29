@@ -43,6 +43,19 @@
                               page — only resolves once; later callers
                               get the already-settled result.
 
+     .track(action, detail)  — (Sept 29 2026) records an in-page action
+                              for the admin Activity tab, e.g.
+                              StratumIdentity.track('library_open',
+                              { id: 14, title: 'Wound vs. Lie' }).
+                              Safe to call before identity is ready
+                              (events wait) and when logged out (events
+                              are dropped). Allowed actions are listed in
+                              the worker's ACTIVITY_ACTIONS.
+
+   Sept 29 2026: every page that loads this file also records one
+   "page_view" automatically once the member's identity is confirmed.
+   No other file needs a change for page visits to be tracked.
+
    Same dual pattern as before (synchronous global + event) so load
    order between scripts on a page never matters:
      window.STRATUM_IDENTITY_READY / window.STRATUM_STUDENT_ID
@@ -103,7 +116,56 @@
     document.dispatchEvent(new CustomEvent('stratum:identity-ready', { detail: { studentId: studentId } }));
     pendingCallbacks.forEach(function (cb) { cb(studentId); });
     pendingCallbacks = [];
+    if (studentId) {
+      track('page_view');
+    } else {
+      trackQueue = [];
+    }
   }
+
+  // ---- Activity tracking (Sept 29 2026) ----
+  // Events are batched for a moment so several actions on one page go
+  // out in a single request. Nothing is sent until identity is settled,
+  // and nothing at all for logged-out visitors or non-members.
+  var trackQueue = [];
+  var trackTimer = null;
+  var TRACK_DELAY_MS = 1500;
+  function flushTrack() {
+    trackTimer = null;
+    if (!studentId || !authToken || !trackQueue.length) return;
+    var batch = trackQueue.splice(0, 20);
+    try {
+      fetch(PROXY_URL + '/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: studentId, events: batch }),
+        keepalive: true
+      }).catch(function () { /* tracking must never affect the page */ });
+    } catch (e) { /* ignore */ }
+    if (trackQueue.length) scheduleTrack();
+  }
+  function scheduleTrack() {
+    if (trackTimer || !window.STRATUM_IDENTITY_READY) return;
+    trackTimer = setTimeout(flushTrack, TRACK_DELAY_MS);
+  }
+  function track(action, detail) {
+    if (!action) return;
+    if (window.STRATUM_IDENTITY_READY && !studentId) return;
+    if (trackQueue.length >= 50) return;
+    trackQueue.push({
+      action: String(action),
+      path: window.location.pathname,
+      detail: detail == null ? null : detail
+    });
+    scheduleTrack();
+  }
+  // Send anything still waiting when the member leaves the page.
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden' && trackQueue.length) {
+      if (trackTimer) { clearTimeout(trackTimer); trackTimer = null; }
+      flushTrack();
+    }
+  });
 
   // Sept 25 2026 fix: the cached stratum_sid cookie is NEVER used as a
   // fallback any more. It used to be returned whenever the user was
@@ -156,6 +218,7 @@
     PROXY_URL: PROXY_URL,
     getWpUser: getWpUser,
     getToken: function () { return authToken; },
-    init: init
+    init: init,
+    track: track
   };
 })();
