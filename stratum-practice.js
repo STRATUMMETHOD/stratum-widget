@@ -394,7 +394,12 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: query, lang: LANG })
     })
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        // Sept 29 2026: a rejected request (401/403/5xx) is an error,
+        // not "no matches".
+        if (!r.ok) throw new Error('search_failed_' + r.status);
+        return r.json();
+      })
       .then(function (d) {
         searchBtn.disabled = false;
         searchStatusEl.textContent = '';
