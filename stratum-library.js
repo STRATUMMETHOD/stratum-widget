@@ -402,12 +402,24 @@
     librarianResultsEl.innerHTML = '';
     librarianResultsEl.style.display = '';
     listEl.style.display = 'none';
+    // Sept 29 2026: resolve the signed login first so the search request
+    // carries the session token (stratum-identity.js adds it to every
+    // worker request once it has one). init() only resolves once per
+    // page, so repeat searches don't repeat the lookup.
+    var withIdentity = (window.StratumIdentity && typeof window.StratumIdentity.init === 'function')
+      ? function (cb) { window.StratumIdentity.init(function () { cb(); }); }
+      : function (cb) { cb(); };
+    withIdentity(function () {
     fetch(PROXY_URL + '/library/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: query, lang: LANG })
     })
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        // A rejected request (401/403/5xx) is an error, not "no matches".
+        if (!r.ok) throw new Error('search_failed_' + r.status);
+        return r.json();
+      })
       .then(function (d) {
         searchBtn.disabled = false;
         searchStatusEl.textContent = '';
@@ -419,6 +431,7 @@
         librarianResultsEl.innerHTML = '';
         mount(librarianResultsEl, el('div', 'sh-pl-empty', t('librarianError')));
       });
+    });
   }
 
   function clearLibrarianSearch() {
