@@ -258,7 +258,16 @@
     });
   }
 
+  // Sept 29 2026: reports an action to the admin Activity tab through
+  // stratum-identity.js. Does nothing if that file isn't on the page.
+  function stratumTrack(action, detail) {
+    try {
+      if (window.StratumIdentity && typeof window.StratumIdentity.track === 'function') window.StratumIdentity.track(action, detail);
+    } catch (e) { /* tracking must never affect the page */ }
+  }
+
   function openResource(resource, highlights) {
+    stratumTrack('library_open', { id: resource.id, title: resource.title, type: resource.type });
     if (resource.type === 'video') openVideoPopup(resource);
     else if (resource.type === 'doc') openDocPopup(resource, highlights);
     else openPdfPopup(resource);
@@ -397,6 +406,7 @@
   function runLibrarianSearch() {
     var query = searchInput.value.trim();
     if (!query) return;
+    stratumTrack('library_search', { query: query.slice(0, 150) });
     searchBtn.disabled = true;
     searchStatusEl.textContent = t('searching');
     librarianResultsEl.innerHTML = '';

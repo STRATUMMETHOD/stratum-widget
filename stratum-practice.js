@@ -258,9 +258,25 @@
       .catch(function () { protagonistName = ''; callback(); });
   }
 
+  // Sept 29 2026: reports an action to the admin Activity tab through
+  // stratum-identity.js. Does nothing if that file isn't on the page.
+  function stratumTrack(action, detail) {
+    try {
+      if (window.StratumIdentity && typeof window.StratumIdentity.track === 'function') window.StratumIdentity.track(action, detail);
+    } catch (e) { /* tracking must never affect the page */ }
+  }
+
+  function termWord(termId) {
+    var hit = (termsCache || []).filter(function (x) { return String(x.id) === String(termId); })[0];
+    return hit ? hit.word : '';
+  }
+
   function togglePracticed(termId) {
     if (practicedIds[termId]) delete practicedIds[termId];
-    else practicedIds[termId] = true;
+    else {
+      practicedIds[termId] = true;
+      stratumTrack('practice_mark', { id: termId, word: termWord(termId) });
+    }
     savePracticedIds();
     renderProgress();
   }
@@ -280,6 +296,11 @@
     var entry = opts.collapsible ? document.createElement('details') : el('div');
     entry.className = 'sh-pl-entry' + (isPracticed ? ' sh-pl-practiced' : '');
     if (term.id != null) entry.setAttribute('data-term-id', String(term.id));
+    if (opts.collapsible) {
+      entry.addEventListener('toggle', function () {
+        if (entry.open) stratumTrack('practice_open', { id: term.id, word: term.word });
+      });
+    }
 
     var head = opts.collapsible ? document.createElement('summary') : el('div', 'sh-pl-static-head');
     mount(head, el('span', 'sh-pl-word', term.word));
@@ -383,6 +404,7 @@
   function runLibrarianSearch() {
     var query = searchInput.value.trim();
     if (!query) return;
+    stratumTrack('practice_search', { query: query.slice(0, 150) });
     searchBtn.disabled = true;
     searchStatusEl.textContent = t('searching');
     librarianResultsEl.innerHTML = '';

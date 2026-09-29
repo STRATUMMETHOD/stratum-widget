@@ -132,7 +132,15 @@
           btn.className = "sh-tut-btn";
           btn.addEventListener("click", function () {
             var cur = pickId(videos, state.section, state.lang);
-            if (cur) open(cur, state.lang, state.closeLabel);
+            if (cur) {
+              // Sept 29 2026: reported to the admin Activity tab.
+              try {
+                if (window.StratumIdentity && typeof window.StratumIdentity.track === "function") {
+                  window.StratumIdentity.track("tutorial_play", { title: state.section, section: state.section, lang: state.lang });
+                }
+              } catch (e) { /* tracking must never affect the page */ }
+              open(cur, state.lang, state.closeLabel);
+            }
           });
           container.appendChild(btn);
         }
